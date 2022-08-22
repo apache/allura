@@ -25,7 +25,7 @@ from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects
 
 
-def setUp():
+def setup_method(self, method):
     setup_basic_test()
     setup_with_tools()
 

@@ -19,6 +19,7 @@ from mock import Mock
 from allura.model import VotableArtifact
 
 
+@with_nose_compatibility
 class TestVotableArtifact:
 
     def setUp(self):

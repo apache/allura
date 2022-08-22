@@ -25,6 +25,7 @@ from allura.tests import decorators as td
 from allura.tests import TestController
 
 
+@with_nose_compatibility
 class TestUserProfile(TestController):
 
     @td.with_user_project('test-admin')
@@ -270,6 +271,7 @@ class TestUserProfile(TestController):
 
 
 
+@with_nose_compatibility
 class TestUserProfileHasAccessAPI(TestRestApiBase):
 
     @td.with_user_project('test-admin')

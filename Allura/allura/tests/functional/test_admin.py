@@ -47,6 +47,7 @@ from forgewiki.wiki_main import ForgeWikiApp
 log = logging.getLogger(__name__)
 
 
+@with_nose_compatibility
 class TestProjectAdmin(TestController):
 
     def test_admin_controller(self):
@@ -959,10 +960,11 @@ class TestProjectAdmin(TestController):
         r.mustcontain('Neighborhood Invitation(s) for test')
 
 
+@with_nose_compatibility
 class TestExport(TestController):
 
     def setUp(self):
-        super().setUp()
+        super().setup_method(method)
         self.setup_with_tools()
 
     @td.with_wiki
@@ -1085,6 +1087,7 @@ class TestExport(TestController):
         assert 'Check All</label>' in r
 
 
+@with_nose_compatibility
 class TestRestExport(TestRestApiBase):
 
     @mock.patch('allura.model.project.MonQTask')
@@ -1152,6 +1155,7 @@ class TestRestExport(TestRestApiBase):
             ['tickets', 'discussion'], 'test.zip', send_email=False, with_attachments=False)
 
 
+@with_nose_compatibility
 class TestRestInstallTool(TestRestApiBase):
 
     def test_missing_mount_info(self):
@@ -1325,6 +1329,7 @@ class TestRestInstallTool(TestRestApiBase):
             get_labels() == ['t1', 'Admin', 'Search', 'Activity', 'A Subproject', 'ta', 'tb', 'tc'])
 
 
+@with_nose_compatibility
 class TestRestAdminOptions(TestRestApiBase):
     def test_no_mount_point(self):
         r = self.api_get('/rest/p/test/admin/admin_options/', status=400)
@@ -1340,6 +1345,7 @@ class TestRestAdminOptions(TestRestApiBase):
         assert r.json['options'] is not None
 
 
+@with_nose_compatibility
 class TestRestMountOrder(TestRestApiBase):
     def test_no_kw(self):
         r = self.api_post('/rest/p/test/admin/mount_order/', status=400)
@@ -1389,6 +1395,7 @@ class TestRestMountOrder(TestRestApiBase):
         assert b > a
 
 
+@with_nose_compatibility
 class TestRestToolGrouping(TestRestApiBase):
     def test_invalid_grouping_threshold(self):
         for invalid_value in ('100', 'asdf'):
@@ -1415,6 +1422,7 @@ class TestRestToolGrouping(TestRestApiBase):
         assert 'wiki' in [tool['mount_point'] for tool in result2.json['menu']]
 
 
+@with_nose_compatibility
 class TestInstallableTools(TestRestApiBase):
     def test_installable_tools_response(self):
         r = self.api_get('/rest/p/test/admin/installable_tools', status=200)

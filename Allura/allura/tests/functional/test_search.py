@@ -26,6 +26,7 @@ from allura.tests.decorators import with_tool
 from forgewiki.model import Page
 
 
+@with_nose_compatibility
 class TestSearch(TestController):
 
     @patch('allura.lib.search.search')

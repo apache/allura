@@ -21,6 +21,7 @@ from allura.model.notification import Mailbox
 from allura import model as M
 
 
+@with_nose_compatibility
 class TestSubscriber(TestController):
 
     @td.with_user_project('test-admin')

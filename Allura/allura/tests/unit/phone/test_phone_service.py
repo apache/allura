@@ -30,6 +30,7 @@ class MockPhoneService(PhoneService):
         return {'status': 'ok'}
 
 
+@with_nose_compatibility
 class TestPhoneService:
 
     def test_verify(self):

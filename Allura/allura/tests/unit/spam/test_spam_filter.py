@@ -46,6 +46,7 @@ class MockFilter2(SpamFilter):
         return True
 
 
+@with_nose_compatibility
 class TestSpamFilter(unittest.TestCase):
 
     def test_check(self):
@@ -74,6 +75,7 @@ class TestSpamFilter(unittest.TestCase):
         self.assertTrue(log.exception.called)
 
 
+@with_nose_compatibility
 class TestSpamFilterFunctional:
 
     def setUp(self):
@@ -93,6 +95,7 @@ class TestSpamFilterFunctional:
         assert results[0].user.username == 'test-user'
 
 
+@with_nose_compatibility
 class TestChainedSpamFilter:
 
     def test(self):

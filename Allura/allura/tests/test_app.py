@@ -25,9 +25,10 @@ from alluratest.controller import setup_unit_test
 from allura import app
 from allura.lib.app_globals import Icon
 from allura.lib import mail_util
+from allura.tests import with_nose_compatibility
 
 
-def setUp():
+def setup_method(self, method):
     setup_unit_test()
     c.user._id = None
     c.project = mock.Mock()

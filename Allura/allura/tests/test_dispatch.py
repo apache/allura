@@ -20,6 +20,7 @@ from allura.tests import TestController
 app = None
 
 
+@with_nose_compatibility
 class TestDispatch(TestController):
 
     validate_skip = True

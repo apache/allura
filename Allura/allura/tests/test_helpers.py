@@ -46,6 +46,7 @@ def setUp(self):
     setup_basic_test()
 
 
+@with_nose_compatibility
 class TestMakeSafePathPortion(TestCase):
 
     def setUp(self):
@@ -458,6 +459,7 @@ back\\\-slash escaped
         r'tab before \(stuff\)')
 
 
+@with_nose_compatibility
 class TestUrlOpen(TestCase):
 
     @patch('six.moves.urllib.request.urlopen')
@@ -534,6 +536,7 @@ def test_login_overlay():
             raise HTTPUnauthorized()
 
 
+@with_nose_compatibility
 class TestIterEntryPoints(TestCase):
 
     def _make_ep(self, name, cls):
@@ -638,6 +641,7 @@ def test_slugify():
     assert h.slugify('Foo.Bar', True)[0] == 'Foo.Bar'
 
 
+@with_nose_compatibility
 class TestRateLimit(TestCase):
     rate_limits = '{"60": 1, "120": 3, "900": 5, "1800": 7, "3600": 10, "7200": 15, "86400": 20, "604800": 50, "2592000": 200}'
     key_comment = 'allura.rate_limits_per_user'

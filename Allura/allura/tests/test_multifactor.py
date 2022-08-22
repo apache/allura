@@ -34,6 +34,7 @@ from allura.lib.multifactor import RecoveryCodeService, MongodbRecoveryCodeServi
 from allura.lib.multifactor import GoogleAuthenticatorPamFilesystemRecoveryCodeService
 
 
+@with_nose_compatibility
 class TestGoogleAuthenticatorFile:
     sample = textwrap.dedent('''\
         7CL3WL756ISQCU5HRVNAODC44Q
@@ -80,6 +81,7 @@ class GenericTotpService(TotpService):
         pass
 
 
+@with_nose_compatibility
 class TestTotpService:
 
     sample_key = b'\x00K\xda\xbfv\xc2B\xaa\x1a\xbe\xa5\x96b\xb2\xa0Z:\xc9\xcf\x8a'
@@ -124,6 +126,7 @@ class TestTotpService:
         assert srv.get_qr_code(totp, user)
 
 
+@with_nose_compatibility
 class TestAnyTotpServiceImplementation:
 
     __test__ = False
@@ -171,6 +174,7 @@ class TestAnyTotpServiceImplementation:
             srv.verify(totp, '283397', user)
 
 
+@with_nose_compatibility
 class TestMongodbTotpService(TestAnyTotpServiceImplementation):
 
     __test__ = True
@@ -183,17 +187,19 @@ class TestMongodbTotpService(TestAnyTotpServiceImplementation):
         ming.configure(**config)
 
 
+@with_nose_compatibility
 class TestGoogleAuthenticatorPamFilesystemMixin:
 
     def setUp(self):
         self.totp_basedir = tempfile.mkdtemp(prefix='totp-test', dir=os.getenv('TMPDIR', '/tmp'))
         config['auth.multifactor.totp.filesystem.basedir'] = self.totp_basedir
 
-    def tearDown(self):
+    def teardown_method(self, method):
         if os.path.exists(self.totp_basedir):
             shutil.rmtree(self.totp_basedir)
 
 
+@with_nose_compatibility
 class TestGoogleAuthenticatorPamFilesystemTotpService(TestAnyTotpServiceImplementation,
                                                       TestGoogleAuthenticatorPamFilesystemMixin):
 
@@ -207,6 +213,7 @@ class TestGoogleAuthenticatorPamFilesystemTotpService(TestAnyTotpServiceImplemen
         super().test_rate_limiting()
 
 
+@with_nose_compatibility
 class TestRecoveryCodeService:
 
     def test_generate_one_code(self):
@@ -229,6 +236,7 @@ class TestRecoveryCodeService:
         assert len(recovery.saved_codes) == asint(config.get('auth.multifactor.recovery_code.count', 10))
 
 
+@with_nose_compatibility
 class TestAnyRecoveryCodeServiceImplementation:
 
     __test__ = False
@@ -296,6 +304,7 @@ class TestAnyRecoveryCodeServiceImplementation:
             recovery.verify_and_remove_code(user, '22222')
 
 
+@with_nose_compatibility
 class TestMongodbRecoveryCodeService(TestAnyRecoveryCodeServiceImplementation):
 
     __test__ = True
@@ -309,6 +318,7 @@ class TestMongodbRecoveryCodeService(TestAnyRecoveryCodeServiceImplementation):
         ming.configure(**config)
 
 
+@with_nose_compatibility
 class TestGoogleAuthenticatorPamFilesystemRecoveryCodeService(TestAnyRecoveryCodeServiceImplementation,
                                                               TestGoogleAuthenticatorPamFilesystemMixin):
 
@@ -317,7 +327,7 @@ class TestGoogleAuthenticatorPamFilesystemRecoveryCodeService(TestAnyRecoveryCod
     Service = GoogleAuthenticatorPamFilesystemRecoveryCodeService
 
     def setUp(self):
-        super().setUp()
+        super().setup_method(method)
 
         # make a regular .google-authenticator file first, so recovery keys have somewhere to go
         GoogleAuthenticatorPamFilesystemTotpService().set_secret_key(self.mock_user(),

@@ -23,6 +23,7 @@ from alluratest.tools import assert_equal
 from allura.lib import helpers
 
 
+@with_nose_compatibility
 class TestAgo:
 
     def setUp(self):

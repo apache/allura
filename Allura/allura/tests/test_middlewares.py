@@ -21,6 +21,7 @@ from alluratest.tools import assert_not_equal
 from allura.lib.custom_middleware import CORSMiddleware
 
 
+@with_nose_compatibility
 class TestCORSMiddleware:
 
     def setUp(self):

@@ -22,6 +22,7 @@ from allura.tests import decorators as td
 from allura.lib import helpers as h
 
 
+@with_nose_compatibility
 class TestFeeds(TestController):
 
     def setUp(self):

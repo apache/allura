@@ -54,7 +54,7 @@ class Checkmessage(M.Message):
 Mapper.compile_all()
 
 
-def setUp():
+def setup_method(self, method):
     setup_basic_test()
     setup_unit_test()
     setup_with_tools()

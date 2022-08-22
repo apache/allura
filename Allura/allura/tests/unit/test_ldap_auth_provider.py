@@ -34,6 +34,7 @@ from allura import model as M
 import six
 
 
+@with_nose_compatibility
 class TestLdapAuthenticationProvider:
 
     def setUp(self):
