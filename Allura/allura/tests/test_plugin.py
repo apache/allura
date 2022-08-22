@@ -94,48 +94,48 @@ class TestProjectRegistrationProviderParseProjectFromUrl:
         self.parse = self.provider.project_from_url
 
     def test_empty_url(self):
-        assert_equal((None, 'Empty url'), self.parse(None))
-        assert_equal((None, 'Empty url'), self.parse(''))
-        assert_equal((None, 'Empty url'), self.parse('/'))
+        assert (None, 'Empty url') == self.parse(None)
+        assert (None, 'Empty url') == self.parse('')
+        assert (None, 'Empty url') == self.parse('/')
 
     def test_neighborhood_not_found(self):
-        assert_equal((None, 'Neighborhood not found'), self.parse('/nbhd/project'))
+        assert (None, 'Neighborhood not found') == self.parse('/nbhd/project')
 
     def test_project_not_found(self):
-        assert_equal((None, 'Project not found'), self.parse('/p/project'))
-        assert_equal((None, 'Project not found'), self.parse('project'))
+        assert (None, 'Project not found') == self.parse('/p/project')
+        assert (None, 'Project not found') == self.parse('project')
 
     def test_ok_full(self):
         p = M.Project.query.get(shortname='test')
         adobe = M.Project.query.get(shortname='adobe-1')
-        assert_equal((p, None), self.parse('p/test'))
-        assert_equal((p, None), self.parse('/p/test'))
-        assert_equal((p, None), self.parse('/p/test/tickets/1'))
-        assert_equal((p, None), self.parse('http://localhost:8080/p/test/tickets/1'))
-        assert_equal((adobe, None), self.parse('/adobe/adobe-1/'))
+        assert (p, None) == self.parse('p/test')
+        assert (p, None) == self.parse('/p/test')
+        assert (p, None) == self.parse('/p/test/tickets/1')
+        assert (p, None) == self.parse('http://localhost:8080/p/test/tickets/1')
+        assert (adobe, None) == self.parse('/adobe/adobe-1/')
 
     def test_only_shortname_multiple_projects_matched(self):
         adobe_n = M.Neighborhood.query.get(url_prefix='/adobe/')
         M.Project(shortname='test', neighborhood_id=adobe_n._id)
         ThreadLocalORMSession.flush_all()
-        assert_equal((None, 'Too many matches for project: 2'), self.parse('test'))
+        assert (None, 'Too many matches for project: 2') == self.parse('test')
 
     def test_only_shortname_ok(self):
         p = M.Project.query.get(shortname='test')
         adobe = M.Project.query.get(shortname='adobe-1')
-        assert_equal((p, None), self.parse('test'))
-        assert_equal((adobe, None), self.parse('adobe-1'))
+        assert (p, None) == self.parse('test')
+        assert (adobe, None) == self.parse('adobe-1')
 
     def test_subproject(self):
         p = M.Project.query.get(shortname='test/sub1')
-        assert_equal((p, None), self.parse('p/test/sub1'))
-        assert_equal((p, None), self.parse('p/test/sub1/something'))
-        assert_equal((p, None), self.parse('http://localhost:8080/p/test/sub1'))
-        assert_equal((p, None), self.parse('http://localhost:8080/p/test/sub1/something'))
+        assert (p, None) == self.parse('p/test/sub1')
+        assert (p, None) == self.parse('p/test/sub1/something')
+        assert (p, None) == self.parse('http://localhost:8080/p/test/sub1')
+        assert (p, None) == self.parse('http://localhost:8080/p/test/sub1/something')
 
     def test_subproject_not_found(self):
         p = M.Project.query.get(shortname='test')
-        assert_equal((p, None), self.parse('http://localhost:8080/p/test/not-a-sub'))
+        assert (p, None) == self.parse('http://localhost:8080/p/test/not-a-sub')
 
 
 class UserMock:
@@ -168,38 +168,38 @@ class TestProjectRegistrationProviderPhoneVerification:
 
     def test_phone_verified_disabled(self):
         with h.push_config(tg.config, **{'project.verify_phone': 'false'}):
-            assert_true(self.p.phone_verified(self.user, self.nbhd))
+            assert self.p.phone_verified(self.user, self.nbhd)
 
     @patch.object(plugin.security, 'has_access', autospec=True)
     def test_phone_verified_admin(self, has_access):
         has_access.return_value.return_value = True
         with h.push_config(tg.config, **{'project.verify_phone': 'true'}):
-            assert_true(self.p.phone_verified(self.user, self.nbhd))
+            assert self.p.phone_verified(self.user, self.nbhd)
 
     @patch.object(plugin.security, 'has_access', autospec=True)
     def test_phone_verified_project_admin(self, has_access):
         has_access.return_value.return_value = False
         with h.push_config(tg.config, **{'project.verify_phone': 'true'}):
             self.user.set_projects([Mock()])
-            assert_false(self.p.phone_verified(self.user, self.nbhd))
+            assert not self.p.phone_verified(self.user, self.nbhd)
             self.user.set_projects([Mock(neighborhood_id=self.nbhd._id)])
-            assert_true(self.p.phone_verified(self.user, self.nbhd))
+            assert self.p.phone_verified(self.user, self.nbhd)
 
     @patch.object(plugin.security, 'has_access', autospec=True)
     def test_phone_verified(self, has_access):
         has_access.return_value.return_value = False
         with h.push_config(tg.config, **{'project.verify_phone': 'true'}):
-            assert_false(self.p.phone_verified(self.user, self.nbhd))
+            assert not self.p.phone_verified(self.user, self.nbhd)
             self.user.set_tool_data('phone_verification', number_hash='123')
-            assert_true(self.p.phone_verified(self.user, self.nbhd))
+            assert self.p.phone_verified(self.user, self.nbhd)
 
     @patch.object(plugin, 'g')
     def test_verify_phone_disabled(self, g):
         g.phone_service = Mock(spec=phone.PhoneService)
         with h.push_config(tg.config, **{'project.verify_phone': 'false'}):
             result = self.p.verify_phone(self.user, '12345')
-            assert_false(g.phone_service.verify.called)
-            assert_equal(result, {'status': 'ok'})
+            assert not g.phone_service.verify.called
+            assert result == {'status': 'ok'}
 
     @patch.object(plugin, 'g')
     def test_verify_phone(self, g):
@@ -207,7 +207,7 @@ class TestProjectRegistrationProviderPhoneVerification:
         with h.push_config(tg.config, **{'project.verify_phone': 'true'}):
             result = self.p.verify_phone(self.user, '123 45 45')
             g.phone_service.verify.assert_called_once_with('1234545')
-            assert_equal(result, g.phone_service.verify.return_value)
+            assert result == g.phone_service.verify.return_value
 
     @patch.object(plugin, 'g')
     def test_check_phone_verification_disabled(self, g):
@@ -215,8 +215,8 @@ class TestProjectRegistrationProviderPhoneVerification:
         with h.push_config(tg.config, **{'project.verify_phone': 'false'}):
             result = self.p.check_phone_verification(
                 self.user, 'request-id', '1111', 'hash')
-            assert_false(g.phone_service.check.called)
-            assert_equal(result, {'status': 'ok'})
+            assert not g.phone_service.check.called
+            assert result == {'status': 'ok'}
 
     @patch.object(plugin.h, 'auditlog_user', autospec=True)
     @patch.object(plugin, 'g')
@@ -227,9 +227,9 @@ class TestProjectRegistrationProviderPhoneVerification:
                 self.user, 'request-id', '1111', 'hash')
             g.phone_service.check.assert_called_once_with(
                 'request-id', '1111')
-            assert_equal(result, g.phone_service.check.return_value)
-            assert_equal(
-                self.user.get_tool_data('phone_verification', 'number_hash'),
+            assert result == g.phone_service.check.return_value
+            assert (
+                self.user.get_tool_data('phone_verification', 'number_hash') ==
                 None)
             audit.assert_called_once_with(
                 'Phone verification failed. Hash: hash', user=self.user)
@@ -244,8 +244,8 @@ class TestProjectRegistrationProviderPhoneVerification:
                 self.user, 'request-id', '1111', 'hash')
             g.phone_service.check.assert_called_once_with(
                 'request-id', '1111')
-            assert_equal(
-                self.user.get_tool_data('phone_verification', 'number_hash'),
+            assert (
+                self.user.get_tool_data('phone_verification', 'number_hash') ==
                 'hash')
             audit.assert_called_once_with(
                 'Phone verification succeeded. Hash: hash', user=self.user)
@@ -258,8 +258,8 @@ class TestProjectRegistrationProviderPhoneVerification:
         with h.push_config(tg.config, **{'project.verify_phone': 'true', 'phone.attempts_limit': '5'}):
             for i in range(1, 3):
                 result = self.p.verify_phone(user, '123 45 45')
-                assert_equal(result, g.phone_service.verify.return_value)
-            assert_equal(2, g.phone_service.verify.call_count)
+                assert result == g.phone_service.verify.return_value
+            assert 2 == g.phone_service.verify.call_count
 
     @patch.object(plugin, 'g')
     def test_verify_phone_max_limit_reached(self, g):
@@ -270,10 +270,10 @@ class TestProjectRegistrationProviderPhoneVerification:
             for i in range(1, 7):
                 result = self.p.verify_phone(user, '123 45 45')
                 if i > 5:
-                    assert_equal(result, {'status': 'error', 'error': 'Maximum phone verification attempts reached.'})
+                    assert result == {'status': 'error', 'error': 'Maximum phone verification attempts reached.'}
                 else:
-                    assert_equal(result, g.phone_service.verify.return_value)
-            assert_equal(5, g.phone_service.verify.call_count)
+                    assert result == g.phone_service.verify.return_value
+            assert 5 == g.phone_service.verify.call_count
 
 class TestThemeProvider:
 
@@ -285,14 +285,14 @@ class TestThemeProvider:
                 24: 'images/testapp_24.png',
             }
         plugin_g.entry_points = {'tool': {'testapp': TestApp}}
-        assert_equals(ThemeProvider().app_icon_url('testapp', 24),
+        assert (ThemeProvider().app_icon_url('testapp', 24) ==
                       app_g.theme_href.return_value)
         app_g.theme_href.assert_called_with('images/testapp_24.png')
 
     @patch('allura.lib.plugin.g')
     def test_app_icon_str_invalid(self, g):
         g.entry_points = {'tool': {'testapp': Mock()}}
-        assert_equals(ThemeProvider().app_icon_url('invalid', 24),
+        assert (ThemeProvider().app_icon_url('invalid', 24) ==
                       None)
 
     @patch('allura.app.g')
@@ -302,7 +302,7 @@ class TestThemeProvider:
                 24: 'images/testapp_24.png',
             }
         app = TestApp(None, None)
-        assert_equals(ThemeProvider().app_icon_url(app, 24),
+        assert (ThemeProvider().app_icon_url(app, 24) ==
                       g.theme_href.return_value)
         g.theme_href.assert_called_with('images/testapp_24.png')
 
@@ -317,7 +317,7 @@ class TestThemeProvider_notifications:
     @patch('tg.request')
     def test_get_site_notification_no_note(self, request, response, SiteNotification):
         SiteNotification.actives.return_value = []
-        assert_is_none(self.Provider().get_site_notification())
+        assert self.Provider().get_site_notification() is None
         assert not response.set_cookie.called
 
     @patch('allura.lib.plugin.c', MagicMock())
@@ -332,7 +332,7 @@ class TestThemeProvider_notifications:
         note.page_tool_type = None
         SiteNotification.actives.return_value = [note]
         request.cookies = {'site-notification': 'deadbeef-1-true'}
-        assert_is_none(self.Provider().get_site_notification())
+        assert self.Provider().get_site_notification() is None
         assert not response.set_cookie.called
 
     @patch('allura.lib.plugin.c', MagicMock())
@@ -348,7 +348,7 @@ class TestThemeProvider_notifications:
         note.page_tool_type = None
         SiteNotification.actives.return_value = [note]
         request.cookies = {'site-notification': 'deadbeef-3-false'}
-        assert_is_none(self.Provider().get_site_notification())
+        assert self.Provider().get_site_notification() is None
         assert not response.set_cookie.called
 
     @patch('allura.lib.plugin.c', MagicMock())
@@ -366,7 +366,7 @@ class TestThemeProvider_notifications:
         request.cookies = {'site-notification': 'deadbeef-1-false'}
         request.environ['beaker.session'].secure = False
 
-        assert_is(self.Provider().get_site_notification(), note)
+        assert self.Provider().get_site_notification() is note
         response.set_cookie.assert_called_once_with(
             'site-notification', 'deadbeef-2-False', max_age=dt.timedelta(days=365), secure=False)
 
@@ -383,7 +383,7 @@ class TestThemeProvider_notifications:
         note.page_tool_type = None
         SiteNotification.actives.return_value = [note]
         request.cookies = {'site-notification': 'deadbeef-1000-false'}
-        assert_is(self.Provider().get_site_notification(), note)
+        assert self.Provider().get_site_notification() is note
 
     @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
@@ -400,7 +400,7 @@ class TestThemeProvider_notifications:
         request.cookies = {'site-notification': '0ddba11-1000-true'}
         request.environ['beaker.session'].secure = False
 
-        assert_is(self.Provider().get_site_notification(), note)
+        assert self.Provider().get_site_notification() is note
         response.set_cookie.assert_called_once_with(
             'site-notification', 'deadbeef-1-False', max_age=dt.timedelta(days=365), secure=False)
 
@@ -418,7 +418,7 @@ class TestThemeProvider_notifications:
         SiteNotification.actives.return_value = [note]
         request.cookies = {}
         request.environ['beaker.session'].secure = False
-        assert_is(self.Provider().get_site_notification(), note)
+        assert self.Provider().get_site_notification() is note
         response.set_cookie.assert_called_once_with(
             'site-notification', 'deadbeef-1-False', max_age=dt.timedelta(days=365), secure=False)
 
@@ -437,7 +437,7 @@ class TestThemeProvider_notifications:
         request.cookies = {'site-notification': 'deadbeef-1000-true-bad'}
         request.environ['beaker.session'].secure = False
 
-        assert_is(self.Provider().get_site_notification(), note)
+        assert self.Provider().get_site_notification() is note
         response.set_cookie.assert_called_once_with(
             'site-notification', 'deadbeef-1-False', max_age=dt.timedelta(days=365), secure=False)
 
@@ -455,21 +455,21 @@ class TestThemeProvider_notifications:
         projects = c.user.my_projects_by_role_name
 
         c.user.is_anonymous.return_value = True
-        assert_is(self.Provider().get_site_notification(), None)
+        assert self.Provider().get_site_notification() is None
 
         c.user.is_anonymous.return_value = False
         projects.return_value = []
-        assert_is(self.Provider().get_site_notification(), None)
+        assert self.Provider().get_site_notification() is None
 
         projects.return_value = [Mock()]
         projects.return_value[0].is_user_project = True
-        assert_is(self.Provider().get_site_notification(), None)
+        assert self.Provider().get_site_notification() is None
 
         projects.return_value[0].is_user_project = False
-        assert_is(self.Provider().get_site_notification(), note)
+        assert self.Provider().get_site_notification() is note
 
         projects.projects.return_value = [Mock(), Mock()]
-        assert_is(self.Provider().get_site_notification(), note)
+        assert self.Provider().get_site_notification() is note
 
     @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
@@ -482,7 +482,7 @@ class TestThemeProvider_notifications:
         note.page_tool_type = None
         note.impressions = 10
         SiteNotification.actives.return_value = [note]
-        assert_is(self.Provider().get_site_notification(), note)
+        assert self.Provider().get_site_notification() is note
 
     @patch('allura.lib.plugin.c', MagicMock())
     @patch('re.search')
@@ -498,10 +498,10 @@ class TestThemeProvider_notifications:
         SiteNotification.actives.return_value = [note]
 
         search.return_value = True
-        assert_is(self.Provider().get_site_notification(), note)
+        assert self.Provider().get_site_notification() is note
 
         search.return_value = None
-        assert_is(self.Provider().get_site_notification(), None)
+        assert self.Provider().get_site_notification() is None
 
     @patch('allura.lib.plugin.c')
     @patch('allura.model.notification.SiteNotification')
@@ -516,13 +516,13 @@ class TestThemeProvider_notifications:
         SiteNotification.actives.return_value = [note]
         c.app = Mock()
         c.app.config.tool_name.lower.return_value = 'test1'
-        assert_is(self.Provider().get_site_notification(), note)
+        assert self.Provider().get_site_notification() is note
 
         c.app.config.tool_name.lower.return_value = 'test2'
-        assert_is(self.Provider().get_site_notification(), None)
+        assert self.Provider().get_site_notification() is None
 
         c.app = None
-        assert_is(self.Provider().get_site_notification(), None)
+        assert self.Provider().get_site_notification() is None
 
     @patch('allura.lib.plugin.c')
     @patch('tg.request')
@@ -539,23 +539,23 @@ class TestThemeProvider_notifications:
 
         request.path_qs = 'ttt'
         c.app.config.tool_name.lower.return_value = 'test2'
-        assert_is(self.Provider().get_site_notification(), None)
+        assert self.Provider().get_site_notification() is None
 
         request.path_qs = 'test'
-        assert_is(self.Provider().get_site_notification(), None)
+        assert self.Provider().get_site_notification() is None
 
         request.path_qs = 'ttt'
         c.app.config.tool_name.lower.return_value = 'test1'
-        assert_is(self.Provider().get_site_notification(), None)
+        assert self.Provider().get_site_notification() is None
 
         request.path_qs = 'test'
-        assert_is(self.Provider().get_site_notification(), note)
+        assert self.Provider().get_site_notification() is note
 
         c.app = None
-        assert_is(self.Provider().get_site_notification(), None)
+        assert self.Provider().get_site_notification() is None
 
         request.path_qs = 'ttt'
-        assert_is(self.Provider().get_site_notification(), None)
+        assert self.Provider().get_site_notification() is None
 
     @patch('allura.model.notification.SiteNotification')
     def test_get__site_notification(self, SiteNotification):
@@ -598,8 +598,8 @@ class TestThemeProvider_notifications:
 
         assert isinstance(get_note, tuple)
         assert len(get_note) == 2
-        assert_equal(get_note[0], note2)
-        assert_equal(get_note[1], 'test2-1-False')
+        assert get_note[0] == note2
+        assert get_note[1] == 'test2-1-False'
 
         # and with a cookie set
         get_note = self.Provider()._get_site_notification(
@@ -608,8 +608,8 @@ class TestThemeProvider_notifications:
 
         assert isinstance(get_note, tuple)
         assert len(get_note) == 2
-        assert_equal(get_note[0], note3)
-        assert_equal(get_note[1], 'test2-3-True_test3-1-False')
+        assert get_note[0] == note3
+        assert get_note[1] == 'test2-3-True_test3-1-False'
 
     @patch('allura.model.notification.SiteNotification')
     def test_get_site_notifications_with_api_cookie(self, SiteNotification):
@@ -641,7 +641,7 @@ class TestLocalAuthenticationProvider:
         ep = self.provider._encode_password
         assert ep('test_pass') != ep('test_pass')
         assert ep('test_pass', '0000') == ep('test_pass', '0000')
-        assert_equal(ep('test_pass', '0000'), 'sha2560000j7pRjKKZ5L8G0jScZKja9ECmYF2zBV82Mi+E3wkop30=')
+        assert ep('test_pass', '0000') == 'sha2560000j7pRjKKZ5L8G0jScZKja9ECmYF2zBV82Mi+E3wkop30='
 
     def test_set_password_with_old_password(self):
         user = Mock()
@@ -651,7 +651,7 @@ class TestLocalAuthenticationProvider:
         assert_raises(
             exc.HTTPUnauthorized,
             self.provider.set_password, user, 'old', 'new')
-        assert_equal(self.provider._encode_password.call_count, 0)
+        assert self.provider._encode_password.call_count == 0
 
         self.provider.validate_password = lambda u, p: True
         self.provider.set_password(user, 'old', 'new')
@@ -663,7 +663,7 @@ class TestLocalAuthenticationProvider:
         user.__ming__ = Mock()
         user.last_password_updated = None
         self.provider.set_password(user, None, 'new')
-        assert_equal(user.last_password_updated, dt_mock.utcnow.return_value)
+        assert user.last_password_updated == dt_mock.utcnow.return_value
 
     def test_get_last_password_updated_not_set(self):
         user = Mock()
@@ -673,13 +673,13 @@ class TestLocalAuthenticationProvider:
         upd = self.provider.get_last_password_updated(user)
         gen_time = dt.datetime.utcfromtimestamp(
             calendar.timegm(user._id.generation_time.utctimetuple()))
-        assert_equal(upd, gen_time)
+        assert upd == gen_time
 
     def test_get_last_password_updated(self):
         user = Mock()
         user.last_password_updated = dt.datetime(2014, 6, 4, 13, 13, 13)
         upd = self.provider.get_last_password_updated(user)
-        assert_equal(upd, user.last_password_updated)
+        assert upd == user.last_password_updated
 
     def test_enable_user(self):
         user = Mock(disabled=True, __ming__=Mock(), is_anonymous=lambda: False, _id=ObjectId())
@@ -687,7 +687,7 @@ class TestLocalAuthenticationProvider:
         with audits('Account enabled', user=True, actor='test-admin'):
             self.provider.enable_user(user)
             ThreadLocalORMSession.flush_all()
-        assert_equal(user.disabled, False)
+        assert user.disabled == False
 
     def test_disable_user(self):
         user = Mock(disabled=False, __ming__=Mock(), is_anonymous=lambda: False, _id=ObjectId())
@@ -695,51 +695,51 @@ class TestLocalAuthenticationProvider:
         with audits('Account disabled', user=True, actor='test-admin'):
             self.provider.disable_user(user)
             ThreadLocalORMSession.flush_all()
-        assert_equal(user.disabled, True)
+        assert user.disabled == True
 
     def test_login_details_from_auditlog(self):
         user = M.User(username='asfdasdf')
 
-        assert_equal(self.provider.login_details_from_auditlog(M.AuditLog(message='')),
+        assert (self.provider.login_details_from_auditlog(M.AuditLog(message='')) ==
                      None)
 
         detail = self.provider.login_details_from_auditlog(M.AuditLog(message='IP Address: 1.2.3.4\nFoo', user=user))
-        assert_equal(detail.user_id, user._id)
-        assert_equal(detail.ip, '1.2.3.4')
-        assert_equal(detail.ua, None)
+        assert detail.user_id == user._id
+        assert detail.ip == '1.2.3.4'
+        assert detail.ua == None
 
         detail = self.provider.login_details_from_auditlog(M.AuditLog(message='Foo\nIP Address: 1.2.3.4\nFoo', user=user))
-        assert_equal(detail.ip, '1.2.3.4')
-        assert_equal(detail.ua, None)
+        assert detail.ip == '1.2.3.4'
+        assert detail.ua == None
 
-        assert_equal(self.provider.login_details_from_auditlog(M.AuditLog(
-                        message='blah blah IP Address: 1.2.3.4\nFoo', user=user)),
+        assert (self.provider.login_details_from_auditlog(M.AuditLog(
+                        message='blah blah IP Address: 1.2.3.4\nFoo', user=user)) ==
                      None)
 
         detail = self.provider.login_details_from_auditlog(M.AuditLog(
                         message='User-Agent: Mozilla/Firefox\nFoo', user=user))
-        assert_equal(detail.ip, None)
-        assert_equal(detail.ua, 'Mozilla/Firefox')
+        assert detail.ip == None
+        assert detail.ua == 'Mozilla/Firefox'
 
         detail = self.provider.login_details_from_auditlog(M.AuditLog(
                         message='IP Address: 1.2.3.4\nUser-Agent: Mozilla/Firefox\nFoo', user=user))
-        assert_equal(detail.ip, '1.2.3.4')
-        assert_equal(detail.ua, 'Mozilla/Firefox')
+        assert detail.ip == '1.2.3.4'
+        assert detail.ua == 'Mozilla/Firefox'
 
     def test_get_login_detail(self):
         user = M.User(username='foobarbaz')
         detail = self.provider.get_login_detail(Request.blank('/'), user)
-        assert_equal(detail.user_id, user._id)
-        assert_equal(detail.ip, None)
-        assert_equal(detail.ua, None)
+        assert detail.user_id == user._id
+        assert detail.ip == None
+        assert detail.ua == None
 
         detail = self.provider.get_login_detail(Request.blank('/',
                                                               headers={'User-Agent': 'mybrowser'},
                                                               environ={'REMOTE_ADDR': '3.3.3.3'}),
                                                 user)
-        assert_equal(detail.user_id, user._id)
-        assert_equal(detail.ip, '3.3.3.3')
-        assert_equal(detail.ua, 'mybrowser')
+        assert detail.user_id == user._id
+        assert detail.ip == '3.3.3.3'
+        assert detail.ua == 'mybrowser'
 
 
 class TestAuthenticationProvider:
@@ -752,21 +752,21 @@ class TestAuthenticationProvider:
         self.user = Mock()
 
     def test_is_password_expired_disabled(self):
-        assert_false(self.provider.is_password_expired(self.user))
+        assert not self.provider.is_password_expired(self.user)
 
     def test_is_password_expired_days(self):
         with h.push_config(tg.config, **{'auth.pwdexpire.days': '180'}):
-            assert_false(self.provider.is_password_expired(self.user))
+            assert not self.provider.is_password_expired(self.user)
         with h.push_config(tg.config, **{'auth.pwdexpire.days': '90'}):
-            assert_true(self.provider.is_password_expired(self.user))
+            assert self.provider.is_password_expired(self.user)
 
     def test_is_password_expired_before(self):
         before = dt.datetime.utcnow() - dt.timedelta(days=180)
         before = calendar.timegm(before.timetuple())
         with h.push_config(tg.config, **{'auth.pwdexpire.before': str(before)}):
-            assert_false(self.provider.is_password_expired(self.user))
+            assert not self.provider.is_password_expired(self.user)
 
         before = dt.datetime.utcnow() - dt.timedelta(days=1)
         before = calendar.timegm(before.timetuple())
         with h.push_config(tg.config, **{'auth.pwdexpire.before': str(before)}):
-            assert_true(self.provider.is_password_expired(self.user))
+            assert self.provider.is_password_expired(self.user)

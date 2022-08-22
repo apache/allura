@@ -36,10 +36,10 @@ class TestGitLikeTree:
         tree = M.GitLikeTree()
         tree.set_blob('/dir/dir2/file', 'file-oid')
 
-        assert_equal(tree.blobs, {})
-        assert_equal(tree.get_tree('dir').blobs, {})
-        assert_equal(tree.get_tree('dir').get_tree('dir2')
-                     .blobs, {'file': 'file-oid'})
+        assert tree.blobs == {}
+        assert tree.get_tree('dir').blobs == {}
+        assert (tree.get_tree('dir').get_tree('dir2')
+                     .blobs == {'file': 'file-oid'})
 
     def test_hex(self):
         tree = M.GitLikeTree()
@@ -47,24 +47,24 @@ class TestGitLikeTree:
         hex = tree.hex()
 
         # check the reprs. In case hex (below) fails, this'll be useful
-        assert_equal(repr(tree.get_tree('dir').get_tree('dir2')),
+        assert (repr(tree.get_tree('dir').get_tree('dir2')) ==
                      'b file-oid file')
-        assert_equal(repr(tree),
+        assert (repr(tree) ==
                      't 96af1772ecce1e6044e6925e595d9373ffcd2615 dir')
         # the hex() value shouldn't change, it's an important key
-        assert_equal(hex, '4abba29a43411b9b7cecc1a74f0b27920554350d')
+        assert hex == '4abba29a43411b9b7cecc1a74f0b27920554350d'
 
         # another one should be the same
         tree2 = M.GitLikeTree()
         tree2.set_blob('/dir/dir2/file', 'file-oid')
         hex2 = tree2.hex()
-        assert_equal(hex, hex2)
+        assert hex == hex2
 
     def test_hex_with_unicode(self):
         tree = M.GitLikeTree()
         tree.set_blob('/dir/f•º£', 'file-oid')
         # the hex() value shouldn't change, it's an important key
-        assert_equal(tree.hex(), '51ce65bead2f6452da61d4f6f2e42f8648bf9e4b')
+        assert tree.hex() == '51ce65bead2f6452da61d4f6f2e42f8648bf9e4b'
 
 
 class RepoImplTestBase:
@@ -104,28 +104,28 @@ class RepoTestBase(unittest.TestCase):
         c.app = mock.Mock(**{'config._id': 'deadbeef'})
         repo = M.repository.Repository(tool='git')
         cmd_cats = repo.clone_command_categories(anon=False)
-        assert_equal(cmd_cats, [
+        assert cmd_cats == [
             {'key': 'file', 'name': 'File', 'title': 'Filesystem'}
-        ])
+        ]
 
         cmd_cats = repo.clone_command_categories(anon=True)
-        assert_equal(cmd_cats, [
+        assert cmd_cats == [
             {'key': 'file', 'name': 'File', 'title': 'Filesystem'}
-        ])
+        ]
 
         repo = M.repository.Repository(tool='something-else')  # no "something-else" in config so will use defaults
         cmd_cats = repo.clone_command_categories(anon=False)
-        assert_equal(cmd_cats, [
+        assert cmd_cats == [
             {'key': 'rw', 'name': 'RW', 'title': 'Read/Write'},
             {'key': 'ro', 'name': 'RO', 'title': 'Read Only'},
             {'key': 'https', 'name': 'HTTPS', 'title': 'HTTPS'}
-        ])
+        ]
 
         cmd_cats = repo.clone_command_categories(anon=True)
-        assert_equal(cmd_cats, [
+        assert cmd_cats == [
             {'key': 'ro', 'name': 'RO', 'title': 'Read Only'},
             {'key': 'https_anon', 'name': 'HTTPS', 'title': 'HTTPS'}
-        ])
+        ]
 
 
 class TestLastCommit(unittest.TestCase):
@@ -365,13 +365,13 @@ class TestLastCommit(unittest.TestCase):
         commit2 = self._add_commit('Commit 2', ['file2'])
         commit2.changed_paths = []
         result = self.repo.last_commit_ids(commit2, ['file2'])
-        assert_equal(result, {'file2': commit2._id})
+        assert result == {'file2': commit2._id}
 
     def test_missing_add_record_first_commit(self):
         commit1 = self._add_commit('Commit 1', ['file1'])
         commit1.changed_paths = []
         result = self.repo.last_commit_ids(commit1, ['file1'])
-        assert_equal(result, {'file1': commit1._id})
+        assert result == {'file1': commit1._id}
 
     def test_timeout(self):
         commit1 = self._add_commit('Commit 1', ['file1'])
@@ -704,31 +704,31 @@ class TestMergeRequest:
 
     def test_can_merge_cache_key(self):
         key = self.mr.can_merge_cache_key()
-        assert_equal(key, '12345-09876')
+        assert key == '12345-09876'
 
     def test_get_can_merge_cache(self):
         key = self.mr.can_merge_cache_key()
-        assert_equal(self.mr.get_can_merge_cache(), None)
+        assert self.mr.get_can_merge_cache() == None
         self.mr.can_merge_cache[key] = True
-        assert_equal(self.mr.get_can_merge_cache(), True)
+        assert self.mr.get_can_merge_cache() == True
 
         self.mr.can_merge_cache_key = lambda: '123-123'
         self.mr.can_merge_cache['123-123'] = False
-        assert_equal(self.mr.get_can_merge_cache(), False)
+        assert self.mr.get_can_merge_cache() == False
 
     def test_set_can_merge_cache(self):
         key = self.mr.can_merge_cache_key()
-        assert_equal(self.mr.can_merge_cache, {})
+        assert self.mr.can_merge_cache == {}
         self.mr.set_can_merge_cache(True)
-        assert_equal(self.mr.can_merge_cache, {key: True})
+        assert self.mr.can_merge_cache == {key: True}
 
         self.mr.can_merge_cache_key = lambda: '123-123'
         self.mr.set_can_merge_cache(False)
-        assert_equal(self.mr.can_merge_cache, {key: True, '123-123': False})
+        assert self.mr.can_merge_cache == {key: True, '123-123': False}
 
     def test_can_merge_merged(self):
         self.mr.status = 'merged'
-        assert_equal(self.mr.can_merge(), True)
+        assert self.mr.can_merge() == True
 
     @mock.patch('allura.tasks.repo_tasks.can_merge', autospec=True)
     def test_can_merge_cached(self, can_merge_task):
@@ -738,23 +738,23 @@ class TestMergeRequest:
 
         self.mr.set_can_merge_cache(False)
         self.mr = self._reload_mr_from_db(self.mr)
-        assert_equal(self.mr.can_merge(), False)
+        assert self.mr.can_merge() == False
 
         self.mr.set_can_merge_cache(True)
         self.mr = self._reload_mr_from_db(self.mr)
-        assert_equal(self.mr.can_merge(), True)
-        assert_equal(can_merge_task.post.call_count, 0)
+        assert self.mr.can_merge() == True
+        assert can_merge_task.post.call_count == 0
 
     @mock.patch('allura.tasks.repo_tasks.can_merge', autospec=True)
     def test_can_merge_not_cached(self, can_merge_task):
-        assert_equal(self.mr.can_merge(), None)
+        assert self.mr.can_merge() == None
         can_merge_task.post.assert_called_once_with(self.mr._id)
 
     @mock.patch('allura.tasks.repo_tasks.can_merge', autospec=True)
     def test_can_merge_disabled(self, can_merge_task):
         self.mr.merge_allowed.return_value = False
-        assert_equal(self.mr.can_merge(), None)
-        assert_equal(can_merge_task.post.call_count, 0)
+        assert self.mr.can_merge() == None
+        assert can_merge_task.post.call_count == 0
 
     @mock.patch('allura.tasks.repo_tasks.merge', autospec=True)
     def test_merge(self, merge_task):
@@ -765,21 +765,21 @@ class TestMergeRequest:
         merge_task.reset_mock()
         self.mr.merge_task_status = lambda: 'ready'
         self.mr.merge()
-        assert_equal(merge_task.post.called, False)
+        assert merge_task.post.called == False
 
     def test_merge_task_status(self):
         from allura.tasks import repo_tasks
-        assert_equal(self.mr.merge_task_status(), None)
+        assert self.mr.merge_task_status() == None
         repo_tasks.merge.post(self.mr._id)
-        assert_equal(self.mr.merge_task_status(), 'ready')
+        assert self.mr.merge_task_status() == 'ready'
         M.MonQTask.run_ready()
-        assert_equal(self.mr.merge_task_status(), 'complete')
+        assert self.mr.merge_task_status() == 'complete'
 
     def test_can_merge_task_status(self):
         from allura.tasks import repo_tasks
-        assert_equal(self.mr.can_merge_task_status(), None)
+        assert self.mr.can_merge_task_status() == None
         repo_tasks.can_merge.post(self.mr._id)
-        assert_equal(self.mr.can_merge_task_status(), 'ready')
+        assert self.mr.can_merge_task_status() == 'ready'
         with mock.patch('allura.model.repository.MergeRequest.set_can_merge_cache'):
             M.MonQTask.run_ready()
-        assert_equal(self.mr.can_merge_task_status(), 'complete')
+        assert self.mr.can_merge_task_status() == 'complete'

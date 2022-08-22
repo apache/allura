@@ -51,7 +51,7 @@ class TestGravatar(TestController):
         email = 'Wolf@example.com'
         url = urlparse(gravatar.url(email=email, rating='x'))
         query = parse_qs(url.query)
-        assert_equal(query,
+        assert (query ==
                      {'rating': ['x']})
 
     @patch.dict(tg.config, {'default_avatar_image': 'https://example.com/img/icon.png'})
@@ -59,5 +59,5 @@ class TestGravatar(TestController):
         email = 'Wolf@example.com'
         url = urlparse(gravatar.url(email=email))
         query = parse_qs(url.query)
-        assert_equal(query,
+        assert (query ==
                      {'r': ['pg'], 'd': ['https://example.com/img/icon.png']})

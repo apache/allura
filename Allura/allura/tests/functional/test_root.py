@@ -55,15 +55,15 @@ class TestRootController(TestController):
 
     def test_index(self):
         response = self.app.get('/', extra_environ=dict(username='*anonymous'))
-        assert_equal(response.location, 'http://localhost/neighborhood')
+        assert response.location == 'http://localhost/neighborhood'
 
         response = self.app.get('/')
-        assert_equal(response.location, 'http://localhost/dashboard')
+        assert response.location == 'http://localhost/dashboard'
 
     def test_neighborhood(self):
         response = self.app.get('/neighborhood')
-        assert_equal(response.html.find('h2', {'class': 'dark title'}).contents[
-                     0].strip(), 'All Neighborhoods')
+        assert response.html.find('h2', {'class': 'dark title'}).contents[
+                     0].strip() == 'All Neighborhoods'
         nbhds = response.html.findAll('div', {'class': 'nbhd_name'})
         assert nbhds[0].find('a').get('href') == '/adobe/'
         cat_links = response.html.find('div', {'id': 'sidebar'}).findAll('li')
@@ -136,7 +136,7 @@ class TestRootController(TestController):
 
         response = self.app.get('/adobe/')
         projects = response.html.findAll('div', {'class': 'list card proj_icon'})
-        assert_equal(len(projects), 2)
+        assert len(projects) == 2
         cat_links = response.html.find('div', {'id': 'sidebar'}).findAll('ul')[1].findAll('li')
         assert len(cat_links) == 3, cat_links
         assert cat_links[0].find('a').get('href') == '/adobe/browse/clustering'
@@ -178,7 +178,7 @@ class TestRootController(TestController):
             callable_name.return_value = 'foo'
             self.app.get('/p/')
             arg = callable_name.call_args[0][0]
-            assert_equal(arg.__wrapped__,
+            assert (arg.__wrapped__ ==
                          NeighborhoodController.index.__wrapped__)
             set_transaction_name.assert_called_with('foo', priority=2)
 

@@ -36,12 +36,12 @@ class TestPersonalDashboard(TestController):
 
     def test_dashboard(self):
         r = self.app.get('/dashboard')
-        assert_equal('Test Admin / Dashboard', r.html.find('h1', 'project_title').text.strip())
+        assert 'Test Admin / Dashboard' == r.html.find('h1', 'project_title').text.strip()
         sections = {c for s in r.html.findAll(None, 'profile-section') for c in s['class']}
-        assert_in('tickets', sections)
-        assert_in('projects', sections)
-        assert_in('merge_requests', sections)
-        assert_in('activity', sections)
+        assert 'tickets' in sections
+        assert 'projects' in sections
+        assert 'merge_requests' in sections
+        assert 'activity' in sections
 
     def test_dashboard_sections(self):
         def ep(n):
@@ -55,17 +55,17 @@ class TestPersonalDashboard(TestController):
             with mock.patch.dict(tg.config, order):
                 iep.return_value = eps
                 sections = SectionsUtil.load_sections('personal_dashboard')
-                assert_equal(sections, [
+                assert sections == [
                     eps[1].load(),
                     eps[3].load(),
                     eps[2].load(),
-                    eps[0].load()])
+                    eps[0].load()]
                 r = self.app.get('/dashboard')
-                assert_in('Section a', r.text)
-                assert_in('Section b', r.text)
-                assert_in('Section c', r.text)
-                assert_in('Section d', r.text)
-                assert_not_in('Section f', r.text)
+                assert 'Section a' in r.text
+                assert 'Section b' in r.text
+                assert 'Section c' in r.text
+                assert 'Section d' in r.text
+                assert 'Section f' not in r.text
 
 
 class TestTicketsSection(TrackerTestController):
@@ -80,7 +80,7 @@ class TestTicketsSection(TrackerTestController):
     def test_tickets_section(self):
         response = self.app.get('/dashboard')
         ticket_rows = response.html.find('tbody')
-        assert_in('foo', str(ticket_rows))
+        assert 'foo' in str(ticket_rows)
 
 
 class TestMergeRequestsSection(TestController):
@@ -122,4 +122,4 @@ class TestMergeRequestsSection(TestController):
     def test_merge_requests_section(self):
         r = self.app.get('/dashboard')
         merge_req_rows = r.html.find('tbody')
-        assert_in('test request', str(merge_req_rows))
+        assert 'test request' in str(merge_req_rows)

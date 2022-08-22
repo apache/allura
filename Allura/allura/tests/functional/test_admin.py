@@ -108,7 +108,7 @@ class TestProjectAdmin(TestController):
         # check tool in the nav
         r = self.app.get('/p/test/test-tool/').follow()
         active_link = r.html.findAll('li', {'class': 'selected'})
-        assert_equals(len(active_link), 1)
+        assert len(active_link) == 1
         assert active_link[0].contents[1]['href'] == '/p/test/test-tool/'
         with audits('install tool test-tool2'):
             r = self.app.post('/admin/update_mounts', params={
@@ -160,11 +160,11 @@ class TestProjectAdmin(TestController):
             'task_name': 'allura.tasks.event_tasks.event',
             'args': 'project_menu_updated'
         }).all()
-        assert_equals(len(menu_updated_events), 7)
+        assert len(menu_updated_events) == 7
 
     def test_features(self):
         proj = M.Project.query.get(shortname='test')
-        assert_equals(proj.features, [])
+        assert proj.features == []
         with audits(r"change project features to \[{u}'One', {u}'Two'\]".format(u='')):
             resp = self.app.post('/admin/update', params={
                 'features-0.feature': 'One',
@@ -172,32 +172,32 @@ class TestProjectAdmin(TestController):
                 'features-2.feature': ' Two '})
             if resp.status_int == 200:
                 errors = resp.html.findAll('', attrs={'class': 'fielderror'})
-                assert_equals([], errors)
+                assert [] == errors
                 errors = resp.html.findAll('', attrs={'class': 'error'})
-                assert_equals([], errors)
+                assert [] == errors
                 raise AssertionError('Should be a 301 not 200 response')
 
         r = self.app.get('/admin/overview')
         features = r.html.find('div', {'id': 'features'})
         features = features.findAll('input', {'type': 'text'})
         # two features + extra empty input + stub hidden input for js
-        assert_equals(len(features), 2+1+1)
-        assert_equals(features[0]['value'], 'One')
-        assert_equals(features[1]['value'], 'Two')
+        assert len(features) == 2+1+1
+        assert features[0]['value'] == 'One'
+        assert features[1]['value'] == 'Two'
         proj = M.Project.query.get(shortname='test')
-        assert_equals(proj.features, ['One', 'Two'])
+        assert proj.features == ['One', 'Two']
 
     @td.with_wiki
     def test_block_user_empty_data(self):
         r = self.app.post('/admin/wiki/block_user',
                           params={'username': '', 'perm': '', 'reason': ''})
-        assert_equals(r.json, dict(error='Enter username'))
+        assert r.json == dict(error='Enter username')
 
     @td.with_wiki
     def test_unblock_user_empty_data(self):
         r = self.app.post('/admin/wiki/unblock_user',
                           params={'user_id': '', 'perm': ''})
-        assert_equals(r.json, dict(error='Select user to unblock'))
+        assert r.json == dict(error='Select user to unblock')
 
     @td.with_wiki
     def test_block_user(self):
@@ -207,13 +207,13 @@ class TestProjectAdmin(TestController):
         user = M.User.by_username('test-admin')
         r = self.app.post('/admin/wiki/block_user',
                           params={'username': 'test-admin', 'perm': 'read', 'reason': 'Comment'})
-        assert_equals(
-            r.json, dict(user_id=str(user._id), username='test-admin', reason='Comment'))
+        assert (
+            r.json == dict(user_id=str(user._id), username='test-admin', reason='Comment'))
         user = M.User.by_username('test-admin')
         admin_role = M.ProjectRole.by_user(user)
         app = M.Project.query.get(shortname='test').app_instance('wiki')
         ace = M.ACL.contains(M.ACE.deny(admin_role._id, 'read'), app.acl)
-        assert_equals(ace.reason, 'Comment')
+        assert ace.reason == 'Comment'
         r = self.app.get('/admin/wiki/permissions')
         assert '<input type="checkbox" name="user_id" value="%s">test-admin (Comment)' % user._id in r
 
@@ -231,7 +231,7 @@ class TestProjectAdmin(TestController):
         assert M.ACL.contains(ace, app.acl) is not None
         r = self.app.post('/admin/wiki/unblock_user',
                           params={'user_id': str(user._id), 'perm': 'read'})
-        assert_equals(r.json, dict(unblocked=[str(user._id)]))
+        assert r.json == dict(unblocked=[str(user._id)])
         assert M.ACL.contains(ace, app.acl) is None
         r = self.app.get('/admin/wiki/permissions')
         assert '<input type="checkbox" name="user_id"' not in r
@@ -287,7 +287,7 @@ class TestProjectAdmin(TestController):
         assert M.ACL.contains(M.ACE.deny(user_role._id, 'post'), app.acl)
         # ...and all old ACEs also
         for ace in old_acl:
-            assert_in(ace, app.acl)
+            assert ace in app.acl
 
     def test_tool_permissions(self):
         BUILTIN_APPS = ['activity', 'blog', 'discussion', 'git', 'link',
@@ -329,7 +329,7 @@ class TestProjectAdmin(TestController):
             c.project = M.Project.query.get(shortname='test')
             data = c.project.nav_data(admin_options=True)
             menu = [tool['text'] for tool in data['installable_tools']]
-            assert_in('Wiki', menu)
+            assert 'Wiki' in menu
 
             r = self.app.post('/p/test/admin/update_mounts/', params={
                 'new.install': 'install',
@@ -341,7 +341,7 @@ class TestProjectAdmin(TestController):
             c.project = M.Project.query.get(shortname='test')
             data = c.project.nav_data(admin_options=True)
             menu = [tool['text'] for tool in data['installable_tools']]
-            assert_not_in('Wiki', menu)
+            assert 'Wiki' not in menu
 
             r = self.app.post('/p/test/admin/update_mounts/', params={
                 'new.install': 'install',
@@ -355,17 +355,17 @@ class TestProjectAdmin(TestController):
 
     def test_install_tool_form(self):
         r = self.app.get('/admin/install_tool?tool_name=wiki')
-        assert_in('Installing Wiki', r)
+        assert 'Installing Wiki' in r
 
     def test_install_tool_form_options(self):
         opts = ['AllowEmailPosting']
         with mock.patch.object(ForgeWikiApp, 'config_on_install', new=opts):
             r = self.app.get('/admin/install_tool?tool_name=wiki')
-            assert_in('<input id="AllowEmailPosting" name="AllowEmailPosting"', r)
+            assert '<input id="AllowEmailPosting" name="AllowEmailPosting"' in r
 
     def test_install_tool_form_subproject(self):
         r = self.app.get('/admin/install_tool?tool_name=subproject')
-        assert_in('Installing Sub Project', r)
+        assert 'Installing Sub Project' in r
 
     def test_project_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'
@@ -446,12 +446,12 @@ class TestProjectAdmin(TestController):
                                       neighborhood_id=p_nbhd._id)
         # first uploaded is first by default
         screenshots = project.get_screenshots()
-        assert_equals(screenshots[0].filename, 'admin_24.png')
+        assert screenshots[0].filename == 'admin_24.png'
         # reverse order
         params = {str(ss._id): str(len(screenshots) - 1 - i)
                       for i, ss in enumerate(screenshots)}
         self.app.post('/admin/sort_screenshots', params)
-        assert_equals(project.get_screenshots()[0].filename, 'admin_32.png')
+        assert project.get_screenshots()[0].filename == 'admin_32.png'
 
     def test_project_delete_undelete(self):
         # create a subproject
@@ -580,7 +580,7 @@ class TestProjectAdmin(TestController):
             r = form.submit()
         r = r.follow()
         p = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
-        assert_equals(p.labels, ['asdf'])
+        assert p.labels == ['asdf']
         assert form['labels'].value == 'asdf'
 
     @td.with_wiki
@@ -605,7 +605,7 @@ class TestProjectAdmin(TestController):
 
     def test_project_permissions(self):
         r = self.app.get('/admin/permissions/', status=302)
-        assert_in('/admin/groups', r.location)
+        assert '/admin/groups' in r.location
 
     def test_subproject_permissions(self):
         with audits('create subproject test-subproject'):
@@ -946,7 +946,7 @@ class TestProjectAdmin(TestController):
             foo_page = main_page.click(description='Foo Settings')
             url = foo_page.request.path
             assert url.endswith('/admin/ext/foo'), url
-            assert_equals('here the foo settings go', foo_page.text)
+            assert 'here the foo settings go' == foo_page.text
 
     def test_nbhd_invitations(self):
         r = self.app.get('/admin/invitations')
@@ -969,19 +969,19 @@ class TestExport(TestController):
         exportable_tools = AdminApp.exportable_tools_for(project)
         exportable_mount_points = [
             t.options.mount_point for t in exportable_tools]
-        assert_equals(exportable_mount_points, ['admin', 'wiki', 'wiki2'])
+        assert exportable_mount_points == ['admin', 'wiki', 'wiki2']
 
     def test_access(self):
         r = self.app.get('/admin/export',
                          extra_environ={'username': '*anonymous'}).follow()
-        assert_equals(r.request.url,
+        assert (r.request.url ==
                       'http://localhost/auth/?return_to=%2Fadmin%2Fexport')
         self.app.get('/admin/export',
                      extra_environ={'username': 'test-user'},
                      status=403)
         r = self.app.post('/admin/export',
                           extra_environ={'username': '*anonymous'}).follow()
-        assert_equals(r.request.url, 'http://localhost/auth/')
+        assert r.request.url == 'http://localhost/auth/'
         self.app.post('/admin/export',
                       extra_environ={'username': 'test-user'},
                       status=403)
@@ -989,22 +989,22 @@ class TestExport(TestController):
     def test_ini_option(self):
         tg.config['bulk_export_enabled'] = 'false'
         r = self.app.get('/admin/')
-        assert_not_in('Export', r)
+        assert 'Export' not in r
         r = self.app.get('/admin/export', status=404)
         tg.config['bulk_export_enabled'] = 'true'
         r = self.app.get('/admin/')
-        assert_in('Export', r)
+        assert 'Export' in r
 
     @mock.patch('allura.model.session.project_doc_session')
     def test_export_page_contains_exportable_tools(self, session):
         session.return_value = {'result': [{"total_size": 10000}]}
 
         r = self.app.get('/admin/export')
-        assert_in('Wiki</label> <a href="/p/test/wiki/">/p/test/wiki/</a>', r)
-        assert_in(
-            'Wiki2</label> <a href="/p/test/wiki2/">/p/test/wiki2/</a>', r)
-        assert_not_in(
-            'Search</label> <a href="/p/test/search/">/p/test/search/</a>', r)
+        assert 'Wiki</label> <a href="/p/test/wiki/">/p/test/wiki/</a>' in r
+        assert (
+            'Wiki2</label> <a href="/p/test/wiki2/">/p/test/wiki2/</a>' in r)
+        assert (
+            'Search</label> <a href="/p/test/search/">/p/test/search/</a>' not in r)
 
     def test_export_page_contains_hidden_tools(self):
         with mock.patch('allura.ext.search.search_main.SearchApp.exportable'):
@@ -1012,22 +1012,22 @@ class TestExport(TestController):
             exportable_tools = AdminApp.exportable_tools_for(project)
             exportable_mount_points = [
                 t.options.mount_point for t in exportable_tools]
-            assert_equals(exportable_mount_points,
+            assert (exportable_mount_points ==
                           ['admin', 'search', 'wiki', 'wiki2'])
 
     def test_tools_not_selected(self):
         r = self.app.post('/admin/export')
-        assert_in('error', self.webflash(r))
+        assert 'error' in self.webflash(r)
 
     def test_bad_tool(self):
         r = self.app.post('/admin/export', {'tools': 'search'})
-        assert_in('error', self.webflash(r))
+        assert 'error' in self.webflash(r)
 
     @mock.patch('allura.ext.admin.admin_main.export_tasks')
     @mock.patch.dict(tg.config, {'bulk_export_filename': '{project}.zip'})
     def test_selected_one_tool(self, export_tasks):
         r = self.app.post('/admin/export', {'tools': 'wiki'})
-        assert_in('ok', self.webflash(r))
+        assert 'ok' in self.webflash(r)
         export_tasks.bulk_export.post.assert_called_once_with(
             ['wiki'], 'test.zip', send_email=True, with_attachments=False)
 
@@ -1035,7 +1035,7 @@ class TestExport(TestController):
     @mock.patch.dict(tg.config, {'bulk_export_filename': '{project}.zip'})
     def test_selected_multiple_tools(self, export_tasks):
         r = self.app.post('/admin/export', {'tools': ['wiki', 'wiki2']})
-        assert_in('ok', self.webflash(r))
+        assert 'ok' in self.webflash(r)
         export_tasks.bulk_export.post.assert_called_once_with(
             ['wiki', 'wiki2'], 'test.zip', send_email=True, with_attachments=False)
 
@@ -1045,12 +1045,12 @@ class TestExport(TestController):
         session.return_value = {'result': [{"total_size": 10000}]}
         export_tasks.bulk_export.post(['wiki'])
         r = self.app.get('/admin/export')
-        assert_in('<h2>Busy</h2>', r.text)
+        assert '<h2>Busy</h2>' in r.text
 
     @td.with_user_project('test-user')
     def test_bulk_export_path_for_user_project(self):
         project = M.Project.query.get(shortname='u/test-user')
-        assert_equals(project.bulk_export_path(tg.config['bulk_export_path']),
+        assert (project.bulk_export_path(tg.config['bulk_export_path']) ==
                       '/tmp/bulk_export/u/test-user')
 
     @td.with_user_project('test-user')
@@ -1068,15 +1068,15 @@ class TestExport(TestController):
 
     def test_bulk_export_path_for_nbhd(self):
         project = M.Project.query.get(name='Home Project for Projects')
-        assert_equals(project.bulk_export_path(tg.config['bulk_export_path']), '/tmp/bulk_export/p/p')
+        assert project.bulk_export_path(tg.config['bulk_export_path']) == '/tmp/bulk_export/p/p'
 
     @mock.patch('allura.model.session.project_doc_session')
     def test_export_page_contains_check_all_checkbox(self, session):
         session.return_value = {'result': [{"total_size": 10000}]}
 
         r = self.app.get('/admin/export')
-        assert_in('<input type="checkbox" id="check-all">', r)
-        assert_in('Check All</label>', r)
+        assert '<input type="checkbox" id="check-all">' in r
+        assert 'Check All</label>' in r
 
 
 class TestRestExport(TestRestApiBase):
@@ -1085,11 +1085,11 @@ class TestRestExport(TestRestApiBase):
     def test_export_status(self, MonQTask):
         MonQTask.query.get.return_value = None
         r = self.api_get('/rest/p/test/admin/export_status')
-        assert_equals(r.json, {'status': 'ready'})
+        assert r.json == {'status': 'ready'}
 
         MonQTask.query.get.return_value = 'something'
         r = self.api_get('/rest/p/test/admin/export_status')
-        assert_equals(r.json, {'status': 'busy'})
+        assert r.json == {'status': 'busy'}
 
     @mock.patch('allura.model.project.MonQTask')
     @mock.patch('allura.ext.admin.admin_main.AdminApp.exportable_tools_for')
@@ -1099,7 +1099,7 @@ class TestRestExport(TestRestApiBase):
         exportable_tools.return_value = []
         self.api_post('/rest/p/test/admin/export',
                       tools='tickets, discussion', status=400)
-        assert_equals(bulk_export.post.call_count, 0)
+        assert bulk_export.post.call_count == 0
 
     @mock.patch('allura.model.project.MonQTask')
     @mock.patch('allura.ext.admin.admin_main.AdminApp.exportable_tools_for')
@@ -1111,7 +1111,7 @@ class TestRestExport(TestRestApiBase):
             mock.Mock(options=mock.Mock(mount_point='discussion')),
         ]
         self.api_post('/rest/p/test/admin/export', status=400)
-        assert_equals(bulk_export.post.call_count, 0)
+        assert bulk_export.post.call_count == 0
 
     @mock.patch('allura.model.project.MonQTask')
     @mock.patch('allura.ext.admin.admin_main.AdminApp.exportable_tools_for')
@@ -1124,7 +1124,7 @@ class TestRestExport(TestRestApiBase):
         ]
         self.api_post('/rest/p/test/admin/export',
                       tools='tickets, discussion', status=503)
-        assert_equals(bulk_export.post.call_count, 0)
+        assert bulk_export.post.call_count == 0
 
     @mock.patch('allura.model.project.MonQTask')
     @mock.patch('allura.ext.admin.admin_main.AdminApp.exportable_tools_for')
@@ -1138,10 +1138,10 @@ class TestRestExport(TestRestApiBase):
         ]
         r = self.api_post('/rest/p/test/admin/export',
                           tools='tickets, discussion', status=200)
-        assert_equals(r.json, {
+        assert r.json == {
             'filename': 'test.zip',
             'status': 'in progress',
-        })
+        }
         bulk_export.post.assert_called_once_with(
             ['tickets', 'discussion'], 'test.zip', send_email=False, with_attachments=False)
 
@@ -1157,8 +1157,8 @@ class TestRestInstallTool(TestRestApiBase):
             'tool': 'tickets'
         }
         r = self.api_post('/rest/p/test/admin/install_tool/', **data)
-        assert_equals(r.json['success'], False)
-        assert_equals(r.json['info'], 'All arguments required.')
+        assert r.json['success'] == False
+        assert r.json['info'] == 'All arguments required.'
 
     def test_invalid_tool(self):
         r = self.api_get('/rest/p/test/')
@@ -1171,8 +1171,8 @@ class TestRestInstallTool(TestRestApiBase):
             'mount_label': 'tickets_label1'
         }
         r = self.api_post('/rest/p/test/admin/install_tool/', **data)
-        assert_equals(r.json['success'], False)
-        assert_equals(r.json['info'],
+        assert r.json['success'] == False
+        assert (r.json['info'] ==
                       'Incorrect tool name, or limit is reached.')
 
     def test_bad_mount(self):
@@ -1186,8 +1186,8 @@ class TestRestInstallTool(TestRestApiBase):
             'mount_label': 'tickets_label1'
         }
         r = self.api_post('/rest/p/test/admin/install_tool/', **data)
-        assert_equals(r.json['success'], False)
-        assert_equals(r.json['info'],
+        assert r.json['success'] == False
+        assert (r.json['info'] ==
                       'Mount point "tickets_mount1" is invalid')
 
     def test_install_tool_ok(self):
@@ -1201,17 +1201,17 @@ class TestRestInstallTool(TestRestApiBase):
             'mount_label': 'tickets_label1'
         }
         r = self.api_post('/rest/p/test/admin/install_tool/', **data)
-        assert_equals(r.json['success'], True)
-        assert_equals(r.json['info'],
+        assert r.json['success'] == True
+        assert (r.json['info'] ==
                       'Tool %s with mount_point %s and mount_label %s was created.'
                       % ('tickets', 'ticketsmount1', 'tickets_label1'))
 
         project = M.Project.query.get(shortname='test')
-        assert_equals(project.ordered_mounts()
-                      [-1]['ac'].options.mount_point, 'ticketsmount1')
+        assert (project.ordered_mounts()
+                      [-1]['ac'].options.mount_point == 'ticketsmount1')
         audit_log = M.AuditLog.query.find(
             {'project_id': project._id}).sort('_id', -1).first()
-        assert_equals(audit_log.message, 'install tool ticketsmount1')
+        assert audit_log.message == 'install tool ticketsmount1'
 
     def test_tool_exists(self):
         with mock.patch.object(ForgeWikiApp, 'max_instances') as mi:
@@ -1229,8 +1229,8 @@ class TestRestInstallTool(TestRestApiBase):
             with h.push_config(c, user=M.User.query.get()):
                 project.install_app('wiki', mount_point=data['mount_point'])
             r = self.api_post('/rest/p/test/admin/install_tool/', **data)
-            assert_equals(r.json['success'], False)
-            assert_equals(r.json['info'], 'Mount point already exists.')
+            assert r.json['success'] == False
+            assert r.json['info'] == 'Mount point already exists.'
 
     def test_tool_installation_limit(self):
         with mock.patch.object(ForgeWikiApp, 'max_instances') as mi:
@@ -1245,13 +1245,13 @@ class TestRestInstallTool(TestRestApiBase):
                 'mount_label': 'wiki_label'
             }
             r = self.api_post('/rest/p/test/admin/install_tool/', **data)
-            assert_equals(r.json['success'], True)
+            assert r.json['success'] == True
 
             data['mount_point'] = 'wikimount1'
             data['mount_label'] = 'wiki_label1'
             r = self.api_post('/rest/p/test/admin/install_tool/', **data)
-            assert_equals(r.json['success'], False)
-            assert_equals(r.json['info'],
+            assert r.json['success'] == False
+            assert (r.json['info'] ==
                           'Incorrect tool name, or limit is reached.')
 
     def test_unauthorized(self):
@@ -1268,7 +1268,7 @@ class TestRestInstallTool(TestRestApiBase):
                           extra_environ={'username': '*anonymous'},
                           status=401,
                           params=data)
-        assert_equals(r.status, '401 Unauthorized')
+        assert r.status == '401 Unauthorized'
 
     def test_order(self):
         def get_labels():
@@ -1280,7 +1280,7 @@ class TestRestInstallTool(TestRestApiBase):
                 elif 'sub' in mount:
                     labels.append(mount['sub'].name)
             return labels
-        assert_equals(get_labels(),
+        assert (get_labels() ==
                       ['Admin', 'Search', 'Activity', 'A Subproject'])
 
         data = [
@@ -1310,39 +1310,39 @@ class TestRestInstallTool(TestRestApiBase):
         ]
         for datum in data:
             r = self.api_post('/rest/p/test/admin/install_tool/', **datum)
-            assert_equals(r.json['success'], True)
-            assert_equals(r.json['info'],
+            assert r.json['success'] == True
+            assert (r.json['info'] ==
                           'Tool %s with mount_point %s and mount_label %s was created.'
                           % (datum['tool'], datum['mount_point'], datum['mount_label']))
 
-        assert_equals(
-            get_labels(), ['t1', 'Admin', 'Search', 'Activity', 'A Subproject', 'ta', 'tb', 'tc'])
+        assert (
+            get_labels() == ['t1', 'Admin', 'Search', 'Activity', 'A Subproject', 'ta', 'tb', 'tc'])
 
 
 class TestRestAdminOptions(TestRestApiBase):
     def test_no_mount_point(self):
         r = self.api_get('/rest/p/test/admin/admin_options/', status=400)
-        assert_in('Must provide a mount point', r.text)
+        assert 'Must provide a mount point' in r.text
 
     def test_invalid_mount_point(self):
         r = self.api_get('/rest/p/test/admin/admin_options/?mount_point=asdf', status=400)
-        assert_in('The mount point you provided was invalid', r.text)
+        assert 'The mount point you provided was invalid' in r.text
 
     @td.with_tool('test', 'Git', 'git')
     def test_valid_mount_point(self):
         r = self.api_get('/rest/p/test/admin/admin_options/?mount_point=git', status=200)
-        assert_is_not_none(r.json['options'])
+        assert r.json['options'] is not None
 
 
 class TestRestMountOrder(TestRestApiBase):
     def test_no_kw(self):
         r = self.api_post('/rest/p/test/admin/mount_order/', status=400)
-        assert_in('Expected kw params in the form of "ordinal: mount_point"', r.text)
+        assert 'Expected kw params in the form of "ordinal: mount_point"' in r.text
 
     def test_invalid_kw(self):
         data = {'1': 'git', 'two': 'admin'}
         r = self.api_post('/rest/p/test/admin/mount_order/', status=400, **data)
-        assert_in('Invalid kw: expected "ordinal: mount_point"', r.text)
+        assert 'Invalid kw: expected "ordinal: mount_point"' in r.text
 
     @td.with_wiki
     def test_reorder(self):
@@ -1368,19 +1368,19 @@ class TestRestMountOrder(TestRestApiBase):
 
         # Set initial order to d1
         r = self.api_post('/rest/p/test/admin/mount_order/', **d1)
-        assert_equals(r.json['status'], 'ok')
+        assert r.json['status'] == 'ok'
 
         # Get index of sub1
         a = self.api_get('/p/test/_nav.json').json['menu'].index(tool)
 
         # Set order to d2
         r = self.api_post('/rest/p/test/admin/mount_order/', **d2)
-        assert_equals(r.json['status'], 'ok')
+        assert r.json['status'] == 'ok'
 
         # Get index of sub1 after reordering
         b = self.api_get('/p/test/_nav.json').json['menu'].index(tool)
 
-        assert_greater(b, a)
+        assert b > a
 
 
 class TestRestToolGrouping(TestRestApiBase):
@@ -1388,7 +1388,7 @@ class TestRestToolGrouping(TestRestApiBase):
         for invalid_value in ('100', 'asdf'):
             r = self.api_post('/rest/p/test/admin/configure_tool_grouping/', grouping_threshold=invalid_value,
                               status=400)
-            assert_in('Invalid threshold. Expected a value between 1 and 10', r.text)
+            assert 'Invalid threshold. Expected a value between 1 and 10' in r.text
 
     @td.with_wiki
     @td.with_tool('test', 'Wiki', 'wiki2')
@@ -1399,17 +1399,17 @@ class TestRestToolGrouping(TestRestApiBase):
 
         # The 'wiki' mount_point should not exist at the top level
         result1 = self.app.get('/p/test/_nav.json')
-        assert_not_in('wiki', [tool['mount_point'] for tool in result1.json['menu']])
+        assert 'wiki' not in [tool['mount_point'] for tool in result1.json['menu']]
 
         # Set threshold to 3
         r = self.api_post('/rest/p/test/admin/configure_tool_grouping/', grouping_threshold='3', status=200)
 
         # The wiki mount_point should now be at the top level of the menu
         result2 = self.app.get('/p/test/_nav.json')
-        assert_in('wiki', [tool['mount_point'] for tool in result2.json['menu']])
+        assert 'wiki' in [tool['mount_point'] for tool in result2.json['menu']]
 
 
 class TestInstallableTools(TestRestApiBase):
     def test_installable_tools_response(self):
         r = self.api_get('/rest/p/test/admin/installable_tools', status=200)
-        assert_in('External Link', [tool['tool_label'] for tool in r.json['tools']])
+        assert 'External Link' in [tool['tool_label'] for tool in r.json['tools']]

@@ -77,42 +77,42 @@ def test_email_address_lookup_helpers():
     addr = M.EmailAddress.create('TEST@DOMAIN.NET')
     nobody = M.EmailAddress.create('nobody@example.com')
     ThreadLocalORMSession.flush_all()
-    assert_equal(addr.email, 'TEST@domain.net')
+    assert addr.email == 'TEST@domain.net'
 
-    assert_equal(M.EmailAddress.get(email='TEST@DOMAIN.NET'), addr)
-    assert_equal(M.EmailAddress.get(email='TEST@domain.net'), addr)
-    assert_equal(M.EmailAddress.get(email='test@domain.net'), None)
-    assert_equal(M.EmailAddress.get(email=None), None)
-    assert_equal(M.EmailAddress.get(email='nobody@example.com'), nobody)
+    assert M.EmailAddress.get(email='TEST@DOMAIN.NET') == addr
+    assert M.EmailAddress.get(email='TEST@domain.net') == addr
+    assert M.EmailAddress.get(email='test@domain.net') == None
+    assert M.EmailAddress.get(email=None) == None
+    assert M.EmailAddress.get(email='nobody@example.com') == nobody
     # invalid email returns None, but not nobody@example.com as before
-    assert_equal(M.EmailAddress.get(email='invalid'), None)
+    assert M.EmailAddress.get(email='invalid') == None
 
-    assert_equal(M.EmailAddress.find(dict(email='TEST@DOMAIN.NET')).all(), [addr])
-    assert_equal(M.EmailAddress.find(dict(email='TEST@domain.net')).all(), [addr])
-    assert_equal(M.EmailAddress.find(dict(email='test@domain.net')).all(), [])
-    assert_equal(M.EmailAddress.find(dict(email=None)).all(), [])
-    assert_equal(M.EmailAddress.find(dict(email='nobody@example.com')).all(), [nobody])
+    assert M.EmailAddress.find(dict(email='TEST@DOMAIN.NET')).all() == [addr]
+    assert M.EmailAddress.find(dict(email='TEST@domain.net')).all() == [addr]
+    assert M.EmailAddress.find(dict(email='test@domain.net')).all() == []
+    assert M.EmailAddress.find(dict(email=None)).all() == []
+    assert M.EmailAddress.find(dict(email='nobody@example.com')).all() == [nobody]
     # invalid email returns empty query, but not nobody@example.com as before
-    assert_equal(M.EmailAddress.find(dict(email='invalid')).all(), [])
+    assert M.EmailAddress.find(dict(email='invalid')).all() == []
 
 
 @with_setup(setUp)
 def test_email_address_canonical():
-    assert_equal(M.EmailAddress.canonical('nobody@EXAMPLE.COM'),
+    assert (M.EmailAddress.canonical('nobody@EXAMPLE.COM') ==
                  'nobody@example.com')
-    assert_equal(M.EmailAddress.canonical('nobody@example.com'),
+    assert (M.EmailAddress.canonical('nobody@example.com') ==
                  'nobody@example.com')
-    assert_equal(M.EmailAddress.canonical('I Am Nobody <nobody@example.com>'),
+    assert (M.EmailAddress.canonical('I Am Nobody <nobody@example.com>') ==
                  'nobody@example.com')
-    assert_equal(M.EmailAddress.canonical('  nobody@example.com\t'),
+    assert (M.EmailAddress.canonical('  nobody@example.com\t') ==
                  'nobody@example.com')
-    assert_equal(M.EmailAddress.canonical('I Am@Nobody <nobody@example.com> '),
+    assert (M.EmailAddress.canonical('I Am@Nobody <nobody@example.com> ') ==
                  'nobody@example.com')
-    assert_equal(M.EmailAddress.canonical(' No@body <no@body@example.com> '),
+    assert (M.EmailAddress.canonical(' No@body <no@body@example.com> ') ==
                  'no@body@example.com')
-    assert_equal(M.EmailAddress.canonical('no@body@example.com'),
+    assert (M.EmailAddress.canonical('no@body@example.com') ==
                  'no@body@example.com')
-    assert_equal(M.EmailAddress.canonical('invalid'), None)
+    assert M.EmailAddress.canonical('invalid') == None
 
 @with_setup(setUp)
 def test_email_address_send_verification_link():
@@ -124,7 +124,7 @@ def test_email_address_send_verification_link():
     with patch('allura.tasks.mail_tasks.smtp_client._client') as _client:
         M.MonQTask.run_ready()
     return_path, rcpts, body = _client.sendmail.call_args[0]
-    assert_equal(rcpts, ['test_admin@domain.net'])
+    assert rcpts == ['test_admin@domain.net']
 
 
 @with_setup(setUp)
@@ -132,19 +132,19 @@ def test_email_address_send_verification_link():
 def test_user():
     assert c.user.url() .endswith('/u/test-admin/')
     assert c.user.script_name .endswith('/u/test-admin/')
-    assert_equal({p.shortname for p in c.user.my_projects()},
+    assert ({p.shortname for p in c.user.my_projects()} ==
                  {'test', 'test2', 'u/test-admin', 'adobe-1', '--init--'})
     # delete one of the projects and make sure it won't appear in my_projects()
     p = M.Project.query.get(shortname='test2')
     p.deleted = True
     ThreadLocalORMSession.flush_all()
-    assert_equal({p.shortname for p in c.user.my_projects()},
+    assert ({p.shortname for p in c.user.my_projects()} ==
                  {'test', 'u/test-admin', 'adobe-1', '--init--'})
     u = M.User.register(dict(
         username='nosetest-user'))
     ThreadLocalORMSession.flush_all()
     assert u.reg_date
-    assert_equal(u.private_project().shortname, 'u/nosetest-user')
+    assert u.private_project().shortname == 'u/nosetest-user'
     roles = g.credentials.user_roles(
         u._id, project_id=u.private_project().root_project._id)
     assert len(roles) == 3, roles
@@ -208,40 +208,40 @@ def test_user_by_email_address(log):
     # both users are disabled
     u1.disabled, u2.disabled = True, True
     ThreadLocalORMSession.flush_all()
-    assert_equal(M.User.by_email_address('abc123@abc.me'), None)
-    assert_equal(log.warn.call_count, 0)
+    assert M.User.by_email_address('abc123@abc.me') == None
+    assert log.warn.call_count == 0
 
     # only u2 is active
     u1.disabled, u2.disabled = True, False
     ThreadLocalORMSession.flush_all()
-    assert_equal(M.User.by_email_address('abc123@abc.me'), u2)
-    assert_equal(log.warn.call_count, 0)
+    assert M.User.by_email_address('abc123@abc.me') == u2
+    assert log.warn.call_count == 0
 
     # both are active
     u1.disabled, u2.disabled = False, False
     ThreadLocalORMSession.flush_all()
-    assert_in(M.User.by_email_address('abc123@abc.me'), [u1, u2])
-    assert_equal(log.warn.call_count, 1)
+    assert M.User.by_email_address('abc123@abc.me') in [u1, u2]
+    assert log.warn.call_count == 1
 
     # invalid email returns None, but not user which claimed
     # nobody@example.com as before
     nobody = M.EmailAddress(email='nobody@example.com', confirmed=True,
                             claimed_by_user_id=u1._id)
     ThreadLocalORMSession.flush_all()
-    assert_equal(M.User.by_email_address('nobody@example.com'), u1)
-    assert_equal(M.User.by_email_address('invalid'), None)
+    assert M.User.by_email_address('nobody@example.com') == u1
+    assert M.User.by_email_address('invalid') == None
 
 
 def test_user_equality():
-    assert_equal(M.User.by_username('test-user'), M.User.by_username('test-user'))
-    assert_equal(M.User.anonymous(), M.User.anonymous())
-    assert_equal(M.User.by_username('*anonymous'), M.User.anonymous())
+    assert M.User.by_username('test-user') == M.User.by_username('test-user')
+    assert M.User.anonymous() == M.User.anonymous()
+    assert M.User.by_username('*anonymous') == M.User.anonymous()
 
-    assert_not_equal(M.User.by_username('test-user'), M.User.by_username('test-admin'))
-    assert_not_equal(M.User.by_username('test-user'), M.User.anonymous())
-    assert_not_equal(M.User.anonymous(), None)
-    assert_not_equal(M.User.anonymous(), 12345)
-    assert_not_equal(M.User.anonymous(), M.User())
+    assert M.User.by_username('test-user') != M.User.by_username('test-admin')
+    assert M.User.by_username('test-user') != M.User.anonymous()
+    assert M.User.anonymous() != None
+    assert M.User.anonymous() != 12345
+    assert M.User.anonymous() != M.User()
 
 
 def test_user_hash():
@@ -300,9 +300,9 @@ def test_email_address_claimed_by_user():
 @with_setup(setUp)
 @td.with_user_project('test-admin')
 def test_user_projects_by_role():
-    assert_equal({p.shortname for p in c.user.my_projects()},
+    assert ({p.shortname for p in c.user.my_projects()} ==
                  {'test', 'test2', 'u/test-admin', 'adobe-1', '--init--'})
-    assert_equal({p.shortname for p in c.user.my_projects_by_role_name('Admin')},
+    assert ({p.shortname for p in c.user.my_projects_by_role_name('Admin')} ==
                  {'test', 'test2', 'u/test-admin', 'adobe-1', '--init--'})
     # Remove admin access from c.user to test2 project
     project = M.Project.query.get(shortname='test2')
@@ -313,9 +313,9 @@ def test_user_projects_by_role():
     user_role.roles.append(developer_role._id)
     ThreadLocalORMSession.flush_all()
     g.credentials.clear()
-    assert_equal({p.shortname for p in c.user.my_projects()},
+    assert ({p.shortname for p in c.user.my_projects()} ==
                  {'test', 'test2', 'u/test-admin', 'adobe-1', '--init--'})
-    assert_equal({p.shortname for p in c.user.my_projects_by_role_name('Admin')},
+    assert ({p.shortname for p in c.user.my_projects_by_role_name('Admin')} ==
                  {'test', 'u/test-admin', 'adobe-1', '--init--'})
 
 
@@ -333,8 +333,8 @@ def test_user_projects_unnamed():
         project_id=sub1._id)
     ThreadLocalORMSession.flush_all()
     project_names = [p.shortname for p in c.user.my_projects()]
-    assert_not_in('test/sub1', project_names)
-    assert_in('test', project_names)
+    assert 'test/sub1' not in project_names
+    assert 'test' in project_names
 
 
 @patch.object(g, 'user_message_max_messages', 3)
@@ -345,7 +345,7 @@ def test_check_sent_user_message_times():
     time3 = datetime.utcnow() - timedelta(minutes=70)
     user1.sent_user_message_times = [time1, time2, time3]
     assert user1.can_send_user_message()
-    assert_equal(len(user1.sent_user_message_times), 2)
+    assert len(user1.sent_user_message_times) == 2
     user1.sent_user_message_times.append(
         datetime.utcnow() - timedelta(minutes=15))
     assert not user1.can_send_user_message()
@@ -358,40 +358,40 @@ def test_user_track_active():
     setup_functional_test()
     c.user = M.User.by_username('test-admin')
 
-    assert_equal(c.user.last_access['session_date'], None)
-    assert_equal(c.user.last_access['session_ip'], None)
-    assert_equal(c.user.last_access['session_ua'], None)
+    assert c.user.last_access['session_date'] == None
+    assert c.user.last_access['session_ip'] == None
+    assert c.user.last_access['session_ua'] == None
 
     req = Mock(headers={'User-Agent': 'browser'}, remote_addr='addr')
     c.user.track_active(req)
     c.user = M.User.by_username(c.user.username)
-    assert_not_equal(c.user.last_access['session_date'], None)
-    assert_equal(c.user.last_access['session_ip'], 'addr')
-    assert_equal(c.user.last_access['session_ua'], 'browser')
+    assert c.user.last_access['session_date'] != None
+    assert c.user.last_access['session_ip'] == 'addr'
+    assert c.user.last_access['session_ua'] == 'browser'
 
     # ensure that session activity tracked with a whole-day granularity
     prev_date = c.user.last_access['session_date']
     c.user.track_active(req)
     c.user = M.User.by_username(c.user.username)
-    assert_equal(c.user.last_access['session_date'], prev_date)
+    assert c.user.last_access['session_date'] == prev_date
     yesterday = datetime.utcnow() - timedelta(1)
     c.user.last_access['session_date'] = yesterday
     session(c.user).flush(c.user)
     c.user.track_active(req)
     c.user = M.User.by_username(c.user.username)
-    assert_true(c.user.last_access['session_date'] > yesterday)
+    assert c.user.last_access['session_date'] > yesterday
 
     # ...or if IP or User Agent has changed
     req.remote_addr = 'new addr'
     c.user.track_active(req)
     c.user = M.User.by_username(c.user.username)
-    assert_equal(c.user.last_access['session_ip'], 'new addr')
-    assert_equal(c.user.last_access['session_ua'], 'browser')
+    assert c.user.last_access['session_ip'] == 'new addr'
+    assert c.user.last_access['session_ua'] == 'browser'
     req.headers['User-Agent'] = 'new browser'
     c.user.track_active(req)
     c.user = M.User.by_username(c.user.username)
-    assert_equal(c.user.last_access['session_ip'], 'new addr')
-    assert_equal(c.user.last_access['session_ua'], 'new browser')
+    assert c.user.last_access['session_ip'] == 'new addr'
+    assert c.user.last_access['session_ua'] == 'new browser'
 
 
 @with_setup(setUp)
@@ -399,35 +399,35 @@ def test_user_index():
     c.user.email_addresses = ['email1', 'email2']
     c.user.set_pref('email_address', 'email2')
     idx = c.user.index()
-    assert_equal(idx['id'], c.user.index_id())
-    assert_equal(idx['title'], 'User test-admin')
-    assert_equal(idx['type_s'], 'User')
-    assert_equal(idx['username_s'], 'test-admin')
-    assert_equal(idx['email_addresses_t'], 'email1 email2')
-    assert_equal(idx['email_address_s'], 'email2')
-    assert_in('last_password_updated_dt', idx)
-    assert_equal(idx['disabled_b'], False)
-    assert_in('results_per_page_i', idx)
-    assert_in('email_format_s', idx)
-    assert_in('disable_user_messages_b', idx)
-    assert_equal(idx['display_name_t'], 'Test Admin')
-    assert_equal(idx['sex_s'], 'Unknown')
-    assert_in('birthdate_dt', idx)
-    assert_in('localization_s', idx)
-    assert_in('timezone_s', idx)
-    assert_in('socialnetworks_t', idx)
-    assert_in('telnumbers_t', idx)
-    assert_in('skypeaccount_s', idx)
-    assert_in('webpages_t', idx)
-    assert_in('skills_t', idx)
-    assert_in('last_access_login_date_dt', idx)
-    assert_in('last_access_login_ip_s', idx)
-    assert_in('last_access_login_ua_t', idx)
-    assert_in('last_access_session_date_dt', idx)
-    assert_in('last_access_session_ip_s', idx)
-    assert_in('last_access_session_ua_t', idx)
+    assert idx['id'] == c.user.index_id()
+    assert idx['title'] == 'User test-admin'
+    assert idx['type_s'] == 'User'
+    assert idx['username_s'] == 'test-admin'
+    assert idx['email_addresses_t'] == 'email1 email2'
+    assert idx['email_address_s'] == 'email2'
+    assert 'last_password_updated_dt' in idx
+    assert idx['disabled_b'] == False
+    assert 'results_per_page_i' in idx
+    assert 'email_format_s' in idx
+    assert 'disable_user_messages_b' in idx
+    assert idx['display_name_t'] == 'Test Admin'
+    assert idx['sex_s'] == 'Unknown'
+    assert 'birthdate_dt' in idx
+    assert 'localization_s' in idx
+    assert 'timezone_s' in idx
+    assert 'socialnetworks_t' in idx
+    assert 'telnumbers_t' in idx
+    assert 'skypeaccount_s' in idx
+    assert 'webpages_t' in idx
+    assert 'skills_t' in idx
+    assert 'last_access_login_date_dt' in idx
+    assert 'last_access_login_ip_s' in idx
+    assert 'last_access_login_ua_t' in idx
+    assert 'last_access_session_date_dt' in idx
+    assert 'last_access_session_ip_s' in idx
+    assert 'last_access_session_ua_t' in idx
     # provided bby auth provider
-    assert_in('user_registration_date_dt', idx)
+    assert 'user_registration_date_dt' in idx
 
 
 @with_setup(setUp)
@@ -436,9 +436,9 @@ def test_user_index_none_values():
     c.user.set_pref('telnumbers', [None])
     c.user.set_pref('webpages', [None])
     idx = c.user.index()
-    assert_equal(idx['email_addresses_t'], '')
-    assert_equal(idx['telnumbers_t'], '')
-    assert_equal(idx['webpages_t'], '')
+    assert idx['email_addresses_t'] == ''
+    assert idx['telnumbers_t'] == ''
+    assert idx['webpages_t'] == ''
 
 
 @with_setup(setUp)
@@ -461,22 +461,22 @@ def test_user_backfill_login_details():
     c.user.backfill_login_details(auth_provider)
 
     details = M.UserLoginDetails.query.find({'user_id': c.user._id}).sort('ua').all()
-    assert_equal(len(details), 2, details)
-    assert_equal(details[0].ip, '127.0.0.1')
-    assert_equal(details[0].ua, 'TestBrowser/56')
-    assert_equal(details[1].ip, '127.0.0.1')
-    assert_equal(details[1].ua, 'TestBrowser/57')
+    assert len(details) == 2, details
+    assert details[0].ip == '127.0.0.1'
+    assert details[0].ua == 'TestBrowser/56'
+    assert details[1].ip == '127.0.0.1'
+    assert details[1].ua == 'TestBrowser/57'
 
 
 class TestAuditLog:
 
     def test_message_html(self):
         al = h.auditlog_user('our message <script>alert(1)</script>')
-        assert_equal(al.message, textwrap.dedent('''\
+        assert al.message == textwrap.dedent('''\
             IP Address: 127.0.0.1
             User-Agent: None
-            our message <script>alert(1)</script>'''))
-        assert_equal(al.message_html, textwrap.dedent('''\
+            our message <script>alert(1)</script>''')
+        assert al.message_html == textwrap.dedent('''\
             IP Address: 127.0.0.1<br>
             User-Agent: None<br>
-            <strong>our message &lt;script&gt;alert(1)&lt;/script&gt;</strong>'''))
+            <strong>our message &lt;script&gt;alert(1)&lt;/script&gt;</strong>''')

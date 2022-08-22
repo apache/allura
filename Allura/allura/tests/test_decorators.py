@@ -74,10 +74,10 @@ class TestMemoize:
         const1 = remember_randomy(False)
         rand_kwargs1 = remember_randomy(True, foo='asdf')
         rand_kwargs2 = remember_randomy(True, foo='xyzzy')
-        assert_equal(rand1, rand2)
-        assert_equal(const1, "constant")
-        assert_not_equal(rand1, rand_kwargs1)
-        assert_not_equal(rand_kwargs1, rand_kwargs2)
+        assert rand1 == rand2
+        assert const1 == "constant"
+        assert rand1 != rand_kwargs1
+        assert rand_kwargs1 != rand_kwargs2
 
     def test_methods(self):
 
@@ -103,10 +103,10 @@ class TestMemoize:
         other1 = r.other(True)
         other2 = r.other(True)
 
-        assert_equal(rand1, rand2)
-        assert_equal(const1, "constant")
-        assert_not_equal(rand1, other1)
-        assert_equal(other1, other2)
+        assert rand1 == rand2
+        assert const1 == "constant"
+        assert rand1 != other1
+        assert other1 == other2
 
         r2 = Randomy()
         r2rand1 = r2.randomy(True)
@@ -115,10 +115,10 @@ class TestMemoize:
         r2other1 = r2.other(True)
         r2other2 = r2.other(True)
 
-        assert_not_equal(r2rand1, rand1)
-        assert_equal(r2rand1, r2rand2)
-        assert_not_equal(r2other1, other1)
-        assert_equal(r2other1, r2other2)
+        assert r2rand1 != rand1
+        assert r2rand1 == r2rand2
+        assert r2other1 != other1
+        assert r2other1 == r2other2
 
     def test_methods_garbage_collection(self):
 

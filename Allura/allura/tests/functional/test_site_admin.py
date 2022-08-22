@@ -93,20 +93,20 @@ class TestSiteAdmin(TestController):
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
             username='root'))
-        assert_equal(len(r.html.find('table').findAll('tr')), count - 1)
+        assert len(r.html.find('table').findAll('tr')) == count - 1
 
     def test_new_projects_daterange_filtering(self):
         r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
             username='root'))
         count = len(r.html.find('table').findAll('tr'))
-        assert_equal(count, 7)
+        assert count == 7
 
         filtr = r.forms[0]
         filtr['start-dt'] = '2000/01/01 10:10:10'
         filtr['end-dt'] = '2000/01/01 09:09:09'
         r = filtr.submit()
         count = len(r.html.find('table').findAll('tr'))
-        assert_equal(count, 1)  # only row with headers - no results
+        assert count == 1  # only row with headers - no results
 
     def test_reclone_repo_access(self):
         r = self.app.get('/nf/admin/reclone_repo', extra_environ=dict(
@@ -375,9 +375,9 @@ class TestProjectsSearch(TestController):
         search.site_admin_search.return_value = self.TEST_HIT
         r = self.app.get('/nf/admin/search_projects?q=fake&f=shortname')
         options = [o['value'] for o in r.html.findAll('option')]
-        assert_equal(options, ['shortname', 'name', '__custom__'])
+        assert options == ['shortname', 'name', '__custom__']
         ths = [th.text for th in r.html.findAll('th')]
-        assert_equal(ths, ['Short name', 'Full name', 'Registered', 'Deleted?', 'Details'])
+        assert ths == ['Short name', 'Full name', 'Registered', 'Deleted?', 'Details']
 
     @patch('allura.controllers.site_admin.search')
     def test_additional_fields(self, search):
@@ -386,9 +386,9 @@ class TestProjectsSearch(TestController):
                                       'search.project.additional_display_fields': 'url'}):
             r = self.app.get('/nf/admin/search_projects?q=fake&f=shortname')
         options = [o['value'] for o in r.html.findAll('option')]
-        assert_equal(options, ['shortname', 'name', 'private', 'url', '__custom__'])
+        assert options == ['shortname', 'name', 'private', 'url', '__custom__']
         ths = [th.text for th in r.html.findAll('th')]
-        assert_equal(ths, ['Short name', 'Full name', 'Registered', 'Deleted?', 'url', 'Details'])
+        assert ths == ['Short name', 'Full name', 'Registered', 'Deleted?', 'url', 'Details']
 
 
 class TestUsersSearch(TestController):
@@ -428,10 +428,10 @@ class TestUsersSearch(TestController):
         site_admin_search.return_value = self.TEST_HIT
         r = self.app.get('/nf/admin/search_users?q=fake&f=username')
         options = [o['value'] for o in r.html.findAll('option')]
-        assert_equal(options, ['username', 'display_name', '__custom__'])
+        assert options == ['username', 'display_name', '__custom__']
         ths = [th.text for th in r.html.findAll('th')]
-        assert_equal(ths, ['Username', 'Display name', 'Email', 'Registered',
-                           'Status', 'Details'])
+        assert ths == ['Username', 'Display name', 'Email', 'Registered',
+                           'Status', 'Details']
 
     @patch('allura.controllers.site_admin.search.site_admin_search')
     def test_additional_fields(self, site_admin_search):
@@ -440,10 +440,10 @@ class TestUsersSearch(TestController):
                                       'search.user.additional_display_fields': 'url'}):
             r = self.app.get('/nf/admin/search_users?q=fake&f=username')
         options = [o['value'] for o in r.html.findAll('option')]
-        assert_equal(options, ['username', 'display_name', 'email_addresses', 'url', '__custom__'])
+        assert options == ['username', 'display_name', 'email_addresses', 'url', '__custom__']
         ths = [th.text for th in r.html.findAll('th')]
-        assert_equal(ths, ['Username', 'Display name', 'Email', 'Registered',
-                           'Status', 'url', 'Details'])
+        assert ths == ['Username', 'Display name', 'Email', 'Registered',
+                           'Status', 'url', 'Details']
 
 
 class TestUserDetails(TestController):
@@ -462,22 +462,22 @@ class TestUserDetails(TestController):
                             'session_ip': '7.7.7.7'}
         r = self.app.get('/nf/admin/user/test-admin')
         # general info
-        assert_in('Username: test-admin', r)
-        assert_in('Full name: Test Admin', r)
-        assert_in('Registered: 2014-09-01 09:09:09', r)
+        assert 'Username: test-admin' in r
+        assert 'Full name: Test Admin' in r
+        assert 'Registered: 2014-09-01 09:09:09' in r
         # session info
-        assert_in('Date: 2014-09-02 06:06:06', r)
-        assert_in('IP: 8.8.8.8', r)
-        assert_in('UA: browser of the future 1.0', r)
-        assert_in('Date: 2014-09-12', r)
-        assert_in('IP: 7.7.7.7', r)
-        assert_in('UA: browser of the future 1.1', r)
+        assert 'Date: 2014-09-02 06:06:06' in r
+        assert 'IP: 8.8.8.8' in r
+        assert 'UA: browser of the future 1.0' in r
+        assert 'Date: 2014-09-12' in r
+        assert 'IP: 7.7.7.7' in r
+        assert 'UA: browser of the future 1.1' in r
         # list of projects
         projects = r.html.findAll('fieldset')[-1]
         projects = [e.getText() for e in projects.findAll('li')]
-        assert_in('Test 2\n\u2013\nAdmin\n', projects)
-        assert_in('Test Project\n\u2013\nAdmin\n', projects)
-        assert_in('Adobe project 1\n\u2013\nAdmin\n', projects)
+        assert 'Test 2\n\u2013\nAdmin\n' in projects
+        assert 'Test Project\n\u2013\nAdmin\n' in projects
+        assert 'Adobe project 1\n\u2013\nAdmin\n' in projects
 
     @patch('allura.model.auth.request')
     @patch('allura.lib.helpers.request')
@@ -487,162 +487,162 @@ class TestUserDetails(TestController):
         h.auditlog_user('test activity user 1')
         h.auditlog_user('test activity user 2', user=M.User.by_username('test-user-2'))
         r = self.app.get('/nf/admin/user/test-admin')
-        assert_in('Add comment', r)
-        assert_not_in('test activity', r)
+        assert 'Add comment' in r
+        assert 'test activity' not in r
         r = self.app.get('/nf/admin/user/test-user-1')
-        assert_in('test activity user 1', r)
-        assert_not_in('test activity user 2', r)
+        assert 'test activity user 1' in r
+        assert 'test activity user 2' not in r
         r = self.app.get('/nf/admin/user/test-user-2')
-        assert_not_in('test activity user 1', r)
-        assert_in('test activity user 2', r)
+        assert 'test activity user 1' not in r
+        assert 'test activity user 2' in r
 
     def test_add_audit_trail_entry_access(self):
         self.app.get('/nf/admin/user/add_audit_log_entry', status=404)  # GET is not allowed
         r = self.app.post('/nf/admin/user/add_audit_log_entry',
                           extra_environ={'username': '*anonymous'},
                           status=302)
-        assert_equal(r.location, 'http://localhost/auth/')
+        assert r.location == 'http://localhost/auth/'
 
     def test_add_comment(self):
         r = self.app.get('/nf/admin/user/test-user')
-        assert_not_in('Comment by test-admin: I was hêre!', r)
+        assert 'Comment by test-admin: I was hêre!' not in r
         form = [f for f in r.forms.values() if f.action.endswith('add_audit_trail_entry')][0]
-        assert_equal(form['username'].value, 'test-user')
+        assert form['username'].value == 'test-user'
         form['comment'] = 'I was hêre!'
         r = form.submit()
-        assert_in('Comment added', self.webflash(r))
+        assert 'Comment added' in self.webflash(r)
         r = self.app.get('/nf/admin/user/test-user')
-        assert_in('Comment by test-admin: I was hêre!', r)
+        assert 'Comment by test-admin: I was hêre!' in r
 
     def test_disable_user(self):
         # user was not pending
-        assert_equal(M.User.by_username('test-user-3').disabled, False)
-        assert_equal(M.User.by_username('test-user-3').pending, False)
+        assert M.User.by_username('test-user-3').disabled == False
+        assert M.User.by_username('test-user-3').pending == False
         r = self.app.get('/nf/admin/user/test-user-3')
         form = r.forms[0]
-        assert_equal(form['username'].value, 'test-user-3')
-        assert_equal(form['status'].value, 'enable')
+        assert form['username'].value == 'test-user-3'
+        assert form['status'].value == 'enable'
         form['status'].value = 'disable'
         with td.audits('Account disabled', user=True):
             r = form.submit()
-            assert_equal(M.AuditLog.query.find().count(), 1)
-        assert_in('User disabled', self.webflash(r))
-        assert_equal(M.User.by_username('test-user-3').disabled, True)
-        assert_equal(M.User.by_username('test-user-3').pending, False)
+            assert M.AuditLog.query.find().count() == 1
+        assert 'User disabled' in self.webflash(r)
+        assert M.User.by_username('test-user-3').disabled == True
+        assert M.User.by_username('test-user-3').pending == False
 
         # user was pending
         user = M.User.by_username('test-user-3')
         user.disabled = False
         user.pending = True
         ThreadLocalORMSession.flush_all()
-        assert_equal(M.User.by_username('test-user-3').disabled, False)
-        assert_equal(M.User.by_username('test-user-3').pending, True)
+        assert M.User.by_username('test-user-3').disabled == False
+        assert M.User.by_username('test-user-3').pending == True
         r = self.app.get('/nf/admin/user/test-user-3')
         form = r.forms[0]
-        assert_equal(form['username'].value, 'test-user-3')
-        assert_equal(form['status'].value, 'pending')
+        assert form['username'].value == 'test-user-3'
+        assert form['status'].value == 'pending'
         form['status'].value = 'disable'
         with td.audits('Account disabled', user=True):
             r = form.submit()
-            assert_equal(M.AuditLog.query.find().count(), 1)
-        assert_in('User disabled', self.webflash(r))
-        assert_equal(M.User.by_username('test-user-3').disabled, True)
-        assert_equal(M.User.by_username('test-user-3').pending, True)
+            assert M.AuditLog.query.find().count() == 1
+        assert 'User disabled' in self.webflash(r)
+        assert M.User.by_username('test-user-3').disabled == True
+        assert M.User.by_username('test-user-3').pending == True
 
     def test_enable_user(self):
         # user was not pending
         user = M.User.by_username('test-user-3')
         user.disabled = True
         ThreadLocalORMSession.flush_all()
-        assert_equal(M.User.by_username('test-user-3').disabled, True)
-        assert_equal(M.User.by_username('test-user-3').pending, False)
+        assert M.User.by_username('test-user-3').disabled == True
+        assert M.User.by_username('test-user-3').pending == False
         r = self.app.get('/nf/admin/user/test-user-3')
         form = r.forms[0]
-        assert_equal(form['username'].value, 'test-user-3')
-        assert_equal(form['status'].value, 'disable')
+        assert form['username'].value == 'test-user-3'
+        assert form['status'].value == 'disable'
         form['status'].value = 'enable'
         with td.audits('Account enabled', user=True):
             r = form.submit()
-            assert_equal(M.AuditLog.query.find().count(), 1)
-        assert_in('User enabled', self.webflash(r))
-        assert_equal(M.User.by_username('test-user-3').disabled, False)
-        assert_equal(M.User.by_username('test-user-3').pending, False)
+            assert M.AuditLog.query.find().count() == 1
+        assert 'User enabled' in self.webflash(r)
+        assert M.User.by_username('test-user-3').disabled == False
+        assert M.User.by_username('test-user-3').pending == False
 
         # user was pending
         user = M.User.by_username('test-user-3')
         user.disabled = False
         user.pending = True
         ThreadLocalORMSession.flush_all()
-        assert_equal(M.User.by_username('test-user-3').disabled, False)
-        assert_equal(M.User.by_username('test-user-3').pending, True)
+        assert M.User.by_username('test-user-3').disabled == False
+        assert M.User.by_username('test-user-3').pending == True
         r = self.app.get('/nf/admin/user/test-user-3')
         form = r.forms[0]
-        assert_equal(form['username'].value, 'test-user-3')
-        assert_equal(form['status'].value, 'pending')
+        assert form['username'].value == 'test-user-3'
+        assert form['status'].value == 'pending'
         form['status'].value = 'enable'
         with td.audits('Account activated', user=True):
             r = form.submit()
-            assert_equal(M.AuditLog.query.find().count(), 1)
-        assert_in('User enabled', self.webflash(r))
-        assert_equal(M.User.by_username('test-user-3').disabled, False)
-        assert_equal(M.User.by_username('test-user-3').pending, False)
+            assert M.AuditLog.query.find().count() == 1
+        assert 'User enabled' in self.webflash(r)
+        assert M.User.by_username('test-user-3').disabled == False
+        assert M.User.by_username('test-user-3').pending == False
 
         # user was pending and disabled
         user = M.User.by_username('test-user-3')
         user.disabled = True
         user.pending = True
         ThreadLocalORMSession.flush_all()
-        assert_equal(M.User.by_username('test-user-3').disabled, True)
-        assert_equal(M.User.by_username('test-user-3').pending, True)
+        assert M.User.by_username('test-user-3').disabled == True
+        assert M.User.by_username('test-user-3').pending == True
         r = self.app.get('/nf/admin/user/test-user-3')
         form = r.forms[0]
-        assert_equal(form['username'].value, 'test-user-3')
-        assert_equal(form['status'].value, 'disable')
+        assert form['username'].value == 'test-user-3'
+        assert form['status'].value == 'disable'
         form['status'].value = 'enable'
         with td.audits('Account enabled', user=True):
             r = form.submit()
-            assert_equal(M.AuditLog.query.find().count(), 1)
-        assert_in('User enabled', self.webflash(r))
-        assert_equal(M.User.by_username('test-user-3').disabled, False)
-        assert_equal(M.User.by_username('test-user-3').pending, False)
+            assert M.AuditLog.query.find().count() == 1
+        assert 'User enabled' in self.webflash(r)
+        assert M.User.by_username('test-user-3').disabled == False
+        assert M.User.by_username('test-user-3').pending == False
 
     def test_set_pending(self):
         # user was disabled
         user = M.User.by_username('test-user-3')
         user.disabled = True
         ThreadLocalORMSession.flush_all()
-        assert_equal(M.User.by_username('test-user-3').disabled, True)
-        assert_equal(M.User.by_username('test-user-3').pending, False)
+        assert M.User.by_username('test-user-3').disabled == True
+        assert M.User.by_username('test-user-3').pending == False
         r = self.app.get('/nf/admin/user/test-user-3')
         form = r.forms[0]
-        assert_equal(form['username'].value, 'test-user-3')
-        assert_equal(form['status'].value, 'disable')
+        assert form['username'].value == 'test-user-3'
+        assert form['status'].value == 'disable'
         form['status'].value = 'pending'
         with td.audits('Account changed to pending', user=True):
             r = form.submit()
-            assert_equal(M.AuditLog.query.find().count(), 1)
-        assert_in('Set user status to pending', self.webflash(r))
-        assert_equal(M.User.by_username('test-user-3').disabled, False)
-        assert_equal(M.User.by_username('test-user-3').pending, True)
+            assert M.AuditLog.query.find().count() == 1
+        assert 'Set user status to pending' in self.webflash(r)
+        assert M.User.by_username('test-user-3').disabled == False
+        assert M.User.by_username('test-user-3').pending == True
 
         # user was enabled
         user = M.User.by_username('test-user-3')
         user.pending = False
         user.disabled = False
         ThreadLocalORMSession.flush_all()
-        assert_equal(M.User.by_username('test-user-3').disabled, False)
-        assert_equal(M.User.by_username('test-user-3').pending, False)
+        assert M.User.by_username('test-user-3').disabled == False
+        assert M.User.by_username('test-user-3').pending == False
         r = self.app.get('/nf/admin/user/test-user-3')
         form = r.forms[0]
-        assert_equal(form['username'].value, 'test-user-3')
-        assert_equal(form['status'].value, 'enable')
+        assert form['username'].value == 'test-user-3'
+        assert form['status'].value == 'enable'
         form['status'].value = 'pending'
         with td.audits('Account changed to pending', user=True):
             r = form.submit()
-            assert_equal(M.AuditLog.query.find().count(), 1)
-        assert_in('Set user status to pending', self.webflash(r))
-        assert_equal(M.User.by_username('test-user-3').disabled, False)
-        assert_equal(M.User.by_username('test-user-3').pending, True)
+            assert M.AuditLog.query.find().count() == 1
+        assert 'Set user status to pending' in self.webflash(r)
+        assert M.User.by_username('test-user-3').disabled == False
+        assert M.User.by_username('test-user-3').pending == True
 
     def test_emails(self):
         # add test@example.com
@@ -654,11 +654,11 @@ class TestUserDetails(TestController):
                 'primary_addr': 'test@example.com'},
                 extra_environ=dict(username='test-admin'))
         r = self.app.get('/nf/admin/user/test-user')
-        assert_in('test@example.com', r)
+        assert 'test@example.com' in r
         em = M.EmailAddress.get(email='test@example.com')
-        assert_equal(em.confirmed, True)
+        assert em.confirmed == True
         user = M.User.query.get(username='test-user')
-        assert_equal(user.get_pref('email_address'), 'test@example.com')
+        assert user.get_pref('email_address') == 'test@example.com'
 
         # add test2@example.com
         with td.audits('New email address: test2@example.com', user=True):
@@ -669,11 +669,11 @@ class TestUserDetails(TestController):
                 'primary_addr': 'test@example.com'},
                 extra_environ=dict(username='test-admin'))
         r = self.app.get('/nf/admin/user/test-user')
-        assert_in('test2@example.com', r)
+        assert 'test2@example.com' in r
         em = M.EmailAddress.get(email='test2@example.com')
-        assert_equal(em.confirmed, True)
+        assert em.confirmed == True
         user = M.User.query.get(username='test-user')
-        assert_equal(user.get_pref('email_address'), 'test@example.com')
+        assert user.get_pref('email_address') == 'test@example.com'
 
         # change primary: test -> test2
         with td.audits('Primary email changed: test@example.com => test2@example.com', user=True):
@@ -684,7 +684,7 @@ class TestUserDetails(TestController):
                 extra_environ=dict(username='test-admin'))
         r = self.app.get('/nf/admin/user/test-user')
         user = M.User.query.get(username='test-user')
-        assert_equal(user.get_pref('email_address'), 'test2@example.com')
+        assert user.get_pref('email_address') == 'test2@example.com'
 
         # remove test2@example.com
         with td.audits('Email address deleted: test2@example.com', user=True):
@@ -700,14 +700,14 @@ class TestUserDetails(TestController):
         r = self.app.get('/nf/admin/user/test-user')
         user = M.User.query.get(username='test-user')
         # test@example.com set as primary since test2@example.com is deleted
-        assert_equal(user.get_pref('email_address'), 'test-user@allura.local')
+        assert user.get_pref('email_address') == 'test-user@allura.local'
 
     @patch.object(LocalAuthenticationProvider, 'set_password')
     def test_set_random_password(self, set_password):
         with td.audits('Set random password', user=True, actor='test-admin'):
             r = self.app.post('/nf/admin/user/set_random_password', params={'username': 'test-user'})
-        assert_in('Password is set', self.webflash(r))
-        assert_equal(set_password.call_count, 1)
+        assert 'Password is set' in self.webflash(r)
+        assert set_password.call_count == 1
 
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
@@ -738,7 +738,7 @@ To update your password on %s, please visit the following URL:
             r = self.app.post('/nf/admin/user/make_password_reset_url', params={'username': 'test-user'})
         user = M.User.by_username('test-user')
         hash = user.get_tool_data('AuthPasswordReset', 'hash')
-        assert_in(hash, r.text)
+        assert hash in r.text
 
 
 class TestDeleteProjects(TestController):
@@ -751,14 +751,14 @@ class TestDeleteProjects(TestController):
 
     def test_projects_populated_from_get_params(self):
         r = self.app.get('/nf/admin/delete_projects/')
-        assert_equal(self.delete_form(r)['projects'].value, '')
+        assert self.delete_form(r)['projects'].value == ''
         link = '/nf/admin/delete_projects/?projects=/p/test/++++%23+comment%0A/adobe/adobe-1/%0A/p/test2/'
         link += '&reason=The%0AReason&disable_users=True'
         r = self.app.get(link)
         form = self.delete_form(r)
-        assert_equal(form['projects'].value, '/p/test/    # comment\n/adobe/adobe-1/\n/p/test2/')
-        assert_equal(form['reason'].value, 'The\nReason')
-        assert_equal(form['disable_users'].value, 'on')
+        assert form['projects'].value == '/p/test/    # comment\n/adobe/adobe-1/\n/p/test2/'
+        assert form['reason'].value == 'The\nReason'
+        assert form['disable_users'].value == 'on'
 
     def test_confirm_step_values(self):
         r = self.app.get('/nf/admin/delete_projects/')
@@ -769,16 +769,16 @@ class TestDeleteProjects(TestController):
         r = form.submit()
         confirm_form = self.confirm_form(r)
         for f in ['reason', 'disable_users']:
-            assert_equal(confirm_form[f].value, form[f].value)
-        assert_equal(confirm_form['projects'].value, 'p/test    # OK: /p/test/\ndne/dne    # Neighborhood not found')
+            assert confirm_form[f].value == form[f].value
+        assert confirm_form['projects'].value == 'p/test    # OK: /p/test/\ndne/dne    # Neighborhood not found'
 
         confirm_data = r.html.find('table').findAll('td')
-        assert_equal(len(confirm_data), 4)  # 2 projects == 2 rows (2 columns each)
-        assert_equal(confirm_data[0].getText(), 'p/test')
-        assert_equal(confirm_data[1].find('a').get('href'), '/p/test/')
-        assert_equal(confirm_data[1].getText().strip(), '/p/test/')
-        assert_equal(confirm_data[2].getText().strip(), 'dne/dne')
-        assert_equal(confirm_data[3].getText().strip(), 'Neighborhood not found')
+        assert len(confirm_data) == 4  # 2 projects == 2 rows (2 columns each)
+        assert confirm_data[0].getText() == 'p/test'
+        assert confirm_data[1].find('a').get('href') == '/p/test/'
+        assert confirm_data[1].getText().strip() == '/p/test/'
+        assert confirm_data[2].getText().strip() == 'dne/dne'
+        assert confirm_data[3].getText().strip() == 'Neighborhood not found'
 
     def test_confirm_step_edit_link(self):
         r = self.app.get('/nf/admin/delete_projects/')
