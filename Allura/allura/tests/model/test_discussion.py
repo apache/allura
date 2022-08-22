@@ -104,7 +104,7 @@ def test_thread_methods():
     assert t.post_count == 3
     jsn = t.__json__()
     assert '_id' in jsn
-    assert_equals(len(jsn['posts']), 3)
+    assert len(jsn['posts']) == 3
     (p.approve() for p in (p0, p1))
     ThreadLocalORMSession.flush_all()
     assert t.num_replies == 3
@@ -127,10 +127,10 @@ def test_thread_new():
         session(t2).expunge(t2)
         t1_2 = M.Thread.query.get(_id=t1._id)
         t2_2 = M.Thread.query.get(_id=t2._id)
-        assert_equals(t1._id, 'deadbeef')
-        assert_equals(t2._id, 'beefdead')
-        assert_equals(t1_2.subject, 'Test Thread One')
-        assert_equals(t2_2.subject, 'Test Thread Two')
+        assert t1._id == 'deadbeef'
+        assert t2._id == 'beefdead'
+        assert t1_2.subject == 'Test Thread One'
+        assert t2_2.subject == 'Test Thread Two'
 
 
 @with_setup(setUp, tearDown)
@@ -145,7 +145,7 @@ def test_post_methods():
     p.commit()
     assert p.parent is None
     assert p.subject == 'Test Thread'
-    assert_equals(p.attachments, [])
+    assert p.attachments == []
     assert 'wiki/_discuss' in p.url()
     assert p.reply_subject() == 'Re: Test Thread'
     assert p.link_text() == p.subject
@@ -203,9 +203,9 @@ def test_attachment_methods():
     n = M.Notification.query.get(
         subject='[test:wiki] Test comment notification')
     url = h.absurl(f'{p.url()}attachment/{fs.filename}')
-    assert_in(
+    assert (
         '\nAttachments:\n\n'
-        '- [fake.txt]({}) (37 Bytes; text/plain)'.format(url),
+        '- [fake.txt]({}) (37 Bytes; text/plain)'.format(url) in
         n.text)
 
 
@@ -226,7 +226,7 @@ def test_multiple_attachments():
     test_post = t.post('test post')
     test_post.add_multiple_attachments([test_file1, test_file2])
     ThreadLocalORMSession.flush_all()
-    assert_equals(len(test_post.attachments), 2)
+    assert len(test_post.attachments) == 2
     attaches = test_post.attachments
     assert 'test1.txt' in [attaches[0].filename, attaches[1].filename]
     assert 'test2.txt' in [attaches[0].filename, attaches[1].filename]
@@ -244,7 +244,7 @@ def test_add_attachment():
     test_post = t.post('test post')
     test_post.add_attachment(test_file)
     ThreadLocalORMSession.flush_all()
-    assert_equals(len(test_post.attachments), 1)
+    assert len(test_post.attachments) == 1
     attach = test_post.attachments[0]
     assert attach.filename == 'test.txt', attach.filename
     assert attach.content_type == 'text/plain', attach.content_type
@@ -268,10 +268,10 @@ def test_notification_two_attaches():
     n = M.Notification.query.get(
         subject='[test:wiki] Test comment notification')
     base_url = h.absurl(f'{p.url()}attachment/')
-    assert_in(
+    assert (
         '\nAttachments:\n\n'
         '- [fake.txt]({0}fake.txt) (37 Bytes; text/plain)\n'
-        '- [fake2.txt]({0}fake2.txt) (37 Bytes; text/plain)'.format(base_url),
+        '- [fake2.txt]({0}fake2.txt) (37 Bytes; text/plain)'.format(base_url) in
         n.text)
 
 
@@ -289,7 +289,7 @@ def test_discussion_delete():
     ThreadLocalORMSession.flush_all()
     d.delete()
     ThreadLocalORMSession.flush_all()
-    assert_equals(M.ArtifactReference.query.find(dict(_id=rid)).count(), 0)
+    assert M.ArtifactReference.query.find(dict(_id=rid)).count() == 0
 
 
 @with_setup(setUp, tearDown)
@@ -395,7 +395,7 @@ def test_post_url_paginated():
         if page > 0:
             url += '&page=%s' % page
         url += '#' + _p.slug
-        assert_equal(_p.url_paginated(), url)
+        assert _p.url_paginated() == url
 
 
 @with_setup(setUp, tearDown)
@@ -406,7 +406,7 @@ def test_post_url_paginated_with_artifact():
     thread = page.discussion_thread
     comment = thread.post('Comment')
     url = page.url() + '?limit=25#' + comment.slug
-    assert_equals(comment.url_paginated(), url)
+    assert comment.url_paginated() == url
 
 
 @with_setup(setUp, tearDown)
@@ -466,7 +466,7 @@ def test_not_spam_and_has_unmoderated_post_permission(spam_checker):
     t.acl.append(unmoderated_post_permission)
     with h.push_config(c, user=M.User.anonymous()):
         post = t.post('Hey')
-    assert_equal(post.status, 'ok')
+    assert post.status == 'ok'
 
 
 @with_setup(setUp, tearDown)
@@ -481,8 +481,8 @@ def test_not_spam_but_has_no_unmoderated_post_permission(notify_moderators, spam
     t.acl.append(post_permission)
     with h.push_config(c, user=M.User.anonymous()):
         post = t.post('Hey')
-    assert_equal(post.status, 'pending')
-    assert_equal(notify_moderators.call_count, 1)
+    assert post.status == 'pending'
+    assert notify_moderators.call_count == 1
 
 
 @with_setup(setUp, tearDown)
@@ -499,8 +499,8 @@ def test_spam_and_has_unmoderated_post_permission(notify_moderators, spam_checke
     t.acl.append(unmoderated_post_permission)
     with h.push_config(c, user=M.User.anonymous()):
         post = t.post('Hey')
-    assert_equal(post.status, 'pending')
-    assert_equal(notify_moderators.call_count, 1)
+    assert post.status == 'pending'
+    assert notify_moderators.call_count == 1
 
 
 @with_setup(setUp, tearDown)
@@ -510,8 +510,8 @@ def test_thread_subject_not_included_in_text_checked(spam_checker):
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread(discussion_id=d._id, subject='Test Thread')
     t.post('Hello')
-    assert_equal(spam_checker.check.call_count, 1)
-    assert_equal(spam_checker.check.call_args[0][0], 'Hello')
+    assert spam_checker.check.call_count == 1
+    assert spam_checker.check.call_args[0][0] == 'Hello'
 
 
 def test_post_count():
@@ -521,7 +521,7 @@ def test_post_count():
     M.Post(discussion_id=d._id, thread_id=t._id, status='ok')
     M.Post(discussion_id=d._id, thread_id=t._id, status='pending')
     ThreadLocalORMSession.flush_all()
-    assert_equal(t.post_count, 2)
+    assert t.post_count == 2
 
 
 @mock.patch('allura.controllers.discuss.g.spam_checker')
@@ -532,7 +532,7 @@ def test_spam_num_replies(spam_checker):
     ThreadLocalORMSession.flush_all()
     p1 = M.Post(discussion_id=d._id, thread_id=t._id, status='spam')
     p1.spam()
-    assert_equal(t.num_replies, 1)
+    assert t.num_replies == 1
 
 
 def test_deleted_thread_index():

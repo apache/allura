@@ -91,7 +91,7 @@ class TestDeleteProjects(TestController):
         things = self.things_related_to_project(pid)
         assert len(things) == 0, 'Not all things are deleted: %s' % things
         parent_things_after = self.things_related_to_project(parent_pid)
-        assert_equal(len(parent_things_before), len(parent_things_after))
+        assert len(parent_things_before) == len(parent_things_after)
 
     @patch('allura.lib.plugin.solr_del_project_artifacts', autospec=True)
     def test_solr_index_is_deleted(self, del_solr):

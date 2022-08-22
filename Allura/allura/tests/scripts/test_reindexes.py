@@ -45,7 +45,7 @@ class TestReindexProjects:
             self.run_script(['-n', '/p/', '-p', 'test', '--tasks'])
         assert_logmsg_and_no_warnings_or_errors(logs, 'Reindex project test')
         assert_logmsg_and_no_warnings_or_errors(logs, 'Reindex queued')
-        assert_equal(M.MonQTask.query.find({'task_name': 'allura.tasks.index_tasks.add_projects'}).count(), 1)
+        assert M.MonQTask.query.find({'task_name': 'allura.tasks.index_tasks.add_projects'}).count() == 1
 
 
 class TestReindexUsers:
@@ -71,4 +71,4 @@ class TestReindexUsers:
         assert_logmsg_and_no_warnings_or_errors(logs, 'Reindex user root')
         assert_logmsg_and_no_warnings_or_errors(logs, 'Reindex user test-user-1')
         assert_logmsg_and_no_warnings_or_errors(logs, 'Reindex queued')
-        assert_equal(M.MonQTask.query.find({'task_name': 'allura.tasks.index_tasks.add_users'}).count(), 1)
+        assert M.MonQTask.query.find({'task_name': 'allura.tasks.index_tasks.add_users'}).count() == 1

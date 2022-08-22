@@ -206,7 +206,7 @@ def test_macro_members():
     p_test.add_user(M.User.by_username('test-user-0'), ['Member'])
     ThreadLocalORMSession.flush_all()
     r = g.markdown_wiki.convert('[[members limit=2]]').replace('\t', '').replace('\n', '')
-    assert_equal(r,
+    assert (r ==
                  '<div class="markdown_content"><h6>Project Members:</h6>'
                  '<ul class="md-users-list">'
                  '<li><a href="/u/test-admin/">Test Admin</a> (admin)</li>'
@@ -221,7 +221,7 @@ def test_macro_members_escaping():
     user = M.User.by_username('test-admin')
     user.display_name = 'Test Admin <script>'
     r = g.markdown_wiki.convert('[[members]]')
-    assert_equal(r.replace('\n', '').replace('\t', ''),
+    assert (r.replace('\n', '').replace('\t', '') ==
                  '<div class="markdown_content"><h6>Project Members:</h6>'
                  '<ul class="md-users-list">'
                  '<li><a href="/u/test-admin/">Test Admin &lt;script&gt;</a> (admin)</li>'
@@ -234,7 +234,7 @@ def test_macro_project_admins():
     user.display_name = 'Test Ådmin <script>'
     with h.push_context('test', neighborhood='Projects'):
         r = g.markdown_wiki.convert('[[project_admins]]')
-    assert_equal(r.replace('\n', ''),
+    assert (r.replace('\n', '') ==
                  '<div class="markdown_content"><h6>Project Admins:</h6>'
                  '<ul class="md-users-list">'
                  '    <li><a href="/u/test-admin/">Test \xc5dmin &lt;script&gt;</a></li>'
@@ -283,7 +283,7 @@ def test_macro_include_no_extra_br():
 <div class="markdown_content"><p>included page 3</p></div>
 </div>
 <p></p></div>'''
-    assert_equal(squish_spaces(html), squish_spaces(expected_html))
+    assert squish_spaces(html) == squish_spaces(expected_html)
 
 
 @with_setup(setUp, tearDown)
@@ -315,9 +315,9 @@ def test_macro_include_permissions():
         c.user = M.User.anonymous()
         md = '[[include ref=CanRead]]\n[[include ref=wiki2:CanNotRead]]'
         html = g.markdown_wiki.convert(md)
-        assert_in('Can see this!', html)
-        assert_not_in('Can not see this!', html)
-        assert_in("[[include: you don't have a read permission for wiki2:CanNotRead]]", html)
+        assert 'Can see this!' in html
+        assert 'Can not see this!' not in html
+        assert "[[include: you don't have a read permission for wiki2:CanNotRead]]" in html
 
 
 @patch('oembed.OEmbedEndpoint.fetch')
@@ -328,8 +328,8 @@ def test_macro_embed(oembed_fetch):
         "title": "Nature's 3D Printer: MIND BLOWING Cocoon in Rainforest - Smarter Every Day 94",
     }
     r = g.markdown_wiki.convert('[[embed url=http://www.youtube.com/watch?v=kOLpSPEA72U]]')
-    assert_in('<p><iframe height="270" '
-              'src="https://www.youtube-nocookie.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe></p>',
+    assert ('<p><iframe height="270" '
+              'src="https://www.youtube-nocookie.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe></p>' in
               r.replace('\n', ''))
 
 
@@ -338,24 +338,24 @@ def test_macro_embed_video_gone():
     r = g.markdown_wiki.convert('[[embed url=https://www.youtube.com/watch?v=OWsFqPZ3v-0]]')
     r = str(r)  # convert away from Markup, to get better assertion diff output
     # either of these could happen depending on the mood of youtube's oembed API:
-    assert_in(r, [
+    assert r in [
         '<div class="markdown_content"><p>Video not available</p></div>',
         '<div class="markdown_content"><p>Could not embed: https://www.youtube.com/watch?v=OWsFqPZ3v-0</p></div>',
-    ])
+    ]
 
 
 @patch('oembed.OEmbedEndpoint.fetch')
 def test_macro_embed_video_error(oembed_fetch):
     oembed_fetch.side_effect = OEmbedError('Invalid mime-type in response...')
     r = g.markdown_wiki.convert('[[embed url=http://www.youtube.com/watch?v=6YbBmqUnoQM]]')
-    assert_equal(r, '<div class="markdown_content"><p>Could not embed: '
+    assert (r == '<div class="markdown_content"><p>Could not embed: '
                     'http://www.youtube.com/watch?v=6YbBmqUnoQM</p></div>')
 
 
 def test_macro_embed_notsupported():
     r = g.markdown_wiki.convert('[[embed url=http://vimeo.com/46163090]]')
-    assert_equal(
-        r, '<div class="markdown_content"><p>[[embed url=http://vimeo.com/46163090]]</p></div>')
+    assert (
+        r == '<div class="markdown_content"><p>[[embed url=http://vimeo.com/46163090]]</p></div>')
 
 
 def test_markdown_toc():
@@ -389,19 +389,19 @@ def test_wiki_artifact_links():
 def test_markdown_links():
     with patch.dict(tg.config, {'nofollow_exempt_domains': 'foobar.net'}):
         text = g.markdown.convert('Read [here](http://foobar.net/) about our project')
-        assert_in('class="" href="http://foobar.net/">here</a> about', text)
+        assert 'class="" href="http://foobar.net/">here</a> about' in text
 
     text = g.markdown.convert('Read [here](http://foobar.net/) about our project')
-    assert_in('class="" href="http://foobar.net/" rel="nofollow">here</a> about', text)
+    assert 'class="" href="http://foobar.net/" rel="nofollow">here</a> about' in text
 
     text = g.markdown.convert('Read [here](/p/foobar/blah) about our project')
-    assert_in('class="" href="/p/foobar/blah">here</a> about', text)
+    assert 'class="" href="/p/foobar/blah">here</a> about' in text
 
     text = g.markdown.convert('Read [here](/p/foobar/blah/) about our project')
-    assert_in('class="" href="/p/foobar/blah/">here</a> about', text)
+    assert 'class="" href="/p/foobar/blah/">here</a> about' in text
 
     text = g.markdown.convert('Read <http://foobar.net/> about our project')
-    assert_in('href="http://foobar.net/" rel="nofollow">http://foobar.net/</a> about', text)
+    assert 'href="http://foobar.net/" rel="nofollow">http://foobar.net/</a> about' in text
 
 
 def test_markdown_and_html():
@@ -413,7 +413,7 @@ def test_markdown_and_html():
 def test_markdown_within_html():
     with h.push_context('test', neighborhood='Projects'):
         r = g.markdown_wiki.convert('<div style="float:left" markdown>**blah**</div>')
-    assert_in('<div style="float: left;"><p><strong>blah</strong></p></div>',
+    assert ('<div style="float: left;"><p><strong>blah</strong></p></div>' in
               r.replace('\n', ''))
 
 
@@ -425,37 +425,37 @@ def test_markdown_with_html_comments():
 def test_markdown_big_text():
     '''If text is too big g.markdown.convert should return plain text'''
     text = 'a' * 40001
-    assert_equal(g.markdown.convert(text), '<pre>%s</pre>' % text)
-    assert_equal(g.markdown_wiki.convert(text), '<pre>%s</pre>' % text)
+    assert g.markdown.convert(text) == '<pre>%s</pre>' % text
+    assert g.markdown_wiki.convert(text) == '<pre>%s</pre>' % text
 
 
 @td.with_wiki
 def test_markdown_basics():
     with h.push_context('test', 'wiki', neighborhood='Projects'):
         text = g.markdown.convert('# Foo!\n[Home]')
-        assert_equal(text,
+        assert (text ==
                      '<div class="markdown_content"><h1 id="foo">Foo!</h1>\n'
                      '<p><a class="alink" href="/p/test/wiki/Home/">[Home]</a></p></div>')
         text = g.markdown.convert('# Foo!\n[Rooted]')
-        assert_equal(text,
+        assert (text ==
                      '<div class="markdown_content"><h1 id="foo">Foo!</h1>\n'
                      '<p><span>[Rooted]</span></p></div>')
 
-    assert_equal(
-        g.markdown.convert('Multi\nLine'),
+    assert (
+        g.markdown.convert('Multi\nLine') ==
         '<div class="markdown_content"><p>Multi<br/>\n'
         'Line</p></div>')
-    assert_equal(
-        g.markdown.convert('Multi\n\nLine'),
+    assert (
+        g.markdown.convert('Multi\n\nLine') ==
         '<div class="markdown_content"><p>Multi</p>\n'
         '<p>Line</p></div>')
 
     # should not raise an exception:
-    assert_equal(
-        g.markdown.convert("<class 'foo'>"),
+    assert (
+        g.markdown.convert("<class 'foo'>") ==
         '''<div class="markdown_content"><p>&lt;class 'foo'=""&gt;&lt;/class&gt;</p></div>''')
 
-    assert_equal(
+    assert (
         g.markdown.convert('''# Header
 
 Some text in a regular paragraph
@@ -463,29 +463,26 @@ Some text in a regular paragraph
     :::python
     for i in range(10):
         print i
-'''),
+''') ==
         # no <br
         '<div class="markdown_content"><h1 id="header">Header</h1>\n'
         '<p>Some text in a regular paragraph</p>\n'
         '<div class="codehilite"><pre><span></span><code><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>\n'
         '    <span class="nb">print</span> <span class="n">i</span>\n'
         '</code></pre></div>\n'
-        '</div>'
-    )
-    assert_equal(
-        g.forge_markdown(email=True).convert('[Home]'),
+        '</div>')
+    assert (
+        g.forge_markdown(email=True).convert('[Home]') ==
         # uses localhost:
-        '<div class="markdown_content"><p><a class="alink" href="http://localhost/p/test/wiki/Home/">[Home]</a></p></div>'
-    )
-    assert_equal(
+        '<div class="markdown_content"><p><a class="alink" href="http://localhost/p/test/wiki/Home/">[Home]</a></p></div>')
+    assert (
         g.markdown.convert('''
 ~~~~
 def foo(): pass
-~~~~'''),
+~~~~''') ==
         '<div class="markdown_content"><div class="codehilite"><pre><span></span><code>def foo(): pass\n'
         '</code></pre></div>\n'
-        '</div>'
-    )
+        '</div>')
 
 
 def test_markdown_list_without_break():
@@ -494,64 +491,60 @@ def test_markdown_list_without_break():
     # it is valid in the CommonMark spec https://spec.commonmark.org/0.30/#lists
     # TODO: try https://github.com/adamb70/mdx-breakless-lists
     #       or https://gitlab.com/ayblaq/prependnewline
-    assert_equal(
+    assert (
         g.markdown.convert('''\
 Regular text
 * first item
-* second item'''),
+* second item''') ==
         '<div class="markdown_content"><p>Regular text\n'  # no <br>
         '* first item\n'  # no <br>
-        '* second item</p></div>'
-    )
+        '* second item</p></div>')
 
-    assert_equal(
+    assert (
         g.markdown.convert('''\
 Regular text
 - first item
-- second item'''),
+- second item''') ==
         '<div class="markdown_content"><p>Regular text<br/>\n'
         '- first item<br/>\n'
-        '- second item</p></div>'
-    )
+        '- second item</p></div>')
 
-    assert_equal(
+    assert (
         g.markdown.convert('''\
 Regular text
 + first item
-+ second item'''),
++ second item''') ==
         '<div class="markdown_content"><p>Regular text<br/>\n'
         '+ first item<br/>\n'
-        '+ second item</p></div>'
-    )
+        '+ second item</p></div>')
 
-    assert_equal(
+    assert (
         g.markdown.convert('''\
 Regular text
 1. first item
-2. second item'''),
+2. second item''') ==
         '<div class="markdown_content"><p>Regular text<br/>\n'
         '1. first item<br/>\n'
-        '2. second item</p></div>'
-    )
+        '2. second item</p></div>')
 
 
 def test_markdown_autolink():
     tgt = 'http://everything2.com/?node=nate+oostendorp'
     s = g.markdown.convert('This is %s' % tgt)
-    assert_equal(
-        s, f'<div class="markdown_content"><p>This is <a href="{tgt}" rel="nofollow">{tgt}</a></p></div>')
+    assert (
+        s == f'<div class="markdown_content"><p>This is <a href="{tgt}" rel="nofollow">{tgt}</a></p></div>')
     assert '<a href=' in g.markdown.convert('This is http://domain.net')
     # beginning of doc
-    assert_in('<a href=', g.markdown.convert('http://domain.net abc'))
+    assert '<a href=' in g.markdown.convert('http://domain.net abc')
     # beginning of a line
-    assert_in('<br/>\n<a href="http://',
+    assert ('<br/>\n<a href="http://' in
               g.markdown.convert('foobar\nhttp://domain.net abc'))
     # no conversion of these urls:
-    assert_in('a blahttp://sdf.com z',
+    assert ('a blahttp://sdf.com z' in
               g.markdown.convert('a blahttp://sdf.com z'))
-    assert_in('literal <code>http://domain.net</code> literal',
+    assert ('literal <code>http://domain.net</code> literal' in
               g.markdown.convert('literal `http://domain.net` literal'))
-    assert_in('<pre><span></span><code>preformatted http://domain.net\n</code></pre>',
+    assert ('<pre><span></span><code>preformatted http://domain.net\n</code></pre>' in
               g.markdown.convert('    :::text\n'
                                  '    preformatted http://domain.net'))
 
@@ -565,31 +558,31 @@ def test_markdown_autolink_with_escape():
 
 def test_markdown_invalid_script():
     r = g.markdown.convert('<script>alert(document.cookies)</script>')
-    assert_equal('<div class="markdown_content">&lt;script&gt;alert(document.cookies)&lt;/script&gt;\n</div>', r)
+    assert '<div class="markdown_content">&lt;script&gt;alert(document.cookies)&lt;/script&gt;\n</div>' == r
 
 
 def test_markdown_invalid_onerror():
     r = g.markdown.convert('<img src=x onerror=alert(document.cookie)>')
-    assert_not_in('onerror', r)
+    assert 'onerror' not in r
 
 
 def test_markdown_invalid_tagslash():
     r = g.markdown.convert('<div/onload><img src=x onerror=alert(document.cookie)>')
-    assert_not_in('onerror', r)
+    assert 'onerror' not in r
 
 
 def test_markdown_invalid_script_in_link():
     r = g.markdown.convert('[xss](http://"><a onmouseover=prompt(document.domain)>xss</a>)')
-    assert_equal('<div class="markdown_content"><p><a class="" '
+    assert ('<div class="markdown_content"><p><a class="" '
                  '''href='http://"&gt;&lt;a%20onmouseover=prompt(document.domain)&gt;xss&lt;/a&gt;' '''
-                 'rel="nofollow">xss</a></p></div>', r)
+                 'rel="nofollow">xss</a></p></div>' == r)
 
 
 def test_markdown_invalid_script_in_link2():
     r = g.markdown.convert('[xss](http://"><img src=x onerror=alert(document.cookie)>)')
-    assert_equal('<div class="markdown_content"><p><a class="" '
+    assert ('<div class="markdown_content"><p><a class="" '
                  '''href='http://"&gt;&lt;img%20src=x%20onerror=alert(document.cookie)&gt;' '''
-                 'rel="nofollow">xss</a></p></div>', r)
+                 'rel="nofollow">xss</a></p></div>' == r)
 
 
 def test_markdown_extremely_slow():
@@ -706,7 +699,7 @@ def test_filtering():
         r = g.markdown_wiki.convert(
             '[[projects category="%s"]]' % random_trove.fullpath)
         project_names = get_project_names(r)
-        assert_equal([test_project.name], project_names)
+        assert [test_project.name] == project_names
 
 
 def test_projects_macro():
@@ -732,7 +725,7 @@ def test_myprojects_macro():
         if p.deleted or p.is_nbhd_project:
             continue
         proj_title = f'<h2><a href="{p.url()}">{p.name}</a></h2>'
-        assert_in(proj_title, r)
+        assert proj_title in r
 
     h.set_context('u/test-user-1', 'wiki', neighborhood='Users')
     user = M.User.query.get(username='test-user-1')
@@ -741,7 +734,7 @@ def test_myprojects_macro():
         if p.deleted or p.is_nbhd_project:
             continue
         proj_title = f'<h2><a href="{p.url()}">{p.name}</a></h2>'
-        assert_in(proj_title, r)
+        assert proj_title in r
 
 
 @td.with_wiki
@@ -768,12 +761,12 @@ def test_hideawards_macro():
 
     with h.push_context(p_nbhd.neighborhood_project._id):
         r = g.markdown_wiki.convert('[[projects]]')
-        assert_in('<div class="feature"> <a href="http://award.org" rel="nofollow" title="Winner!">'
-                  'Award short</a> </div>',
+        assert ('<div class="feature"> <a href="http://award.org" rel="nofollow" title="Winner!">'
+                  'Award short</a> </div>' in
                   squish_spaces(r))
 
         r = g.markdown_wiki.convert('[[projects show_awards_banner=False]]')
-        assert_not_in('Award short', r)
+        assert 'Award short' not in r
 
 
 @td.with_tool('test', 'Blog', 'blog')
@@ -792,11 +785,11 @@ def test_project_blog_posts_macro():
         )
 
         r = g.markdown_wiki.convert('[[project_blog_posts]]')
-        assert_in('Test title</a></h3>', r)
-        assert_in('Test title2</a></h3>', r)
-        assert_in('<div class="markdown_content"><p>test post</p></div>', r)
-        assert_in('<div class="markdown_content"><p>test post2</p></div>', r)
-        assert_in('by <em>Test Admin</em>', r)
+        assert 'Test title</a></h3>' in r
+        assert 'Test title2</a></h3>' in r
+        assert '<div class="markdown_content"><p>test post</p></div>' in r
+        assert '<div class="markdown_content"><p>test post2</p></div>' in r
+        assert 'by <em>Test Admin</em>' in r
 
 
 def test_project_screenshots_macro():
@@ -806,8 +799,8 @@ def test_project_screenshots_macro():
 
         r = g.markdown_wiki.convert('[[project_screenshots]]')
 
-        assert_in('href="/p/test/screenshot/test_file.jpg"', r)
-        assert_in('src="/p/test/screenshot/test_file.jpg/thumb"', r)
+        assert 'href="/p/test/screenshot/test_file.jpg"' in r
+        assert 'src="/p/test/screenshot/test_file.jpg/thumb"' in r
 
 
 def get_project_names(r):
@@ -953,35 +946,35 @@ class TestEmojis(unittest.TestCase):
 
     def test_markdown_emoji_atomic(self):
         output = g.markdown.convert(':smile:')
-        assert_in('<p>\U0001F604</p>', output)
+        assert '<p>\U0001F604</p>' in output
         output = g.markdown.convert(':+1:')
-        assert_in('<p>\U0001F44D</p>', output)
+        assert '<p>\U0001F44D</p>' in output
         output = g.markdown.convert(':Bosnia_&_Herzegovina:')
-        assert_in('<p>\U0001F1E7\U0001F1E6</p>', output)
+        assert '<p>\U0001F1E7\U0001F1E6</p>' in output
         output = g.markdown.convert(':Åland_Islands:')  # emoji code with non-ascii character
-        assert_in('<p>\U0001F1E6\U0001F1FD</p>', output)
+        assert '<p>\U0001F1E6\U0001F1FD</p>' in output
 
     def test_markdown_emoji_with_text(self):
         output = g.markdown.convert('Thumbs up emoji :+1: wow!')
-        assert_in('<p>Thumbs up emoji \U0001F44D wow!</p>', output)
+        assert '<p>Thumbs up emoji \U0001F44D wow!</p>' in output
         output = g.markdown.convert('More emojis :+1::camel::three_o’clock: wow!')
-        assert_in('<p>More emojis \U0001F44D\U0001F42B\U0001F552 wow!</p>', output)
+        assert '<p>More emojis \U0001F44D\U0001F42B\U0001F552 wow!</p>' in output
         output = g.markdown.convert(':man_bouncing_ball_medium-light_skin_tone:emoji:+1:')
-        assert_in('<p>\U000026F9\U0001F3FC\U0000200D\U00002642\U0000FE0Femoji\U0001F44D</p>', output)
+        assert '<p>\U000026F9\U0001F3FC\U0000200D\U00002642\U0000FE0Femoji\U0001F44D</p>' in output
 
     def test_markdown_emoji_in_code(self):
         output = g.markdown.convert('This will not become an emoji `:+1:`')
-        assert_in('<p>This will not become an emoji <code>:+1:</code></p>', output)
+        assert '<p>This will not become an emoji <code>:+1:</code></p>' in output
         output = g.markdown.convert('```html\n<p>:camel:</p>\n```')
-        assert_in(':camel:', output)
+        assert ':camel:' in output
         output = g.markdown.convert('~~~\n:camel:\n~~~')
-        assert_in('<pre><span></span><code>:camel:\n</code></pre>', output)
+        assert '<pre><span></span><code>:camel:\n</code></pre>' in output
 
     def test_markdown_commit_with_emojis(self):
         output = g.markdown_commit.convert('Thumbs up emoji :+1: wow!')
-        assert_in('Thumbs up emoji \U0001F44D wow!', output)
+        assert 'Thumbs up emoji \U0001F44D wow!' in output
         output = g.markdown.convert('More emojis :+1::camel::three_o’clock: wow!')
-        assert_in('More emojis \U0001F44D\U0001F42B\U0001F552 wow!', output)
+        assert 'More emojis \U0001F44D\U0001F42B\U0001F552 wow!' in output
 
 
 class TestUserMentions(unittest.TestCase):
@@ -1092,31 +1085,31 @@ class TestIconRender:
 
     def test_default(self):
         html = '<a class="icon" href="#" title="Edit"><i class="fa fa-edit"></i></a>'
-        assert_equal(html, self.i.render())
+        assert html == self.i.render()
 
     def test_show_title(self):
         html = '<a class="icon" href="#" title="Edit"><i class="fa fa-edit"></i>&nbsp;Edit</a>'
-        assert_equal(html, self.i.render(show_title=True))
+        assert html == self.i.render(show_title=True)
 
         html = '<a class="icon" href="#" title="&lt;script&gt;"><i class="fa fa-edit"></i>&nbsp;&lt;script&gt;</a>'
-        assert_equal(html, self.i.render(show_title=True, title="<script>"))
+        assert html == self.i.render(show_title=True, title="<script>")
 
     def test_extra_css(self):
         html = '<a class="icon reply btn" href="#" title="Edit"><i class="fa fa-edit"></i></a>'
-        assert_equal(html, self.i.render(extra_css='reply btn'))
+        assert html == self.i.render(extra_css='reply btn')
 
     def test_no_closing_tag(self):
         html = '<a class="icon" href="#" title="Edit"><i class="fa fa-edit"></i>'
-        assert_equal(html, self.i.render(closing_tag=False))
+        assert html == self.i.render(closing_tag=False)
 
     def test_tag(self):
         html = '<div class="icon" title="Edit"><i class="fa fa-edit"></i></div>'
-        assert_equal(html, self.i.render(tag='div'))
+        assert html == self.i.render(tag='div')
 
     def test_kwargs(self):
         html = '<a class="icon" data-id="123" href="#" title="Edit"><i class="fa fa-edit"></i></a>'
-        assert_equal(html, self.i.render(**{'data-id': '123'}))
+        assert html == self.i.render(**{'data-id': '123'})
 
     def test_escaping(self):
         html = '<a class="icon &#34;" data-url="&gt;" href="#" title="Edit"><i class="fa fa-edit"></i></a>'
-        assert_equal(html, self.i.render(extra_css='"', **{'data-url': '>'}))
+        assert html == self.i.render(extra_css='"', **{'data-url': '>'})

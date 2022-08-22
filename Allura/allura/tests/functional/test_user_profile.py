@@ -30,18 +30,18 @@ class TestUserProfile(TestController):
     @td.with_user_project('test-admin')
     def test_profile(self):
         r = self.app.get('/u/test-admin/profile/')
-        assert_equal('Test Admin',
+        assert ('Test Admin' ==
                      r.html.find('h1', 'project_title').find('a').text)
         sections = {c for s in r.html.findAll(None, 'profile-section') for c in s['class']}
-        assert_in('personal-data', sections)
-        assert_in('Username:\ntest-admin', r.html.find(None, 'personal-data').getText().replace(' ', ''))
-        assert_in('projects', sections)
-        assert_in('Test Project', r.html.find(None, 'projects').getText())
-        assert_in('Last Updated:', r.html.find(None, 'projects').getText())
-        assert_in('tools', sections)
-        assert_in('Admin', r.html.find(None, 'tools').getText())
-        assert_in('skills', sections)
-        assert_in('No skills entered', r.html.find(None, 'skills').getText())
+        assert 'personal-data' in sections
+        assert 'Username:\ntest-admin' in r.html.find(None, 'personal-data').getText().replace(' ', '')
+        assert 'projects' in sections
+        assert 'Test Project' in r.html.find(None, 'projects').getText()
+        assert 'Last Updated:' in r.html.find(None, 'projects').getText()
+        assert 'tools' in sections
+        assert 'Admin' in r.html.find(None, 'tools').getText()
+        assert 'skills' in sections
+        assert 'No skills entered' in r.html.find(None, 'skills').getText()
 
     @td.with_user_project('test-admin')
     @mock.patch.dict(tg.config, {'use_gravatar': 'true'})
@@ -80,9 +80,9 @@ class TestUserProfile(TestController):
 
         # and accessing it by "-" which was the previous way, will redirect
         response = self.app.get('/u/foo-bar/', status=302)
-        assert_equal(response.location, 'http://localhost/u/foo_bar/')
+        assert response.location == 'http://localhost/u/foo_bar/'
         response = self.app.get('/u/foo-bar/profile/xyz?a=b', status=302)
-        assert_equal(response.location, 'http://localhost/u/foo_bar/profile/xyz?a=b')
+        assert response.location == 'http://localhost/u/foo_bar/profile/xyz?a=b'
 
     def test_differing_profile_proj_shortname_rest_api(self):
         User.upsert('foo_bar')
@@ -246,21 +246,21 @@ class TestUserProfile(TestController):
             with mock.patch.dict(tg.config, order):
                 iep.return_value = eps
                 sections = app.profile_sections
-                assert_equal(sections, [
+                assert sections == [
                     eps[1].load(),
                     eps[3].load(),
                     eps[2].load(),
-                    eps[0].load()])
+                    eps[0].load()]
         r = self.app.get('/u/test-user/profile')
-        assert_in('Section a', r.text)
-        assert_in('Section b', r.text)
-        assert_in('Section c', r.text)
-        assert_in('Section d', r.text)
-        assert_not_in('Section f', r.text)
+        assert 'Section a' in r.text
+        assert 'Section b' in r.text
+        assert 'Section c' in r.text
+        assert 'Section d' in r.text
+        assert 'Section f' not in r.text
 
     def test_no_index_tag_in_empty_profile(self):
         r = self.app.get('/u/test-user/profile/')
-        assert_in('content="noindex, follow"', r.text)
+        assert 'content="noindex, follow"' in r.text
 
     def test_remove_no_index_tag_profile(self):
         r = self.app.get('/u/test-admin/profile/')
@@ -284,13 +284,13 @@ class TestUserProfileHasAccessAPI(TestRestApiBase):
         r = self.api_get(
             '/rest/u/test-admin/profile/has_access?user=babadook&perm=read',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False
         r = self.api_get(
             '/rest/u/test-admin/profile/has_access?user=test-user&perm=jump',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False
 
     @td.with_user_project('test-admin')
     def test_has_access_not_admin(self):
@@ -308,10 +308,10 @@ class TestUserProfileHasAccessAPI(TestRestApiBase):
         r = self.api_get(
             '/rest/u/test-admin/profile/has_access?user=test-admin&perm=admin',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], True)
+        assert r.status_int == 200
+        assert r.json['result'] == True
         r = self.api_get(
             '/rest/u/test-admin/profile/has_access?user=test-user&perm=admin',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False

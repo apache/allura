@@ -251,7 +251,7 @@ class TestEnsureIndexCommand:
         cmd = show_models.EnsureIndexCommand('ensure_index')
         cmd._update_indexes(collection, indexes)
 
-        assert_equal(collection.mock_calls, [
+        assert collection.mock_calls == [
             call.index_information(),
             call.ensure_index(
                 [('foo', 1), ('bar', 1), ('temporary_extra_field_for_indexing', 1)]),
@@ -265,7 +265,7 @@ class TestEnsureIndexCommand:
             call.drop_index('_foo_baz_temporary_extra_field_for_indexing'),
             call.ensure_index([('foo', 1), ('baz', 1)], unique=True, sparse=False),
             call.ensure_index([('foo', 1), ('bar', 1)], unique=False, sparse=False, background=True)
-        ])
+        ]
 
 
 class TestTaskCommand:
@@ -275,16 +275,16 @@ class TestTaskCommand:
 
     def test_commit(self):
         exit_code = taskd.TaskCommand('task').run([test_config, 'commit'])
-        assert_equal(M.MonQTask.query.find({'task_name': 'allura.tasks.index_tasks.commit'}).count(), 1)
-        assert_equal(exit_code, 0)
+        assert M.MonQTask.query.find({'task_name': 'allura.tasks.index_tasks.commit'}).count() == 1
+        assert exit_code == 0
 
     def test_list(self):
         exit_code = taskd.TaskCommand('task').run([test_config, 'list'])
-        assert_equal(exit_code, 0)
+        assert exit_code == 0
 
     def test_count(self):
         exit_code = taskd.TaskCommand('task').run([test_config, 'count'])
-        assert_equal(exit_code, 0)
+        assert exit_code == 0
 
     def test_retry(self):
         # self.test_commit()
@@ -293,24 +293,24 @@ class TestTaskCommand:
             '--filter-name-prefix', 'allura.tasks.index_tasks.',
             '--filter-result-regex', 'pysolr',
         ])
-        assert_equal(exit_code, 0)
+        assert exit_code == 0
 
     def test_purge(self):
         # create task
         self.test_commit()
-        assert_equal(M.MonQTask.query.find().count(), 1)
+        assert M.MonQTask.query.find().count() == 1
         M.MonQTask.query.update({'task_name': 'allura.tasks.index_tasks.commit'}, {'$set': {'state': 'complete'}})
         # run purge; verify 0 records
         exit_code = taskd.TaskCommand('task').run([
             test_config, 'purge',
         ])
-        assert_equal(exit_code, 0)
-        assert_equal(M.MonQTask.query.find().count(), 0)
+        assert exit_code == 0
+        assert M.MonQTask.query.find().count() == 0
 
     def test_purge_old_only(self):
         # create task
         self.test_commit()
-        assert_equal(M.MonQTask.query.find().count(), 1)
+        assert M.MonQTask.query.find().count() == 1
 
         # force task to be in complete state
         M.MonQTask.query.update({'task_name': 'allura.tasks.index_tasks.commit'}, {'$set': {'state': 'complete'}})
@@ -318,8 +318,8 @@ class TestTaskCommand:
         exit_code = taskd.TaskCommand('task').run([
             test_config, 'purge', '--filter-queued-days-ago', '180',
         ])
-        assert_equal(exit_code, 0)
-        assert_equal(M.MonQTask.query.find().count(), 1)
+        assert exit_code == 0
+        assert M.MonQTask.query.find().count() == 1
 
         # modify task to be old
         then = datetime.datetime.utcnow() - datetime.timedelta(days=200)
@@ -330,8 +330,8 @@ class TestTaskCommand:
         exit_code = taskd.TaskCommand('task').run([
             test_config, 'purge', '--filter-queued-days-ago', '180',
         ])
-        assert_equal(exit_code, 0)
-        assert_equal(M.MonQTask.query.find().count(), 0)
+        assert exit_code == 0
+        assert M.MonQTask.query.find().count() == 0
 
 
 class TestTaskdCleanupCommand:
@@ -454,10 +454,10 @@ class TestShowModels:
         cmd = show_models.ShowModelsCommand('models')
         with OutputCapture() as output:
             cmd.run([test_config])
-        assert_in('''allura.model.notification.SiteNotification
+        assert '''allura.model.notification.SiteNotification
          - <FieldProperty _id>
          - <FieldProperty content>
-        ''', output.captured)
+        ''' in output.captured
 
 class TestReindexAsTask:
 
@@ -467,12 +467,12 @@ class TestReindexAsTask:
     def test_command_post(self):
         show_models.ReindexCommand.post('-p "project 3"')
         tasks = M.MonQTask.query.find({'task_name': self.task_name}).all()
-        assert_equal(len(tasks), 1)
+        assert len(tasks) == 1
         task = tasks[0]
-        assert_equal(task.args, [self.cmd, '-p "project 3"'])
+        assert task.args == [self.cmd, '-p "project 3"']
 
     def test_command_doc(self):
-        assert_in('Usage:', show_models.ReindexCommand.__doc__)
+        assert 'Usage:' in show_models.ReindexCommand.__doc__
 
     @patch('allura.command.show_models.ReindexCommand')
     def test_run_command(self, command):
@@ -487,7 +487,7 @@ class TestReindexAsTask:
         try:
             with td.raises(Exception) as e:
                 M.MonQTask.run_ready()
-            assert_in('Error parsing args', str(e.exc))
+            assert 'Error parsing args' in str(e.exc)
         finally:
             # cleanup - remove bad MonQTask
             M.MonQTask.query.remove()
@@ -511,7 +511,7 @@ class TestReindexCommand:
         cmd.options, args = cmd.parser.parse_args([
             '-p', 'test', '--solr', '--solr-hosts=http://blah.com/solr/forge'])
         cmd._chunked_add_artifacts(list(range(10)))
-        assert_equal(Solr.call_args[0][0], 'http://blah.com/solr/forge')
+        assert Solr.call_args[0][0] == 'http://blah.com/solr/forge'
 
     @patch('pysolr.Solr')
     def test_solr_hosts_list(self, Solr):
@@ -520,11 +520,10 @@ class TestReindexCommand:
             '-p', 'test', '--solr', '--solr-hosts=http://blah.com/solr/forge,https://other.net/solr/forge'])
         cmd._chunked_add_artifacts(list(range(10)))
         # check constructors of first and second Solr() instantiations
-        assert_equal(
-            {Solr.call_args_list[0][0][0], Solr.call_args_list[1][0][0]},
+        assert (
+            {Solr.call_args_list[0][0][0], Solr.call_args_list[1][0][0]} ==
             {'http://blah.com/solr/forge',
-                 'https://other.net/solr/forge'}
-        )
+                 'https://other.net/solr/forge'})
 
     @patch('allura.command.show_models.utils')
     def test_project_regex(self, utils):
@@ -539,12 +538,12 @@ class TestReindexCommand:
         cmd.options = Mock(tasks=True, max_chunk=10 * 1000, ming_config=None)
         ref_ids = list(range(10 * 1000 * 2 + 20))
         cmd._chunked_add_artifacts(ref_ids)
-        assert_equal(len(add_artifacts.post.call_args_list), 3)
-        assert_equal(
-            len(add_artifacts.post.call_args_list[0][0][0]), 10 * 1000)
-        assert_equal(
-            len(add_artifacts.post.call_args_list[1][0][0]), 10 * 1000)
-        assert_equal(len(add_artifacts.post.call_args_list[2][0][0]), 20)
+        assert len(add_artifacts.post.call_args_list) == 3
+        assert (
+            len(add_artifacts.post.call_args_list[0][0][0]) == 10 * 1000)
+        assert (
+            len(add_artifacts.post.call_args_list[1][0][0]) == 10 * 1000)
+        assert len(add_artifacts.post.call_args_list[2][0][0]) == 20
 
     @patch('allura.command.show_models.add_artifacts')
     def test_post_add_artifacts_too_large(self, add_artifacts):
@@ -571,7 +570,7 @@ class TestReindexCommand:
             call([3], **kw),
             call([4], **kw)
         ]
-        assert_equal(expected, add_artifacts.post.call_args_list)
+        assert expected == add_artifacts.post.call_args_list
 
     @patch('allura.command.show_models.add_artifacts')
     def test_post_add_artifacts_other_error(self, add_artifacts):

@@ -50,17 +50,17 @@ class TestWhenModerating(WithDatabase):
             assert mock_post_to_feed.call_count == 1
 
         post = self.get_post()
-        assert_equal(post.status, 'ok')
-        assert_equal(post.thread.last_post_date.strftime("%Y-%m-%d %H:%M:%S"),
+        assert post.status == 'ok'
+        assert (post.thread.last_post_date.strftime("%Y-%m-%d %H:%M:%S") ==
                      mod_date.strftime("%Y-%m-%d %H:%M:%S"))
 
     def test_that_it_can_mark_as_spam(self):
         self.moderate_post(spam=True)
-        assert_equal(self.get_post().status, 'spam')
+        assert self.get_post().status == 'spam'
 
     def test_that_it_can_be_deleted(self):
         self.moderate_post(delete=True)
-        assert_equal(self.get_post(), None)
+        assert self.get_post() == None
 
     def moderate_post(self, **kwargs):
         with patch('allura.controllers.discuss.flash'):

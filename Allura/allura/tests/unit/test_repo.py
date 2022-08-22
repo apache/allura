@@ -106,40 +106,40 @@ class TestBlob(unittest.TestCase):
 
     def test_pypeline_view(self):
         blob = M.repository.Blob(MagicMock(), 'INSTALL.mdown', 'blob1')
-        assert_equal(blob.has_pypeline_view, True)
+        assert blob.has_pypeline_view == True
 
     def test_has_html_view_text_mime(self):
         blob = M.repository.Blob(MagicMock(), 'INSTALL', 'blob1')
         blob.content_type = 'text/plain'
-        assert_equal(blob.has_html_view, True)
+        assert blob.has_html_view == True
 
     def test_has_html_view_text_ext(self):
         blob = M.repository.Blob(MagicMock(), 'INSTALL.txt', 'blob1')
         blob.content_type = 'foo/bar'
-        assert_equal(blob.has_html_view, True)
+        assert blob.has_html_view == True
 
     def test_has_html_view_text_contents(self):
         blob = M.repository.Blob(MagicMock(), 'INSTALL', 'blob1')
         blob.content_type = 'foo/bar'
         blob.text = b'hello world, this is text here'
-        assert_equal(blob.has_html_view, True)
+        assert blob.has_html_view == True
 
     def test_has_html_view_bin_ext(self):
         blob = M.repository.Blob(MagicMock(), 'INSTALL.zip', 'blob1')
-        assert_equal(blob.has_html_view, False)
+        assert blob.has_html_view == False
 
     def test_has_html_view_bin_content(self):
         blob = M.repository.Blob(MagicMock(), 'myfile', 'blob1')
         blob.content_type = 'whatever'
         blob.text = b'\0\0\0\0'
-        assert_equal(blob.has_html_view, False)
+        assert blob.has_html_view == False
 
     def test_has_html_view__local_setting_override_bin(self):
         blob = M.repository.Blob(MagicMock(), 'myfile.dat', 'blob1')
         blob.content_type = 'whatever'
         blob.text = b'\0\0\0\0'
         blob.repo._additional_viewable_extensions = ['.dat']
-        assert_equal(blob.has_html_view, True)
+        assert blob.has_html_view == True
 
 
 class TestCommit(unittest.TestCase):
@@ -169,19 +169,19 @@ class TestCommit(unittest.TestCase):
         tree = commit.get_tree(create=False)
         assert not commit.repo.compute_tree_new.called
         assert not c.model_cache.get.called
-        assert_equal(tree, None)
+        assert tree == None
 
         commit.tree_id = 'tree'
         tree = commit.get_tree(create=False)
         assert not commit.repo.compute_tree_new.called
         c.model_cache.get.assert_called_with(M.repository.Tree, dict(_id='tree'))
-        assert_equal(tree, None)
+        assert tree == None
 
         _tree = Mock()
         c.model_cache.get.return_value = _tree
         tree = commit.get_tree(create=False)
         _tree.set_context.assert_called_with(commit)
-        assert_equal(tree, _tree)
+        assert tree == _tree
 
     @patch.object(M.repository.Tree.query, 'get')
     def test_get_tree_create(self, tree_get):
@@ -196,7 +196,7 @@ class TestCommit(unittest.TestCase):
         commit.repo.compute_tree_new.assert_called_once_with(commit)
         assert not c.model_cache.get.called
         assert not tree_get.called
-        assert_equal(tree, None)
+        assert tree == None
 
         commit.repo.compute_tree_new.reset_mock()
         commit.repo.compute_tree_new.return_value = 'tree'
@@ -208,7 +208,7 @@ class TestCommit(unittest.TestCase):
         c.model_cache.get.assert_called_once_with(
             M.repository.Tree, dict(_id='tree'))
         _tree.set_context.assert_called_once_with(commit)
-        assert_equal(tree, _tree)
+        assert tree == _tree
 
         commit.repo.compute_tree_new.reset_mock()
         c.model_cache.get.reset_mock()
@@ -219,7 +219,7 @@ class TestCommit(unittest.TestCase):
         c.model_cache.get.assert_called_once_with(
             M.repository.Tree, dict(_id='tree2'))
         _tree.set_context.assert_called_once_with(commit)
-        assert_equal(tree, _tree)
+        assert tree == _tree
 
         commit.repo.compute_tree_new.reset_mock()
         c.model_cache.get.reset_mock()
@@ -229,12 +229,12 @@ class TestCommit(unittest.TestCase):
         c.model_cache.get.assert_called_once_with(
             M.repository.Tree, dict(_id='tree2'))
         commit.repo.compute_tree_new.assert_called_once_with(commit)
-        assert_equal(commit.tree_id, 'tree')
+        assert commit.tree_id == 'tree'
         tree_get.assert_called_once_with(_id='tree')
         c.model_cache.set.assert_called_once_with(
             M.repository.Tree, dict(_id='tree'), _tree)
         _tree.set_context.assert_called_once_with(commit)
-        assert_equal(tree, _tree)
+        assert tree == _tree
 
     def test_tree_create(self):
         commit = M.repository.Commit()
