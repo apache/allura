@@ -32,6 +32,7 @@ from alluratest.controller import setup_global_objects, setup_unit_test
 from forgetracker.tests.functional.test_root import TrackerTestController
 
 
+@with_nose_compatibility
 class TestPersonalDashboard(TestController):
 
     def test_dashboard(self):
@@ -68,6 +69,7 @@ class TestPersonalDashboard(TestController):
                 assert 'Section f' not in r.text
 
 
+@with_nose_compatibility
 class TestTicketsSection(TrackerTestController):
 
     @td.with_tracker
@@ -83,10 +85,11 @@ class TestTicketsSection(TrackerTestController):
         assert 'foo' in str(ticket_rows)
 
 
+@with_nose_compatibility
 class TestMergeRequestsSection(TestController):
 
     def setUp(self):
-        super().setUp()
+        super().setup_method(method)
         setup_unit_test()
         self.setup_with_tools()
         mr= self.merge_request

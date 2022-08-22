@@ -24,6 +24,7 @@ from allura import model as M
 from ming.odm import session
 
 
+@with_nose_compatibility
 class TestClearOldNotifications:
 
     def setUp(self):

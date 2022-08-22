@@ -31,7 +31,7 @@ class MockPatchTestCase:
         for patch_instance in self._patch_instances:
             patch_instance.__enter__()
 
-    def tearDown(self):
+    def teardown_method(self, method):
         for patch_instance in self._patch_instances:
             patch_instance.__exit__(None, None, None)
 
@@ -39,5 +39,5 @@ class MockPatchTestCase:
 class WithDatabase(MockPatchTestCase):
 
     def setUp(self):
-        super().setUp()
+        super().setup_method(method)
         clear_all_database_tables()

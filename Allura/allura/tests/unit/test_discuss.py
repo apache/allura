@@ -22,6 +22,7 @@ from allura.tests.unit import WithDatabase
 from allura.tests.unit.patches import fake_app_patch
 
 
+@with_nose_compatibility
 class TestThread(WithDatabase):
     patches = [fake_app_patch]
 

@@ -26,6 +26,7 @@ from allura.tests.unit.patches import fake_app_patch
 from allura.tests.unit.factories import create_project, create_app_config
 
 
+@with_nose_compatibility
 class TestApplication(TestCase):
 
     def test_validate_mount_point(self):
@@ -54,6 +55,7 @@ class TestApplication(TestCase):
         self.assertEqual(f('does_not_exist'), '')
 
 
+@with_nose_compatibility
 class TestInstall(WithDatabase):
     patches = [fake_app_patch]
 
@@ -66,11 +68,12 @@ class TestInstall(WithDatabase):
         return model.Discussion.query.find().count()
 
 
+@with_nose_compatibility
 class TestDefaultDiscussion(WithDatabase):
     patches = [fake_app_patch]
 
     def setUp(self):
-        super().setUp()
+        super().setup_method(method)
         install_app()
         self.discussion = model.Discussion.query.get(
             shortname='my_mounted_app')
@@ -86,11 +89,12 @@ class TestDefaultDiscussion(WithDatabase):
         assert self.discussion.shortname == 'my_mounted_app'
 
 
+@with_nose_compatibility
 class TestAppDefaults(WithDatabase):
     patches = [fake_app_patch]
 
     def setUp(self):
-        super().setUp()
+        super().setup_method(method)
         self.app = install_app()
 
     def test_that_it_has_an_empty_sidebar_menu(self):

@@ -24,12 +24,13 @@ from allura.tests.unit import patches
 from allura.tests.unit.factories import create_post
 
 
+@with_nose_compatibility
 class TestPostModel(WithDatabase):
     patches = [patches.fake_app_patch,
                patches.disable_notifications_patch]
 
     def setUp(self):
-        super().setUp()
+        super().setup_method(method)
         self.post = create_post('mypost')
 
     def test_that_it_is_pending_by_default(self):

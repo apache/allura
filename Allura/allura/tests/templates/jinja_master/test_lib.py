@@ -34,6 +34,7 @@ class TemplateTest:
         self.jinja2_env = AlluraJinjaRenderer.create(config, g)['jinja'].jinja2_env
 
 
+@with_nose_compatibility
 class TestRelatedArtifacts(TemplateTest):
 
     def _render_related_artifacts(self, artifact):

@@ -53,6 +53,7 @@ def test_check_breached_password(r_get):
         HIBPClient.check_breached_password('qwerty')
 
 
+@with_nose_compatibility
 class TestSecurity(TestController):
 
     validate_skip = True

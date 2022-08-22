@@ -44,10 +44,11 @@ from allura.lib import helpers as h
 from alluratest.controller import setup_trove_categories
 
 
+@with_nose_compatibility
 class TestRootController(TestController):
 
     def setUp(self):
-        super().setUp()
+        super().setup_method(method)
         n_adobe = M.Neighborhood.query.get(name='Adobe')
         assert n_adobe
         u_admin = M.User.query.get(username='test-admin')
@@ -213,10 +214,11 @@ class TestRootController(TestController):
         assert "report-uri https://example.com/r/d/csp/enforce; report-to https://example.com/r/d/csp/enforce; frame-src 'self' www.youtube-nocookie.com;" in  resp.headers.getall('Content-Security-Policy')[0]
 
 
+@with_nose_compatibility
 class TestRootWithSSLPattern(TestController):
     def setUp(self):
         with td.patch_middleware_config({'force_ssl.pattern': '^/auth'}):
-            super().setUp()
+            super().setup_method(method)
 
     def test_no_weird_ssl_redirect_for_error_document(self):
         # test a 404, same functionality as a 500 from an error

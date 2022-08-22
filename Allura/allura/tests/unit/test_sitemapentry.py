@@ -21,6 +21,7 @@ from mock import Mock
 from allura.app import SitemapEntry
 
 
+@with_nose_compatibility
 class TestSitemapEntry(unittest.TestCase):
 
     def test_matches_url(self):

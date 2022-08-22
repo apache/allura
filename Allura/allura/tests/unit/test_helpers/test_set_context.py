@@ -28,10 +28,11 @@ from allura.tests.unit.factories import (create_project,
                                          create_neighborhood)
 
 
+@with_nose_compatibility
 class TestWhenProjectIsFoundAndAppIsNot(WithDatabase):
 
     def setUp(self):
-        super().setUp()
+        super().setup_method(method)
         self.myproject = create_project('myproject')
         set_context('myproject', neighborhood=self.myproject.neighborhood)
 
@@ -42,10 +43,11 @@ class TestWhenProjectIsFoundAndAppIsNot(WithDatabase):
         assert c.app is None, c.app
 
 
+@with_nose_compatibility
 class TestWhenProjectIsFoundInNeighborhood(WithDatabase):
 
     def setUp(self):
-        super().setUp()
+        super().setup_method(method)
         self.myproject = create_project('myproject')
         set_context('myproject', neighborhood=self.myproject.neighborhood)
 
@@ -56,11 +58,12 @@ class TestWhenProjectIsFoundInNeighborhood(WithDatabase):
         assert c.app is None
 
 
+@with_nose_compatibility
 class TestWhenAppIsFoundByID(WithDatabase):
     patches = [patches.project_app_loading_patch]
 
     def setUp(self):
-        super().setUp()
+        super().setup_method(method)
         self.myproject = create_project('myproject')
         self.app_config = create_app_config(self.myproject, 'my_mounted_app')
         set_context('myproject', app_config_id=self.app_config._id,
@@ -73,11 +76,12 @@ class TestWhenAppIsFoundByID(WithDatabase):
         self.project_app_instance_function.assert_called_with(self.app_config)
 
 
+@with_nose_compatibility
 class TestWhenAppIsFoundByMountPoint(WithDatabase):
     patches = [patches.project_app_loading_patch]
 
     def setUp(self):
-        super().setUp()
+        super().setup_method(method)
         self.myproject = create_project('myproject')
         self.app_config = create_app_config(self.myproject, 'my_mounted_app')
         set_context('myproject', mount_point='my_mounted_app',
@@ -91,6 +95,7 @@ class TestWhenAppIsFoundByMountPoint(WithDatabase):
             'my_mounted_app')
 
 
+@with_nose_compatibility
 class TestWhenProjectIsNotFound(WithDatabase):
 
     def test_that_it_raises_an_exception(self):
@@ -108,6 +113,7 @@ class TestWhenProjectIsNotFound(WithDatabase):
                       neighborhood=None)
 
 
+@with_nose_compatibility
 class TestWhenNeighborhoodIsNotFound(WithDatabase):
 
     def test_that_it_raises_an_exception(self):

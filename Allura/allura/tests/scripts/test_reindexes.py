@@ -24,6 +24,7 @@ from alluratest.controller import setup_basic_test
 from allura import model as M
 
 
+@with_nose_compatibility
 class TestReindexProjects:
 
     def setUp(self):
@@ -48,6 +49,7 @@ class TestReindexProjects:
         assert M.MonQTask.query.find({'task_name': 'allura.tasks.index_tasks.add_projects'}).count() == 1
 
 
+@with_nose_compatibility
 class TestReindexUsers:
 
     def setUp(self):

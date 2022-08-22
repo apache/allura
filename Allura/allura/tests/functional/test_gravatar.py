@@ -25,6 +25,7 @@ from allura.tests import TestController
 import allura.lib.gravatar as gravatar
 
 
+@with_nose_compatibility
 class TestGravatar(TestController):
 
     def test_id(self):
