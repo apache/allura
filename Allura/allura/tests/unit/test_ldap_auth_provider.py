@@ -46,10 +46,10 @@ class TestLdapAuthenticationProvider:
         # Note: OSX uses a crypt library with a known issue relating the hashing algorithms.
         if b'$6$rounds=' not in ep('pwd') and platform.system() == 'Darwin':
             raise SkipTest
-        assert_not_equal(ep('test_pass'), ep('test_pass'))
-        assert_equal(ep('test_pass', '0000'), ep('test_pass', '0000'))
+        assert ep('test_pass') != ep('test_pass')
+        assert ep('test_pass', '0000') == ep('test_pass', '0000')
         # Test password format
-        assert_true(ep('pwd').startswith(b'{CRYPT}$6$rounds=6000$'))
+        assert ep('pwd').startswith(b'{CRYPT}$6$rounds=6000$')
 
     @patch('allura.lib.plugin.ldap')
     def test_set_password(self, ldap):
@@ -65,7 +65,7 @@ class TestLdapAuthenticationProvider:
         connection.bind_s.called_once_with(dn, b'old-pass')
         connection.modify_s.assert_called_once_with(
             dn, [(ldap.MOD_REPLACE, 'userPassword', b'new-pass-hash')])
-        assert_equal(connection.unbind_s.call_count, 1)
+        assert connection.unbind_s.call_count == 1
 
     @patch('allura.lib.plugin.ldap')
     def test_login(self, ldap):
@@ -83,7 +83,7 @@ class TestLdapAuthenticationProvider:
         ldap.initialize.assert_called_once_with('ldaps://localhost/')
         connection = ldap.initialize.return_value
         connection.bind_s.called_once_with(dn, 'test-password')
-        assert_equal(connection.unbind_s.call_count, 1)
+        assert connection.unbind_s.call_count == 1
 
     @patch('allura.lib.plugin.ldap')
     def test_login_autoregister(self, ldap):
@@ -103,7 +103,7 @@ class TestLdapAuthenticationProvider:
 
         user = M.User.query.get(username=params['username'])
         assert user
-        assert_equal(user.display_name, 'åℒƒ')
+        assert user.display_name == 'åℒƒ'
 
     @patch('allura.lib.plugin.modlist')
     @patch('allura.lib.plugin.ldap')
@@ -116,11 +116,11 @@ class TestLdapAuthenticationProvider:
         ldap.dn.escape_dn_chars = lambda x: x
         self.provider._encode_password = Mock(return_value=b'new-password-hash')
 
-        assert_equal(M.User.query.get(username=user_doc['username']), None)
+        assert M.User.query.get(username=user_doc['username']) == None
         with h.push_config(config, **{'auth.ldap.autoregister': 'false'}):
             self.provider.register_user(user_doc)
         ThreadLocalORMSession.flush_all()
-        assert_not_equal(M.User.query.get(username=user_doc['username']), None)
+        assert M.User.query.get(username=user_doc['username']) != None
 
         dn = 'uid=%s,ou=people,dc=localdomain' % user_doc['username']
         ldap.initialize.assert_called_once_with('ldaps://localhost/')
@@ -129,7 +129,7 @@ class TestLdapAuthenticationProvider:
             'cn=admin,dc=localdomain',
             'admin-password')
         connection.add_s.assert_called_once_with(dn, modlist.addModlist.return_value)
-        assert_equal(connection.unbind_s.call_count, 1)
+        assert connection.unbind_s.call_count == 1
 
     @patch('allura.lib.plugin.ldap')
     @patch('allura.lib.plugin.datetime', autospec=True)
@@ -138,7 +138,7 @@ class TestLdapAuthenticationProvider:
         user.__ming__ = Mock()
         user.last_password_updated = None
         self.provider.set_password(user, None, 'new')
-        assert_equal(user.last_password_updated, dt_mock.utcnow.return_value)
+        assert user.last_password_updated == dt_mock.utcnow.return_value
 
     def test_get_last_password_updated_not_set(self):
         user = Mock()
@@ -148,10 +148,10 @@ class TestLdapAuthenticationProvider:
         upd = self.provider.get_last_password_updated(user)
         gen_time = datetime.utcfromtimestamp(
             calendar.timegm(user._id.generation_time.utctimetuple()))
-        assert_equal(upd, gen_time)
+        assert upd == gen_time
 
     def test_get_last_password_updated(self):
         user = Mock()
         user.last_password_updated = datetime(2014, 6, 4, 13, 13, 13)
         upd = self.provider.get_last_password_updated(user)
-        assert_equal(upd, user.last_password_updated)
+        assert upd == user.last_password_updated

@@ -42,29 +42,29 @@ def setup_with_tools():
 
 
 def test_project():
-    assert_equals(type(c.project.sidebar_menu()), list)
-    assert_in(c.project.script_name, c.project.url())
+    assert type(c.project.sidebar_menu()) == list
+    assert c.project.script_name in c.project.url()
     old_proj = c.project
     h.set_context('test/sub1', neighborhood='Projects')
-    assert_equals(type(c.project.sidebar_menu()), list)
-    assert_equals(type(c.project.sitemap()), list)
-    assert_equals(c.project.sitemap()[1].label, 'Admin')
-    assert_in(old_proj, list(c.project.parent_iter()))
+    assert type(c.project.sidebar_menu()) == list
+    assert type(c.project.sitemap()) == list
+    assert c.project.sitemap()[1].label == 'Admin'
+    assert old_proj in list(c.project.parent_iter())
     h.set_context('test', 'wiki', neighborhood='Projects')
     adobe_nbhd = M.Neighborhood.query.get(name='Adobe')
     p = M.Project.query.get(
         shortname='adobe-1', neighborhood_id=adobe_nbhd._id)
     # assert 'http' in p.url() # We moved adobe into /adobe/, not
     # http://adobe....
-    assert_in(p.script_name, p.url())
-    assert_equals(c.project.shortname, 'test')
-    assert_in('<p>', c.project.description_html)
+    assert p.script_name in p.url()
+    assert c.project.shortname == 'test'
+    assert '<p>' in c.project.description_html
     c.project.uninstall_app('hello-test-mount-point')
     ThreadLocalORMSession.flush_all()
 
     c.project.install_app('Wiki', 'hello-test-mount-point')
     c.project.support_page = 'hello-test-mount-point'
-    assert_equals(c.project.app_config('wiki').tool_name, 'wiki')
+    assert c.project.app_config('wiki').tool_name == 'wiki'
     ThreadLocalORMSession.flush_all()
     with td.raises(ToolError):
         # already installed
@@ -104,10 +104,10 @@ def test_install_app_validates_options():
         for v in [None, '', 'bad@email']:
             with td.raises(ToolError):
                 c.project.install_app('Tickets', 'test-tickets', **{name: v})
-            assert_equals(c.project.app_instance('test-tickets'), None)
+            assert c.project.app_instance('test-tickets') == None
         c.project.install_app('Tickets', 'test-tickets', **{name: 'e@e.com'})
         app = c.project.app_instance('test-tickets')
-        assert_equals(app.config.options[name], 'e@e.com')
+        assert app.config.options[name] == 'e@e.com'
 
 
 def test_project_index():
@@ -142,9 +142,9 @@ def test_subproject():
 def test_anchored_tools():
     c.project.neighborhood.anchored_tools = 'wiki:Wiki, tickets:Ticket'
     c.project.install_app = MagicMock()
-    assert_equals(c.project.sitemap()[0].label, 'Wiki')
-    assert_equals(c.project.install_app.call_args[0][0], 'tickets')
-    assert_equals(c.project.ordered_mounts()[0]['ac'].tool_name, 'wiki')
+    assert c.project.sitemap()[0].label == 'Wiki'
+    assert c.project.install_app.call_args[0][0] == 'tickets'
+    assert c.project.ordered_mounts()[0]['ac'].tool_name == 'wiki'
 
 
 def test_set_ordinal_to_admin_tool():
@@ -152,7 +152,7 @@ def test_set_ordinal_to_admin_tool():
                        user=M.User.by_username('test-admin'),
                        project=M.Project.query.get(shortname='test')):
         sm = c.project.sitemap()
-        assert_equals(sm[-1].tool_name, 'admin')
+        assert sm[-1].tool_name == 'admin'
 
 
 @with_setup(setUp)

@@ -93,9 +93,9 @@ class TestChunkedIterator(unittest.TestCase):
         assert len(chunks) == 2, chunks
         assert len(chunks[0]) == 2, chunks[0]
         assert len(chunks[1]) == 1, chunks[1]
-        assert_equal(chunks[0][0].username, 'sample-user-1')
-        assert_equal(chunks[0][1].username, 'sample-user-2')
-        assert_equal(chunks[1][0].username, 'sample-user-3')
+        assert chunks[0][0].username == 'sample-user-1'
+        assert chunks[0][1].username == 'sample-user-2'
+        assert chunks[1][0].username == 'sample-user-3'
 
 
 class TestChunkedList(unittest.TestCase):
@@ -228,10 +228,10 @@ class TestLineAnchorCodeHtmlFormatter(unittest.TestCase):
         assert '<div id="l1" class="code_block">' in hl_code
         try:
             # older pygments
-            assert_in('<span class="lineno">1 </span>', hl_code)
+            assert '<span class="lineno">1 </span>' in hl_code
         except AssertionError:
             # newer pygments
-            assert_in('<span class="linenos">1</span>', hl_code)
+            assert '<span class="linenos">1</span>' in hl_code
 
 
 class TestIsTextFile(unittest.TestCase):
@@ -285,40 +285,40 @@ class TestHTMLSanitizer(unittest.TestCase):
     def test_html_sanitizer_iframe(self):
         walker = self.walker_from_text('<div><iframe></iframe></div>')
         p = utils.ForgeHTMLSanitizerFilter(walker)
-        assert_equal(self.simple_tag_list(p), ['div', 'div'])
+        assert self.simple_tag_list(p) == ['div', 'div']
 
     def test_html_sanitizer_youtube_iframe(self):
         walker = self.walker_from_text(
             '<div><iframe src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
         p = utils.ForgeHTMLSanitizerFilter(walker)
-        assert_equal(self.simple_tag_list(p), ['div', 'iframe', 'iframe', 'div'])
+        assert self.simple_tag_list(p) == ['div', 'iframe', 'iframe', 'div']
 
         walker = self.walker_from_text(
             '<div><iframe src="https://www.youtube-nocookie.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
         p = utils.ForgeHTMLSanitizerFilter(walker)
-        assert_equal(self.simple_tag_list(p), ['div', 'iframe', 'iframe', 'div'])
+        assert self.simple_tag_list(p) == ['div', 'iframe', 'iframe', 'div']
 
     def test_html_sanitizer_form_elements(self):
         walker = self.walker_from_text('<p>test</p><form method="post" action="http://localhost/foo.php"><input type=file><input type=text><textarea>asdf</textarea></form>')
         p = utils.ForgeHTMLSanitizerFilter(walker)
-        assert_equal(self.simple_tag_list(p), ['p', 'p'])
+        assert self.simple_tag_list(p) == ['p', 'p']
 
     def test_html_sanitizer_checkbox(self):
         walker = self.walker_from_text('<p><input type="checkbox" disabled/><input type="text" disabled/><input type="checkbox" disabled checked/></p>')
         p = utils.ForgeHTMLSanitizerFilter(walker)
-        assert_equal(self.simple_tag_list(p), ['p', 'input', 'input', 'p'])
+        assert self.simple_tag_list(p) == ['p', 'input', 'input', 'p']
 
     def test_html_sanitizer_summary(self):
         walker = self.walker_from_text('<details open="open"><summary>An Summary</summary><ul><li>Bullet Item</li></ul></details>')
         p = utils.ForgeHTMLSanitizerFilter(walker)
-        assert_equal(self.simple_tag_list(p), ['details', 'summary', 'summary', 'ul', 'li', 'li', 'ul', 'details'])
+        assert self.simple_tag_list(p) == ['details', 'summary', 'summary', 'ul', 'li', 'li', 'ul', 'details']
 
 
 def test_ip_address():
     req = Mock()
     req.remote_addr = '1.2.3.4'
     req.headers = {}
-    assert_equal(utils.ip_address(req),
+    assert (utils.ip_address(req) ==
                  '1.2.3.4')
 
 
@@ -327,7 +327,7 @@ def test_ip_address_header():
     req.remote_addr = '1.2.3.4'
     req.headers = {'X_FORWARDED_FOR': '5.6.7.8'}
     with h.push_config(config, **{'ip_address_header': 'X_FORWARDED_FOR'}):
-        assert_equal(utils.ip_address(req),
+        assert (utils.ip_address(req) ==
                      '5.6.7.8')
 
 
@@ -336,22 +336,22 @@ def test_ip_address_header_not_set():
     req.remote_addr = '1.2.3.4'
     req.headers = {}
     with h.push_config(config, **{'ip_address_header': 'X_FORWARDED_FOR'}):
-        assert_equal(utils.ip_address(req),
+        assert (utils.ip_address(req) ==
                      '1.2.3.4')
 
 
 def test_empty_cursor():
     """EmptyCursors conforms to specification of Ming's ODMCursor"""
     cursor = utils.EmptyCursor()
-    assert_equal(cursor.count(), 0)
-    assert_equal(cursor.first(), None)
-    assert_equal(cursor.all(), [])
-    assert_equal(cursor.limit(10), cursor)
-    assert_equal(cursor.skip(10), cursor)
-    assert_equal(cursor.sort('name', 1), cursor)
-    assert_equal(cursor.hint('index'), cursor)
-    assert_equal(cursor.extensions, [])
-    assert_equal(cursor.options(arg1='val1', arg2='val2'), cursor)
+    assert cursor.count() == 0
+    assert cursor.first() == None
+    assert cursor.all() == []
+    assert cursor.limit(10) == cursor
+    assert cursor.skip(10) == cursor
+    assert cursor.sort('name', 1) == cursor
+    assert cursor.hint('index') == cursor
+    assert cursor.extensions == []
+    assert cursor.options(arg1='val1', arg2='val2') == cursor
     assert_raises(ValueError, cursor.one)
     assert_raises(StopIteration, cursor.next)
     assert_raises(StopIteration, cursor._next_impl)
@@ -367,16 +367,16 @@ def test_DateJSONEncoder():
 
 def test_clean_phone_number():
     clean = utils.clean_phone_number
-    assert_equal(clean('123456789'), '123456789')
-    assert_equal(clean('+123 456:789'), '123456789')
-    assert_equal(clean('555-555-5555'), '5555555555')
-    assert_equal(clean('1-555-555-5555'), '15555555555')
+    assert clean('123456789') == '123456789'
+    assert clean('+123 456:789') == '123456789'
+    assert clean('555-555-5555') == '5555555555'
+    assert clean('1-555-555-5555') == '15555555555'
 
 
 def test_phone_number_hash():
     hash = utils.phone_number_hash
-    assert_equal(hash('1234567890'), hash('+123 456:7890'))
-    assert_not_equal(hash('1234567890'), hash('1234567891'))
+    assert hash('1234567890') == hash('+123 456:7890')
+    assert hash('1234567890') != hash('1234567891')
 
 
 def test_skip_mod_date():
@@ -395,8 +395,8 @@ class FakeAttachment:
 
 def unique_attachments():
     ua = utils.unique_attachments
-    assert_equal([], ua(None))
-    assert_equal([], ua([]))
+    assert [] == ua(None)
+    assert [] == ua([])
 
     pic1 = FakeAttachment('pic.png')
     pic2 = FakeAttachment('pic.png')
@@ -405,7 +405,7 @@ def unique_attachments():
     other = FakeAttachment('other')
     attachments = [pic1, file1, pic2, file2, pic2, other]
     expected = [file2, other, pic2]
-    assert_equal(expected, ua(attachments))
+    assert expected == ua(attachments)
 
 
 def test_is_nofollow_url():
@@ -432,8 +432,8 @@ def test_close_ipv4_addrs():
 
 def test_urlencode():
     # dict - a simple one so arbitrary ordering doesn't cause problems on py2
-    assert_equal(utils.urlencode({'a': 'hello'}),
+    assert (utils.urlencode({'a': 'hello'}) ==
                  'a=hello')
     # list of pairs - including unicode and bytes
-    assert_equal(utils.urlencode([('a', 1), ('b', 'ƒ'), ('c', 'ƒ'.encode())]),
+    assert (utils.urlencode([('a', 1), ('b', 'ƒ'), ('c', 'ƒ'.encode())]) ==
                  'a=1&b=%C6%92&c=%C6%92')

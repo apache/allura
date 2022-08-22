@@ -39,25 +39,25 @@ class TestTroveCategory(TestController):
             r = self.app.post('/categories/create/', params=dict(categoryname='test'))
 
         category_id = post_event.call_args[0][1]
-        assert_true(isinstance(category_id, int))
-        assert_equals(post_event.call_args[0][0], 'trove_category_created')
+        assert isinstance(category_id, int)
+        assert post_event.call_args[0][0] == 'trove_category_created'
         category = M.TroveCategory.query.get(trove_cat_id=category_id)
 
         # Update event
         category.fullname = 'test2'
         session(M.TroveCategory).flush()
         edited_category_id = post_event.call_args[0][1]
-        assert_true(isinstance(edited_category_id, int))
-        assert_equals(edited_category_id, category_id)
-        assert_equals(post_event.call_args[0][0], 'trove_category_updated')
+        assert isinstance(edited_category_id, int)
+        assert edited_category_id == category_id
+        assert post_event.call_args[0][0] == 'trove_category_updated'
 
         # Delete event
         M.TroveCategory.delete(category)
         session(M.TroveCategory).flush()
         deleted_category_id = post_event.call_args[0][1]
-        assert_true(isinstance(deleted_category_id, int))
-        assert_equals(deleted_category_id, category_id)
-        assert_equals(post_event.call_args[0][0], 'trove_category_deleted')
+        assert isinstance(deleted_category_id, int)
+        assert deleted_category_id == category_id
+        assert post_event.call_args[0][0] == 'trove_category_deleted'
 
     def test_enableediting_setting(self):
         def check_access(username=None, status=None):
@@ -122,7 +122,7 @@ class TestTroveCategoryController(TestController):
             </ul>
         </ul>
         """.strip(), 'html.parser')
-        assert_equals(str(expected), str(rendered_tree))
+        assert str(expected) == str(rendered_tree)
 
     @td.with_tool('test2', 'admin_main', 'admin')
     def test_trove_empty_hierarchy(self):
@@ -132,24 +132,24 @@ class TestTroveCategoryController(TestController):
         <ul>
         </ul>
         """.strip(), 'html.parser')
-        assert_equals(str(expected), str(rendered_tree))
+        assert str(expected) == str(rendered_tree)
 
     def test_delete(self):
         self.create_some_cats()
         session(M.TroveCategory).flush()
-        assert_equals(5, M.TroveCategory.query.find().count())
+        assert 5 == M.TroveCategory.query.find().count()
 
         r = self.app.get('/categories/1')
         form = r.forms[0]
         r = form.submit()
-        assert_in("This category contains at least one sub-category, therefore it can't be removed",
+        assert ("This category contains at least one sub-category, therefore it can't be removed" in
                   self.webflash(r))
 
         r = self.app.get('/categories/2')
         form = r.forms[0]
         r = form.submit()
-        assert_in("Category removed", self.webflash(r))
-        assert_equals(4, M.TroveCategory.query.find().count())
+        assert "Category removed" in self.webflash(r)
+        assert 4 == M.TroveCategory.query.find().count()
 
     def test_create_parent(self):
         self.create_some_cats()
@@ -161,9 +161,9 @@ class TestTroveCategoryController(TestController):
         form.submit()
 
         possible = M.TroveCategory.query.find(dict(fullname='New Category')).all()
-        assert_equal(len(possible), 1)
-        assert_equal(possible[0].fullname, 'New Category')
-        assert_equal(possible[0].shortname, 'new-category')
+        assert len(possible) == 1
+        assert possible[0].fullname == 'New Category'
+        assert possible[0].shortname == 'new-category'
 
     def test_create_child(self):
         self.create_some_cats()
@@ -175,10 +175,10 @@ class TestTroveCategoryController(TestController):
         form.submit()
 
         possible =M.TroveCategory.query.find(dict(fullname='New Child')).all()
-        assert_equal(len(possible), 1)
-        assert_equal(possible[0].fullname, 'New Child')
-        assert_equal(possible[0].shortname, 'new-child')
-        assert_equal(possible[0].trove_parent_id, 2)
+        assert len(possible) == 1
+        assert possible[0].fullname == 'New Child'
+        assert possible[0].shortname == 'new-child'
+        assert possible[0].trove_parent_id == 2
 
         # test slugify with periods. the relevant form becomes the third, after a child has been created above.
         r = self.app.get('/categories/2')
@@ -186,7 +186,7 @@ class TestTroveCategoryController(TestController):
         form['categoryname'].value = "New Child.io"
         form.submit()
         possible = M.TroveCategory.query.find(dict(fullname='New Child.io')).all()
-        assert_equal(possible[0].shortname, 'new-child.io')
+        assert possible[0].shortname == 'new-child.io'
 
     def test_create_child_bad_upper(self):
         self.create_some_cats()

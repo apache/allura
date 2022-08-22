@@ -38,8 +38,8 @@ class TestClearOldNotifications:
         n = M.Notification(app_config_id=ObjectId(), neighborhood_id=ObjectId(), project_id=ObjectId(),
                            tool_name='blah')
         session(n).flush(n)
-        assert_equal(M.Notification.query.find().count(), 1)
+        assert M.Notification.query.find().count() == 1
         self.run_script(['--back-days', '7'])
-        assert_equal(M.Notification.query.find().count(), 1)
+        assert M.Notification.query.find().count() == 1
         self.run_script(['--back-days', '0'])
-        assert_equal(M.Notification.query.find().count(), 0)
+        assert M.Notification.query.find().count() == 0

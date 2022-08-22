@@ -58,27 +58,27 @@ def test_config_options():
 
 def test_config_options_render_attrs():
     opt = app.ConfigOption('test1', str, None, extra_attrs={'type': 'url'})
-    assert_equal(opt.render_attrs(), 'type="url"')
+    assert opt.render_attrs() == 'type="url"'
 
 
 def test_config_option_without_validator():
     opt = app.ConfigOption('test1', str, None)
-    assert_equal(opt.validate(None), None)
-    assert_equal(opt.validate(''), '')
-    assert_equal(opt.validate('val'), 'val')
+    assert opt.validate(None) == None
+    assert opt.validate('') == ''
+    assert opt.validate('val') == 'val'
 
 
 def test_config_option_with_validator():
     v = fev.NotEmpty()
     opt = app.ConfigOption('test1', str, None, validator=v)
-    assert_equal(opt.validate('val'), 'val')
+    assert opt.validate('val') == 'val'
     assert_raises(fev.Invalid, opt.validate, None)
     assert_raises(fev.Invalid, opt.validate, '')
 
 
 def test_options_on_install_default():
     a = app.Application(c.project, c.app.config)
-    assert_equal(a.options_on_install(), [])
+    assert a.options_on_install() == []
 
 
 def test_options_on_install():
@@ -91,7 +91,7 @@ def test_options_on_install():
         config_on_install = ['url', 'private']
 
     a = TestApp(c.project, c.app.config)
-    assert_equal(a.options_on_install(), opts)
+    assert a.options_on_install() == opts
 
 
 def test_main_menu():
@@ -105,8 +105,8 @@ def test_main_menu():
 
     a = TestApp(c.project, c.app.config)
     main_menu = a.main_menu()
-    assert_equal(len(main_menu), 1)
-    assert_equal(main_menu[0].children, [])  # default main_menu implementation should drop the children from sitemap()
+    assert len(main_menu) == 1
+    assert main_menu[0].children == []  # default main_menu implementation should drop the children from sitemap()
 
 
 def test_sitemap():
@@ -138,15 +138,15 @@ def test_handle_artifact_unicode(qg):
 
     msg = dict(payload='foo ƒ†©¥˙¨ˆ'.encode(), message_id=1, headers={})
     a.handle_artifact_message(ticket, msg)
-    assert_equal(post.attach.call_args[0][1].getvalue(), 'foo ƒ†©¥˙¨ˆ'.encode())
+    assert post.attach.call_args[0][1].getvalue() == 'foo ƒ†©¥˙¨ˆ'.encode()
 
     msg = dict(payload=b'foo', message_id=1, headers={})
     a.handle_artifact_message(ticket, msg)
-    assert_equal(post.attach.call_args[0][1].getvalue(), b'foo')
+    assert post.attach.call_args[0][1].getvalue() == b'foo'
 
     msg = dict(payload="\x94my quote\x94".encode(), message_id=1, headers={})
     a.handle_artifact_message(ticket, msg)
-    assert_equal(post.attach.call_args[0][1].getvalue(), '\x94my quote\x94'.encode())
+    assert post.attach.call_args[0][1].getvalue() == '\x94my quote\x94'.encode()
 
     # assert against prod example
     msg_raw = """Message-Id: <1502352031.3216858.1068961568.19EF48C6@webmail.messagingengine.com>

@@ -43,10 +43,10 @@ class TestStopForumSpam:
     @mock.patch('allura.lib.spam.stopforumspamfilter.request')
     def test_check(self, request):
         request.remote_addr = '1.2.3.4'
-        assert_equal(True, self.sfs.check(self.content, artifact=self.artifact))
+        assert True == self.sfs.check(self.content, artifact=self.artifact)
 
         request.remote_addr = '1.1.1.1'
-        assert_equal(False, self.sfs.check(self.content, artifact=self.artifact))
+        assert False == self.sfs.check(self.content, artifact=self.artifact)
 
         request.remote_addr = None  # e.g. from background task processing inbound email
-        assert_equal(False, self.sfs.check(self.content, artifact=self.artifact))
+        assert False == self.sfs.check(self.content, artifact=self.artifact)

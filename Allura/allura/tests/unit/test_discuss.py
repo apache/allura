@@ -27,13 +27,13 @@ class TestThread(WithDatabase):
 
     def test_should_update_index(self):
         p = M.Thread()
-        assert_false(p.should_update_index({}, {}))
+        assert not p.should_update_index({}, {})
         old = {'num_views': 1}
         new = {'num_views': 2}
-        assert_false(p.should_update_index(old, new))
+        assert not p.should_update_index(old, new)
         old = {'num_views': 1, 'a': 1}
         new = {'num_views': 2, 'a': 1}
-        assert_false(p.should_update_index(old, new))
+        assert not p.should_update_index(old, new)
         old = {'num_views': 1, 'a': 1}
         new = {'num_views': 2, 'a': 2}
-        assert_true(p.should_update_index(old, new))
+        assert p.should_update_index(old, new)

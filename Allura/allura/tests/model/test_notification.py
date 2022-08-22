@@ -118,7 +118,7 @@ class TestNotification(unittest.TestCase):
         )
         notification.footer = lambda: ' footer'
         notification.send_direct(c.user._id)
-        assert_equal(sendmail.post.call_count, 0)
+        assert sendmail.post.call_count == 0
 
     @mock.patch('allura.tasks.mail_tasks.sendmail')
     def test_send_direct_wrong_project_context(self, sendmail):
@@ -133,7 +133,7 @@ class TestNotification(unittest.TestCase):
         """
         project1 = c.project
         project2 = M.Project.query.get(shortname='test2')
-        assert_equal(project1.shortname, 'test')
+        assert project1.shortname == 'test'
         c.user = M.User.query.get(username='test-user')
         wiki = project1.app_instance('wiki')
         page = WM.Page.query.get(app_config_id=wiki.config._id)
@@ -188,7 +188,7 @@ class TestPostNotifications(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         M.MonQTask.list()
         t = M.MonQTask.get()
-        assert_equal(t.args[1], [self.pg.index_id()])
+        assert t.args[1] == [self.pg.index_id()]
 
     def test_post_user_notification(self):
         u = M.User.query.get(username='test-admin')
@@ -220,34 +220,34 @@ class TestPostNotifications(unittest.TestCase):
         self._post_notification()
         ThreadLocalORMSession.flush_all()
 
-        assert_equal(M.Notification.query.get()
-                     ['from_address'], '"Test Admin" <test-admin@users.localhost>')
-        assert_equal(M.Mailbox.query.find().count(), 2)
+        assert (M.Notification.query.get()
+                     ['from_address'] == '"Test Admin" <test-admin@users.localhost>')
+        assert M.Mailbox.query.find().count() == 2
 
         # sends the notification out into "mailboxes", and from mailboxes into
         # email tasks
         M.MonQTask.run_ready()
         mboxes = M.Mailbox.query.find().all()
-        assert_equal(len(mboxes), 2)
-        assert_equal(len(mboxes[0].queue), 1)
+        assert len(mboxes) == 2
+        assert len(mboxes[0].queue) == 1
         assert not mboxes[0].queue_empty
-        assert_equal(len(mboxes[1].queue), 1)
+        assert len(mboxes[1].queue) == 1
         assert not mboxes[1].queue_empty
 
         email_tasks = M.MonQTask.query.find({'state': 'ready'}).all()
         # make sure both subscribers will get an email
-        assert_equal(len(email_tasks), 2)
+        assert len(email_tasks) == 2
 
         first_destinations = [e.kwargs['destinations'][0] for e in email_tasks]
-        assert_in(str(c.user._id), first_destinations)
-        assert_in(str(user2._id), first_destinations)
-        assert_equal(email_tasks[0].kwargs['fromaddr'],
+        assert str(c.user._id) in first_destinations
+        assert str(user2._id) in first_destinations
+        assert (email_tasks[0].kwargs['fromaddr'] ==
                      '"Test Admin" <test-admin@users.localhost>')
-        assert_equal(email_tasks[1].kwargs['fromaddr'],
+        assert (email_tasks[1].kwargs['fromaddr'] ==
                      '"Test Admin" <test-admin@users.localhost>')
-        assert_equal(email_tasks[0].kwargs['sender'],
+        assert (email_tasks[0].kwargs['sender'] ==
                      'wiki@test.p.in.localhost')
-        assert_equal(email_tasks[1].kwargs['sender'],
+        assert (email_tasks[1].kwargs['sender'] ==
                      'wiki@test.p.in.localhost')
         assert email_tasks[0].kwargs['text'].startswith(
             'Home modified by Test Admin')
@@ -441,14 +441,14 @@ class TestSubscriptionTypes(unittest.TestCase):
         count = M.MonQTask.query.find(dict(
             task_name='allura.tasks.mail_tasks.sendmail',
             state='ready')).count()
-        assert_equal(count, 0)
+        assert count == 0
         user.disabled = False
         ThreadLocalORMSession.flush_all()
         notification.send_direct(user._id)
         count = M.MonQTask.query.find(dict(
             task_name='allura.tasks.mail_tasks.sendmail',
             state='ready')).count()
-        assert_equal(count, 1)
+        assert count == 1
 
     @mock.patch('allura.model.notification.Notification.ref')
     def test_send_digest_disabled_user(self, ref):
@@ -464,7 +464,7 @@ class TestSubscriptionTypes(unittest.TestCase):
         count = M.MonQTask.query.find(dict(
             task_name='allura.tasks.mail_tasks.sendmail',
             state='ready')).count()
-        assert_equal(count, 0)
+        assert count == 0
         user.disabled = False
         ThreadLocalORMSession.flush_all()
         M.Notification.send_digest(
@@ -472,7 +472,7 @@ class TestSubscriptionTypes(unittest.TestCase):
         count = M.MonQTask.query.find(dict(
             task_name='allura.tasks.mail_tasks.sendmail',
             state='ready')).count()
-        assert_equal(count, 1)
+        assert count == 1
 
 
 class TestSiteNotification(unittest.TestCase):

@@ -94,28 +94,28 @@ class TestSecurity(TestController):
         anon_role = M.ProjectRole.by_name('*anonymous')
         test_user = M.User.by_username('test-user')
 
-        assert_equal(all_allowed(wiki, admin_role), {
-            'configure', 'read', 'create', 'edit', 'unmoderated_post', 'post', 'moderate', 'admin', 'delete'})
-        assert_equal(all_allowed(wiki, dev_role), {
-            'read', 'create', 'edit', 'unmoderated_post', 'post', 'moderate', 'delete'})
-        assert_equal(all_allowed(wiki, member_role),
+        assert all_allowed(wiki, admin_role) == {
+            'configure', 'read', 'create', 'edit', 'unmoderated_post', 'post', 'moderate', 'admin', 'delete'}
+        assert all_allowed(wiki, dev_role) == {
+            'read', 'create', 'edit', 'unmoderated_post', 'post', 'moderate', 'delete'}
+        assert (all_allowed(wiki, member_role) ==
                      {'read', 'create', 'edit', 'unmoderated_post', 'post'})
-        assert_equal(all_allowed(wiki, auth_role),
+        assert (all_allowed(wiki, auth_role) ==
                      {'read', 'post', 'unmoderated_post'})
-        assert_equal(all_allowed(wiki, anon_role), {'read'})
-        assert_equal(all_allowed(wiki, test_user),
+        assert all_allowed(wiki, anon_role) == {'read'}
+        assert (all_allowed(wiki, test_user) ==
                      {'read', 'post', 'unmoderated_post'})
 
         _add_to_group(test_user, member_role)
 
-        assert_equal(all_allowed(wiki, test_user),
+        assert (all_allowed(wiki, test_user) ==
                      {'read', 'create', 'edit', 'unmoderated_post', 'post'})
 
         _deny(wiki, auth_role, 'unmoderated_post')
 
-        assert_equal(all_allowed(wiki, member_role),
+        assert (all_allowed(wiki, member_role) ==
                      {'read', 'create', 'edit', 'post'})
-        assert_equal(all_allowed(wiki, test_user),
+        assert (all_allowed(wiki, test_user) ==
                      {'read', 'create', 'edit', 'post'})
 
     @td.with_wiki
@@ -133,12 +133,12 @@ class TestSecurity(TestController):
         assert has_access(page, 'read', anon_role)()
         assert has_access(page, 'post', anon_role)()
         assert has_access(page, 'unmoderated_post', anon_role)()
-        assert_equal(all_allowed(page, anon_role), {'read'})
+        assert all_allowed(page, anon_role) == {'read'}
         # as well as an authenticated user
         assert has_access(page, 'read', test_user)()
         assert has_access(page, 'post', test_user)()
         assert has_access(page, 'unmoderated_post', test_user)()
-        assert_equal(all_allowed(page, test_user),
+        assert (all_allowed(page, test_user) ==
                      {'read', 'post', 'unmoderated_post'})
 
         _deny(page, auth_role, 'read')
@@ -154,7 +154,7 @@ class TestSecurity(TestController):
         assert has_access(wiki, 'read', test_user)()
         assert has_access(wiki, 'post', test_user)()
         assert has_access(wiki, 'unmoderated_post', test_user)()
-        assert_equal(all_allowed(wiki, test_user),
+        assert (all_allowed(wiki, test_user) ==
                      {'read', 'post', 'unmoderated_post'})
 
         _deny(wiki, anon_role, 'read')
@@ -184,7 +184,7 @@ class TestSecurity(TestController):
         page = WM.Page.query.get(app_config_id=wiki.config._id)
         test_user = M.User.by_username('test-user')
 
-        assert_equal(project1.shortname, 'test')
+        assert project1.shortname == 'test'
         assert has_access(page, 'read', test_user)()
         c.project = project2
         assert has_access(page, 'read', test_user)()

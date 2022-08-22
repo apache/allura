@@ -6,6 +6,8 @@
 #
 activitystream==0.4.0
     # via -r requirements.in
+attrs==22.1.0
+    # via pytest
 beaker==1.11.0
     # via -r requirements.in
 beautifulsoup4==4.11.1
@@ -64,9 +66,14 @@ html5lib==1.1
 idna==3.3
     # via requests
 importlib-metadata==4.12.0
-    # via markdown
+    # via
+    #   markdown
+    #   pluggy
+    #   pytest
 inflection==0.5.1
     # via profanityfilter
+iniconfig==1.1.1
+    # via pytest
 iso8601==1.0.2
     # via colander
 jinja2==3.1.2
@@ -93,6 +100,8 @@ oauthlib==3.2.1
     # via
     #   -r requirements.in
     #   requests-oauthlib
+packaging==21.3
+    # via pytest
 paginate==0.5.6
     # via -r requirements.in
 paste==3.5.1
@@ -108,8 +117,12 @@ pastescript==3.2.1
     # via -r requirements.in
 pillow==9.2.0
     # via -r requirements.in
+pluggy==1.0.0
+    # via pytest
 profanityfilter==2.0.6
     # via -r requirements.in
+py==1.11.0
+    # via pytest
 pycparser==2.21
     # via cffi
 pyflakes==2.4.0
@@ -121,9 +134,14 @@ pymongo==3.11.4
     #   -r requirements.in
     #   activitystream
     #   ming
+pyparsing==2.4.7
+    # via
+    #   packaging
 pypeline[creole,markdown,rst,textile]==0.6.0
     # via -r requirements.in
 pysolr==3.9.0
+    # via -r requirements.in
+pytest==7.1.3
     # via -r requirements.in
 python-dateutil==2.8.2
     # via
@@ -184,6 +202,8 @@ timermiddleware==0.6.2
     # via -r requirements.in
 tinycss2==1.1.1
     # via bleach
+tomli==2.0.1
+    # via pytest
 translationstring==1.4
     # via colander
 turbogears2==2.3.12
