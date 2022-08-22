@@ -94,7 +94,7 @@ class TestGitHubOAuth(TestController):
                                                         timeout=10)
 
 
-    def test_project_import(self):
+    def test_project_import_login_required(self):
         r = self.app.get('/p/import_project/github/', extra_environ=dict(username='*anonymous'))
         assert_equal(None, r.location)
         r.mustcontain('Login Required')
