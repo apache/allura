@@ -35,7 +35,8 @@ from allura.command import base, script, set_neighborhood_features, \
     create_neighborhood, show_models, taskd_cleanup, taskd
 from allura import model as M
 from allura.lib.exceptions import InvalidNBFeatureValueError
-from allura.tests import decorators as td
+from allura.tests import decorators as td, with_nose_compatibility
+
 
 test_config = pkg_resources.resource_filename(
     'allura', '../test.ini') + '#main'
@@ -182,6 +183,7 @@ def test_update_neighborhood():
     assert nb.has_home_tool is False
 
 
+@with_nose_compatibility
 class TestEnsureIndexCommand:
 
     def test_run(self):
@@ -268,9 +270,10 @@ class TestEnsureIndexCommand:
         ]
 
 
+@with_nose_compatibility
 class TestTaskCommand:
 
-    def tearDown(self):
+    def teardown_method(self, method):
         M.MonQTask.query.remove({})
 
     def test_commit(self):
@@ -334,6 +337,7 @@ class TestTaskCommand:
         assert M.MonQTask.query.find().count() == 0
 
 
+@with_nose_compatibility
 class TestTaskdCleanupCommand:
 
     def setUp(self):
@@ -351,7 +355,7 @@ class TestTaskdCleanupCommand:
         self.old_complete_suspicious_tasks = self.cmd_class._complete_suspicious_tasks
         self.cmd_class._complete_suspicious_tasks = lambda x: []
 
-    def tearDown(self):
+    def teardown_method(self, method):
         # need to clean up setUp mocking for unit tests below to work properly
         self.cmd_class._check_taskd_status = self.old_check_taskd_status
         self.cmd_class._check_task = self.old_check_task
@@ -448,6 +452,7 @@ def test_status_log_retries():
     assert cmd._taskd_status.mock_calls == expected_calls
 
 
+@with_nose_compatibility
 class TestShowModels:
 
     def test_show_models(self):
@@ -459,6 +464,7 @@ class TestShowModels:
          - <FieldProperty content>
         ''' in output.captured
 
+@with_nose_compatibility
 class TestReindexAsTask:
 
     cmd = 'allura.command.show_models.ReindexCommand'
@@ -493,6 +499,7 @@ class TestReindexAsTask:
             M.MonQTask.query.remove()
 
 
+@with_nose_compatibility
 class TestReindexCommand:
 
     @patch('allura.command.show_models.g')

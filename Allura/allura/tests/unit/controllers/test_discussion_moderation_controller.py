@@ -26,6 +26,7 @@ from allura.controllers.discuss import ModerationController
 from allura.tests.unit import patches
 
 
+@with_nose_compatibility
 class TestWhenModerating(WithDatabase):
     patches = [patches.fake_app_patch,
                patches.fake_user_patch,
@@ -34,7 +35,7 @@ class TestWhenModerating(WithDatabase):
                patches.disable_notifications_patch]
 
     def setUp(self):
-        super().setUp()
+        super().setup_method(method)
         post = create_post('mypost')
         discussion_controller = Mock(
             discussion=Mock(_id=post.discussion_id),
@@ -73,6 +74,7 @@ class TestWhenModerating(WithDatabase):
         return model.Post.query.get(slug='mypost', deleted=False)
 
 
+@with_nose_compatibility
 class TestIndexWithNoPosts(WithDatabase):
     patches = [patches.fake_app_patch]
 
@@ -82,11 +84,12 @@ class TestIndexWithNoPosts(WithDatabase):
         assert template_variables['posts'].all() == []
 
 
+@with_nose_compatibility
 class TestIndexWithAPostInTheDiscussion(WithDatabase):
     patches = [patches.fake_app_patch]
 
     def setUp(self):
-        super().setUp()
+        super().setup_method(method)
         self.post = create_post('mypost')
         discussion = self.post.discussion
         self.template_variables = show_moderation_index(discussion)

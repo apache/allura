@@ -23,6 +23,7 @@ from alluratest.tools import assert_in, assert_not_in
 from allura.lib.phone.nexmo import NexmoPhoneService
 
 
+@with_nose_compatibility
 class TestPhoneService:
 
     def setUp(self):

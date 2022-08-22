@@ -28,6 +28,7 @@ from allura.lib.solr import Solr, escape_solr_arg
 from allura.lib.search import search_app, SearchIndexable
 
 
+@with_nose_compatibility
 class TestSolr(unittest.TestCase):
 
     @mock.patch('allura.lib.solr.pysolr')
@@ -117,6 +118,7 @@ class TestSolr(unittest.TestCase):
             'username_s:admin1 || username_s:root', fq=fq, ignore_errors=False)
 
 
+@with_nose_compatibility
 class TestSearchIndexable(unittest.TestCase):
 
     def setUp(self):
@@ -141,6 +143,7 @@ class TestSearchIndexable(unittest.TestCase):
         assert self.obj.solarize() == dict(text='<script>a(1)</script>')
 
 
+@with_nose_compatibility
 class TestSearch_app(unittest.TestCase):
 
     def setUp(self):

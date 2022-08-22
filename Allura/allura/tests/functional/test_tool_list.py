@@ -19,6 +19,7 @@ from allura.tests import TestController
 from allura.tests import decorators as td
 
 
+@with_nose_compatibility
 class TestToolListController(TestController):
 
     @td.with_wiki

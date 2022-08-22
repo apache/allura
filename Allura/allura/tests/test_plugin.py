@@ -47,6 +47,7 @@ from allura.tests.decorators import audits
 from alluratest.controller import setup_basic_test, setup_global_objects
 
 
+@with_nose_compatibility
 class TestProjectRegistrationProvider:
 
     def setUp(self):
@@ -84,6 +85,7 @@ class TestProjectRegistrationProvider:
         assert_raises(ProjectConflict, v, 'thisislegit', neighborhood=nbhd)
 
 
+@with_nose_compatibility
 class TestProjectRegistrationProviderParseProjectFromUrl:
 
     def setUp(self):
@@ -158,6 +160,7 @@ class UserMock:
         return self._projects
 
 
+@with_nose_compatibility
 class TestProjectRegistrationProviderPhoneVerification:
 
     def setUp(self):
@@ -275,12 +278,14 @@ class TestProjectRegistrationProviderPhoneVerification:
                     assert result == g.phone_service.verify.return_value
             assert 5 == g.phone_service.verify.call_count
 
+@with_nose_compatibility
 class TestThemeProvider:
 
     @patch('allura.app.g')
     @patch('allura.lib.plugin.g')
     def test_app_icon_str(self, plugin_g, app_g):
-        class TestApp(Application):
+        @with_nose_compatibility
+class TestApp(Application):
             icons = {
                 24: 'images/testapp_24.png',
             }
@@ -297,7 +302,8 @@ class TestThemeProvider:
 
     @patch('allura.app.g')
     def test_app_icon_app(self, g):
-        class TestApp(Application):
+        @with_nose_compatibility
+class TestApp(Application):
             icons = {
                 24: 'images/testapp_24.png',
             }
@@ -307,6 +313,7 @@ class TestThemeProvider:
         g.theme_href.assert_called_with('images/testapp_24.png')
 
 
+@with_nose_compatibility
 class TestThemeProvider_notifications:
 
     Provider = ThemeProvider
@@ -628,6 +635,7 @@ class TestThemeProvider_notifications:
         assert get_note[1] == 'testid-2-False'
 
 
+@with_nose_compatibility
 class TestLocalAuthenticationProvider:
 
     def setUp(self):
@@ -742,6 +750,7 @@ class TestLocalAuthenticationProvider:
         assert detail.ua == 'mybrowser'
 
 
+@with_nose_compatibility
 class TestAuthenticationProvider:
 
     def setUp(self):

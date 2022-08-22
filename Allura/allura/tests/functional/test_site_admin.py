@@ -35,6 +35,7 @@ from allura.lib.plugin import LocalAuthenticationProvider
 import six
 
 
+@with_nose_compatibility
 class TestSiteAdmin(TestController):
 
     def test_access(self):
@@ -184,6 +185,7 @@ class TestSiteAdmin(TestController):
         assert json.loads(r.text)['doc'] == 'test_task doc string'
 
 
+@with_nose_compatibility
 class TestSiteAdminNotifications(TestController):
 
     def test_site_notifications_access(self):
@@ -337,6 +339,7 @@ class TestSiteAdminNotifications(TestController):
         assert M.notification.SiteNotification.query.get(_id=bson.ObjectId(note._id)) is None
 
 
+@with_nose_compatibility
 class TestProjectsSearch(TestController):
 
     TEST_HIT = MagicMock(hits=1, docs=[{
@@ -358,7 +361,7 @@ class TestProjectsSearch(TestController):
     }])
 
     def setUp(self):
-        super().setUp()
+        super().setup_method(method)
         # Create project that matches TEST_HIT id
         _id = ObjectId('53ccf6e8100d2b0741746e9f')
         p = M.Project.query.get(_id=_id)
@@ -391,6 +394,7 @@ class TestProjectsSearch(TestController):
         assert ths == ['Short name', 'Full name', 'Registered', 'Deleted?', 'url', 'Details']
 
 
+@with_nose_compatibility
 class TestUsersSearch(TestController):
 
     TEST_HIT = MagicMock(hits=1, docs=[{
@@ -415,7 +419,7 @@ class TestUsersSearch(TestController):
         'username_s': 'darth'}])
 
     def setUp(self):
-        super().setUp()
+        super().setup_method(method)
         # Create user that matches TEST_HIT id
         _id = ObjectId('540efdf2100d2b1483155d39')
         u = M.User.query.get(_id=_id)
@@ -446,6 +450,7 @@ class TestUsersSearch(TestController):
                            'Status', 'url', 'Details']
 
 
+@with_nose_compatibility
 class TestUserDetails(TestController):
 
     def test_404(self):
@@ -741,6 +746,7 @@ To update your password on %s, please visit the following URL:
         assert hash in r.text
 
 
+@with_nose_compatibility
 class TestDeleteProjects(TestController):
 
     def confirm_form(self, r):

@@ -27,10 +27,11 @@ from allura.scripts import delete_projects
 from allura.lib import plugin
 
 
+@with_nose_compatibility
 class TestDeleteProjects(TestController):
 
     def setUp(self):
-        super().setUp()
+        super().setup_method(method)
         n = M.Neighborhood.query.get(name='Projects')
         admin = M.User.by_username('test-admin')
         self.p_shortname = 'test-delete'

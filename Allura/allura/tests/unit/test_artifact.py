@@ -20,6 +20,7 @@ import unittest
 from allura import model as M
 
 
+@with_nose_compatibility
 class TestArtifact(unittest.TestCase):
 
     def test_translate_query(self):

@@ -29,6 +29,7 @@ from allura.lib import helpers as h
 from allura.scripts.create_sitemap_files import CreateSitemapFiles
 
 
+@with_nose_compatibility
 class TestCreateSitemapFiles:
 
     def setUp(self):
