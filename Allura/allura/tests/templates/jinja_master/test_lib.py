@@ -45,7 +45,7 @@ class TestRelatedArtifacts(TemplateTest):
 
     def test_none(self):
         artifact = Mock(related_artifacts=lambda user: [])
-        assert_equal(self._render_related_artifacts(artifact), '')
+        assert self._render_related_artifacts(artifact) == ''
 
     def test_simple(self):
         other = Mock()
@@ -54,12 +54,12 @@ class TestRelatedArtifacts(TemplateTest):
         other.app_config.options.mount_label = 'Foo'
         other.link_text.return_value = 'Bar'
         artifact = Mock(related_artifacts=lambda user: [other])
-        assert_equal(self._render_related_artifacts(artifact), strip_space('''
+        assert self._render_related_artifacts(artifact) == strip_space('''
             <h4>Related</h4>
             <p>
             <a href="/p/test/foo/bar">Test Project: Foo: Bar</a><br>
             </p>
-        '''))
+        ''')
 
     def test_non_artifact(self):
         # e.g. a commit
@@ -73,9 +73,9 @@ class TestRelatedArtifacts(TemplateTest):
                 return '/p/test/code/ci/deadbeef'
 
         artifact = Mock(related_artifacts=lambda user: [CommitThing()])
-        assert_equal(self._render_related_artifacts(artifact), strip_space('''
+        assert self._render_related_artifacts(artifact) == strip_space('''
             <h4>Related</h4>
             <p>
             <a href="/p/test/code/ci/deadbeef">Commit: [deadbeef]</a><br>
             </p>
-        '''))
+        ''')

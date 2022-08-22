@@ -80,14 +80,14 @@ def test_escape_json():
     inputdata = {"foo": "bar</script><img src=foobar onerror=alert(1)>"}
     outputsample = '{"foo": "bar\\u003c/script\\u003e\\u003cimg src=foobar onerror=alert(1)\\u003e"}'
     outputdata = h.escape_json(inputdata)
-    assert_equals(outputdata, outputsample)
+    assert outputdata == outputsample
 
 
 def test_strip_bad_unicode():
     inputdata = 'Hello\x08World\t\n\rfoo bar\x1E'
     outputsample = 'HelloWorld\t\n\rfoo bar'
     outputdata = h.strip_bad_unicode(inputdata)
-    assert_equals(outputdata, outputsample)
+    assert outputdata == outputsample
 
 
 def test_really_unicode():
@@ -105,22 +105,22 @@ def test_really_unicode():
     s = h._attempt_encodings(b'foo', ['LKDJFLDK'])
     assert isinstance(s, str)
     # unicode stays the same
-    assert_equals(h.really_unicode('¬∂•°‹'), '¬∂•°‹')
+    assert h.really_unicode('¬∂•°‹') == '¬∂•°‹'
     # other types are handled too
-    assert_equals(h.really_unicode(1234), '1234')
-    assert_equals(h.really_unicode(datetime(2020, 1, 1)), '2020-01-01 00:00:00')
-    assert_equals(h.really_unicode(None), '')
+    assert h.really_unicode(1234) == '1234'
+    assert h.really_unicode(datetime(2020, 1, 1)) == '2020-01-01 00:00:00'
+    assert h.really_unicode(None) == ''
     # markup stays markup
     s = h.really_unicode(Markup('<b>test</b>'))
     assert isinstance(s, str)
     assert isinstance(s, Markup)
-    assert_equals(s, '<b>test</b>')
+    assert s == '<b>test</b>'
 
 
 def test_find_project():
     proj, rest = h.find_project('/p/test/foo')
-    assert_equals(proj.shortname, 'test')
-    assert_equals(proj.neighborhood.name, 'Projects')
+    assert proj.shortname == 'test'
+    assert proj.neighborhood.name == 'Projects'
     proj, rest = h.find_project('/p/testable/foo')
     assert proj is None
 
@@ -203,34 +203,34 @@ def test_encode_keys():
 
 
 def test_ago():
-    assert_equals(h.ago(datetime.utcnow() - timedelta(days=2)), '2 days ago')
-    assert_equals(h.ago(datetime.utcnow() + timedelta(days=2)), 'in 2 days')
-    assert_equals(h.ago_ts(time.time() - 60 * 60 * 2), '2 hours ago')
+    assert h.ago(datetime.utcnow() - timedelta(days=2)) == '2 days ago'
+    assert h.ago(datetime.utcnow() + timedelta(days=2)) == 'in 2 days'
+    assert h.ago_ts(time.time() - 60 * 60 * 2) == '2 hours ago'
     d_str = (datetime.utcnow() - timedelta(hours=3)).isoformat()
-    assert_equals(h.ago_string(d_str), '3 hours ago')
-    assert_equals(h.ago_string('bad format'), 'unknown')
-    assert_equals(h.ago_string(None), 'unknown')
+    assert h.ago_string(d_str) == '3 hours ago'
+    assert h.ago_string('bad format') == 'unknown'
+    assert h.ago_string(None) == 'unknown'
 
     monthish = datetime.utcnow() - timedelta(days=32)
     assert 'ago' not in h.ago(monthish)
-    assert_equals(h.ago(monthish, show_date_after=90), '1 month ago')
-    assert_equals(h.ago(monthish, show_date_after=None), '1 month ago')
+    assert h.ago(monthish, show_date_after=90) == '1 month ago'
+    assert h.ago(monthish, show_date_after=None) == '1 month ago'
 
     monthish = datetime.utcnow() + timedelta(days=32)
     assert 'in ' not in h.ago(monthish)
-    assert_equals(h.ago(monthish, show_date_after=90), 'in 1 month')
-    assert_equals(h.ago(monthish, show_date_after=None), 'in 1 month')
+    assert h.ago(monthish, show_date_after=90) == 'in 1 month'
+    assert h.ago(monthish, show_date_after=None) == 'in 1 month'
 
 
 def test_urlquote_unicode():
     # No exceptions please
-    assert_equals('%D0%90', h.urlquote('\u0410'))
-    assert_equals('%D0%90', h.urlquoteplus('\u0410'))
-    assert_equals('%D0%BF%D1%80%D0%B8%D0%B2%D1%96%D1%82.txt', h.urlquote('привіт.txt'))
+    assert '%D0%90' == h.urlquote('\u0410')
+    assert '%D0%90' == h.urlquoteplus('\u0410')
+    assert '%D0%BF%D1%80%D0%B8%D0%B2%D1%96%D1%82.txt' == h.urlquote('привіт.txt')
 
 
 def test_sharded_path():
-    assert_equals(h.sharded_path('foobar'), 'f/fo')
+    assert h.sharded_path('foobar') == 'f/fo'
 
 
 def test_paging_sanitizer():
@@ -254,19 +254,19 @@ def test_paging_sanitizer():
 
 
 def test_render_any_markup_empty():
-    assert_equals(h.render_any_markup('foo', ''), '<p><em>Empty File</em></p>')
+    assert h.render_any_markup('foo', '') == '<p><em>Empty File</em></p>'
 
 
 def test_render_any_markup_plain():
-    assert_equals(
+    assert (
         h.render_any_markup(
-            'readme.txt', '<b>blah</b>\n<script>alert(1)</script>\nfoo'),
+            'readme.txt', '<b>blah</b>\n<script>alert(1)</script>\nfoo') ==
         '<pre>&lt;b&gt;blah&lt;/b&gt;\n&lt;script&gt;alert(1)&lt;/script&gt;\nfoo</pre>')
 
 
 def test_render_any_markup_formatting():
-    assert_equals(str(h.render_any_markup('README.md', '### foo\n'
-                                          '    <script>alert(1)</script> bar')),
+    assert (str(h.render_any_markup('README.md', '### foo\n'
+                                          '    <script>alert(1)</script> bar')) ==
                   '<div class="markdown_content"><h3 id="foo">foo</h3>\n'
                   '<div class="codehilite"><pre><span></span><code><span class="nt">'
                   '&lt;script&gt;</span>alert(1)<span class="nt">'
@@ -275,7 +275,7 @@ def test_render_any_markup_formatting():
 
 def test_render_any_markdown_encoding():
     # send encoded content in, make sure it converts it to actual unicode object which Markdown lib needs
-    assert_equals(h.render_any_markup('README.md', 'Müller'.encode()),
+    assert (h.render_any_markup('README.md', 'Müller'.encode()) ==
                   '<div class="markdown_content"><p>Müller</p></div>')
 
 
@@ -311,29 +311,29 @@ def test_get_tool_packages():
 
 
 def test_get_first():
-    assert_equals(h.get_first({}, 'title'), None)
-    assert_equals(h.get_first({'title': None}, 'title'), None)
-    assert_equals(h.get_first({'title': 'Value'}, 'title'), 'Value')
-    assert_equals(h.get_first({'title': ['Value']}, 'title'), 'Value')
-    assert_equals(h.get_first({'title': []}, 'title'), None)
-    assert_equals(h.get_first({'title': ['Value']}, 'title'), 'Value')
+    assert h.get_first({}, 'title') == None
+    assert h.get_first({'title': None}, 'title') == None
+    assert h.get_first({'title': 'Value'}, 'title') == 'Value'
+    assert h.get_first({'title': ['Value']}, 'title') == 'Value'
+    assert h.get_first({'title': []}, 'title') == None
+    assert h.get_first({'title': ['Value']}, 'title') == 'Value'
 
 
 @patch('allura.lib.search.c')
 def test_inject_user(context):
     user = Mock(username='user01')
-    assert_equals(inject_user(None, user), None)
-    assert_equals(inject_user('', user), '')
-    assert_equals(inject_user('query', user), 'query')
+    assert inject_user(None, user) == None
+    assert inject_user('', user) == ''
+    assert inject_user('query', user) == 'query'
     result = inject_user('reported_by_s:$USER OR assigned_to_s:$USER', user)
-    assert_equals(result, 'reported_by_s:"user01" OR assigned_to_s:"user01"')
+    assert result == 'reported_by_s:"user01" OR assigned_to_s:"user01"'
     context.user = Mock(username='admin1')
     result = inject_user('reported_by_s:$USER OR assigned_to_s:$USER')
-    assert_equals(result, 'reported_by_s:"admin1" OR assigned_to_s:"admin1"')
+    assert result == 'reported_by_s:"admin1" OR assigned_to_s:"admin1"'
     context.user = Mock(username='*anonymous')
     result = inject_user('reported_by_s:$USER OR assigned_to_s:$USER')
-    assert_equals(
-        result, 'reported_by_s:"*anonymous" OR assigned_to_s:"*anonymous"')
+    assert (
+        result == 'reported_by_s:"*anonymous" OR assigned_to_s:"*anonymous"')
 
 
 def test_datetimeformat():
@@ -342,24 +342,24 @@ def test_datetimeformat():
 
 
 def test_nl2br_jinja_filter():
-    assert_equals(h.nl2br_jinja_filter('foo<script>alert(1)</script>\nbar\nbaz'),
+    assert (h.nl2br_jinja_filter('foo<script>alert(1)</script>\nbar\nbaz') ==
                   Markup('foo&lt;script&gt;alert(1)&lt;/script&gt;<br>\nbar<br>\nbaz'))
 
 
 def test_split_select_field_options():
-    assert_equals(h.split_select_field_options('"test message" test2'),
+    assert (h.split_select_field_options('"test message" test2') ==
                   ['test message', 'test2'])
-    assert_equals(h.split_select_field_options('"test message test2'),
+    assert (h.split_select_field_options('"test message test2') ==
                   ['test', 'message', 'test2'])
-    assert_equals(h.split_select_field_options('abc ƒå∂ ººº'),
+    assert (h.split_select_field_options('abc ƒå∂ ººº') ==
                   ['abc', 'ƒå∂', 'ººº'])
 
 
 def test_notifications_disabled():
     project = Mock(notifications_disabled=False)
     with h.notifications_disabled(project):
-        assert_equals(project.notifications_disabled, True)
-    assert_equals(project.notifications_disabled, False)
+        assert project.notifications_disabled == True
+    assert project.notifications_disabled == False
 
 
 @skipIf(module_not_available('html2text'), 'html2text required')
@@ -513,12 +513,12 @@ class TestUrlOpen(TestCase):
 
 
 def test_absurl():
-    assert_equals(h.absurl('/p/test/foobar'), 'http://localhost/p/test/foobar')
+    assert h.absurl('/p/test/foobar') == 'http://localhost/p/test/foobar'
 
 
 def test_daterange():
-    assert_equals(
-        list(h.daterange(datetime(2013, 1, 1), datetime(2013, 1, 4))),
+    assert (
+        list(h.daterange(datetime(2013, 1, 1), datetime(2013, 1, 4))) ==
         [datetime(2013, 1, 1), datetime(2013, 1, 2), datetime(2013, 1, 3)])
 
 
@@ -589,24 +589,24 @@ class TestIterEntryPoints(TestCase):
 
 def test_get_user_status():
     user = M.User.by_username('test-admin')
-    assert_equals(h.get_user_status(user), 'enabled')
+    assert h.get_user_status(user) == 'enabled'
 
     user = Mock(disabled=True, pending=False)
-    assert_equals(h.get_user_status(user), 'disabled')
+    assert h.get_user_status(user) == 'disabled'
 
     user = Mock(disabled=False, pending=True)
-    assert_equals(h.get_user_status(user), 'pending')
+    assert h.get_user_status(user) == 'pending'
 
     user = Mock(disabled=True, pending=True)  # not an expected combination
-    assert_equals(h.get_user_status(user), 'disabled')
+    assert h.get_user_status(user) == 'disabled'
 
 
 def test_convert_bools():
-    assert_equals(h.convert_bools({'foo': 'bar', 'baz': 'false', 'abc': 0, 'def': 1, 'ghi': True}),
+    assert (h.convert_bools({'foo': 'bar', 'baz': 'false', 'abc': 0, 'def': 1, 'ghi': True}) ==
                   {'foo': 'bar', 'baz': False, 'abc': 0, 'def': 1, 'ghi': True})
-    assert_equals(h.convert_bools({'foo': 'true', 'baz': ' TRUE '}),
+    assert (h.convert_bools({'foo': 'true', 'baz': ' TRUE '}) ==
                   {'foo': True, 'baz': True})
-    assert_equals(h.convert_bools({'foo': 'true', 'baz': ' TRUE '}, prefix='ba'),
+    assert (h.convert_bools({'foo': 'true', 'baz': ' TRUE '}, prefix='ba') ==
                   {'foo': 'true', 'baz': True})
 
 
@@ -621,21 +621,21 @@ def test_base64uri_img():
 
 def test_base64uri_text():
     b64txt = h.base64uri('blah blah blah\n123 456\nfoo bar baz', mimetype='text/plain')
-    assert_equals(b64txt, 'data:text/plain;base64,YmxhaCBibGFoIGJsYWgKMTIzIDQ1Ngpmb28gYmFyIGJheg==')
+    assert b64txt == 'data:text/plain;base64,YmxhaCBibGFoIGJsYWgKMTIzIDQ1Ngpmb28gYmFyIGJheg=='
 
     b64txt = h.base64uri('blah blah blah\n123 456\nfoo bar baz', mimetype='text/plain', windows_line_endings=True)
-    assert_equals(b64txt, 'data:text/plain;base64,YmxhaCBibGFoIGJsYWgNCjEyMyA0NTYNCmZvbyBiYXIgYmF6')
+    assert b64txt == 'data:text/plain;base64,YmxhaCBibGFoIGJsYWgNCjEyMyA0NTYNCmZvbyBiYXIgYmF6'
 
 
 def test_slugify():
-    assert_equals(h.slugify('Foo Bar Bat')[0], 'Foo-Bar-Bat')
-    assert_equals(h.slugify('Foo_Bar')[0], 'Foo_Bar')
-    assert_equals(h.slugify('Foo   ')[0], 'Foo')
-    assert_equals(h.slugify('    Foo   ')[0], 'Foo')
-    assert_equals(h.slugify('"    Foo   ')[0], 'Foo')
-    assert_equals(h.slugify('Fôö')[0], 'Foo')
-    assert_equals(h.slugify('Foo.Bar')[0], 'Foo-Bar')
-    assert_equals(h.slugify('Foo.Bar', True)[0], 'Foo.Bar')
+    assert h.slugify('Foo Bar Bat')[0] == 'Foo-Bar-Bat'
+    assert h.slugify('Foo_Bar')[0] == 'Foo_Bar'
+    assert h.slugify('Foo   ')[0] == 'Foo'
+    assert h.slugify('    Foo   ')[0] == 'Foo'
+    assert h.slugify('"    Foo   ')[0] == 'Foo'
+    assert h.slugify('Fôö')[0] == 'Foo'
+    assert h.slugify('Foo.Bar')[0] == 'Foo-Bar'
+    assert h.slugify('Foo.Bar', True)[0] == 'Foo.Bar'
 
 
 class TestRateLimit(TestCase):
@@ -671,26 +671,26 @@ class TestRateLimit(TestCase):
 
 
 def test_hide_private_info():
-    assert_equals(h.hide_private_info(None), None)
-    assert_equals(h.hide_private_info(''), '')
-    assert_equals(h.hide_private_info('foo bar baz@bing.com'), 'foo bar baz@...')
-    assert_equals(h.hide_private_info('some <1@2.com>\nor asdf+asdf.f@g.f.x'), 'some <1@...>\nor asdf+asdf.f@...')
+    assert h.hide_private_info(None) == None
+    assert h.hide_private_info('') == ''
+    assert h.hide_private_info('foo bar baz@bing.com') == 'foo bar baz@...'
+    assert h.hide_private_info('some <1@2.com>\nor asdf+asdf.f@g.f.x') == 'some <1@...>\nor asdf+asdf.f@...'
     safe_markup_converted = h.hide_private_info(Markup('foo bar baz@bing.com'))
-    assert_equals(type(safe_markup_converted), Markup)
-    assert_equals(safe_markup_converted, Markup('foo bar baz@...'))
+    assert type(safe_markup_converted) == Markup
+    assert safe_markup_converted == Markup('foo bar baz@...')
 
     with h.push_config(h.tg.config, hide_private_info=False):
-        assert_equals(h.hide_private_info('foo bar baz@bing.com'), 'foo bar baz@bing.com')
+        assert h.hide_private_info('foo bar baz@bing.com') == 'foo bar baz@bing.com'
 
 
 def test_emojize():
-    assert_equals(h.emojize(':smile:'), '😄')
+    assert h.emojize(':smile:') == '😄'
 
 
 def test_querystring():
     req = Request.blank('/p/test/foobar?page=1&limit=10&count=100', remote_addr='127.0.0.1',
                         base_url='https://mysite.com/p/test/foobar')
-    assert_equals(h.querystring(req, dict(page=2, limit=5)),
+    assert (h.querystring(req, dict(page=2, limit=5)) ==
                   'https://mysite.com/p/test/foobar/p/test/foobar?page=2&limit=5&count=100')
-    assert_equals(h.querystring(req, dict(page=5, limit=2, count=None)),
+    assert (h.querystring(req, dict(page=5, limit=2, count=None)) ==
                   'https://mysite.com/p/test/foobar/p/test/foobar?page=5&limit=2')

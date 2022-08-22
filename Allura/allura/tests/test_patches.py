@@ -35,7 +35,7 @@ def test_with_trailing_slash():
     patches.apply()
     with assert_raises(webob.exc.HTTPMovedPermanently) as raised:
         tg.decorators.with_trailing_slash(empty_func)()
-    assert_equal(raised.exception.location, 'http://localhost/foo/bar/')
+    assert raised.exception.location == 'http://localhost/foo/bar/'
 
 
 @patch.object(patches, 'request', webob.Request.blank('/foo/bar/?a=b'))
@@ -50,7 +50,7 @@ def test_with_trailing_slash_qs():
     patches.apply()
     with assert_raises(webob.exc.HTTPMovedPermanently) as raised:
         tg.decorators.with_trailing_slash(empty_func)()
-    assert_equal(raised.exception.location, 'http://localhost/foo/bar/?foo=bar&baz=bam')
+    assert raised.exception.location == 'http://localhost/foo/bar/?foo=bar&baz=bam'
 
 
 @patch.object(patches, 'request', webob.Request.blank('/foo/bar/'))
@@ -58,7 +58,7 @@ def test_without_trailing_slash():
     patches.apply()
     with assert_raises(webob.exc.HTTPMovedPermanently) as raised:
         tg.decorators.without_trailing_slash(empty_func)()
-    assert_equal(raised.exception.location, 'http://localhost/foo/bar')
+    assert raised.exception.location == 'http://localhost/foo/bar'
 
 
 @patch.object(patches, 'request', webob.Request.blank('/foo/bar?a=b'))
@@ -73,4 +73,4 @@ def test_without_trailing_slash_qs():
     patches.apply()
     with assert_raises(webob.exc.HTTPMovedPermanently) as raised:
         tg.decorators.without_trailing_slash(empty_func)()
-    assert_equal(raised.exception.location, 'http://localhost/foo/bar?foo=bar&baz=bam')
+    assert raised.exception.location == 'http://localhost/foo/bar?foo=bar&baz=bam'

@@ -91,7 +91,7 @@ class TestRestHome(TestRestApiBase):
         request.scheme = 'https'
         request.path = '/rest/p/test/wiki'
         r = self.api_post('/rest/p/test/wiki', access_token='foo')
-        assert_equal(r.status_int, 200)
+        assert r.status_int == 200
 
     @mock.patch('allura.controllers.rest.M.OAuthAccessToken')
     @mock.patch('allura.controllers.rest.request')
@@ -181,13 +181,13 @@ class TestRestHome(TestRestApiBase):
 
     def test_project_data(self):
         r = self.api_get('/rest/p/test/')
-        assert_equal(r.json['shortname'], 'test')
-        assert_equal(r.json['name'], 'Test Project')
-        assert_equal(len(r.json['developers']), 1)
+        assert r.json['shortname'] == 'test'
+        assert r.json['name'] == 'Test Project'
+        assert len(r.json['developers']) == 1
         admin_dev = r.json['developers'][0]
-        assert_equal(admin_dev['username'], 'test-admin')
-        assert_equal(admin_dev['name'], 'Test Admin')
-        assert_equal(admin_dev['url'], 'http://localhost/u/test-admin/')
+        assert admin_dev['username'] == 'test-admin'
+        assert admin_dev['name'] == 'Test Admin'
+        assert admin_dev['url'] == 'http://localhost/u/test-admin/'
 
     @td.with_tool('test', 'Tickets', 'bugs')
     @td.with_tool('test', 'Tickets', 'private-bugs')
@@ -202,18 +202,18 @@ class TestRestHome(TestRestApiBase):
 
         # admin sees both 'Tickets' tools
         r = self.api_get('/rest/p/test/')
-        assert_equal(r.json['shortname'], 'test')
+        assert r.json['shortname'] == 'test'
         tool_mounts = [t['mount_point'] for t in r.json['tools']]
-        assert_in('bugs', tool_mounts)
-        assert_in('private-bugs', tool_mounts)
+        assert 'bugs' in tool_mounts
+        assert 'private-bugs' in tool_mounts
 
         # anonymous sees only non-private tool
         r = self.app.get('/rest/p/test/',
                          extra_environ={'username': '*anonymous'})
-        assert_equal(r.json['shortname'], 'test')
+        assert r.json['shortname'] == 'test'
         tool_mounts = [t['mount_point'] for t in r.json['tools']]
-        assert_in('bugs', tool_mounts)
-        assert_not_in('private-bugs', tool_mounts)
+        assert 'bugs' in tool_mounts
+        assert 'private-bugs' not in tool_mounts
 
     def test_neighborhood_has_access_no_params(self):
         r = self.api_get('/rest/p/has_access', status=404)
@@ -225,13 +225,13 @@ class TestRestHome(TestRestApiBase):
         r = self.api_get(
             '/rest/p/has_access?user=babadook&perm=read',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False
         r = self.api_get(
             '/rest/p/has_access?user=test-admin&perm=jump',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False
 
     def test_neighborhood_has_access_not_admin(self):
         """
@@ -247,26 +247,26 @@ class TestRestHome(TestRestApiBase):
         r = self.api_get(
             '/rest/p/has_access?user=root&perm=update',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], True)
+        assert r.status_int == 200
+        assert r.json['result'] == True
         r = self.api_get(
             '/rest/p/has_access?user=test-user&perm=update',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False
 
     def test_neighborhood(self):
         self.api_get('/rest/p/', status=404)
 
     def test_neighborhood_tools(self):
         r = self.api_get('/rest/p/wiki/Home/')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['title'], 'Home')
+        assert r.status_int == 200
+        assert r.json['title'] == 'Home'
 
         r = self.api_get('/rest/p/admin/installable_tools', status=403)
 
         r = self.api_get('/rest/p/admin/installable_tools', user='root')
-        assert_equal(r.status_int, 200)
+        assert r.status_int == 200
         assert [t for t in r.json['tools'] if t['tool_label'] == 'Wiki'], r.json
 
     def test_project_has_access_no_params(self):
@@ -279,13 +279,13 @@ class TestRestHome(TestRestApiBase):
         r = self.api_get(
             '/rest/p/test/has_access?user=babadook&perm=read',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False
         r = self.api_get(
             '/rest/p/test/has_access?user=test-admin&perm=jump',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False
 
     def test_project_has_access_not_admin(self):
         """
@@ -301,20 +301,20 @@ class TestRestHome(TestRestApiBase):
         r = self.api_get(
             '/rest/p/test/has_access?user=test-admin&perm=update',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], True)
+        assert r.status_int == 200
+        assert r.json['result'] == True
         r = self.api_get(
             '/rest/p/test/has_access?user=test-user&perm=update',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False
 
     def test_subproject_has_access(self):
         r = self.api_get(
             '/rest/p/test/sub1/has_access?user=test-admin&perm=update',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], True)
+        assert r.status_int == 200
+        assert r.json['result'] == True
 
     def test_unicode(self):
         self.app.post(
@@ -357,13 +357,13 @@ class TestRestHome(TestRestApiBase):
         }
         with mock.patch.dict(g.entry_points, eps):
             response = self.app.get('/rest/')
-            assert_equal(response.json, {
+            assert response.json == {
                 'site_stats': {
                     'foo_24hr': 42,
                     'bar_24hr': 84,
                     'qux_24hr': 0,
                 },
-            })
+            }
 
     def test_name_validation(self):
         r = self.api_get('/rest/p/test/')
@@ -442,7 +442,7 @@ class TestRestNbhdAddProject(TestRestApiBase):
                           params=json.dumps(project_data),
                           user='root',
                           status=400)
-        assert_in('Required', r.json['error'])
+        assert 'Required' in r.json['error']
 
     def test_add_project_bad_data(self):
         project_data = {
@@ -455,7 +455,7 @@ class TestRestNbhdAddProject(TestRestApiBase):
                           params=json.dumps(project_data),
                           user='root',
                           status=400)
-        assert_in('is not a valid trove category', r.json['error'])
+        assert 'is not a valid trove category' in r.json['error']
 
         # local icon paths are not allowed through web (have to use icon_url)
         project_data = {
@@ -468,7 +468,7 @@ class TestRestNbhdAddProject(TestRestApiBase):
                           params=json.dumps(project_data),
                           user='root',
                           status=400)
-        assert_in('Unrecognized keys in mapping', r.json['error'])
+        assert 'Unrecognized keys in mapping' in r.json['error']
 
     def test_add_project_name_error(self):
         project_data = {
@@ -478,7 +478,7 @@ class TestRestNbhdAddProject(TestRestApiBase):
                           params=json.dumps(project_data),
                           user='root',
                           status=400)
-        assert_equal('This project name is taken.', r.json['error'])
+        assert 'This project name is taken.' == r.json['error']
 
         project_data = {
             "shortname": "/?xyz",
@@ -487,7 +487,7 @@ class TestRestNbhdAddProject(TestRestApiBase):
                           params=json.dumps(project_data),
                           user='root',
                           status=400)
-        assert_in('Please use', r.json['error'])
+        assert 'Please use' in r.json['error']
 
     def test_add_project_create_error(self):
         project_data = {
@@ -500,7 +500,7 @@ class TestRestNbhdAddProject(TestRestApiBase):
                           params=json.dumps(project_data),
                           user='root',
                           status=400)
-        assert_equal("You can't create private projects in the Projects neighborhood", r.json['error'])
+        assert "You can't create private projects in the Projects neighborhood" == r.json['error']
 
     def test_add_project(self):
         project_data = {
@@ -527,18 +527,18 @@ class TestRestNbhdAddProject(TestRestApiBase):
                           params=json.dumps(project_data),
                           user='root',
                           status=201)
-        assert_equal(r.json, {
+        assert r.json == {
             'status': 'success',
             'html_url': 'http://localhost/p/my-new-proj/',
             'url': 'http://localhost/rest/p/my-new-proj/',
-        })
+        }
         p = M.Project.query.get(shortname='my-new-proj')
-        assert_equal(p.name, 'My New Project')
-        assert_equal(len(p.trove_license), 2)
+        assert p.name == 'My New Project'
+        assert len(p.trove_license) == 2
         assert isinstance(p.trove_license[0], ObjectId), p.trove_license[0]
         # these are sensitive fields only admins should be able to set:
-        assert_equal(p.get_tool_data('allura', 'grouping_threshold'), 5)
-        assert_equal(p.admins()[0].username, 'test-admin')
+        assert p.get_tool_data('allura', 'grouping_threshold') == 5
+        assert p.admins()[0].username == 'test-admin'
 
     def test_add_project_automatic_shortname(self):
         # no shortname given, and name "Test" would conflict with existing "test" project
@@ -550,11 +550,11 @@ class TestRestNbhdAddProject(TestRestApiBase):
                           params=json.dumps(project_data),
                           user='root',
                           status=201)
-        assert_equal(r.json, {
+        assert r.json == {
             'status': 'success',
             'html_url': 'http://localhost/p/test1/',
             'url': 'http://localhost/rest/p/test1/',
-        })
+        }
 
 
 class TestDoap(TestRestApiBase):
@@ -571,22 +571,22 @@ class TestDoap(TestRestApiBase):
         project.short_description = 'A Short Description'
         ThreadLocalODMSession.flush_all()
         r = self.app.get('/rest/p/test?doap')
-        assert_equal(r.content_type, 'application/rdf+xml')
+        assert r.content_type == 'application/rdf+xml'
         p = r.xml.find(self.ns + 'Project')
-        assert_equal(p.attrib[self.rdf + 'about'], 'http://localhost/rest/p/test?doap#')
-        assert_equal(p.find(self.ns + 'name').text, 'test')
-        assert_equal(p.find(self.dc + 'title').text, 'Test Project')
-        assert_equal(p.find(self.ns_sf + 'private').text, '0')
-        assert_equal(p.find(self.ns + 'shortdesc').text, 'A Summary')
-        assert_equal(p.find(self.ns + 'description').text, 'A Short Description')
-        assert_equal(p.find(self.ns + 'created').text, project._id.generation_time.strftime('%Y-%m-%d'))
+        assert p.attrib[self.rdf + 'about'] == 'http://localhost/rest/p/test?doap#'
+        assert p.find(self.ns + 'name').text == 'test'
+        assert p.find(self.dc + 'title').text == 'Test Project'
+        assert p.find(self.ns_sf + 'private').text == '0'
+        assert p.find(self.ns + 'shortdesc').text == 'A Summary'
+        assert p.find(self.ns + 'description').text == 'A Short Description'
+        assert p.find(self.ns + 'created').text == project._id.generation_time.strftime('%Y-%m-%d')
 
         maintainers = p.findall(self.ns + 'maintainer')
-        assert_equal(len(maintainers), 1)
+        assert len(maintainers) == 1
         user = maintainers[0].find(self.foaf + 'Person')
-        assert_equal(user.find(self.foaf + 'name').text, 'Test Admin')
-        assert_equal(user.find(self.foaf + 'nick').text, 'test-admin')
-        assert_equal(list(user.find(self.foaf + 'homepage').items())[0][1],
+        assert user.find(self.foaf + 'name').text == 'Test Admin'
+        assert user.find(self.foaf + 'nick').text == 'test-admin'
+        assert (list(user.find(self.foaf + 'homepage').items())[0][1] ==
                      'http://localhost/u/test-admin/')
 
     @td.with_tool('test', 'Tickets', 'bugs')
@@ -607,8 +607,8 @@ class TestDoap(TestRestApiBase):
         tools = [(t.find(self.ns_sf + 'Feature').find(self.ns + 'name').text,
                   list(t.find(self.ns_sf + 'Feature').find(self.foaf + 'page').items())[0][1])
                  for t in tools]
-        assert_in(('Tickets', 'http://localhost/p/test/bugs/'), tools)
-        assert_in(('Tickets', 'http://localhost/p/test/private-bugs/'), tools)
+        assert ('Tickets', 'http://localhost/p/test/bugs/') in tools
+        assert ('Tickets', 'http://localhost/p/test/private-bugs/') in tools
 
         # anonymous sees only non-private tool
         r = self.app.get('/rest/p/test?doap',
@@ -618,25 +618,25 @@ class TestDoap(TestRestApiBase):
         tools = [(t.find(self.ns_sf + 'Feature').find(self.ns + 'name').text,
                   list(t.find(self.ns_sf + 'Feature').find(self.foaf + 'page').items())[0][1])
                  for t in tools]
-        assert_in(('Tickets', 'http://localhost/p/test/bugs/'), tools)
-        assert_not_in(('Tickets', 'http://localhost/p/test/private-bugs/'), tools)
+        assert ('Tickets', 'http://localhost/p/test/bugs/') in tools
+        assert ('Tickets', 'http://localhost/p/test/private-bugs/') not in tools
 
 
 class TestUserProfile(TestRestApiBase):
     @td.with_user_project('test-admin')
     def test_profile_data(self):
         r = self.app.get('/rest/u/test-admin/profile/')
-        assert_equal(r.content_type, 'application/json')
+        assert r.content_type == 'application/json'
         json = r.json
-        assert_equal(json['username'], 'test-admin')
-        assert_equal(json['name'], 'Test Admin')
-        assert_in('availability', json)
-        assert_in('joined', json)
-        assert_in('localization', json)
-        assert_in('projects', json)
-        assert_in('sex', json)
-        assert_in('skills', json)
-        assert_in('skypeaccount', json)
-        assert_in('socialnetworks', json)
-        assert_in('telnumbers', json)
-        assert_in('webpages', json)
+        assert json['username'] == 'test-admin'
+        assert json['name'] == 'Test Admin'
+        assert 'availability' in json
+        assert 'joined' in json
+        assert 'localization' in json
+        assert 'projects' in json
+        assert 'sex' in json
+        assert 'skills' in json
+        assert 'skypeaccount' in json
+        assert 'socialnetworks' in json
+        assert 'telnumbers' in json
+        assert 'webpages' in json

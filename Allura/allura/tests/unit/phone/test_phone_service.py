@@ -36,22 +36,22 @@ class TestPhoneService:
         res = PhoneService({}).verify('1234567890')
         expected = {'status': 'error',
                     'error': 'Phone service is not configured'}
-        assert_equal(res, expected)
+        assert res == expected
 
     def test_check(self):
         res = PhoneService({}).check('test-req-id', '1111')
         expected = {'status': 'error',
                     'error': 'Phone service is not configured'}
-        assert_equal(res, expected)
+        assert res == expected
 
     def test_get_default(self):
         config = {}
         entry_points = None
         phone = PhoneService.get(config, entry_points)
-        assert_true(isinstance(phone, PhoneService))
+        assert isinstance(phone, PhoneService)
 
     def test_get_method(self):
         config = {'phone.method': 'mock'}
         entry_points = {'mock': MockPhoneService}
         phone = PhoneService.get(config, entry_points)
-        assert_true(isinstance(phone, MockPhoneService))
+        assert isinstance(phone, MockPhoneService)

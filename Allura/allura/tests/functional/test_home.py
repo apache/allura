@@ -39,22 +39,22 @@ class TestProjectHome(TestController):
                          str(root.html)), 'Missing Server comment'
         nav_links = root.html.find('div', dict(id='top_nav')).findAll('a')
         nav_links = [nl for nl in nav_links if 'add-tool-toggle' not in nl['class']]
-        assert_equal(len(nav_links), len(response.json['menu']))
+        assert len(nav_links) == len(response.json['menu'])
         for nl, entry in zip(nav_links, response.json['menu']):
             assert nl['href'] == entry['url']
 
     @td.with_wiki
     def test_project_nav_with_admin_options(self):
         r = self.app.get('/p/test/_nav.json?admin_options=1')
-        assert_in({
+        assert {
             "text": "Wiki",
             "href": "/p/test/admin/install_tool?tool_name=wiki",
             "tooltip":
                 "Documentation is key to your project and the wiki tool helps make it easy for anyone to contribute."
-        }, r.json['installable_tools'])
+        } in r.json['installable_tools']
         for m in r.json['menu']:
             if m['mount_point'] == 'sub1':
-                assert_equal(m['admin_options'],
+                assert (m['admin_options'] ==
                              [{'className': None,
                                'text': 'Subproject Admin',
                                'href': '/p/test/sub1/admin',
@@ -64,18 +64,18 @@ class TestProjectHome(TestController):
             raise AssertionError('Did not find sub1 subproject in menu results: {}'.format(r.json['menu']))
         for m in r.json['menu']:
             if m['mount_point'] == 'wiki':
-                assert_in({'className': 'admin_modal',
+                assert {'className': 'admin_modal',
                            'text': 'Set Home',
                            'href': '/p/test/admin/wiki/home',
-                           }, m['admin_options'])
-                assert_in({'className': None,
+                           } in m['admin_options']
+                assert {'className': None,
                            'text': 'Permissions',
                            'href': '/p/test/admin/wiki/permissions',
-                           }, m['admin_options'])
-                assert_in({'className': 'admin_modal',
+                           } in m['admin_options']
+                assert {'className': 'admin_modal',
                            'text': 'Delete Everything',
                            'href': '/p/test/admin/wiki/delete',
-                           }, m['admin_options'])
+                           } in m['admin_options']
                 break
         else:
             raise AssertionError('Did not find wiki in menu results: {}'.format(r.json['menu']))
@@ -92,13 +92,13 @@ class TestProjectHome(TestController):
         menu = response.json['menu']
         wiki_group = menu[-2]
         wikis = wiki_group.pop('children')
-        assert_equal({'url': '/p/test/_list/wiki', 'name': 'Wiki \u25be', 'mount_point': None,
-                      'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False}, wiki_group)
-        assert_equal(len(wikis), 2)
-        assert_in({'url': '/p/test/wiki/', 'name': 'Wiki', 'mount_point': 'wiki',
-                   'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False}, wikis)
-        assert_in({'url': '/p/test/wiki2/', 'name': 'wiki2', 'mount_point': 'wiki2',
-                   'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False}, wikis)
+        assert {'url': '/p/test/_list/wiki', 'name': 'Wiki \u25be', 'mount_point': None,
+                      'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False} == wiki_group
+        assert len(wikis) == 2
+        assert {'url': '/p/test/wiki/', 'name': 'Wiki', 'mount_point': 'wiki',
+                   'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False} in wikis
+        assert {'url': '/p/test/wiki2/', 'name': 'wiki2', 'mount_point': 'wiki2',
+                   'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False} in wikis
 
     def test_sitemap_limit_per_tool(self):
         """Test that sitemap is limited to max of 10 items per tool type."""
@@ -112,7 +112,7 @@ class TestProjectHome(TestController):
         response = self.app.get('/p/test/_nav.json')
         menu = response.json['menu']
         wikis = menu[-2]['children']
-        assert_equal(len(wikis), 10)
+        assert len(wikis) == 10
 
     @td.with_wiki
     def test_project_group_nav_more_than_ten(self):
@@ -126,9 +126,9 @@ class TestProjectHome(TestController):
         response = self.app.get('/p/test/_nav.json')
         menu = response.json['menu']
         wiki_menu = [m for m in menu if m['tool_name'] == 'wiki'][0]
-        assert_equal(len(wiki_menu['children']), 10)
-        assert_in({'url': '/p/test/_list/wiki', 'name': 'More...', 'mount_point': None,
-                   'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False}, wiki_menu['children'])
+        assert len(wiki_menu['children']) == 10
+        assert {'url': '/p/test/_list/wiki', 'name': 'More...', 'mount_point': None,
+                   'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False} in wiki_menu['children']
 
     @td.with_wiki
     def test_neighborhood_home(self):
@@ -144,7 +144,7 @@ class TestProjectHome(TestController):
 
         r = self.app.get('/u/test-admin/sub1/')
         assert r.location.endswith('admin/'), r.location
-        assert_not_in('Profile', r.follow().text)
+        assert 'Profile' not in r.follow().text
 
     def test_user_icon_missing(self):
         r = self.app.get('/u/test-user/user_icon', status=302)
@@ -162,7 +162,7 @@ class TestProjectHome(TestController):
                 short_description='A Test Project'),
                 upload_files=[upload])
         r = self.app.get('/u/test-admin/user_icon')
-        assert_equal(r.content_type, 'image/png')
+        assert r.content_type == 'image/png'
 
     def test_user_search(self):
         r = self.app.get('/p/test/user_search?term=test', status=200)
@@ -190,7 +190,7 @@ class TestProjectHome(TestController):
             'value': 'test-admin',
             'label': 'Test Admin (test-admin)'
         }]
-        assert_equal(j['options'], expected)
+        assert j['options'] == expected
 
     def test_members(self):
         nbhd = M.Neighborhood.query.get(name='Projects')
@@ -246,7 +246,7 @@ class TestProjectHome(TestController):
         pr.install_app(ep_name='Wiki', mount_point='test-sub', mount_label='Test Sub', ordinal='1')
         r = self.app.get('/p/test/test-mount/test-sub/').follow()
         active_link = r.html.findAll('li', {'class': 'selected'})
-        assert_equal(len(active_link), 1)
+        assert len(active_link) == 1
         assert active_link[0].contents[1]['href'] == '/p/test/test-mount/test-sub/'
         assert 'Welcome to your wiki!' in r
 
@@ -271,6 +271,6 @@ class TestProjectHome(TestController):
         # Check if the tool is accessed and not the subproject.
         r = self.app.get('/p/test/test-mount/').follow()
         active_link = r.html.findAll('li', {'class': 'selected'})
-        assert_equal(len(active_link), 1)
+        assert len(active_link) == 1
         assert active_link[0].contents[1]['href'] == '/p/test/test-mount/'
         assert 'Welcome to your wiki!' in r

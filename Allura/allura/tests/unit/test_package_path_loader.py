@@ -43,19 +43,19 @@ class TestPackagePathLoader(TestCase):
 
         paths = PackagePathLoader()._load_paths()
 
-        assert_equal(paths, [
+        assert paths == [
             ['site-theme', None],
             ['ep0', 'path:eps.ep0'],
             ['ep1', 'path:eps.ep1'],
             ['ep2', 'path:eps.ep2'],
             ['allura', '/'],
-        ])
-        assert_equal(type(paths[0]), list)
-        assert_equal(resource_filename.call_args_list, [
+        ]
+        assert type(paths[0]) == list
+        assert resource_filename.call_args_list == [
             mock.call('eps.ep0', ''),
             mock.call('eps.ep1', ''),
             mock.call('eps.ep2', ''),
-        ])
+        ]
 
     @mock.patch('pkg_resources.iter_entry_points')
     def test_load_rules(self, iter_entry_points):
@@ -70,8 +70,8 @@ class TestPackagePathLoader(TestCase):
 
         order_rules, replacement_rules = PackagePathLoader()._load_rules()
 
-        assert_equal(order_rules, [('ep0', 'allura'), ('allura', 'ep2')])
-        assert_equal(replacement_rules, {'allura': 'ep1'})
+        assert order_rules == [('ep0', 'allura'), ('allura', 'ep2')]
+        assert replacement_rules == {'allura': 'ep1'}
 
         eps = iter_entry_points.return_value.__iter__.return_value = [
             mock.Mock(ep_name='ep0', rules=[('?', 'allura')]),
@@ -100,11 +100,11 @@ class TestPackagePathLoader(TestCase):
 
         ppl._replace_signposts(paths, rules)
 
-        assert_equal(paths, [
+        assert paths == [
             ['site-theme', '/ep1'],
             ['ep0', '/ep0'],
             ['allura', '/ep2'],
-        ])
+        ]
 
     def test_sort_paths(self):
         paths = [
@@ -125,14 +125,14 @@ class TestPackagePathLoader(TestCase):
 
         PackagePathLoader()._sort_paths(paths, rules)
 
-        assert_equal(paths, [
+        assert paths == [
             ['site-theme', None],
             ['ep2', '/ep2'],
             ['ep3', '/ep3'],
             ['ep1', '/ep1'],
             ['allura', '/'],
             ['ep0', '/ep0'],
-        ])
+        ]
 
     def test_init_paths(self):
         paths = [
@@ -153,7 +153,7 @@ class TestPackagePathLoader(TestCase):
         ppl._sort_paths.assert_called_once_with(paths, 'order_rules')
         ppl._replace_signposts.assert_called_once_with(paths, 'repl_rules')
 
-        assert_equal(output, ['/', '/tail'])
+        assert output == ['/', '/tail']
 
     @mock.patch('jinja2.FileSystemLoader')
     def test_fs_loader(self, FileSystemLoader):
@@ -166,7 +166,7 @@ class TestPackagePathLoader(TestCase):
 
         ppl.init_paths.assert_called_once_with()
         FileSystemLoader.assert_called_once_with(['path1', 'path2'])
-        assert_equal(output1, 'fs_loader')
+        assert output1 == 'fs_loader'
         assert output1 is output2
 
     @mock.patch.dict(config, {'disable_template_overrides': False})
@@ -179,7 +179,7 @@ class TestPackagePathLoader(TestCase):
         # override exists
         output = ppl.get_source('env', 'allura.ext.admin:templates/audit.html')
 
-        assert_equal(output, 'fs_load')
+        assert output == 'fs_load'
         fs_loader().get_source.assert_called_once_with(
             'env', 'override/allura/ext/admin/templates/audit.html')
 
@@ -195,8 +195,8 @@ class TestPackagePathLoader(TestCase):
             rf.assert_called_once_with(
                 'allura.ext.admin', 'templates/audit.html')
 
-        assert_equal(output, 'fs_load')
-        assert_equal(fs_loader().get_source.call_count, 2)
+        assert output == 'fs_load'
+        assert fs_loader().get_source.call_count == 2
         fs_loader().get_source.assert_called_with('env', 'resource')
 
         fs_loader().get_source.reset_mock()
@@ -206,8 +206,8 @@ class TestPackagePathLoader(TestCase):
         # no override, ':' not in template
         output = ppl.get_source('env', 'templates/audit.html')
 
-        assert_equal(output, 'fs_load')
-        assert_equal(fs_loader().get_source.call_count, 2)
+        assert output == 'fs_load'
+        assert fs_loader().get_source.call_count == 2
         fs_loader().get_source.assert_called_with(
             'env', 'templates/audit.html')
 
@@ -220,11 +220,11 @@ class TestPackagePathLoader(TestCase):
         assert_raises(
             jinja2.TemplateError,
             ppl.get_source, 'env', 'allura.ext.admin:templates/audit.html')
-        assert_equal(fs_loader().get_source.call_count, 1)
+        assert fs_loader().get_source.call_count == 1
         fs_loader().get_source.reset_mock()
 
         with mock.patch.dict(config, {'disable_template_overrides': False}):
             assert_raises(
                 jinja2.TemplateError,
                 ppl.get_source, 'env', 'allura.ext.admin:templates/audit.html')
-            assert_equal(fs_loader().get_source.call_count, 2)
+            assert fs_loader().get_source.call_count == 2
