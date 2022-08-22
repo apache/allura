@@ -226,6 +226,9 @@ class GitHubOAuthMixin:
     '''
 
     def oauth_begin(self, scope=None):  # type: (list[str]) -> None
+        if c.user.is_anonymous():
+            log.info("User needs authorization before importing a project")
+            return None
         client_id = config.get('github_importer.client_id')
         secret = config.get('github_importer.client_secret')
         if not client_id or not secret:
