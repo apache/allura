@@ -92,3 +92,9 @@ class TestGitHubOAuth(TestController):
                                                         auth=requests.auth.HTTPBasicAuth('client_id', 'secret'),
                                                         json={'access_token': 'abc'},
                                                         timeout=10)
+
+
+    def test_project_import(self):
+        r = self.app.get('/p/import_project/github/', extra_environ=dict(username='*anonymous'))
+        assert_equal(None, r.location)
+        r.mustcontain('Login Required')
