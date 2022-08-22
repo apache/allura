@@ -74,6 +74,7 @@ def test_extensions_cm_flush_raises():
     assert session._kwargs['extensions'] == []
 
 
+@with_nose_compatibility
 class TestSessionExtension(TestCase):
 
     def _mock_indexable(self, **kw):
@@ -83,6 +84,7 @@ class TestSessionExtension(TestCase):
         return m
 
 
+@with_nose_compatibility
 class TestIndexerSessionExtension(TestSessionExtension):
 
     def setUp(self):
@@ -121,6 +123,7 @@ class TestIndexerSessionExtension(TestSessionExtension):
         assert self.tasks['add'].post.call_count == 0
 
 
+@with_nose_compatibility
 class TestArtifactSessionExtension(TestSessionExtension):
 
     def setUp(self):
@@ -150,6 +153,7 @@ class TestArtifactSessionExtension(TestSessionExtension):
         assert index_tasks.add_artifacts.post.call_count == 0
 
 
+@with_nose_compatibility
 class TestBatchIndexer(TestCase):
 
     def setUp(self):

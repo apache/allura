@@ -29,6 +29,7 @@ from allura.tests import decorators as td
 from allura import model as M
 
 
+@with_nose_compatibility
 class TestProjectHome(TestController):
 
     @td.with_wiki

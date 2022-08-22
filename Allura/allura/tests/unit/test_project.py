@@ -25,6 +25,7 @@ from allura.lib import helpers as h
 from allura.app import SitemapEntry
 
 
+@with_nose_compatibility
 class TestProject(unittest.TestCase):
 
     def test_grouped_navbar_entries(self):

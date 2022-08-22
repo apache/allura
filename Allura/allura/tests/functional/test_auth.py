@@ -47,6 +47,7 @@ from tg import tmpl_context as c, app_globals as g
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura.tests.decorators import audits, out_audits, assert_logmsg
+from allura.tests.pytest_helpers import with_nose_compatibility
 from alluratest.controller import setup_trove_categories, TestRestApiBase, oauth1_webtest
 from allura import model as M
 from allura.model.oauth import dummy_oauths
@@ -59,6 +60,7 @@ def unentity(s):
     return s.replace('&quot;', '"').replace('&#34;', '"')
 
 
+@with_nose_compatibility
 class TestAuth(TestController):
     def test_login(self):
         self.app.get('/auth/')
@@ -1140,6 +1142,7 @@ class TestAuth(TestController):
         assert r.content_length != 777
 
 
+@with_nose_compatibility
 class TestAuthRest(TestRestApiBase):
 
     def test_tools_list_anon(self):
@@ -1179,6 +1182,7 @@ class TestAuthRest(TestRestApiBase):
         }
 
 
+@with_nose_compatibility
 class TestPreferences(TestController):
     @td.with_user_project('test-admin')
     def test_personal_data(self):
@@ -1562,11 +1566,12 @@ class TestPreferences(TestController):
             self.app.get('/auth/not_page', status=404)
 
 
+@with_nose_compatibility
 class TestPasswordReset(TestController):
     test_primary_email = 'testprimaryaddr@mail.com'
 
     def setUp(self):
-        super().setUp()
+        super().setup_method(method)
         # so test-admin isn't automatically logged in for all requests
         self.app.extra_environ = {'disable_auth_magic': 'True'}
 
@@ -1813,6 +1818,7 @@ To update your password on %s, please visit the following URL:
         assert 'Log Out' in r, r
 
 
+@with_nose_compatibility
 class TestOAuth(TestController):
     def test_register_deregister_app(self):
         # register
@@ -2147,6 +2153,7 @@ class TestOAuthAccessToken(TestController):
         self.test_access_token_ok(signature_type='query')
 
 
+@with_nose_compatibility
 class TestDisableAccount(TestController):
     def test_not_authenticated(self):
         r = self.app.get(
@@ -2191,6 +2198,7 @@ class TestDisableAccount(TestController):
         assert user.disabled == True
 
 
+@with_nose_compatibility
 class TestPasswordExpire(TestController):
     def login(self, username='test-user', pwd='foo', query_string=''):
         extra = {'username': '*anonymous', 'REMOTE_ADDR': '127.0.0.1'}
@@ -2386,6 +2394,7 @@ class TestPasswordExpire(TestController):
             assert r.location == 'http://localhost/p/test/tickets/?milestone=1.0&page=2'
 
 
+@with_nose_compatibility
 class TestCSRFProtection(TestController):
     def test_blocks_invalid(self):
         # so test-admin isn't automatically logged in for all requests
@@ -2420,6 +2429,7 @@ class TestCSRFProtection(TestController):
         assert r.form['_session_id'].value
 
 
+@with_nose_compatibility
 class TestTwoFactor(TestController):
 
     sample_key = b'\x00K\xda\xbfv\xc2B\xaa\x1a\xbe\xa5\x96b\xb2\xa0Z:\xc9\xcf\x8a'
@@ -2493,7 +2503,7 @@ class TestTwoFactor(TestController):
     def test_enable_totp(self):
         # create a separate session, for later use in the test
         other_session = TestController()
-        other_session.setUp()
+        other_session.setup_method(method)
         other_session.app.get('/auth/preferences/')
 
         with out_audits(user=True):
@@ -2535,7 +2545,7 @@ class TestTwoFactor(TestController):
         # Confirm any pre-existing sessions have to re-authenticate
         r = other_session.app.get('/auth/preferences/')
         assert '/auth/?return_to' in r.headers['Location']
-        other_session.tearDown()
+        other_session.teardown_method(method)
 
     def test_reset_totp(self):
         self._init_totp()

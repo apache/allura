@@ -24,6 +24,7 @@ from alluratest.tools import assert_equal
 from allura.lib.spam.stopforumspamfilter import StopForumSpamSpamFilter
 
 
+@with_nose_compatibility
 class TestStopForumSpam:
 
     def setUp(self):

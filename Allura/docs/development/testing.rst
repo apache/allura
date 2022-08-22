@@ -66,7 +66,7 @@ fully-loaded wsgi app, you can do something like this:
     from allura.lib import helpers a h
     from allura import model as M
 
-    def setUp():
+    def setup_method(self, method):
         # set up globals
         setup_unit_test()
 

@@ -27,6 +27,7 @@ from tg import config
 from allura.lib.package_path_loader import PackagePathLoader
 
 
+@with_nose_compatibility
 class TestPackagePathLoader(TestCase):
 
     @mock.patch('pkg_resources.resource_filename')

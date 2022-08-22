@@ -21,10 +21,12 @@ import mock
 from allura.scripts.scripttask import ScriptTask
 
 
+@with_nose_compatibility
 class TestScriptTask(unittest.TestCase):
 
     def setUp(self):
-        class TestScriptTask(ScriptTask):
+        @with_nose_compatibility
+class TestScriptTask(ScriptTask):
             _parser = mock.Mock()
 
             @classmethod

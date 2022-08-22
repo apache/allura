@@ -21,10 +21,11 @@ import random
 import gc
 
 from alluratest.tools import assert_equal, assert_not_equal
-
+from allura.tests import with_nose_compatibility
 from allura.lib.decorators import task, memoize
 
 
+@with_nose_compatibility
 class TestTask(TestCase):
 
     def test_no_params(self):
@@ -59,6 +60,7 @@ class TestTask(TestCase):
         func.post('test', foo=2, delay=1)
 
 
+@with_nose_compatibility
 class TestMemoize:
 
     def test_function(self):

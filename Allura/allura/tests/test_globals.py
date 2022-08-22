@@ -54,7 +54,7 @@ def squish_spaces(text):
     return re.sub(r'[\s\xa0]+', ' ', text)
 
 
-def setUp():
+def setup_method(self, method):
     """Method called by nose once before running the package.  Some functions need it run again to reset data"""
     setup_basic_test()
     setup_unit_test()
@@ -825,6 +825,7 @@ def get_projects_property_in_the_same_order(names, prop):
     return [projects_dict[name] for name in names]
 
 
+@with_nose_compatibility
 class TestCachedMarkdown(unittest.TestCase):
 
     def setUp(self):
@@ -942,6 +943,7 @@ class TestCachedMarkdown(unittest.TestCase):
         self.assertEqual(required_keys, keys)
 
 
+@with_nose_compatibility
 class TestEmojis(unittest.TestCase):
 
     def test_markdown_emoji_atomic(self):
@@ -977,6 +979,7 @@ class TestEmojis(unittest.TestCase):
         assert 'More emojis \U0001F44D\U0001F42B\U0001F552 wow!' in output
 
 
+@with_nose_compatibility
 class TestUserMentions(unittest.TestCase):
 
     def test_markdown_user_mention_default(self):
@@ -1018,6 +1021,7 @@ class TestUserMentions(unittest.TestCase):
         assert 'class="user-mention"' in output
 
 
+@with_nose_compatibility
 class TestHandlePaging(unittest.TestCase):
 
     def setUp(self):
@@ -1078,6 +1082,7 @@ class TestHandlePaging(unittest.TestCase):
         self.assertEqual(g.handle_paging(10, 'asdf', 30), (10, 0, 0))
 
 
+@with_nose_compatibility
 class TestIconRender:
 
     def setUp(self):
