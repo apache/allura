@@ -24,6 +24,7 @@ from allura.tests import TestController
 from allura.lib import helpers as h
 
 
+@with_nose_compatibility
 class TestNavigation(TestController):
     """
     Test div-logo and nav-left:
@@ -32,7 +33,7 @@ class TestNavigation(TestController):
     """
 
     def setUp(self):
-        super().setUp()
+        super().setup_method(method)
         self.logo_pattern = ('div', {'class': 'nav-logo'})
         self.global_nav_pattern = ('nav', {'class': 'nav-left'})
         self.nav_data = {

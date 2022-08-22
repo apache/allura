@@ -33,6 +33,7 @@ from allura.tests import decorators as td
 from forgewiki import model as WM
 
 
+@with_nose_compatibility
 class TestNotification(unittest.TestCase):
 
     def setUp(self):
@@ -164,6 +165,7 @@ class TestNotification(unittest.TestCase):
         )
 
 
+@with_nose_compatibility
 class TestPostNotifications(unittest.TestCase):
 
     def setUp(self):
@@ -302,6 +304,7 @@ class TestPostNotifications(unittest.TestCase):
         return M.Notification.post(self.pg, 'metadata')
 
 
+@with_nose_compatibility
 class TestSubscriptionTypes(unittest.TestCase):
 
     def setUp(self):
@@ -342,10 +345,10 @@ class TestSubscriptionTypes(unittest.TestCase):
     def test_message(self):
         self._test_message()
 
-        self.setUp()
+        self.setup_method(method)
         self._test_message()
 
-        self.setUp()
+        self.setup_method(method)
         M.notification.MAILBOX_QUIESCENT = timedelta(minutes=1)
         # will raise "assert msg is not None" since the new message is not 1
         # min old:
@@ -475,6 +478,7 @@ class TestSubscriptionTypes(unittest.TestCase):
         assert count == 1
 
 
+@with_nose_compatibility
 class TestSiteNotification(unittest.TestCase):
     def setUp(self):
         self.note = M.SiteNotification(

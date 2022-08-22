@@ -31,6 +31,7 @@ from allura import model as M
 from allura.lib import helpers as h
 
 
+@with_nose_compatibility
 class TestGitLikeTree:
     def test_set_blob(self):
         tree = M.GitLikeTree()
@@ -128,6 +129,7 @@ class RepoTestBase(unittest.TestCase):
         ]
 
 
+@with_nose_compatibility
 class TestLastCommit(unittest.TestCase):
     def setUp(self):
         setup_basic_test()
@@ -400,6 +402,7 @@ class TestLastCommit(unittest.TestCase):
         self.assertEqual(lcd.by_name['file2'], commit3._id)
 
 
+@with_nose_compatibility
 class TestModelCache(unittest.TestCase):
     def setUp(self):
         self.cache = M.repository.ModelCache()
@@ -678,6 +681,7 @@ class TestModelCache(unittest.TestCase):
         session.return_value.expunge.assert_called_once_with(tree1)
 
 
+@with_nose_compatibility
 class TestMergeRequest:
 
     def setUp(self):

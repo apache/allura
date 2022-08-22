@@ -44,7 +44,7 @@ from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects, setup_functional_test
 
 
-def setUp():
+def setup_method(self, method):
     setup_basic_test()
     ThreadLocalORMSession.close_all()
     setup_global_objects()
@@ -468,6 +468,7 @@ def test_user_backfill_login_details():
     assert details[1].ua == 'TestBrowser/57'
 
 
+@with_nose_compatibility
 class TestAuditLog:
 
     def test_message_html(self):

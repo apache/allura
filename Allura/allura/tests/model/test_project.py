@@ -31,7 +31,7 @@ from allura.lib.exceptions import ToolError, Invalid
 from mock import MagicMock, patch
 
 
-def setUp():
+def setup_method(self, method):
     setup_basic_test()
     setup_with_tools()
 

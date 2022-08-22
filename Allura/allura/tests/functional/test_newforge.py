@@ -23,6 +23,7 @@ from allura.tests import decorators as td
 from allura import model as M
 
 
+@with_nose_compatibility
 class TestNewForgeController(TestController):
 
     @td.with_wiki

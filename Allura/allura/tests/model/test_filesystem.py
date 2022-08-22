@@ -37,6 +37,7 @@ class File(M.File):
 Mapper.compile_all()
 
 
+@with_nose_compatibility
 class TestFile(TestCase):
 
     def setUp(self):

@@ -19,6 +19,7 @@
 from allura.tests import TestController
 
 
+@with_nose_compatibility
 class TestStaticFilesMiddleware(TestController):
 
     # this tests StaticFilesMiddleware

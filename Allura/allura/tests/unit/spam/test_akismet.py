@@ -29,6 +29,7 @@ from allura.lib.spam.akismetfilter import AKISMET_AVAILABLE, AkismetSpamFilter
 
 
 @unittest.skipIf(not AKISMET_AVAILABLE, "Akismet not available")
+@with_nose_compatibility
 class TestAkismet(unittest.TestCase):
 
     @mock.patch('allura.lib.spam.akismetfilter.akismet')

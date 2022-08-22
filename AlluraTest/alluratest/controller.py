@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import os
+from allura.tests.pytest_helpers import with_nose_compatibility
 import six.moves.urllib.request
 import six.moves.urllib.parse
 import six.moves.urllib.error
@@ -162,12 +163,13 @@ def setup_trove_categories():
         create_trove_categories.run([''])
 
 
+@with_nose_compatibility
 class TestController:
 
     application_under_test = 'main'
     validate_skip = False
 
-    def setUp(self):
+    def setup_method(self, method):
         """Method called by nose before running each test"""
         pkg = self.__module__.split('.')[0]
         self.app = ValidatingTestApp(
@@ -179,7 +181,7 @@ class TestController:
             self.smtp_mock = mock.patch('allura.lib.mail_util.smtplib.SMTP')
             self.smtp_mock.start()
 
-    def tearDown(self):
+    def teardown_method(self, method):
         """Method called by nose after running each test"""
         if asbool(tg.config.get('smtp.mock')):
             self.smtp_mock.stop()
@@ -210,10 +212,11 @@ class TestController:
                 return f
 
 
+@with_nose_compatibility
 class TestRestApiBase(TestController):
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         self._use_token = None
         self._token_cache = {}
 

@@ -45,6 +45,7 @@ config = ConfigProxy(
     return_path='forgemail.return_path')
 
 
+@with_nose_compatibility
 class TestReactor(unittest.TestCase):
 
     def setUp(self):
@@ -209,6 +210,7 @@ Content-Type: text/html; charset="utf-8"
             assert isinstance(part['payload'], str), type(part['payload'])
 
 
+@with_nose_compatibility
 class TestHeader:
 
     @raises(TypeError)
@@ -230,6 +232,7 @@ class TestHeader:
                      '=?utf-8?b?ItGC0LXRgdC90Y/RgtGB0Y8i?= <dave@b.com>')
 
 
+@with_nose_compatibility
 class TestIsAutoreply:
 
     def setUp(self):
@@ -276,6 +279,7 @@ class TestIsAutoreply:
         assert is_autoreply(self.msg)
 
 
+@with_nose_compatibility
 class TestIdentifySender:
 
     @mock.patch('allura.model.EmailAddress')
@@ -325,6 +329,7 @@ def test_parse_message_id():
     ]
 
 
+@with_nose_compatibility
 class TestMailServer:
 
     def setUp(self):

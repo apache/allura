@@ -59,6 +59,7 @@ with_git = td.with_tool(test_project_with_repo, 'git', 'src', 'Git')
 with_git2 = td.with_tool(test_project_with_repo, 'git', 'src2', 'Git2')
 
 
+@with_nose_compatibility
 class TestWebhookBase:
     def setUp(self):
         setup_basic_test()
@@ -75,7 +76,7 @@ class TestWebhookBase:
             secret='secret')
         session(self.wh).flush(self.wh)
 
-    def tearDown(self):
+    def teardown_method(self, method):
         for p in self.patches:
             p.stop()
 
@@ -90,6 +91,7 @@ class TestWebhookBase:
         return [repo_init]
 
 
+@with_nose_compatibility
 class TestValidators(TestWebhookBase):
     @with_git2
     def test_webhook_validator(self):
@@ -127,9 +129,10 @@ class TestValidators(TestWebhookBase):
         assert v.to_python(str(wh._id)) == wh
 
 
+@with_nose_compatibility
 class TestWebhookController(TestController):
     def setUp(self):
-        super().setUp()
+        super().setup_method(method)
         self.patches = self.monkey_patch()
         for p in self.patches:
             p.start()
@@ -138,8 +141,8 @@ class TestWebhookController(TestController):
         self.git = self.project.app_instance('src')
         self.url = str(self.git.admin_url + 'webhooks')
 
-    def tearDown(self):
-        super().tearDown()
+    def teardown_method(self, method):
+        super().teardown_method(method)
         for p in self.patches:
             p.stop()
 
@@ -418,6 +421,7 @@ class TestWebhookController(TestController):
         return [text(tds[0]), text(tds[1]), link(tds[2]), delete_btn(tds[3])]
 
 
+@with_nose_compatibility
 class TestSendWebhookHelper(TestWebhookBase):
     def setUp(self, *args, **kw):
         super().setUp(*args, **kw)
@@ -522,6 +526,7 @@ class TestSendWebhookHelper(TestWebhookBase):
                     requests.post.return_value.headers))
 
 
+@with_nose_compatibility
 class TestRepoPushWebhookSender(TestWebhookBase):
     @patch('allura.webhooks.send_webhook', autospec=True)
     def test_send(self, send_webhook):
@@ -628,6 +633,7 @@ class TestRepoPushWebhookSender(TestWebhookBase):
         assert sender._convert_id('a433fa9:13') == 'r13'
 
 
+@with_nose_compatibility
 class TestModels(TestWebhookBase):
     def test_webhook_url(self):
         assert (self.wh.url() ==
@@ -669,9 +675,10 @@ class TestModels(TestWebhookBase):
         dd.assert_equal(self.wh.__json__(), expected)
 
 
+@with_nose_compatibility
 class TestWebhookRestController(TestRestApiBase):
     def setUp(self):
-        super().setUp()
+        super().setup_method(method)
         self.patches = self.monkey_patch()
         for p in self.patches:
             p.start()
@@ -689,8 +696,8 @@ class TestWebhookRestController(TestRestApiBase):
             session(webhook).flush(webhook)
             self.webhooks.append(webhook)
 
-    def tearDown(self):
-        super().tearDown()
+    def teardown_method(self, method):
+        super().teardown_method(method)
         for p in self.patches:
             p.stop()
 

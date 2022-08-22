@@ -24,9 +24,10 @@ from allura.lib import validators as v
 from allura.lib.decorators import task
 from alluratest.controller import setup_basic_test
 from allura.websetup.bootstrap import create_user
+from allura.tests import with_nose_compatibility
 
 
-def setUp():
+def setup_method(self, method):
     setup_basic_test()
 
 
@@ -35,6 +36,7 @@ def dummy_task(*args, **kw):
     pass
 
 
+@with_nose_compatibility
 class TestJsonConverter(unittest.TestCase):
     val = v.JsonConverter
 
@@ -48,6 +50,7 @@ class TestJsonConverter(unittest.TestCase):
             self.val.to_python('3')
 
 
+@with_nose_compatibility
 class TestJsonFile(unittest.TestCase):
     val = v.JsonFile
 
@@ -64,6 +67,7 @@ class TestJsonFile(unittest.TestCase):
             self.val.to_python(self.FieldStorage('{'))
 
 
+@with_nose_compatibility
 class TestUserMapFile(unittest.TestCase):
     val = v.UserMapJsonFile()
 
@@ -86,6 +90,7 @@ class TestUserMapFile(unittest.TestCase):
             self.FieldStorage('{"user_old": "user_new"}')))
 
 
+@with_nose_compatibility
 class TestUserValidator(unittest.TestCase):
     val = v.UserValidator
 
@@ -99,6 +104,7 @@ class TestUserValidator(unittest.TestCase):
         self.assertEqual(str(cm.exception), "Invalid username")
 
 
+@with_nose_compatibility
 class TestAnonymousValidator(unittest.TestCase):
     val = v.AnonymousValidator
 
@@ -115,6 +121,7 @@ class TestAnonymousValidator(unittest.TestCase):
         self.assertEqual(str(cm.exception), "Log in to Mark as Private")
 
 
+@with_nose_compatibility
 class TestMountPointValidator(unittest.TestCase):
 
     @patch('allura.lib.validators.c')
@@ -175,6 +182,7 @@ class TestMountPointValidator(unittest.TestCase):
         self.assertEqual('wiki-0', val.to_python(None))
 
 
+@with_nose_compatibility
 class TestTaskValidator(unittest.TestCase):
     val = v.TaskValidator
 
@@ -205,6 +213,7 @@ class TestTaskValidator(unittest.TestCase):
                          '"allura.tests.test_validators.setUp" is not a task.')
 
 
+@with_nose_compatibility
 class TestPathValidator(unittest.TestCase):
     val = v.PathValidator(strip=True, if_missing={}, if_empty={})
 
@@ -253,6 +262,7 @@ class TestPathValidator(unittest.TestCase):
         self.assertEqual({}, self.val.to_python(''))
 
 
+@with_nose_compatibility
 class TestUrlValidator(unittest.TestCase):
     val = v.URL
 
@@ -271,6 +281,7 @@ class TestUrlValidator(unittest.TestCase):
         self.assertEqual(str(cm.exception), 'That is not a valid URL')
 
 
+@with_nose_compatibility
 class TestNonHttpUrlValidator(unittest.TestCase):
     val = v.NonHttpUrl
 
@@ -289,6 +300,7 @@ class TestNonHttpUrlValidator(unittest.TestCase):
         self.assertEqual(str(cm.exception), 'You must start your URL with a scheme')
 
 
+@with_nose_compatibility
 class TestIconValidator(unittest.TestCase):
     val = v.IconValidator
 
