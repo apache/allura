@@ -35,7 +35,7 @@ class TestWhenModerating(WithDatabase):
                patches.fake_request_patch,
                patches.disable_notifications_patch]
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         super().setup_method(method)
         post = create_post('mypost')
         discussion_controller = Mock(
@@ -89,7 +89,7 @@ class TestIndexWithNoPosts(WithDatabase):
 class TestIndexWithAPostInTheDiscussion(WithDatabase):
     patches = [patches.fake_app_patch]
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         super().setup_method(method)
         self.post = create_post('mypost')
         discussion = self.post.discussion

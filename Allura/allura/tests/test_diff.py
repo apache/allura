@@ -24,7 +24,7 @@ from allura.tests.pytest_helpers import with_nose_compatibility
 @with_nose_compatibility
 class TestHtmlSideBySideDiff(unittest.TestCase):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         self.diff = HtmlSideBySideDiff()
 
     def test_render_change(self):

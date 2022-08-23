@@ -402,7 +402,7 @@ class TestDiscuss(TestDiscussBase):
 @with_nose_compatibility
 class TestAttachment(TestDiscussBase):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         super().setup_method(method)
         self.thread_link = self._thread_link()
         thread = self.app.get(self.thread_link)

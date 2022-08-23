@@ -15,8 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from alluratest.tools import assert_false, assert_true
-
 from allura import model as M
 from allura.tests.unit import WithDatabase
 from allura.tests.unit.patches import fake_app_patch

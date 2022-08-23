@@ -37,7 +37,7 @@ from allura.tests.pytest_helpers import with_nose_compatibility
 @with_nose_compatibility
 class TestNotification(unittest.TestCase):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         setup_basic_test()
         self.setup_with_tools()
 
@@ -169,7 +169,7 @@ class TestNotification(unittest.TestCase):
 @with_nose_compatibility
 class TestPostNotifications(unittest.TestCase):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         setup_basic_test()
         self.setup_with_tools()
 
@@ -308,7 +308,7 @@ class TestPostNotifications(unittest.TestCase):
 @with_nose_compatibility
 class TestSubscriptionTypes(unittest.TestCase):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         setup_basic_test()
         self.setup_with_tools()
 
@@ -346,10 +346,10 @@ class TestSubscriptionTypes(unittest.TestCase):
     def test_message(self):
         self._test_message()
 
-        self.setup_method(method)
+        self.setup_method(None)
         self._test_message()
 
-        self.setup_method(method)
+        self.setup_method(None)
         M.notification.MAILBOX_QUIESCENT = timedelta(minutes=1)
         # will raise "assert msg is not None" since the new message is not 1
         # min old:
@@ -481,7 +481,7 @@ class TestSubscriptionTypes(unittest.TestCase):
 
 @with_nose_compatibility
 class TestSiteNotification(unittest.TestCase):
-    def setup_class(self, method):
+    def setup_method(self, method):
         self.note = M.SiteNotification(
             active=True,
             impressions=0,

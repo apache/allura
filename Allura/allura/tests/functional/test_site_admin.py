@@ -361,7 +361,7 @@ class TestProjectsSearch(TestController):
         'id': 'allura/model/project/Project#53ccf6e8100d2b0741746e9f',
     }])
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         super().setup_method(method)
         # Create project that matches TEST_HIT id
         _id = ObjectId('53ccf6e8100d2b0741746e9f')
@@ -419,7 +419,7 @@ class TestUsersSearch(TestController):
         'user_registration_date_dt': '2014-09-09T13:17:38Z',
         'username_s': 'darth'}])
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         super().setup_method(method)
         # Create user that matches TEST_HIT id
         _id = ObjectId('540efdf2100d2b1483155d39')

@@ -47,7 +47,7 @@ from allura.tests.pytest_helpers import with_nose_compatibility
 @with_nose_compatibility
 class TestRootController(TestController):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         super().setup_method(method)
         n_adobe = M.Neighborhood.query.get(name='Adobe')
         assert n_adobe
@@ -192,7 +192,7 @@ class TestRootController(TestController):
 
 @with_nose_compatibility
 class TestRootWithSSLPattern(TestController):
-    def setup_class(self, method):
+    def setup_method(self, method):
         with td.patch_middleware_config({'force_ssl.pattern': '^/auth'}):
             super().setup_method(method)
 

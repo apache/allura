@@ -18,17 +18,18 @@
 from tg import tmpl_context as c
 import mock
 from ming.base import Object
-from alluratest.tools import assert_equal, assert_raises
+from alluratest.tools import assert_raises
 from formencode import validators as fev
 
 from alluratest.controller import setup_unit_test
+from alluratest.tools import with_setup
 from allura import app
 from allura.lib.app_globals import Icon
 from allura.lib import mail_util
 from allura.tests.pytest_helpers import with_nose_compatibility
 
 
-def setup_method(self, method):
+def setup_method():
     setup_unit_test()
     c.user._id = None
     c.project = mock.Mock()
@@ -47,7 +48,6 @@ def setup_method(self, method):
     c.app.config.url = lambda: 'http://testproject/test_application/'
     c.app.url = c.app.config.url()
     c.app.__version__ = '0.0'
-
 
 def test_config_options():
     options = [
@@ -77,11 +77,13 @@ def test_config_option_with_validator():
     assert_raises(fev.Invalid, opt.validate, '')
 
 
+@with_setup(setup_method)
 def test_options_on_install_default():
     a = app.Application(c.project, c.app.config)
     assert a.options_on_install() == []
 
 
+@with_setup(setup_method)
 def test_options_on_install():
     opts = [app.ConfigOption('url', str, None),
             app.ConfigOption('private', bool, None)]
@@ -94,7 +96,7 @@ def test_options_on_install():
     a = TestApp(c.project, c.app.config)
     assert a.options_on_install() == opts
 
-
+@with_setup(setup_method)
 def test_main_menu():
     class TestApp(app.Application):
         @property
@@ -110,6 +112,7 @@ def test_main_menu():
     assert main_menu[0].children == []  # default main_menu implementation should drop the children from sitemap()
 
 
+@with_setup(setup_method)
 def test_sitemap():
     sm = app.SitemapEntry('test', '')[
         app.SitemapEntry('a', 'a/'),
@@ -125,6 +128,7 @@ def test_sitemap():
     assert len(sm.children) == 3
 
 
+@with_setup(setup_method)
 @mock.patch('allura.app.Application.PostClass.query.get')
 def test_handle_artifact_unicode(qg):
     """

@@ -23,7 +23,7 @@ import time
 import PIL
 from mock import Mock, patch
 from tg import tmpl_context as c
-from alluratest.tools import assert_equals, assert_raises, module_not_available
+from alluratest.tools import assert_equals, assert_raises, module_not_available, with_setup
 from datadiff import tools as dd
 from webob import Request
 from webob.exc import HTTPUnauthorized
@@ -42,7 +42,7 @@ from alluratest.controller import setup_basic_test
 import six
 
 
-def setup_class(self, method):
+def setup_method():
     """Method called by nose before running each test"""
     setup_basic_test()
 
@@ -50,7 +50,7 @@ def setup_class(self, method):
 @with_nose_compatibility
 class TestMakeSafePathPortion(TestCase):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         self.f = h.make_safe_path_portion
 
     def test_no_ascii_chars(self):
@@ -118,7 +118,7 @@ def test_really_unicode():
     assert isinstance(s, Markup)
     assert s == '<b>test</b>'
 
-
+@with_setup(setup_method)
 def test_find_project():
     proj, rest = h.find_project('/p/test/foo')
     assert proj.shortname == 'test'
@@ -127,12 +127,14 @@ def test_find_project():
     assert proj is None
 
 
+@with_setup(setup_method)
 def test_make_roles():
     h.set_context('test', 'wiki', neighborhood='Projects')
     pr = M.ProjectRole.anonymous()
     assert next(h.make_roles([pr._id])) == pr
 
 
+@with_setup(setup_method)
 @td.with_wiki
 def test_make_app_admin_only():
     h.set_context('test', 'wiki', neighborhood='Projects')
@@ -165,6 +167,7 @@ def test_make_app_admin_only():
     assert c.app.is_visible_to(admin)
 
 
+@with_setup(setup_method)
 @td.with_wiki
 def test_context_setters():
     h.set_context('test', 'wiki', neighborhood='Projects')
@@ -259,6 +262,7 @@ def test_render_any_markup_empty():
     assert h.render_any_markup('foo', '') == '<p><em>Empty File</em></p>'
 
 
+@with_setup(setup_method)
 def test_render_any_markup_plain():
     assert (
         h.render_any_markup(
@@ -266,6 +270,7 @@ def test_render_any_markup_plain():
         '<pre>&lt;b&gt;blah&lt;/b&gt;\n&lt;script&gt;alert(1)&lt;/script&gt;\nfoo</pre>')
 
 
+@with_setup(setup_method)
 def test_render_any_markup_formatting():
     assert (str(h.render_any_markup('README.md', '### foo\n'
                                           '    <script>alert(1)</script> bar')) ==
@@ -275,6 +280,7 @@ def test_render_any_markup_formatting():
                   '&lt;/script&gt;</span> bar\n</code></pre></div>\n</div>')
 
 
+@with_setup(setup_method)
 def test_render_any_markdown_encoding():
     # send encoded content in, make sure it converts it to actual unicode object which Markdown lib needs
     assert (h.render_any_markup('README.md', 'Müller'.encode()) ==
@@ -306,6 +312,7 @@ def test_log_if_changed():
     assert AuditLogMock.logs[0] == 'updated value'
 
 
+@with_setup(setup_method)
 def test_get_tool_packages():
     assert h.get_tool_packages('tickets') == ['forgetracker']
     assert h.get_tool_packages('Tickets') == ['forgetracker']
@@ -321,6 +328,7 @@ def test_get_first():
     assert h.get_first({'title': ['Value']}, 'title') == 'Value'
 
 
+@with_setup(setup_method)
 @patch('allura.lib.search.c')
 def test_inject_user(context):
     user = Mock(username='user01')
@@ -515,6 +523,7 @@ class TestUrlOpen(TestCase):
         self.assertEqual(urlopen.call_count, 1)
 
 
+@with_setup(setup_method)
 def test_absurl():
     assert h.absurl('/p/test/foobar') == 'http://localhost/p/test/foobar'
 
@@ -525,6 +534,7 @@ def test_daterange():
         [datetime(2013, 1, 1), datetime(2013, 1, 2), datetime(2013, 1, 3)])
 
 
+@with_setup(setup_method)
 @patch.object(h, 'request',
               new=Request.blank('/p/test/foobar', base_url='https://www.mysite.com/p/test/foobar'))
 def test_login_overlay():
@@ -591,6 +601,7 @@ class TestIterEntryPoints(TestCase):
                                 list, h.iter_entry_points('allura'))
 
 
+@with_setup(setup_method)
 def test_get_user_status():
     user = M.User.by_username('test-admin')
     assert h.get_user_status(user) == 'enabled'
