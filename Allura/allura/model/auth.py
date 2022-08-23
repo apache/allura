@@ -1062,7 +1062,12 @@ class AuditLog(MappedClass):
     def log(cls, message, *args, **kwargs):
         project = kwargs.pop('project') if 'project' in kwargs else c.project
         user = kwargs.pop('user', c.user)
-        url = kwargs.pop('url', request.url)
+        url = kwargs.pop('url', '')
+        if not url:
+            try:
+                url = request.url
+            except AttributeError:
+                pass
         if args:
             message = message % args
         elif kwargs:

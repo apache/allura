@@ -16,13 +16,12 @@
 #       under the License.
 
 from unittest import TestCase
+from alluratest.controller import setup_unit_test
 
 from mock import Mock, patch, MagicMock
 from tg import tmpl_context as c, config
-from webob.exc import HTTPFound
 
 from allura.tests import TestController
-from allura.tests.decorators import raises
 from forgeimporters.github import GitHubOAuthMixin
 
 
@@ -30,6 +29,7 @@ class TestGitHubOAuthMixin(TestController, TestCase):
 
     def setUp(self):
         super().setUp()
+        setup_unit_test()
         c.user = Mock()
         self.mix = GitHubOAuthMixin()
 

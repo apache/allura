@@ -18,21 +18,18 @@
 import tempfile
 import json
 import os
-import random
 from operator import attrgetter
 from cgi import FieldStorage
 from io import BytesIO
-from alluratest.controller import setup_basic_test
+from alluratest.controller import setup_basic_test, setup_unit_test
 
 from alluratest.tools import assert_equal
 from tg import tmpl_context as c
 
 from forgediscussion.site_stats import posts_24hr
 from ming.orm import ThreadLocalORMSession
-from ming.orm.base import session
 
 from allura import model as M
-from allura.lib import helpers as h
 from allura.tests import decorators as td
 from forgediscussion.tests.functional.test_rest import TestDiscussionApiBase
 from forgediscussion.model.forum import Forum, ForumThread, ForumPost
@@ -58,6 +55,7 @@ class TestAppSitemap:
 
     def setUp(self):
         setup_basic_test()
+        setup_unit_test()
         self.user = M.User.query.get(username='root')
 
     @td.with_discussion
@@ -75,7 +73,7 @@ class TestAppSitemap:
         )
         thread.set_forum(forum)
         ThreadLocalORMSession.flush_all()
-        
+
         assert_equal([], c.app.sitemap_xml())
         thread.post(
             subject='test-post',

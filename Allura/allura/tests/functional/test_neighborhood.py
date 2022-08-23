@@ -40,6 +40,18 @@ from alluratest.controller import setup_trove_categories
 
 
 class TestNeighborhood(TestController):
+
+    def setUp(self):
+        super().setUp()
+        self._cleanup_audit_log()
+
+    def tearDown(self):
+        super().tearDown()
+        self._cleanup_audit_log()
+
+    def _cleanup_audit_log(self):
+        M.AuditLog.query.remove({})
+
     def test_home_project(self):
         r = self.app.get('/adobe/wiki/', status=301)
         assert r.location.endswith('/adobe/wiki/Home/')
@@ -97,18 +109,16 @@ class TestNeighborhood(TestController):
             'show_title': 'false',
             'allow_browse': 'false',
             'css': '.class { border: 1px; }',
-            'tracking_id': 'U-123456',
             'homepage': '[Homepage]',
             'project_list_url': 'http://fake.org/project_list',
             'project_template': '{"name": "template"}',
+            'tracking_id': 'U-123456',
+            'prohibited_tools': 'wiki, tickets',
             'anchored_tools': 'wiki:Wiki',
-            'prohibited_tools': 'wiki, tickets'
-
         }
+
         self.app.post('/p/_admin/update', params=params,
                       extra_environ=dict(username='root'))
-        # must get as many log records as many values are updated
-        assert M.AuditLog.query.find().count() == len(params)
 
         assert check_log('change neighborhood name to Pjs')
         assert check_log('change neighborhood redirect to http://fake.org/')
@@ -123,6 +133,10 @@ class TestNeighborhood(TestController):
                          '{"name": "template"}')
         assert check_log('update neighborhood tracking_id')
         assert check_log('update neighborhood prohibited tools')
+        assert check_log('update neighborhood anchored tools')
+
+        # must get as many log records as many values are updated
+        assert M.AuditLog.query.find().count() == len(params)
 
     def test_prohibited_tools(self):
         self.app.post('/p/_admin/update',

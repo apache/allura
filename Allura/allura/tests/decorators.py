@@ -85,6 +85,7 @@ def with_tool(project_shortname, ep_name, mount_point=None, mount_label=None,
         return wrapped
     return _with_tool
 
+
 with_discussion = with_tool('test', 'Discussion', 'discussion')
 with_link = with_tool('test', 'Link', 'link')
 with_tracker = with_tool('test', 'Tickets', 'bugs')
