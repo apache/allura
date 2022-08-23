@@ -27,7 +27,7 @@ from allura.tests.pytest_helpers import with_nose_compatibility
 class TestActivityObject_Functional:
     # NOTE not for unit tests, this class sets up all the junk
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         setup_basic_test()
         setup_global_objects()
 

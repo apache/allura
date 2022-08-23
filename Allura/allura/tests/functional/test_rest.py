@@ -420,7 +420,7 @@ class TestRestHome(TestRestApiBase):
 @with_nose_compatibility
 class TestRestNbhdAddProject(TestRestApiBase):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         super().setup_method(method)
         # create some troves we'll need
         M.TroveCategory(fullname="Root", trove_cat_id=1, trove_parent_id=0)

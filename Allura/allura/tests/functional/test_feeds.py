@@ -26,8 +26,8 @@ from allura.tests.pytest_helpers import with_nose_compatibility
 @with_nose_compatibility
 class TestFeeds(TestController):
 
-    def setup_class(self, method):
-        TestController.setUp(self)
+    def setup_method(self, method):
+        TestController.setup_method(self, method)
         self._setUp()
 
     @td.with_wiki

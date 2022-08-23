@@ -32,6 +32,10 @@ from allura.tests.pytest_helpers import with_nose_compatibility
 @with_nose_compatibility
 class TestSolr(unittest.TestCase):
 
+    def setup_method(self, method):
+        # need to create the "test" project so @td.with_wiki works
+        setup_basic_test()
+
     @mock.patch('allura.lib.solr.pysolr')
     def test_init(self, pysolr):
         servers = ['server1', 'server2']
@@ -122,7 +126,7 @@ class TestSolr(unittest.TestCase):
 @with_nose_compatibility
 class TestSearchIndexable(unittest.TestCase):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         self.obj = SearchIndexable()
 
     def test_solarize_empty_index(self):
@@ -147,7 +151,7 @@ class TestSearchIndexable(unittest.TestCase):
 @with_nose_compatibility
 class TestSearch_app(unittest.TestCase):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         # need to create the "test" project so @td.with_wiki works
         setup_basic_test()
 

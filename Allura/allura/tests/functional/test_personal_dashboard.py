@@ -89,7 +89,7 @@ class TestTicketsSection(TrackerTestController):
 @with_nose_compatibility
 class TestMergeRequestsSection(TestController):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         super().setup_method(method)
         setup_unit_test()
         self.setup_with_tools()

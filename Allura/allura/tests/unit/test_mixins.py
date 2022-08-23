@@ -23,7 +23,7 @@ from allura.tests.pytest_helpers import with_nose_compatibility
 @with_nose_compatibility
 class TestVotableArtifact:
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         self.user1 = Mock()
         self.user1.username = 'test-user'
         self.user2 = Mock()

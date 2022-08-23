@@ -45,7 +45,7 @@ from alluratest.controller import setup_basic_test, setup_global_objects, setup_
 from allura.tests.pytest_helpers import with_nose_compatibility
 
 
-def setup_method(self, method):
+def setup_method():
     setup_basic_test()
     ThreadLocalORMSession.close_all()
     setup_global_objects()

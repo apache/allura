@@ -28,7 +28,7 @@ from allura.tests.pytest_helpers import with_nose_compatibility
 @with_nose_compatibility
 class TestStopForumSpam:
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         self.content = 'spåm text'
 
         self.artifact = mock.Mock()
