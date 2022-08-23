@@ -79,7 +79,7 @@ class TestSpamFilter(unittest.TestCase):
 @with_nose_compatibility
 class TestSpamFilterFunctional:
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         setup_basic_test()
 
     def test_record_result(self):

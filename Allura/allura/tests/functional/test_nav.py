@@ -33,7 +33,7 @@ class TestNavigation(TestController):
     - Test of logo.
     """
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         super().setup_method(method)
         self.logo_pattern = ('div', {'class': 'nav-logo'})
         self.global_nav_pattern = ('nav', {'class': 'nav-left'})

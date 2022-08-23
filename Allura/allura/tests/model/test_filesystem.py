@@ -41,7 +41,7 @@ Mapper.compile_all()
 @with_nose_compatibility
 class TestFile(TestCase):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         config = {
             'ming.main.uri': 'mim://host/allura',
             'ming.project.uri': 'mim://host/project-data',

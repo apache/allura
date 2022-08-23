@@ -314,7 +314,7 @@ class TestPrefixPathsUnion(unittest.TestCase):
 @with_nose_compatibility
 class TestGroupCommits:
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         self.repo = Mock()
         self.repo.symbolics_for_commit.return_value = ([], [])
 

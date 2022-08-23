@@ -51,7 +51,7 @@ from allura.tests.pytest_helpers import with_nose_compatibility
 @with_nose_compatibility
 class TestConfigProxy(unittest.TestCase):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         self.cp = utils.ConfigProxy(mybaz="baz")
 
     def test_getattr(self):
@@ -72,7 +72,7 @@ class TestConfigProxy(unittest.TestCase):
 @with_nose_compatibility
 class TestChunkedIterator(unittest.TestCase):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         setup_unit_test()
         config = {
             'ming.main.uri': 'mim://host/allura_test',
@@ -115,7 +115,7 @@ class TestChunkedList(unittest.TestCase):
 @with_nose_compatibility
 class TestAntispam(unittest.TestCase):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         setup_unit_test()
         self.a = utils.AntiSpam()
 
@@ -256,7 +256,7 @@ class TestIsTextFile(unittest.TestCase):
 @with_nose_compatibility
 class TestCodeStats(unittest.TestCase):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         setup_unit_test()
 
     def test_generate_code_stats(self):

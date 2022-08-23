@@ -62,7 +62,7 @@ with_git2 = td.with_tool(test_project_with_repo, 'git', 'src2', 'Git2')
 
 @with_nose_compatibility
 class TestWebhookBase:
-    def setup_class(self, method):
+    def setup_method(self, method):
         setup_basic_test()
         self.patches = self.monkey_patch()
         for p in self.patches:
@@ -132,7 +132,7 @@ class TestValidators(TestWebhookBase):
 
 @with_nose_compatibility
 class TestWebhookController(TestController):
-    def setup_class(self, method):
+    def setup_method(self, method):
         super().setup_method(method)
         self.patches = self.monkey_patch()
         for p in self.patches:
@@ -424,8 +424,8 @@ class TestWebhookController(TestController):
 
 @with_nose_compatibility
 class TestSendWebhookHelper(TestWebhookBase):
-    def setUp(self, *args, **kw):
-        super().setUp(*args, **kw)
+    def setup_method(self, method):
+        super().setup_method(method)
         self.payload = {'some': ['data', 23]}
         self.h = SendWebhookHelper(self.wh, self.payload)
 
@@ -678,7 +678,7 @@ class TestModels(TestWebhookBase):
 
 @with_nose_compatibility
 class TestWebhookRestController(TestRestApiBase):
-    def setup_class(self, method):
+    def setup_method(self, method):
         super().setup_method(method)
         self.patches = self.monkey_patch()
         for p in self.patches:

@@ -25,7 +25,7 @@ from allura.tests.pytest_helpers import with_nose_compatibility
 @with_nose_compatibility
 class TestScriptTask(unittest.TestCase):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         class TestScriptTask(ScriptTask):
             _parser = mock.Mock()
 

@@ -19,7 +19,7 @@
 import datetime
 
 import six
-from alluratest.tools import assert_raises, assert_in
+from alluratest.tools import assert_raises, assert_in, with_setup
 from testfixtures import OutputCapture
 
 from datadiff.tools import assert_equal
@@ -30,7 +30,7 @@ from mock import Mock, call, patch
 import pymongo
 import pkg_resources
 
-from alluratest.controller import setup_basic_test, setup_global_objects
+from alluratest.controller import setup_basic_test, setup_global_objects, setup_unit_test
 from allura.command import base, script, set_neighborhood_features, \
     create_neighborhood, show_models, taskd_cleanup, taskd
 from allura import model as M
@@ -47,12 +47,13 @@ class EmptyClass:
     pass
 
 
-def setup_class(self, method):
+def setup_method():
     """Method called by nose before running each test"""
     setup_basic_test()
     setup_global_objects()
+    setup_unit_test()
 
-
+@with_setup(setup_method)
 def test_script():
     cmd = script.ScriptCommand('script')
     cmd.run(
@@ -61,6 +62,7 @@ def test_script():
                   [test_config, pkg_resources.resource_filename('allura', 'tests/tscript_error.py')])
 
 
+@with_setup(setup_method)
 def test_set_neighborhood_max_projects():
     neighborhood = M.Neighborhood.query.find().first()
     n_id = neighborhood._id
@@ -84,6 +86,7 @@ def test_set_neighborhood_max_projects():
                   [test_config, str(n_id), 'max_projects', '2.8'])
 
 
+@with_setup(setup_method)
 def test_set_neighborhood_private():
     neighborhood = M.Neighborhood.query.find().first()
     n_id = neighborhood._id
@@ -109,6 +112,7 @@ def test_set_neighborhood_private():
                   [test_config, str(n_id), 'private_projects', '2.8'])
 
 
+@with_setup(setup_method)
 def test_set_neighborhood_google_analytics():
     neighborhood = M.Neighborhood.query.find().first()
     n_id = neighborhood._id
@@ -134,6 +138,7 @@ def test_set_neighborhood_google_analytics():
                   [test_config, str(n_id), 'google_analytics', '2.8'])
 
 
+@with_setup(setup_method)
 def test_set_neighborhood_css():
     neighborhood = M.Neighborhood.query.find().first()
     n_id = neighborhood._id
@@ -168,6 +173,7 @@ def test_set_neighborhood_css():
                   [test_config, str(n_id), 'css', 'True'])
 
 
+@with_setup(setup_method)
 def test_update_neighborhood():
     cmd = create_neighborhood.UpdateNeighborhoodCommand('update-neighborhood')
     cmd.run([test_config, 'Projects', 'True'])
@@ -341,7 +347,7 @@ class TestTaskCommand:
 @with_nose_compatibility
 class TestTaskdCleanupCommand:
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         self.cmd_class = taskd_cleanup.TaskdCleanupCommand
         self.old_check_taskd_status = self.cmd_class._check_taskd_status
         self.cmd_class._check_taskd_status = lambda x, p: 'OK'
@@ -502,6 +508,9 @@ class TestReindexAsTask:
 
 @with_nose_compatibility
 class TestReindexCommand:
+
+    def setup_method(self, method):
+        setup_method()
 
     @patch('allura.command.show_models.g')
     def test_skip_solr_delete(self, g):

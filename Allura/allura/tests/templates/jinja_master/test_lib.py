@@ -30,7 +30,7 @@ def strip_space(s):
 
 
 class TemplateTest:
-    def setup_class(self, method):
+    def setup_method(self, method):
         setup_basic_test()
         self.jinja2_env = AlluraJinjaRenderer.create(config, g)['jinja'].jinja2_env
 
