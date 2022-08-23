@@ -269,9 +269,6 @@ class TestUserProfile(TestController):
         assert 'content="noindex, follow"' not in r.text
 
 
-
-
-
 @with_nose_compatibility
 class TestUserProfileHasAccessAPI(TestRestApiBase):
 

@@ -17,8 +17,6 @@
 
 from unittest import TestCase
 
-from alluratest.tools import assert_equal
-
 from allura.app import Application
 from allura import model
 from allura.tests.unit import WithDatabase
@@ -73,7 +71,7 @@ class TestInstall(WithDatabase):
 class TestDefaultDiscussion(WithDatabase):
     patches = [fake_app_patch]
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         super().setup_method(method)
         install_app()
         self.discussion = model.Discussion.query.get(
@@ -94,7 +92,7 @@ class TestDefaultDiscussion(WithDatabase):
 class TestAppDefaults(WithDatabase):
     patches = [fake_app_patch]
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         super().setup_method(method)
         self.app = install_app()
 

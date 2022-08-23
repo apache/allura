@@ -49,7 +49,7 @@ config = ConfigProxy(
 @with_nose_compatibility
 class TestReactor(unittest.TestCase):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         setup_basic_test()
         setup_global_objects()
         ThreadLocalORMSession.flush_all()
@@ -236,7 +236,7 @@ class TestHeader:
 @with_nose_compatibility
 class TestIsAutoreply:
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         self.msg = {'headers': {}}
 
     def test_empty(self):
@@ -333,7 +333,7 @@ def test_parse_message_id():
 @with_nose_compatibility
 class TestMailServer:
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         setup_basic_test()
 
     @mock.patch('allura.command.base.log', autospec=True)

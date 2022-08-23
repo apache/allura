@@ -51,7 +51,8 @@ from allura.tests.pytest_helpers import with_nose_compatibility
 @with_nose_compatibility
 class TestProjectRegistrationProvider:
 
-    def setup_class(self, method):
+    def setup_method(self, method):
+        setup_basic_test()
         self.provider = ProjectRegistrationProvider()
 
     @patch('allura.lib.security.has_access')
@@ -89,7 +90,7 @@ class TestProjectRegistrationProvider:
 @with_nose_compatibility
 class TestProjectRegistrationProviderParseProjectFromUrl:
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         setup_basic_test()
         ThreadLocalORMSession.close_all()
         setup_global_objects()
@@ -164,7 +165,7 @@ class UserMock:
 @with_nose_compatibility
 class TestProjectRegistrationProviderPhoneVerification:
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         self.p = ProjectRegistrationProvider()
         self.user = UserMock()
         self.nbhd = MagicMock()
@@ -637,7 +638,7 @@ class TestThemeProvider_notifications:
 @with_nose_compatibility
 class TestLocalAuthenticationProvider:
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         setup_basic_test()
         ThreadLocalORMSession.close_all()
         setup_global_objects()
@@ -752,7 +753,7 @@ class TestLocalAuthenticationProvider:
 @with_nose_compatibility
 class TestAuthenticationProvider:
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         setup_basic_test()
         self.provider = plugin.AuthenticationProvider(Request.blank('/'))
         self.pwd_updated = dt.datetime.utcnow() - dt.timedelta(days=100)

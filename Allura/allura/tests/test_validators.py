@@ -27,7 +27,7 @@ from allura.websetup.bootstrap import create_user
 from allura.tests.pytest_helpers import with_nose_compatibility
 
 
-def setup_method(self, method):
+def _setup_method():
     setup_basic_test()
 
 
@@ -39,6 +39,9 @@ def dummy_task(*args, **kw):
 @with_nose_compatibility
 class TestJsonConverter(unittest.TestCase):
     val = v.JsonConverter
+
+    def setup_method(self, method):
+        _setup_method()
 
     def test_valid(self):
         self.assertEqual({}, self.val.to_python('{}'))
@@ -52,6 +55,10 @@ class TestJsonConverter(unittest.TestCase):
 
 @with_nose_compatibility
 class TestJsonFile(unittest.TestCase):
+
+    def setup_method(self, method):
+        _setup_method()
+
     val = v.JsonFile
 
     class FieldStorage:
@@ -70,6 +77,9 @@ class TestJsonFile(unittest.TestCase):
 @with_nose_compatibility
 class TestUserMapFile(unittest.TestCase):
     val = v.UserMapJsonFile()
+
+    def setup_method(self, method):
+        _setup_method()
 
     class FieldStorage:
 
@@ -94,6 +104,9 @@ class TestUserMapFile(unittest.TestCase):
 class TestUserValidator(unittest.TestCase):
     val = v.UserValidator
 
+    def setup_method(self, method):
+        _setup_method()
+
     def test_valid(self):
         self.assertEqual(M.User.by_username('root'),
                          self.val.to_python('root'))
@@ -107,6 +120,9 @@ class TestUserValidator(unittest.TestCase):
 @with_nose_compatibility
 class TestAnonymousValidator(unittest.TestCase):
     val = v.AnonymousValidator
+
+    def setup_method(self, method):
+        _setup_method()
 
     @patch('allura.lib.validators.c')
     def test_valid(self, c):
@@ -123,6 +139,9 @@ class TestAnonymousValidator(unittest.TestCase):
 
 @with_nose_compatibility
 class TestMountPointValidator(unittest.TestCase):
+
+    def setup_method(self, method):
+        _setup_method()
 
     @patch('allura.lib.validators.c')
     def test_valid(self, c):
@@ -186,6 +205,9 @@ class TestMountPointValidator(unittest.TestCase):
 class TestTaskValidator(unittest.TestCase):
     val = v.TaskValidator
 
+    def setup_method(self, method):
+        _setup_method()
+
     def test_valid(self):
         self.assertEqual(
             dummy_task, self.val.to_python('allura.tests.test_validators.dummy_task'))
@@ -208,14 +230,17 @@ class TestTaskValidator(unittest.TestCase):
 
     def test_not_a_task(self):
         with self.assertRaises(fe.Invalid) as cm:
-            self.val.to_python('allura.tests.test_validators.setUp')
+            self.val.to_python('allura.tests.test_validators._setup_method')
         self.assertEqual(str(cm.exception),
-                         '"allura.tests.test_validators.setUp" is not a task.')
+                         '"allura.tests.test_validators._setup_method" is not a task.')
 
 
 @with_nose_compatibility
 class TestPathValidator(unittest.TestCase):
     val = v.PathValidator(strip=True, if_missing={}, if_empty={})
+
+    def setup_method(self, method):
+        _setup_method()
 
     def test_valid_project(self):
         project = M.Project.query.get(shortname='test')
@@ -266,6 +291,9 @@ class TestPathValidator(unittest.TestCase):
 class TestUrlValidator(unittest.TestCase):
     val = v.URL
 
+    def setup_method(self, method):
+        _setup_method()
+
     def test_valid(self):
         self.assertEqual('http://192.168.0.1', self.val.to_python('192.168.0.1'))
         self.assertEqual('http://url', self.val.to_python('url'))
@@ -284,6 +312,9 @@ class TestUrlValidator(unittest.TestCase):
 @with_nose_compatibility
 class TestNonHttpUrlValidator(unittest.TestCase):
     val = v.NonHttpUrl
+
+    def setup_method(self, method):
+        _setup_method()
 
     def test_valid(self):
         self.assertEqual('svn://192.168.0.1', self.val.to_python('svn://192.168.0.1'))
