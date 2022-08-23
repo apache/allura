@@ -22,6 +22,7 @@ from tg import app_globals as g
 
 from allura.tests import TestController
 from allura.lib import helpers as h
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
@@ -32,7 +33,7 @@ class TestNavigation(TestController):
     - Test of logo.
     """
 
-    def setUp(self):
+    def setup_class(self, method):
         super().setup_method(method)
         self.logo_pattern = ('div', {'class': 'nav-logo'})
         self.global_nav_pattern = ('nav', {'class': 'nav-left'})

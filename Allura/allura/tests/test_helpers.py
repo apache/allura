@@ -37,11 +37,12 @@ from allura.lib.search import inject_user
 from allura.lib.security import has_access
 from allura.lib.security import Credentials
 from allura.tests import decorators as td
+from allura.tests.pytest_helpers import with_nose_compatibility
 from alluratest.controller import setup_basic_test
 import six
 
 
-def setUp(self):
+def setup_class(self, method):
     """Method called by nose before running each test"""
     setup_basic_test()
 
@@ -49,7 +50,7 @@ def setUp(self):
 @with_nose_compatibility
 class TestMakeSafePathPortion(TestCase):
 
-    def setUp(self):
+    def setup_class(self, method):
         self.f = h.make_safe_path_portion
 
     def test_no_ascii_chars(self):

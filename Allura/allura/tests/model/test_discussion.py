@@ -53,7 +53,7 @@ def tearDown():
     ThreadLocalORMSession.close_all()
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_discussion_methods():
     d = M.Discussion(shortname='test', name='test')
     assert d.thread_class() == M.Thread
@@ -73,7 +73,7 @@ def test_discussion_methods():
     ThreadLocalORMSession.close_all()
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_thread_methods():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
@@ -115,7 +115,7 @@ def test_thread_methods():
     t.delete()
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_thread_new():
     with mock.patch('allura.model.discuss.h.nonce') as nonce:
         nonce.side_effect = ['deadbeef', 'deadbeef', 'beefdead']
@@ -133,7 +133,7 @@ def test_thread_new():
         assert t2_2.subject == 'Test Thread Two'
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_post_methods():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
@@ -168,7 +168,7 @@ def test_post_methods():
     assert t.num_replies == 1
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_attachment_methods():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
@@ -209,7 +209,7 @@ def test_attachment_methods():
         n.text)
 
 
-@with_setup(setUp, tearDown())
+@with_setup(setup_method, tearDown())
 def test_multiple_attachments():
     test_file1 = FieldStorage()
     test_file1.name = 'file_info'
@@ -232,7 +232,7 @@ def test_multiple_attachments():
     assert 'test2.txt' in [attaches[0].filename, attaches[1].filename]
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_add_attachment():
     test_file = FieldStorage()
     test_file.name = 'file_info'
@@ -275,7 +275,7 @@ def test_notification_two_attaches():
         n.text)
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_discussion_delete():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
@@ -292,7 +292,7 @@ def test_discussion_delete():
     assert M.ArtifactReference.query.find(dict(_id=rid)).count() == 0
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_thread_delete():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
@@ -305,7 +305,7 @@ def test_thread_delete():
     t.delete()
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_post_delete():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
@@ -318,7 +318,7 @@ def test_post_delete():
     p.delete()
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_post_undo():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
@@ -333,7 +333,7 @@ def test_post_undo():
     assert t.num_replies == 3
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_post_permission_check():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
@@ -346,7 +346,7 @@ def test_post_permission_check():
     t.post('This post will pass the check.', ignore_security=True)
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_post_url_paginated():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread(discussion_id=d._id, subject='Test Thread')
@@ -398,7 +398,7 @@ def test_post_url_paginated():
         assert _p.url_paginated() == url
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_post_url_paginated_with_artifact():
     """Post.url_paginated should return link to attached artifact, if any"""
     from forgewiki.model import Page
@@ -409,7 +409,7 @@ def test_post_url_paginated_with_artifact():
     assert comment.url_paginated() == url
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_post_notify():
     d = M.Discussion(shortname='test', name='test')
     d.monitoring_email = 'darthvader@deathstar.org'
@@ -429,7 +429,7 @@ def test_post_notify():
             assert False, 'send_simple must not be called'
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 @patch('allura.model.discuss.c.project.users_with_role')
 def test_is_spam_for_admin(users):
     users.return_value = [c.user, ]
@@ -440,7 +440,7 @@ def test_is_spam_for_admin(users):
     assert not t.is_spam(post), t.is_spam(post)
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 @patch('allura.model.discuss.c.project.users_with_role')
 def test_is_spam(role):
     d = M.Discussion(shortname='test', name='test')
@@ -453,7 +453,7 @@ def test_is_spam(role):
         assert spam_checker.check.call_count == 1, spam_checker.call_count
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 @mock.patch('allura.controllers.discuss.g.spam_checker')
 def test_not_spam_and_has_unmoderated_post_permission(spam_checker):
     spam_checker.check.return_value = False
@@ -469,7 +469,7 @@ def test_not_spam_and_has_unmoderated_post_permission(spam_checker):
     assert post.status == 'ok'
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 @mock.patch('allura.controllers.discuss.g.spam_checker')
 @mock.patch.object(M.Thread, 'notify_moderators')
 def test_not_spam_but_has_no_unmoderated_post_permission(notify_moderators, spam_checker):
@@ -485,7 +485,7 @@ def test_not_spam_but_has_no_unmoderated_post_permission(notify_moderators, spam
     assert notify_moderators.call_count == 1
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 @mock.patch('allura.controllers.discuss.g.spam_checker')
 @mock.patch.object(M.Thread, 'notify_moderators')
 def test_spam_and_has_unmoderated_post_permission(notify_moderators, spam_checker):
@@ -503,7 +503,7 @@ def test_spam_and_has_unmoderated_post_permission(notify_moderators, spam_checke
     assert notify_moderators.call_count == 1
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 @mock.patch('allura.controllers.discuss.g.spam_checker')
 def test_thread_subject_not_included_in_text_checked(spam_checker):
     spam_checker.check.return_value = False

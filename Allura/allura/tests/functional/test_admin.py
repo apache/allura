@@ -32,6 +32,7 @@ import six
 
 import allura
 from allura.tests import TestController
+from allura.tests.pytest_helpers import with_nose_compatibility
 from allura.tests import decorators as td
 from allura.tests.decorators import audits, out_audits
 from alluratest.controller import TestRestApiBase, setup_trove_categories
@@ -963,7 +964,7 @@ class TestProjectAdmin(TestController):
 @with_nose_compatibility
 class TestExport(TestController):
 
-    def setUp(self):
+    def setup_class(self, method):
         super().setup_method(method)
         self.setup_with_tools()
 

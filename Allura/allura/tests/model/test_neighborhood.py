@@ -35,7 +35,7 @@ def setup_with_tools():
     setup_global_objects()
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_neighborhood():
     neighborhood = M.Neighborhood.query.get(name='Projects')
     # Check css output depends of neighborhood level

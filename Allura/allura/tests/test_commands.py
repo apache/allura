@@ -35,7 +35,8 @@ from allura.command import base, script, set_neighborhood_features, \
     create_neighborhood, show_models, taskd_cleanup, taskd
 from allura import model as M
 from allura.lib.exceptions import InvalidNBFeatureValueError
-from allura.tests import decorators as td, with_nose_compatibility
+from allura.tests import decorators as td
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 test_config = pkg_resources.resource_filename(
@@ -46,7 +47,7 @@ class EmptyClass:
     pass
 
 
-def setUp(self):
+def setup_class(self, method):
     """Method called by nose before running each test"""
     setup_basic_test()
     setup_global_objects()
@@ -340,7 +341,7 @@ class TestTaskCommand:
 @with_nose_compatibility
 class TestTaskdCleanupCommand:
 
-    def setUp(self):
+    def setup_class(self, method):
         self.cmd_class = taskd_cleanup.TaskdCleanupCommand
         self.old_check_taskd_status = self.cmd_class._check_taskd_status
         self.cmd_class._check_taskd_status = lambda x, p: 'OK'

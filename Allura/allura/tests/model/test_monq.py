@@ -31,7 +31,7 @@ def setup_method(self, method):
     M.MonQTask.query.remove({})
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_basic_task():
     task = M.MonQTask.post(pprint.pformat, ([5, 6],))
     ThreadLocalORMSession.flush_all()

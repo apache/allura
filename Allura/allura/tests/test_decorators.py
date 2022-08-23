@@ -21,7 +21,7 @@ import random
 import gc
 
 from alluratest.tools import assert_equal, assert_not_equal
-from allura.tests import with_nose_compatibility
+from allura.tests.pytest_helpers import with_nose_compatibility
 from allura.lib.decorators import task, memoize
 
 

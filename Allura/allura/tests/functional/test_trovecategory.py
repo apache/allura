@@ -26,6 +26,7 @@ from allura.lib import helpers as h
 from allura.tests import TestController
 from alluratest.controller import setup_trove_categories
 from allura.tests import decorators as td
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility

@@ -45,12 +45,13 @@ from allura.lib.plugin import ThemeProvider
 from allura.lib.exceptions import ProjectConflict, ProjectShortnameInvalid
 from allura.tests.decorators import audits
 from alluratest.controller import setup_basic_test, setup_global_objects
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
 class TestProjectRegistrationProvider:
 
-    def setUp(self):
+    def setup_class(self, method):
         self.provider = ProjectRegistrationProvider()
 
     @patch('allura.lib.security.has_access')
@@ -88,7 +89,7 @@ class TestProjectRegistrationProvider:
 @with_nose_compatibility
 class TestProjectRegistrationProviderParseProjectFromUrl:
 
-    def setUp(self):
+    def setup_class(self, method):
         setup_basic_test()
         ThreadLocalORMSession.close_all()
         setup_global_objects()
@@ -163,7 +164,7 @@ class UserMock:
 @with_nose_compatibility
 class TestProjectRegistrationProviderPhoneVerification:
 
-    def setUp(self):
+    def setup_class(self, method):
         self.p = ProjectRegistrationProvider()
         self.user = UserMock()
         self.nbhd = MagicMock()
@@ -284,8 +285,7 @@ class TestThemeProvider:
     @patch('allura.app.g')
     @patch('allura.lib.plugin.g')
     def test_app_icon_str(self, plugin_g, app_g):
-        @with_nose_compatibility
-class TestApp(Application):
+        class TestApp(Application):
             icons = {
                 24: 'images/testapp_24.png',
             }
@@ -302,8 +302,7 @@ class TestApp(Application):
 
     @patch('allura.app.g')
     def test_app_icon_app(self, g):
-        @with_nose_compatibility
-class TestApp(Application):
+        class TestApp(Application):
             icons = {
                 24: 'images/testapp_24.png',
             }
@@ -638,7 +637,7 @@ class TestThemeProvider_notifications:
 @with_nose_compatibility
 class TestLocalAuthenticationProvider:
 
-    def setUp(self):
+    def setup_class(self, method):
         setup_basic_test()
         ThreadLocalORMSession.close_all()
         setup_global_objects()
@@ -753,7 +752,7 @@ class TestLocalAuthenticationProvider:
 @with_nose_compatibility
 class TestAuthenticationProvider:
 
-    def setUp(self):
+    def setup_class(self, method):
         setup_basic_test()
         self.provider = plugin.AuthenticationProvider(Request.blank('/'))
         self.pwd_updated = dt.datetime.utcnow() - dt.timedelta(days=100)

@@ -26,6 +26,7 @@ from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test
 from allura.lib.solr import Solr, escape_solr_arg
 from allura.lib.search import search_app, SearchIndexable
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
@@ -121,7 +122,7 @@ class TestSolr(unittest.TestCase):
 @with_nose_compatibility
 class TestSearchIndexable(unittest.TestCase):
 
-    def setUp(self):
+    def setup_class(self, method):
         self.obj = SearchIndexable()
 
     def test_solarize_empty_index(self):
@@ -146,7 +147,7 @@ class TestSearchIndexable(unittest.TestCase):
 @with_nose_compatibility
 class TestSearch_app(unittest.TestCase):
 
-    def setUp(self):
+    def setup_class(self, method):
         # need to create the "test" project so @td.with_wiki works
         setup_basic_test()
 

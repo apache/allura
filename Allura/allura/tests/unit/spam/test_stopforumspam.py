@@ -22,12 +22,13 @@ from bson import ObjectId
 from alluratest.tools import assert_equal
 
 from allura.lib.spam.stopforumspamfilter import StopForumSpamSpamFilter
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
 class TestStopForumSpam:
 
-    def setUp(self):
+    def setup_class(self, method):
         self.content = 'spåm text'
 
         self.artifact = mock.Mock()
