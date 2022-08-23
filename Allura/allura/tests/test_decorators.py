@@ -23,10 +23,14 @@ import gc
 from alluratest.tools import assert_equal, assert_not_equal
 from allura.tests.pytest_helpers import with_nose_compatibility
 from allura.lib.decorators import task, memoize
+from alluratest.controller import setup_basic_test, setup_global_objects
 
 
 @with_nose_compatibility
 class TestTask(TestCase):
+
+    def setup_method(self, method):
+        setup_basic_test()
 
     def test_no_params(self):
         @task

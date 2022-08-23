@@ -99,7 +99,7 @@ class Test():
         _setup_method()
 
     def teadown_method(self, method):
-        self.setup_method(None)
+        _teadown_method()
 
     @td.with_wiki
     def test_app_globals(self):
@@ -317,7 +317,7 @@ class Test():
         assert squish_spaces(html) == squish_spaces(expected_html)
 
 
-    @with_setup(setup_method, _teadown_method)
+    @with_setup(_setup_method, _teadown_method)
     @td.with_wiki
     @td.with_tool('test', 'Wiki', 'wiki2')
     def test_macro_include_permissions(self):
@@ -712,7 +712,6 @@ class Test():
             assert updated_at == sorted(updated_at, reverse=True)
 
 
-    @with_setup(setup_functional_test)
     def test_filtering(self):
         # set up for test
         from random import choice
