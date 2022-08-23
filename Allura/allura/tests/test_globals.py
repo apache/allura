@@ -43,6 +43,7 @@ from allura import model as M
 from allura.lib import helpers as h
 from allura.lib.app_globals import ForgeMarkdown
 from allura.tests import decorators as td
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 from forgewiki import model as WM
 from forgeblog import model as BM
@@ -61,8 +62,8 @@ def setup_method(self, method):
     setup_with_tools()
 
 
-def tearDown():
-    setUp()
+def teadown_method():
+    setup_method(None)
 
 
 @td.with_wiki
@@ -77,7 +78,7 @@ def test_app_globals():
             'css/wiki.css') == '/nf/_static_/wiki/css/wiki.css', g.app_static('css/wiki.css')
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_macro_projects():
     file_name = 'neo-icon-set-454545-256x350.png'
     file_path = os.path.join(
@@ -198,7 +199,7 @@ def test_macro_neighborhood_feeds():
         assert 'test content' in r
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_macro_members():
     p_nbhd = M.Neighborhood.query.get(name='Projects')
     p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
@@ -216,7 +217,7 @@ def test_macro_members():
                  '</div>')
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_macro_members_escaping():
     user = M.User.by_username('test-admin')
     user.display_name = 'Test Admin <script>'
@@ -228,7 +229,7 @@ def test_macro_members_escaping():
                  '</ul></div>')
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_macro_project_admins():
     user = M.User.by_username('test-admin')
     user.display_name = 'Test Ådmin <script>'
@@ -241,7 +242,7 @@ def test_macro_project_admins():
                  '</ul></div>')
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_macro_project_admins_one_br():
     p_nbhd = M.Neighborhood.query.get(name='Projects')
     p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
@@ -286,7 +287,7 @@ def test_macro_include_no_extra_br():
     assert squish_spaces(html) == squish_spaces(expected_html)
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method, teadown_method)
 @td.with_wiki
 @td.with_tool('test', 'Wiki', 'wiki2')
 def test_macro_include_permissions():
@@ -828,7 +829,7 @@ def get_projects_property_in_the_same_order(names, prop):
 @with_nose_compatibility
 class TestCachedMarkdown(unittest.TestCase):
 
-    def setUp(self):
+    def setup_class(self, method):
         self.md = ForgeMarkdown()
         self.post = M.Post()
         self.post.text = '**bold**'
@@ -1024,7 +1025,7 @@ class TestUserMentions(unittest.TestCase):
 @with_nose_compatibility
 class TestHandlePaging(unittest.TestCase):
 
-    def setUp(self):
+    def setup_class(self, method):
         prefs = {}
         c.user = Mock()
 
@@ -1085,7 +1086,7 @@ class TestHandlePaging(unittest.TestCase):
 @with_nose_compatibility
 class TestIconRender:
 
-    def setUp(self):
+    def setup_class(self, method):
         self.i = g.icons['edit']
 
     def test_default(self):

@@ -31,6 +31,7 @@ from alluratest.controller import TestRestApiBase
 from allura.lib import helpers as h
 from allura.lib.exceptions import Invalid
 from allura import model as M
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
@@ -419,7 +420,7 @@ class TestRestHome(TestRestApiBase):
 @with_nose_compatibility
 class TestRestNbhdAddProject(TestRestApiBase):
 
-    def setUp(self):
+    def setup_class(self, method):
         super().setup_method(method)
         # create some troves we'll need
         M.TroveCategory(fullname="Root", trove_cat_id=1, trove_parent_id=0)

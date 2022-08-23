@@ -49,6 +49,7 @@ from alluratest.controller import (
     TestRestApiBase,
 )
 import six
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 # important to be distinct from 'test' and 'test2' which ForgeGit and
@@ -61,7 +62,7 @@ with_git2 = td.with_tool(test_project_with_repo, 'git', 'src2', 'Git2')
 
 @with_nose_compatibility
 class TestWebhookBase:
-    def setUp(self):
+    def setup_class(self, method):
         setup_basic_test()
         self.patches = self.monkey_patch()
         for p in self.patches:
@@ -131,7 +132,7 @@ class TestValidators(TestWebhookBase):
 
 @with_nose_compatibility
 class TestWebhookController(TestController):
-    def setUp(self):
+    def setup_class(self, method):
         super().setup_method(method)
         self.patches = self.monkey_patch()
         for p in self.patches:
@@ -677,7 +678,7 @@ class TestModels(TestWebhookBase):
 
 @with_nose_compatibility
 class TestWebhookRestController(TestRestApiBase):
-    def setUp(self):
+    def setup_class(self, method):
         super().setup_method(method)
         self.patches = self.monkey_patch()
         for p in self.patches:

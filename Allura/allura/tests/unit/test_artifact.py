@@ -18,6 +18,7 @@
 import unittest
 
 from allura import model as M
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility

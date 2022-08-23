@@ -22,6 +22,7 @@ from allura import model as M
 from allura.tests.unit import WithDatabase
 from allura.tests.unit import patches
 from allura.tests.unit.factories import create_post
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
@@ -29,7 +30,7 @@ class TestPostModel(WithDatabase):
     patches = [patches.fake_app_patch,
                patches.disable_notifications_patch]
 
-    def setUp(self):
+    def setup_class(self, method):
         super().setup_method(method)
         self.post = create_post('mypost')
 

@@ -28,6 +28,7 @@ from allura.model.session import (
     ArtifactSessionExtension,
     substitute_extensions,
 )
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 def test_extensions_cm():
@@ -87,7 +88,7 @@ class TestSessionExtension(TestCase):
 @with_nose_compatibility
 class TestIndexerSessionExtension(TestSessionExtension):
 
-    def setUp(self):
+    def setup_class(self, method):
         session = mock.Mock()
         self.ExtensionClass = IndexerSessionExtension
         self.extension = self.ExtensionClass(session)
@@ -126,7 +127,7 @@ class TestIndexerSessionExtension(TestSessionExtension):
 @with_nose_compatibility
 class TestArtifactSessionExtension(TestSessionExtension):
 
-    def setUp(self):
+    def setup_class(self, method):
         session = mock.Mock(disable_index=False)
         self.ExtensionClass = ArtifactSessionExtension
         self.extension = self.ExtensionClass(session)
@@ -156,7 +157,7 @@ class TestArtifactSessionExtension(TestSessionExtension):
 @with_nose_compatibility
 class TestBatchIndexer(TestCase):
 
-    def setUp(self):
+    def setup_class(self, method):
         session = mock.Mock()
         self.extcls = BatchIndexer
         self.ext = self.extcls(session)

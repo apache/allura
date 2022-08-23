@@ -41,12 +41,13 @@ from allura.tests import TestController
 from allura import model as M
 from allura.lib import helpers as h
 from alluratest.controller import setup_trove_categories
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
 class TestRootController(TestController):
 
-    def setUp(self):
+    def setup_class(self, method):
         super().setup_method(method)
         n_adobe = M.Neighborhood.query.get(name='Adobe')
         assert n_adobe
@@ -191,7 +192,7 @@ class TestRootController(TestController):
 
 @with_nose_compatibility
 class TestRootWithSSLPattern(TestController):
-    def setUp(self):
+    def setup_class(self, method):
         with td.patch_middleware_config({'force_ssl.pattern': '^/auth'}):
             super().setup_method(method)
 

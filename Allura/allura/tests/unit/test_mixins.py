@@ -17,12 +17,13 @@
 
 from mock import Mock
 from allura.model import VotableArtifact
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
 class TestVotableArtifact:
 
-    def setUp(self):
+    def setup_class(self, method):
         self.user1 = Mock()
         self.user1.username = 'test-user'
         self.user2 = Mock()

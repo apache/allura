@@ -42,6 +42,7 @@ from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects, setup_functional_test
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 def setup_method(self, method):
@@ -50,7 +51,7 @@ def setup_method(self, method):
     setup_global_objects()
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_email_address():
     addr = M.EmailAddress(email='test_admin@domain.net',
                           claimed_by_user_id=c.user._id)
@@ -72,7 +73,7 @@ def test_email_address():
     assert 'test@domain.net' in c.user.email_addresses
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_email_address_lookup_helpers():
     addr = M.EmailAddress.create('TEST@DOMAIN.NET')
     nobody = M.EmailAddress.create('nobody@example.com')
@@ -96,7 +97,7 @@ def test_email_address_lookup_helpers():
     assert M.EmailAddress.find(dict(email='invalid')).all() == []
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_email_address_canonical():
     assert (M.EmailAddress.canonical('nobody@EXAMPLE.COM') ==
                  'nobody@example.com')
@@ -114,7 +115,7 @@ def test_email_address_canonical():
                  'no@body@example.com')
     assert M.EmailAddress.canonical('invalid') == None
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_email_address_send_verification_link():
     addr = M.EmailAddress(email='test_admin@domain.net',
                           claimed_by_user_id=c.user._id)
@@ -127,7 +128,7 @@ def test_email_address_send_verification_link():
     assert rcpts == ['test_admin@domain.net']
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 @td.with_user_project('test-admin')
 def test_user():
     assert c.user.url() .endswith('/u/test-admin/')
@@ -157,7 +158,7 @@ def test_user():
     assert not provider._validate_password(u, 'foo')
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_user_project_creates_on_demand():
     u = M.User.register(dict(username='foobar123'), make_project=False)
     ThreadLocalORMSession.flush_all()
@@ -166,7 +167,7 @@ def test_user_project_creates_on_demand():
     assert M.Project.query.get(shortname='u/foobar123')
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_user_project_already_deleted_creates_on_demand():
     u = M.User.register(dict(username='foobar123'), make_project=True)
     p = M.Project.query.get(shortname='u/foobar123')
@@ -178,7 +179,7 @@ def test_user_project_already_deleted_creates_on_demand():
     assert M.Project.query.get(shortname='u/foobar123', deleted=False)
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_user_project_does_not_create_on_demand_for_disabled_user():
     u = M.User.register(
         dict(username='foobar123', disabled=True), make_project=False)
@@ -187,7 +188,7 @@ def test_user_project_does_not_create_on_demand_for_disabled_user():
     assert not M.Project.query.get(shortname='u/foobar123')
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_user_project_does_not_create_on_demand_for_anonymous_user():
     u = M.User.anonymous()
     ThreadLocalORMSession.flush_all()
@@ -196,7 +197,7 @@ def test_user_project_does_not_create_on_demand_for_anonymous_user():
     assert not M.Project.query.get(shortname='u/*anonymous')
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 @patch('allura.model.auth.log')
 def test_user_by_email_address(log):
     u1 = M.User.register(dict(username='abc1'), make_project=False)
@@ -254,7 +255,7 @@ def test_user_hash():
     assert M.User.anonymous() not in {0, None}
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_project_role():
     role = M.ProjectRole(project_id=c.project._id, name='test_role')
     M.ProjectRole.by_user(c.user, upsert=True).roles.append(role._id)
@@ -269,7 +270,7 @@ def test_project_role():
         assert pr.user in (c.user, None, M.User.anonymous())
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_default_project_roles():
     roles = {
         pr.name: pr
@@ -288,7 +289,7 @@ def test_default_project_roles():
         project_id=c.project._id)).count() - 1
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_email_address_claimed_by_user():
     addr = M.EmailAddress(email='test_admin@domain.net',
                           claimed_by_user_id=c.user._id)
@@ -297,7 +298,7 @@ def test_email_address_claimed_by_user():
     assert addr.claimed_by_user() is None
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 @td.with_user_project('test-admin')
 def test_user_projects_by_role():
     assert ({p.shortname for p in c.user.my_projects()} ==
@@ -320,7 +321,7 @@ def test_user_projects_by_role():
 
 
 @td.with_user_project('test-admin')
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_user_projects_unnamed():
     """
     Confirm that spurious ProjectRoles associating a user with
@@ -352,7 +353,7 @@ def test_check_sent_user_message_times():
 
 
 @td.with_user_project('test-admin')
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_user_track_active():
     # without this session flushing inside track_active raises Exception
     setup_functional_test()
@@ -394,7 +395,7 @@ def test_user_track_active():
     assert c.user.last_access['session_ua'] == 'new browser'
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_user_index():
     c.user.email_addresses = ['email1', 'email2']
     c.user.set_pref('email_address', 'email2')
@@ -430,7 +431,7 @@ def test_user_index():
     assert 'user_registration_date_dt' in idx
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_user_index_none_values():
     c.user.email_addresses = [None]
     c.user.set_pref('telnumbers', [None])
@@ -441,7 +442,7 @@ def test_user_index_none_values():
     assert idx['webpages_t'] == ''
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_user_backfill_login_details():
     with h.push_config(request, user_agent='TestBrowser/55'):
         # these shouldn't match

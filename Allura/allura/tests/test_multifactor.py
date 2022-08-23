@@ -32,6 +32,7 @@ from allura.lib.multifactor import GoogleAuthenticatorFile, TotpService, Mongodb
 from allura.lib.multifactor import GoogleAuthenticatorPamFilesystemTotpService
 from allura.lib.multifactor import RecoveryCodeService, MongodbRecoveryCodeService
 from allura.lib.multifactor import GoogleAuthenticatorPamFilesystemRecoveryCodeService
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
@@ -180,7 +181,7 @@ class TestMongodbTotpService(TestAnyTotpServiceImplementation):
     __test__ = True
     Service = MongodbTotpService
 
-    def setUp(self):
+    def setup_class(self, method):
         config = {
             'ming.main.uri': 'mim://host/allura_test',
         }
@@ -190,7 +191,7 @@ class TestMongodbTotpService(TestAnyTotpServiceImplementation):
 @with_nose_compatibility
 class TestGoogleAuthenticatorPamFilesystemMixin:
 
-    def setUp(self):
+    def setup_class(self, method):
         self.totp_basedir = tempfile.mkdtemp(prefix='totp-test', dir=os.getenv('TMPDIR', '/tmp'))
         config['auth.multifactor.totp.filesystem.basedir'] = self.totp_basedir
 
@@ -311,7 +312,7 @@ class TestMongodbRecoveryCodeService(TestAnyRecoveryCodeServiceImplementation):
 
     Service = MongodbRecoveryCodeService
 
-    def setUp(self):
+    def setup_class(self, method):
         config = {
             'ming.main.uri': 'mim://host/allura_test',
         }
@@ -326,7 +327,7 @@ class TestGoogleAuthenticatorPamFilesystemRecoveryCodeService(TestAnyRecoveryCod
 
     Service = GoogleAuthenticatorPamFilesystemRecoveryCodeService
 
-    def setUp(self):
+    def setup_class(self, method):
         super().setup_method(method)
 
         # make a regular .google-authenticator file first, so recovery keys have somewhere to go

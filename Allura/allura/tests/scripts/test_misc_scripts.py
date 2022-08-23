@@ -22,12 +22,13 @@ from allura.scripts.clear_old_notifications import ClearOldNotifications
 from alluratest.controller import setup_basic_test
 from allura import model as M
 from ming.odm import session
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
 class TestClearOldNotifications:
 
-    def setUp(self):
+    def setup_class(self, method):
         setup_basic_test()
 
     def run_script(self, options):
