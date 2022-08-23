@@ -31,6 +31,7 @@ from allura.model.repository import zipdir, prefix_paths_union
 from allura.model.repo_refresh import (
     _group_commits,
 )
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
@@ -313,7 +314,7 @@ class TestPrefixPathsUnion(unittest.TestCase):
 @with_nose_compatibility
 class TestGroupCommits:
 
-    def setUp(self):
+    def setup_class(self, method):
         self.repo = Mock()
         self.repo.symbolics_for_commit.return_value = ([], [])
 

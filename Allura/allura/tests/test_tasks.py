@@ -51,6 +51,7 @@ from allura.tasks import repo_tasks
 from allura.tasks import export_tasks
 from allura.tasks import admin_tasks
 from allura.tests import decorators as td
+from allura.tests.pytest_helpers import with_nose_compatibility
 from allura.lib.decorators import event_handler, task
 
 
@@ -102,7 +103,7 @@ def _task_that_creates_event(event_name,):
 @with_nose_compatibility
 class TestEventTasks(unittest.TestCase):
 
-    def setUp(self):
+    def setup_class(self, method):
         setup_basic_test()
         setup_global_objects()
         self.called_with = []
@@ -161,7 +162,7 @@ class TestEventTasks(unittest.TestCase):
 @with_nose_compatibility
 class TestIndexTasks(unittest.TestCase):
 
-    def setUp(self):
+    def setup_class(self, method):
         setup_basic_test()
         setup_global_objects()
 
@@ -247,7 +248,7 @@ class TestIndexTasks(unittest.TestCase):
 @with_nose_compatibility
 class TestMailTasks(unittest.TestCase):
 
-    def setUp(self):
+    def setup_class(self, method):
         setup_basic_test()
         setup_global_objects()
 
@@ -542,7 +543,7 @@ I'm not here'''
 
 @with_nose_compatibility
 class TestUserNotificationTasks(TestController):
-    def setUp(self):
+    def setup_class(self, method):
         super().setup_method(method)
         self.setup_with_tools()
 
@@ -575,7 +576,7 @@ class TestUserNotificationTasks(TestController):
 @with_nose_compatibility
 class TestNotificationTasks(unittest.TestCase):
 
-    def setUp(self):
+    def setup_class(self, method):
         setup_basic_test()
         setup_global_objects()
 
@@ -622,7 +623,7 @@ class _TestArtifact(M.Artifact):
 @with_nose_compatibility
 class TestExportTasks(unittest.TestCase):
 
-    def setUp(self):
+    def setup_class(self, method):
         setup_basic_test()
         setup_global_objects()
         project = M.Project.query.get(shortname='test')

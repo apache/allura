@@ -19,14 +19,14 @@ from alluratest.controller import setup_basic_test
 from allura.websetup.bootstrap import clear_all_database_tables
 
 
-def setUp(self):
+def setup_class(self, method):
     setup_basic_test()
 
 
 class MockPatchTestCase:
     patches = []
 
-    def setUp(self):
+    def setup_class(self, method):
         self._patch_instances = [patch_fn(self) for patch_fn in self.patches]
         for patch_instance in self._patch_instances:
             patch_instance.__enter__()
@@ -38,6 +38,6 @@ class MockPatchTestCase:
 
 class WithDatabase(MockPatchTestCase):
 
-    def setUp(self):
+    def setup_class(self, method):
         super().setup_method(method)
         clear_all_database_tables()

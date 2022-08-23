@@ -19,6 +19,7 @@ import unittest
 from mock import Mock
 
 from allura.app import SitemapEntry
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility

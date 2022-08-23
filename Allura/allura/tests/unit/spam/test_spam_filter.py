@@ -26,6 +26,7 @@ from allura import model as M
 from allura.model.artifact import SpamCheckResult
 from alluratest.controller import setup_basic_test
 from forgewiki import model as WM
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 class MockFilter(SpamFilter):
@@ -78,7 +79,7 @@ class TestSpamFilter(unittest.TestCase):
 @with_nose_compatibility
 class TestSpamFilterFunctional:
 
-    def setUp(self):
+    def setup_class(self, method):
         setup_basic_test()
 
     def test_record_result(self):

@@ -19,14 +19,14 @@ import unittest
 import mock
 
 from allura.scripts.scripttask import ScriptTask
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
 class TestScriptTask(unittest.TestCase):
 
-    def setUp(self):
-        @with_nose_compatibility
-class TestScriptTask(ScriptTask):
+    def setup_class(self, method):
+        class TestScriptTask(ScriptTask):
             _parser = mock.Mock()
 
             @classmethod

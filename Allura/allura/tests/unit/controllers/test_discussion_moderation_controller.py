@@ -24,6 +24,7 @@ from allura.tests.unit.factories import create_post, create_discussion
 from allura import model
 from allura.controllers.discuss import ModerationController
 from allura.tests.unit import patches
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
@@ -34,7 +35,7 @@ class TestWhenModerating(WithDatabase):
                patches.fake_request_patch,
                patches.disable_notifications_patch]
 
-    def setUp(self):
+    def setup_class(self, method):
         super().setup_method(method)
         post = create_post('mypost')
         discussion_controller = Mock(
@@ -88,7 +89,7 @@ class TestIndexWithNoPosts(WithDatabase):
 class TestIndexWithAPostInTheDiscussion(WithDatabase):
     patches = [patches.fake_app_patch]
 
-    def setUp(self):
+    def setup_class(self, method):
         super().setup_method(method)
         self.post = create_post('mypost')
         discussion = self.post.discussion

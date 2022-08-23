@@ -30,7 +30,7 @@ def setup_method(self, method):
     setup_global_objects()
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_upsert():
     admin = M.User.by_username('test-admin')
     user = M.User.by_username('test-user')
