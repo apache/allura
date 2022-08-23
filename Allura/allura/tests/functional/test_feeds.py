@@ -20,12 +20,13 @@ from formencode.variabledecode import variable_encode
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura.lib import helpers as h
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
 class TestFeeds(TestController):
 
-    def setUp(self):
+    def setup_class(self, method):
         TestController.setUp(self)
         self._setUp()
 

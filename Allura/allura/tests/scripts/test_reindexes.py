@@ -22,12 +22,13 @@ from allura.scripts.reindex_users import ReindexUsers
 from allura.tests.decorators import assert_logmsg_and_no_warnings_or_errors
 from alluratest.controller import setup_basic_test
 from allura import model as M
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
 class TestReindexProjects:
 
-    def setUp(self):
+    def setup_class(self, method):
         setup_basic_test()
 
     def run_script(self, options):
@@ -52,7 +53,7 @@ class TestReindexProjects:
 @with_nose_compatibility
 class TestReindexUsers:
 
-    def setUp(self):
+    def setup_class(self, method):
         setup_basic_test()
 
     def run_script(self, options):

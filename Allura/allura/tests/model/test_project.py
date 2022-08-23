@@ -94,7 +94,7 @@ def test_project():
     c.app.config.breadcrumbs()
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_install_app_validates_options():
     from forgetracker.tracker_main import ForgeTrackerApp
     name = 'TicketMonitoringEmail'
@@ -155,7 +155,7 @@ def test_set_ordinal_to_admin_tool():
         assert sm[-1].tool_name == 'admin'
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_users_and_roles():
     p = M.Project.query.get(shortname='test')
     sub = p.direct_subprojects[0]
@@ -171,7 +171,7 @@ def test_users_and_roles():
     assert p.users_with_role('Admin') == p.admins()
 
 
-@with_setup(setUp)
+@with_setup(setup_method)
 def test_project_disabled_users():
     p = M.Project.query.get(shortname='test')
     users = p.users()

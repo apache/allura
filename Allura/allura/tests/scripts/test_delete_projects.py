@@ -25,12 +25,13 @@ from allura.tests.decorators import audits, out_audits, with_user_project
 from allura import model as M
 from allura.scripts import delete_projects
 from allura.lib import plugin
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
 class TestDeleteProjects(TestController):
 
-    def setUp(self):
+    def setup_class(self, method):
         super().setup_method(method)
         n = M.Neighborhood.query.get(name='Projects')
         admin = M.User.by_username('test-admin')

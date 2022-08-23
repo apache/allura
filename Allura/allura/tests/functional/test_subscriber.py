@@ -19,6 +19,7 @@ from allura.tests import TestController
 from allura.tests import decorators as td
 from allura.model.notification import Mailbox
 from allura import model as M
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility

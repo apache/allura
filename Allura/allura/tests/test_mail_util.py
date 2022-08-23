@@ -37,6 +37,7 @@ from allura.lib.mail_util import (
     _parse_message_id,
 )
 from allura.lib.exceptions import AddressException
+from allura.tests.pytest_helpers import with_nose_compatibility
 from allura.tests import decorators as td
 import six
 
@@ -48,7 +49,7 @@ config = ConfigProxy(
 @with_nose_compatibility
 class TestReactor(unittest.TestCase):
 
-    def setUp(self):
+    def setup_class(self, method):
         setup_basic_test()
         setup_global_objects()
         ThreadLocalORMSession.flush_all()
@@ -235,7 +236,7 @@ class TestHeader:
 @with_nose_compatibility
 class TestIsAutoreply:
 
-    def setUp(self):
+    def setup_class(self, method):
         self.msg = {'headers': {}}
 
     def test_empty(self):
@@ -332,7 +333,7 @@ def test_parse_message_id():
 @with_nose_compatibility
 class TestMailServer:
 
-    def setUp(self):
+    def setup_class(self, method):
         setup_basic_test()
 
     @mock.patch('allura.command.base.log', autospec=True)

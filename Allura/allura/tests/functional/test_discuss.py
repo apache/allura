@@ -25,6 +25,7 @@ from allura.tests import TestController
 from allura import model as M
 from allura.lib import helpers as h
 from tg import config
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
@@ -401,7 +402,7 @@ class TestDiscuss(TestDiscussBase):
 @with_nose_compatibility
 class TestAttachment(TestDiscussBase):
 
-    def setUp(self):
+    def setup_class(self, method):
         super().setup_method(method)
         self.thread_link = self._thread_link()
         thread = self.app.get(self.thread_link)

@@ -27,12 +27,13 @@ from alluratest.controller import setup_basic_test
 from allura import model as M
 from allura.lib import helpers as h
 from allura.scripts.create_sitemap_files import CreateSitemapFiles
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
 class TestCreateSitemapFiles:
 
-    def setUp(self):
+    def setup_class(self, method):
         setup_basic_test()
 
     def run_script(self, options):

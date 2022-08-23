@@ -1570,7 +1570,7 @@ class TestPreferences(TestController):
 class TestPasswordReset(TestController):
     test_primary_email = 'testprimaryaddr@mail.com'
 
-    def setUp(self):
+    def setup_method(self, method):
         super().setup_method(method)
         # so test-admin isn't automatically logged in for all requests
         self.app.extra_environ = {'disable_auth_magic': 'True'}
@@ -2503,7 +2503,7 @@ class TestTwoFactor(TestController):
     def test_enable_totp(self):
         # create a separate session, for later use in the test
         other_session = TestController()
-        other_session.setup_method(method)
+        other_session.setup_method(None)
         other_session.app.get('/auth/preferences/')
 
         with out_audits(user=True):
@@ -2545,7 +2545,7 @@ class TestTwoFactor(TestController):
         # Confirm any pre-existing sessions have to re-authenticate
         r = other_session.app.get('/auth/preferences/')
         assert '/auth/?return_to' in r.headers['Location']
-        other_session.teardown_method(method)
+        other_session.teardown_method(None)
 
     def test_reset_totp(self):
         self._init_totp()
