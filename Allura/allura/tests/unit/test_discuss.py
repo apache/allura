@@ -21,11 +21,17 @@ from allura import model as M
 from allura.tests.unit import WithDatabase
 from allura.tests.unit.patches import fake_app_patch
 from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.controller import setup_basic_test, setup_global_objects
 
 
 @with_nose_compatibility
 class TestThread(WithDatabase):
     patches = [fake_app_patch]
+
+    def setup_method(self, method):
+        # need to create the "test" project so @td.with_wiki works
+        setup_basic_test()
+        setup_global_objects()
 
     def test_should_update_index(self):
         p = M.Thread()

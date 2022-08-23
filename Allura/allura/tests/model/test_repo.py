@@ -74,7 +74,7 @@ class RepoImplTestBase:
 
 
 class RepoTestBase(unittest.TestCase):
-    def setup_class(self, method):
+    def setup_method(self, method):
         setup_basic_test()
 
     @mock.patch('allura.model.repository.Repository.url')
@@ -132,7 +132,7 @@ class RepoTestBase(unittest.TestCase):
 
 @with_nose_compatibility
 class TestLastCommit(unittest.TestCase):
-    def setup_class(self, method):
+    def setup_method(self, method):
         setup_basic_test()
         setup_global_objects()
         self.repo = mock.Mock(
@@ -405,7 +405,7 @@ class TestLastCommit(unittest.TestCase):
 
 @with_nose_compatibility
 class TestModelCache(unittest.TestCase):
-    def setup_class(self, method):
+    def setup_method(self, method):
         self.cache = M.repository.ModelCache()
 
     def test_normalize_query(self):
@@ -685,7 +685,7 @@ class TestModelCache(unittest.TestCase):
 @with_nose_compatibility
 class TestMergeRequest:
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         setup_basic_test()
         setup_global_objects()
         self.mr = M.MergeRequest(

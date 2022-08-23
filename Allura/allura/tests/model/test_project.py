@@ -31,7 +31,7 @@ from allura.lib.exceptions import ToolError, Invalid
 from mock import MagicMock, patch
 
 
-def setup_method(self, method):
+def setup_method():
     setup_basic_test()
     setup_with_tools()
 
@@ -41,6 +41,7 @@ def setup_with_tools():
     setup_global_objects()
 
 
+@with_setup(setup_method)
 def test_project():
     assert type(c.project.sidebar_menu()) == list
     assert c.project.script_name in c.project.url()

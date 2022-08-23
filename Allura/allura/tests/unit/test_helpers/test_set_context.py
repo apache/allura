@@ -32,7 +32,7 @@ from allura.tests.pytest_helpers import with_nose_compatibility
 @with_nose_compatibility
 class TestWhenProjectIsFoundAndAppIsNot(WithDatabase):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         super().setup_method(method)
         self.myproject = create_project('myproject')
         set_context('myproject', neighborhood=self.myproject.neighborhood)
@@ -47,7 +47,7 @@ class TestWhenProjectIsFoundAndAppIsNot(WithDatabase):
 @with_nose_compatibility
 class TestWhenProjectIsFoundInNeighborhood(WithDatabase):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         super().setup_method(method)
         self.myproject = create_project('myproject')
         set_context('myproject', neighborhood=self.myproject.neighborhood)
@@ -63,7 +63,7 @@ class TestWhenProjectIsFoundInNeighborhood(WithDatabase):
 class TestWhenAppIsFoundByID(WithDatabase):
     patches = [patches.project_app_loading_patch]
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         super().setup_method(method)
         self.myproject = create_project('myproject')
         self.app_config = create_app_config(self.myproject, 'my_mounted_app')
@@ -81,7 +81,7 @@ class TestWhenAppIsFoundByID(WithDatabase):
 class TestWhenAppIsFoundByMountPoint(WithDatabase):
     patches = [patches.project_app_loading_patch]
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         super().setup_method(method)
         self.myproject = create_project('myproject')
         self.app_config = create_app_config(self.myproject, 'my_mounted_app')

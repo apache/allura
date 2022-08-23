@@ -27,7 +27,7 @@ from allura.lib.phone.nexmo import NexmoPhoneService
 @with_nose_compatibility
 class TestPhoneService:
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         config = {'phone.api_key': 'test-api-key',
                   'phone.api_secret': 'test-api-secret',
                   'site_name': 'Very loooooooooong site name'}

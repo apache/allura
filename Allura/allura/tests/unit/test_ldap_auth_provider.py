@@ -38,7 +38,7 @@ from allura.tests.pytest_helpers import with_nose_compatibility
 @with_nose_compatibility
 class TestLdapAuthenticationProvider:
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         setup_basic_test()
         self.provider = plugin.LdapAuthenticationProvider(Request.blank('/'))
 

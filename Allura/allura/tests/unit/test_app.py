@@ -25,6 +25,7 @@ from allura.tests.unit import WithDatabase
 from allura.tests.unit.patches import fake_app_patch
 from allura.tests.unit.factories import create_project, create_app_config
 from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.controller import setup_basic_test
 
 
 @with_nose_compatibility
@@ -60,6 +61,10 @@ class TestApplication(TestCase):
 class TestInstall(WithDatabase):
     patches = [fake_app_patch]
 
+    def setup_method(self, method):
+        super().setup_method(method)
+        setup_basic_test()
+
     def test_that_it_creates_a_discussion(self):
         original_discussion_count = self.discussion_count()
         install_app()
@@ -73,8 +78,9 @@ class TestInstall(WithDatabase):
 class TestDefaultDiscussion(WithDatabase):
     patches = [fake_app_patch]
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         super().setup_method(method)
+        setup_basic_test()
         install_app()
         self.discussion = model.Discussion.query.get(
             shortname='my_mounted_app')
@@ -94,8 +100,9 @@ class TestDefaultDiscussion(WithDatabase):
 class TestAppDefaults(WithDatabase):
     patches = [fake_app_patch]
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         super().setup_method(method)
+        setup_basic_test()
         self.app = install_app()
 
     def test_that_it_has_an_empty_sidebar_menu(self):

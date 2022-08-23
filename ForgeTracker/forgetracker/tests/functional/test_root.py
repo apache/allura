@@ -66,8 +66,8 @@ def find(d, pred):
 
 
 class TrackerTestController(TestController):
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         self.setup_with_tools()
 
     @td.with_tracker

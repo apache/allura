@@ -88,7 +88,7 @@ class TestSessionExtension(TestCase):
 @with_nose_compatibility
 class TestIndexerSessionExtension(TestSessionExtension):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         session = mock.Mock()
         self.ExtensionClass = IndexerSessionExtension
         self.extension = self.ExtensionClass(session)
@@ -127,7 +127,7 @@ class TestIndexerSessionExtension(TestSessionExtension):
 @with_nose_compatibility
 class TestArtifactSessionExtension(TestSessionExtension):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         session = mock.Mock(disable_index=False)
         self.ExtensionClass = ArtifactSessionExtension
         self.extension = self.ExtensionClass(session)
@@ -157,7 +157,7 @@ class TestArtifactSessionExtension(TestSessionExtension):
 @with_nose_compatibility
 class TestBatchIndexer(TestCase):
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         session = mock.Mock()
         self.extcls = BatchIndexer
         self.ext = self.extcls(session)

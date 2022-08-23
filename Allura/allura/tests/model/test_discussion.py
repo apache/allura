@@ -38,9 +38,9 @@ from allura.tests import TestController
 from alluratest.controller import setup_global_objects
 
 
-def setup_method(self, method):
+def setup_method():
     controller = TestController()
-    controller.setup_method(method)
+    controller.setup_method(None)
     controller.app.get('/wiki/Home/')
     setup_global_objects()
     ThreadLocalORMSession.close_all()

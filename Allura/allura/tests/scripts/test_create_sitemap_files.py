@@ -33,7 +33,7 @@ from allura.tests.pytest_helpers import with_nose_compatibility
 @with_nose_compatibility
 class TestCreateSitemapFiles:
 
-    def setup_class(self, method):
+    def setup_method(self, method):
         setup_basic_test()
 
     def run_script(self, options):
