@@ -226,12 +226,11 @@ under the MIT license.  For details, see the individual files:
     Allura/allura/lib/widgets/resources/css/jqfontselector.css
     Allura/allura/lib/widgets/resources/js/jquery.autosize-min.js
     Allura/allura/lib/widgets/resources/js/jquery.colorPicker.js
-    Allura/allura/lib/widgets/resources/css/jquery.colorPicker.css
     Allura/allura/lib/widgets/resources/js/jquery.tagsinput.js
     Allura/allura/lib/widgets/resources/css/jquery.tagsinput.css
     Allura/allura/public/nf/js/jquery.flot.js
     Allura/allura/public/nf/js/jquery.maxlength.min.js
-    allura/public/nf/js/jquery.viewport.js
+    Allura/allura/public/nf/js/jquery.viewport.js
     ForgeTracker/forgetracker/widgets/resources/js/jquery.multiselect.min.js
     ForgeTracker/forgetracker/widgets/resources/css/jquery.multiselect.css
     Allura/allura/public/nf/js/jquery.tablesorter.js

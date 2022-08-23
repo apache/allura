@@ -222,12 +222,11 @@ under the MIT license.  For details, see the individual files:
     allura/public/nf/css/forge/ui.daterangepicker.css
     allura/lib/widgets/resources/css/autocomplete.css
     allura/lib/widgets/resources/js/jqfontselector.js
-    Allura/allura/lib/widgets/resources/css/jqfontselector.css
+    allura/lib/widgets/resources/css/jqfontselector.css
     allura/lib/widgets/resources/js/jquery.autosize-min.js
     allura/lib/widgets/resources/js/jquery.colorPicker.js
-    Allura/allura/lib/widgets/resources/css/jquery.colorPicker.css
     allura/lib/widgets/resources/js/jquery.tagsinput.js
-    Allura/allura/lib/widgets/resources/css/jquery.tagsinput.css
+    allura/lib/widgets/resources/css/jquery.tagsinput.css
     allura/public/nf/js/jquery.flot.js
     allura/public/nf/js/jquery.maxlength.min.js
     allura/public/nf/js/jquery.viewport.js
