@@ -24,7 +24,7 @@ from allura.lib import validators as v
 from allura.lib.decorators import task
 from alluratest.controller import setup_basic_test
 from allura.websetup.bootstrap import create_user
-from allura.tests import with_nose_compatibility
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 def setup_method(self, method):

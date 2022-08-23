@@ -19,12 +19,13 @@ from mock import MagicMock, patch
 from datadiff.tools import assert_equal
 from alluratest.tools import assert_not_equal
 from allura.lib.custom_middleware import CORSMiddleware
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
 class TestCORSMiddleware:
 
-    def setUp(self):
+    def setup_class(self, method):
         self.app = MagicMock()
         self.allowed_methods = ['GET', 'POST', 'DELETE']
         self.allowed_headers = ['Authorization', 'Accept']

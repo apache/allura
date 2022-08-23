@@ -23,6 +23,7 @@ from tg import config
 from allura import model as M
 from allura.lib import helpers as h
 from allura.app import SitemapEntry
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility

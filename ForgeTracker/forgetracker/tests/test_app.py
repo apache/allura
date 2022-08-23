@@ -33,6 +33,7 @@ from allura.tests import decorators as td
 from forgetracker import model as TM
 from forgetracker.site_stats import tickets_stats_24hr
 from forgetracker.tests.functional.test_root import TrackerTestController
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 class TestApp:

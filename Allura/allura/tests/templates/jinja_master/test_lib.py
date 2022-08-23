@@ -22,6 +22,7 @@ from alluratest.tools import assert_equal
 import ming
 from allura.config.app_cfg import ForgeConfig, AlluraJinjaRenderer
 from alluratest.controller import setup_basic_test
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 def strip_space(s):
@@ -29,7 +30,7 @@ def strip_space(s):
 
 
 class TemplateTest:
-    def setUp(self):
+    def setup_class(self, method):
         setup_basic_test()
         self.jinja2_env = AlluraJinjaRenderer.create(config, g)['jinja'].jinja2_env
 

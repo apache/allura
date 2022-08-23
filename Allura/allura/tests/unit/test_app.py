@@ -24,6 +24,7 @@ from allura import model
 from allura.tests.unit import WithDatabase
 from allura.tests.unit.patches import fake_app_patch
 from allura.tests.unit.factories import create_project, create_app_config
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
@@ -72,7 +73,7 @@ class TestInstall(WithDatabase):
 class TestDefaultDiscussion(WithDatabase):
     patches = [fake_app_patch]
 
-    def setUp(self):
+    def setup_class(self, method):
         super().setup_method(method)
         install_app()
         self.discussion = model.Discussion.query.get(
@@ -93,7 +94,7 @@ class TestDefaultDiscussion(WithDatabase):
 class TestAppDefaults(WithDatabase):
     patches = [fake_app_patch]
 
-    def setUp(self):
+    def setup_class(self, method):
         super().setup_method(method)
         self.app = install_app()
 

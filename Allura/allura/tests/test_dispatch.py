@@ -16,6 +16,7 @@
 #       under the License.
 
 from allura.tests import TestController
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 app = None
 

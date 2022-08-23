@@ -76,7 +76,7 @@ def tearDown():
     ThreadLocalORMSession.close_all()
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_artifact():
     pg = WM.Page(title='TestPage1')
     assert pg.project == c.project
@@ -111,7 +111,7 @@ def test_artifact_index():
     assert pg.link_text() == pg.shorthand_id()
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_artifactlink():
     pg = WM.Page(title='TestPage2')
     q_shortlink = M.Shortlink.query.find(dict(
@@ -138,27 +138,27 @@ def test_artifactlink():
     assert q_shortlink.count() == 0
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_gen_messageid():
     assert re.match(r'[0-9a-zA-Z]*.wiki@test.p.localhost',
                     h.gen_message_id())
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_gen_messageid_with_id_set():
     oid = ObjectId()
     assert re.match(r'%s.wiki@test.p.localhost' %
                     str(oid), h.gen_message_id(oid))
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_artifact_messageid():
     p = WM.Page(title='T')
     assert re.match(r'%s.wiki@test.p.localhost' %
                     str(p._id), p.message_id())
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_versioning():
     pg = WM.Page(title='TestPage3')
     with patch('allura.model.artifact.request',
@@ -187,7 +187,7 @@ def test_versioning():
     assert pg.history().count() == 3
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_messages_unknown_lookup():
     from bson import ObjectId
     m = Checkmessage()
@@ -196,7 +196,7 @@ def test_messages_unknown_lookup():
     assert m.author() == M.User.anonymous()
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 @patch('allura.model.artifact.datetime')
 def test_last_updated(_datetime):
     c.project.last_updated = datetime(2014, 1, 1)
@@ -206,7 +206,7 @@ def test_last_updated(_datetime):
     assert c.project.last_updated == datetime(2014, 1, 2)
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 @patch('allura.model.artifact.datetime')
 def test_last_updated_disabled(_datetime):
     c.project.last_updated = datetime(2014, 1, 1)
@@ -220,7 +220,7 @@ def test_last_updated_disabled(_datetime):
         M.artifact_orm_session._get().skip_last_updated = False
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_get_discussion_thread_dupe():
     artif = WM.Page(title='TestSomeArtifact')
     thr1 = artif.get_discussion_thread()[0]
@@ -256,7 +256,7 @@ def test_snapshot_clear_user_data():
                             }
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_snapshot_from_username():
     s = M.Snapshot(author={'username': 'johndoe',
                            'display_name': 'John Doe',
@@ -286,7 +286,7 @@ def test_feed_clear_user_data():
     assert f.title == 'Home Page modified by <REDACTED>'
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_feed_from_username():
     M.Feed(author_name='John Doe',
            author_link='/u/johndoe/',
@@ -298,14 +298,14 @@ def test_feed_from_username():
     assert len(M.Feed.from_username('johndoe')) == 1
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_subscribed():
     pg = WM.Page(title='TestPage4a')
     assert pg.subscribed(include_parents=True)  # tool is subscribed to admins by default
     assert not pg.subscribed(include_parents=False)
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_subscribed_no_tool_sub():
     pg = WM.Page(title='TestPage4b')
     M.Mailbox.unsubscribe(user_id=c.user._id,
@@ -316,7 +316,7 @@ def test_subscribed_no_tool_sub():
     assert pg.subscribed(include_parents=False)
 
 
-@with_setup(setUp, tearDown)
+@with_setup(setup_method)
 def test_not_subscribed():
     pg = WM.Page(title='TestPage4c')
     M.Mailbox.unsubscribe(user_id=c.user._id,

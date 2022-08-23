@@ -29,6 +29,7 @@ from tg import config
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
 from allura.lib import helpers as h
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
@@ -73,7 +74,7 @@ class RepoImplTestBase:
 
 
 class RepoTestBase(unittest.TestCase):
-    def setUp(self):
+    def setup_class(self, method):
         setup_basic_test()
 
     @mock.patch('allura.model.repository.Repository.url')
@@ -131,7 +132,7 @@ class RepoTestBase(unittest.TestCase):
 
 @with_nose_compatibility
 class TestLastCommit(unittest.TestCase):
-    def setUp(self):
+    def setup_class(self, method):
         setup_basic_test()
         setup_global_objects()
         self.repo = mock.Mock(
@@ -404,7 +405,7 @@ class TestLastCommit(unittest.TestCase):
 
 @with_nose_compatibility
 class TestModelCache(unittest.TestCase):
-    def setUp(self):
+    def setup_class(self, method):
         self.cache = M.repository.ModelCache()
 
     def test_normalize_query(self):
@@ -684,7 +685,7 @@ class TestModelCache(unittest.TestCase):
 @with_nose_compatibility
 class TestMergeRequest:
 
-    def setUp(self):
+    def setup_class(self, method):
         setup_basic_test()
         setup_global_objects()
         self.mr = M.MergeRequest(

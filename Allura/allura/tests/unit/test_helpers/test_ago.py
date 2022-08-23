@@ -21,12 +21,13 @@ from mock import patch
 from alluratest.tools import assert_equal
 
 from allura.lib import helpers
+from allura.tests.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
 class TestAgo:
 
-    def setUp(self):
+    def setup_class(self, method):
         self.start_time = datetime(2010, 1, 1, 0, 0, 0)
 
     def test_that_exact_times_are_phrased_in_seconds(self):
