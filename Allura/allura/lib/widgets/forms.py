@@ -333,12 +333,7 @@ class PersonalDataForm(ForgeForm):
 
         yield ew.JSScript('''
 var $allTimezones = $("#tz").clone();
-var $t = {};
-''' +
-                          reduce(_append, [
-                              '$t["' + el + '"] = ' + str([name.encode('utf-8')
-                                                           for name in country_timezones[el]]) + ";\n"
-                              for el in country_timezones]) + '''
+var $t = ''' + h.escape_json(dict(country_timezones)) + ''';
 function selectTimezone($country){
      if($country == " "){
          $("#tz").replaceWith($allTimezones);
