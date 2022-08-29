@@ -112,7 +112,8 @@
                     {% endblock %}
                 {% endif %}
                 <div class="column">
-                    <h2 class="{% block header_classes %} title{% endblock %}">{% block header %}{% endblock %}
+                    <h2 class="{% block header_classes %} title{% endblock %}">
+                        <span>{% block header %}{% endblock %}</span>
                         <!-- actions -->
                         <small>
                             {% block actions %}{% endblock %}
