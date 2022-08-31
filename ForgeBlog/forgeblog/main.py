@@ -586,6 +586,20 @@ class BlogAdminController(DefaultAdminController):
             except formencode.api.Invalid:
                 invalid_list.append(link)
 
+        added_feeds = set(exfeed_list).difference(self.app.external_feeds_list)
+        removed_feeds = set(self.app.external_feeds_list).difference(exfeed_list)
+
+        if added_feeds:
+            M.AuditLog.log('{}: external feed list - added: {}'.format(
+                self.app.config.options['mount_point'],
+                ', '.join(sorted(added_feeds))
+            ))
+        if removed_feeds:
+            M.AuditLog.log('{}: external feed list - removed: {}'.format(
+                self.app.config.options['mount_point'],
+                ', '.join(sorted(removed_feeds))
+            ))
+
         self.app.external_feeds_list = exfeed_list
         flash('External feeds updated')
         if len(invalid_list) > 0:
