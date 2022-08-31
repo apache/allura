@@ -583,6 +583,9 @@ class Globals:
     def user_profile_urls_with_profile_path(self):
         return asbool(config['user_profile_url_with_profile_path'])
 
+    def user_profile_disabled_tools(self):
+        return aslist(config.get('user_prefs.disabled_tools',''), sep=',')
+
     def app_static(self, resource, app=None):
         base = config['static.url_base']
         app = app or c.app
