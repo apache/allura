@@ -996,6 +996,13 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
                 except fev.Invalid as e:
                     flash(f'{opt.name}: {str(e)}', 'error')
                     continue
+                if self.app.config.options[opt.name] != val:
+                    M.AuditLog.log('{}: set option "{}" {} => {}'.format(
+                        self.app.config.options['mount_point'],
+                        opt.name,
+                        self.app.config.options[opt.name],
+                        val
+                    ))
                 self.app.config.options[opt.name] = val
             if is_admin:
                 # possibly moving admin mount point
