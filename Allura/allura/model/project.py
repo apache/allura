@@ -1058,9 +1058,9 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         if apps is None:
             apps = []
             if is_user_project:
-                apps += [('Wiki', 'wiki', 'Wiki'),
-                         ('profile', 'profile', 'Profile'),
-                         ]
+                if 'wiki' not in g.user_profile_disabled_tools():
+                    apps.append(('Wiki', 'wiki', 'Wiki'))
+                apps.append(('profile', 'profile', 'Profile'))
             apps += [
                 ('admin', 'admin', 'Admin'),
                 ('search', 'search', 'Search'),
