@@ -114,6 +114,7 @@ class AlluraJinjaRenderer(JinjaRenderer):
             'hasattr': hasattr,
             'h': helpers,
             'g': app_globals,
+            'c': tg.tmpl_context,
             'request': tg.request,
         })
         config['tg.app_globals'].jinja2_env = jinja2_env  # TG doesn't need this, but we use g.jinja2_env a lot
