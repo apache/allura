@@ -315,6 +315,15 @@ class ForumAdminController(DefaultAdminController):
     def update_forums(self, forum=None, **kw):
         if forum is None:
             forum = []
+
+        mount_point = self.app.config.options['mount_point']
+
+        def set_value(forum, name, val):
+            if getattr(forum, name, None) != val:
+                M.AuditLog.log('{}: {} - set option "{}" {} => {}'.format(
+                    mount_point, forum.name, name, getattr(forum, name, None), val))
+            setattr(forum, name, val)
+
         for f in forum:
             forum = DM.Forum.query.get(_id=ObjectId(str(f['id'])))
             if f.get('delete'):
@@ -331,23 +340,23 @@ class ForumAdminController(DefaultAdminController):
                 if '.' in f['shortname'] or '/' in f['shortname'] or ' ' in f['shortname']:
                     flash('Shortname cannot contain space . or /', 'error')
                     redirect('.')
-                forum.name = f['name']
-                forum.shortname = f['shortname']
-                forum.description = f['description']
-                forum.monitoring_email = f['monitoring_email']
+                set_value(forum, 'name', f['name'])
+                set_value(forum, 'shortname', f['shortname'])
+                set_value(forum, 'description', f['description'])
+                set_value(forum, 'monitoring_email', f['monitoring_email'])
                 if 'members_only' in f:
                     if 'anon_posts' in f:
                         flash(
                             'You cannot have anonymous posts in a members only forum.', 'warning')
-                        forum.anon_posts = False
+                        set_value(forum, 'anon_posts', False)
                         del f['anon_posts']
-                    forum.members_only = True
+                    set_value(forum, 'members_only', True)
                 else:
-                    forum.members_only = False
+                    set_value(forum, 'members_only', False)
                 if 'anon_posts' in f:
-                    forum.anon_posts = True
+                    set_value(forum, 'anon_posts', True)
                 else:
-                    forum.anon_posts = False
+                    set_value(forum, 'anon_posts', False)
                 role_anon = M.ProjectRole.anonymous()._id
                 if forum.members_only:
                     role_developer = M.ProjectRole.by_name('Developer')._id

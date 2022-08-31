@@ -15,11 +15,9 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import os
-import allura
 import logging
 
-import PIL
+import re
 from alluratest.controller import TestController
 from allura.lib import helpers as h
 from allura import model as M
@@ -43,6 +41,8 @@ class TestForumAdmin(TestController):
         form['add_forum.name'] = 'Test Forum'
         r = form.submit().follow()
         assert 'Test Forum' in r
+        audit_log = M.AuditLog.query.find({'project_id': project._id}).sort('_id', -1).first()
+        assert 'created forum "Test Forum"' in audit_log.message
         h.set_context('test', 'Forum', neighborhood='Projects')
         frm = FM.Forum.query.get(shortname='testforum')
         r = self.app.post('/admin/discussion/update_forums',
@@ -52,8 +52,8 @@ class TestForumAdmin(TestController):
                                   'forum-0.shortname': 'NewTestForum',
                                   'forum-0.description': 'My desc',
                                   'forum-0.monitoring_email': ''})
-        audit_log = M.AuditLog.query.find({'project_id': project._id}).sort('_id', -1).first()
-        assert 'created forum "Test Forum"' in audit_log.message
+        audit_logs = M.AuditLog.query.find({'project_id': project._id, 'message': re.compile(' set option ')}).all()
+        assert len(audit_logs) == 4
         r = self.app.get('/admin/discussion/forums')
         assert 'New Test Forum' in r
         assert 'My desc' in r
