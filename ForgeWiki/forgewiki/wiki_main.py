@@ -652,6 +652,10 @@ class PageController(BaseController, FeedController):
     @require_post()
     def delete(self, **kw):
         require_access(self.page, 'delete')
+        M.AuditLog.log('{}: deleted wiki page "{}"'.format(
+            c.app.config.options['mount_point'],
+            self.page.title,
+        ))
         self.page.delete()
         return dict(location='../' + self.page.title + '/?deleted=True')
 
@@ -661,6 +665,10 @@ class PageController(BaseController, FeedController):
     def undelete(self, **kw):
         require_access(self.page, 'delete')
         self.page.deleted = False
+        M.AuditLog.log('{}: undeleted wiki page "{}"'.format(
+            c.app.config.options['mount_point'],
+            self.page.title,
+        ))
         M.Shortlink.from_artifact(self.page)
         return dict(location='./edit')
 
@@ -748,6 +756,10 @@ class PageController(BaseController, FeedController):
         if not self.page:
             # the page doesn't exist yet, so create it
             self.page = WM.Page.upsert(self.title)
+            M.AuditLog.log('{}: created new wiki page "{}"'.format(
+                c.app.config.options['mount_point'],
+                self.page.title,
+            ))
         else:
             require_access(self.page, 'edit')
             activity_verb = 'modified'
@@ -761,6 +773,11 @@ class PageController(BaseController, FeedController):
                 if self.page.title == c.app.root_page_name:
                     WM.Globals.query.get(
                         app_config_id=c.app.config._id).root = title
+                M.AuditLog.log('{}: renamed wiki page "{}" => "{}"'.format(
+                    c.app.config.options['mount_point'],
+                    self.page.title,
+                    title,
+                ))
                 self.page.title = title
                 activity_verb = 'renamed'
         old_text = self.page.text
@@ -939,10 +956,11 @@ class WikiAdminController(DefaultAdminController):
         mount_base = c.project.url() + \
             self.app.config.options.mount_point + '/'
         url = h.really_unicode(mount_base) + h.really_unicode(new_home) + '/'
-        M.AuditLog.log('set home page: "{}" => "{}" for {}'.format(
+        M.AuditLog.log('{}: set home page "{}" => "{}"'.format(
+            self.app.config.options['mount_point'],
             old_home,
             new_home,
-            self.app.config.options['mount_point']))
+        ))
         redirect(h.urlquote(url))
 
     @without_trailing_slash
