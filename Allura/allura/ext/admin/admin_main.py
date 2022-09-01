@@ -489,7 +489,8 @@ class ProjectAdminController(BaseController):
                     screenshot.filename = re.sub(r'(.*)\.(.*)', r'\1-' + str(randint(1000,9999)) + r'.\2', screenshot.filename)
                     # if filename already exists append a random number
                     break
-            M.AuditLog.log('add screenshot')
+            M.AuditLog.log('screenshots: added screenshot {} with caption "{}"'.format(
+                screenshot.filename, caption))
             sort = 1 + max([ss.sort or 0 for ss in screenshots] or [0])
             M.ProjectFile.save_image(
                 screenshot.filename, screenshot.file, content_type=screenshot.type,
@@ -515,9 +516,13 @@ class ProjectAdminController(BaseController):
         ``kw`` is a mapping of (screenshot._id, sort_order) pairs.
 
         """
-        for s in c.project.get_screenshots():
+        screenshots = c.project.get_screenshots()
+        for s in screenshots:
             if str(s._id) in kw:
                 s.sort = int(kw[str(s._id)])
+        M.AuditLog.log('screenshots: reordered screenshots {}'.format(
+            ", ".join(s.filename for s in sorted(screenshots, key=lambda s: s.sort))
+        ))
         g.post_event('project_updated')
 
     @expose()
@@ -525,7 +530,8 @@ class ProjectAdminController(BaseController):
     def delete_screenshot(self, id=None, **kw):
         require_access(c.project, 'update')
         if id is not None and id != '':
-            M.AuditLog.log('remove screenshot')
+            screenshot = M.ProjectFile.query.get(project_id=c.project._id, _id=ObjectId(id))
+            M.AuditLog.log('screenshots: deleted screenshot {}'.format(screenshot.filename))
             M.ProjectFile.query.remove(
                 dict(project_id=c.project._id, _id=ObjectId(id)))
             g.post_event('project_updated')
@@ -536,8 +542,11 @@ class ProjectAdminController(BaseController):
     def edit_screenshot(self, id=None, caption=None, **kw):
         require_access(c.project, 'update')
         if id is not None and id != '':
-            M.ProjectFile.query.get(
-                project_id=c.project._id, _id=ObjectId(id)).caption = caption
+            screenshot = M.ProjectFile.query.get(
+                project_id=c.project._id, _id=ObjectId(id))
+            screenshot.caption = caption
+            M.AuditLog.log('screenshots: updated screenshot {} with new caption "{}"'.format(
+                screenshot.filename, screenshot.caption))
             g.post_event('project_updated')
         redirect('screenshots')
 
