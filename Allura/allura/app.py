@@ -871,10 +871,12 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
         ace = model.ACE.deny(model.ProjectRole.by_user(user, upsert=True)._id, perm, reason)
         if not model.ACL.contains(ace, self.app.acl):
             self.app.acl.append(ace)
-            model.AuditLog.log('blocked user "{}" from {} for reason: "{}"'.format(
-                username,
+            model.AuditLog.log('{}: blocked user "{}" from permission "{}" for reason: "{}"'.format(
                 self.app.config.options['mount_point'],
-                reason))
+                username,
+                ace.permission,
+                reason,
+            ))
             return dict(user_id=str(user._id), username=user.username, reason=reason)
         return dict(error='User "%s" already blocked' % user.username)
 
@@ -897,6 +899,11 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
             if ace:
                 self.app.acl.remove(ace)
                 unblocked.append(str(user._id))
+                model.AuditLog.log('{}: unblocked user "{}" from permission "{}"'.format(
+                    self.app.config.options['mount_point'],
+                    user.username,
+                    ace.permission,
+                ))
         return dict(unblocked=unblocked)
 
     @expose('jinja:allura:templates/app_admin_permissions.html')
