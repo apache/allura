@@ -405,7 +405,7 @@ class TestProjectAdmin(TestController):
         upload = ('screenshot', file_name, file_data)
 
         self.app.get('/admin/')
-        with audits('add screenshot'):
+        with audits('screenshots: added screenshot {}'.format(file_name)):
             self.app.post('/admin/add_screenshot', params=dict(
                 caption='test me'),
                 upload_files=[upload])
