@@ -62,7 +62,7 @@ class TestRootController(TestController):
 
     def test_neighborhood(self):
         response = self.app.get('/neighborhood')
-        assert_equal(response.html.find('h2', {'class': 'dark title'}).contents[
+        assert_equal(response.html.find('h2', {'class': 'dark title'}).find('span').contents[
                      0].strip(), 'All Neighborhoods')
         nbhds = response.html.findAll('div', {'class': 'nbhd_name'})
         assert nbhds[0].find('a').get('href') == '/adobe/'

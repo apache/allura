@@ -277,7 +277,7 @@ class TestRootController(_TestCase):
     def test_file(self):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/README')
-        assert 'README' in resp.html.find('h2', {'class': 'dark title'}).contents[4]
+        assert 'README' in resp.html.find('h2', {'class': 'dark title'}).find('span').contents[4]
         content = str(resp.html.find('div', {'class': 'clip grid-19 codebrowser'}))
         assert 'This is readme' in content, content
         assert '<span id="l1" class="code_block">' in resp
@@ -404,7 +404,7 @@ class TestRootController(_TestCase):
 
         # `index.html` in repo root
         r = self.app.get(ci + 'tree/index.html')
-        header_bit = r.html.find('h2', {'class': 'dark title'}).contents[4]
+        header_bit = r.html.find('h2', {'class': 'dark title'}).find('span').contents[4]
         assert 'index.html' in header_bit, header_bit
         content = str(r.html.find('div', {'class': 'clip grid-19 codebrowser'}))
         assert ('<span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>'
@@ -417,7 +417,7 @@ class TestRootController(_TestCase):
 
         # `index.htm` in `index` dir
         r = self.app.get(ci + 'tree/index/index.htm')
-        header = r.html.find('h2', {'class': 'dark title'})
+        header = r.html.find('h2', {'class': 'dark title'}).find('span')
         assert 'index' in header.contents[5], header.contents[5]
         assert 'index.htm' in header.contents[6], header.contents[6]
         content = str(r.html.find('div', {'class': 'clip grid-19 codebrowser'}))

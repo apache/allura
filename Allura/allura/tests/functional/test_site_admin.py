@@ -55,7 +55,7 @@ class TestSiteAdmin(TestController):
         r = self.app.get('/nf/admin/stats/', extra_environ=dict(
             username='root'))
         assert 'Forge Site Admin' in r.html.find(
-            'h2', {'class': 'dark title'}).contents[0]
+            'h2', {'class': 'dark title'}).find('span').contents[0]
         stats_table = r.html.find('table')
         cells = stats_table.findAll('td')
         assert cells[0].contents[0] == 'Adobe', cells[0].contents[0]

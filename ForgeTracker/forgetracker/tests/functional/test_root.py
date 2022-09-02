@@ -2185,7 +2185,7 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.post('/p/test/bugs/1/move/',
                           params={'tracker': str(tracker.config._id)}).follow()
         assert_equal(r.request.path, '/p/test2/bugs2/1/')
-        summary = r.html.findAll('h2', {'class': 'dark title'})[0].contents[0].strip()
+        summary = r.html.findAll('h2', {'class': 'dark title'})[0].find('span').contents[0].strip()
         assert_equal(summary, '#1 test')
         ac_id = tracker.config._id
         ticket = tm.Ticket.query.find({
