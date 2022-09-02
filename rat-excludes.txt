@@ -4,6 +4,7 @@
 **/*.log
 **/*.pyc
 **/.coverage
+**/.pytest_cache/
 **/MANIFEST.in
 **/nosetests.xml
 **/setup.cfg
@@ -13,6 +14,7 @@
 .eslintrc-es6
 .jscsrc
 .jshintrc
+allura-data/
 Allura/allura/etc/mime.types
 Allura/allura/lib/widgets/resources/css/autocomplete.css
 Allura/allura/lib/widgets/resources/css/colorPicker.css
@@ -33,7 +35,6 @@ Allura/allura/public/nf/css/font-awesome.min.css
 Allura/allura/public/nf/css/forge/tooltipster.css
 Allura/allura/public/nf/css/forge/ui.daterangepicker.css
 Allura/allura/public/nf/css/smoothness/jquery-ui-1.13.2.min.css
-Allura/allura/public/nf/fonts/
 Allura/allura/public/nf/js/browser-polyfill.min.js
 Allura/allura/public/nf/js/chosen.jquery.min.js
 Allura/allura/public/nf/js/create-react-class.min.js

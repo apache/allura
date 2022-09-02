@@ -261,8 +261,8 @@ Babel's Polyfill, which is available under the MIT license.
 See https://babeljs.io/docs/usage/polyfill/
     allura/public/nf/js/browser-polyfill.min.js
 
-Font Awesome is available under the MIT license (for the code) and SIL OFL 1.1 (for the fonts).
-Source code available at http://fortawesome.github.io/Font-Awesome/
+Font Awesome is available under the MIT license (for the CSS) and SIL OFL 1.1 (for the fonts).
+Source code available at https://github.com/FortAwesome/Font-Awesome/tree/4.x
 For details, see:
     allura/public/nf/css/font-awesome.min.css
     allura/public/nf/fonts/
