@@ -93,7 +93,7 @@ Start containers in the background:
 
     docker-compose up -d
 
-You're up and running!  Visit localhost:8080, or on a Mac or Windows whatever IP address Docker Toolbox is using.  Then
+You're up and running!  Visit localhost:8080 (or whatever IP address you're running Docker on).  Then
 see our :ref:`post-setup-instructions` and read more below about the Docker environment for Allura.
 
 
