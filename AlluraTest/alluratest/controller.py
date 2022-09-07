@@ -16,6 +16,8 @@
 #       under the License.
 
 """Unit and functional test suite for allura."""
+from __future__ import annotations
+
 import os
 import six.moves.urllib.request
 import six.moves.urllib.parse
@@ -37,6 +39,8 @@ import ew
 from ming.orm import ThreadLocalORMSession
 import ming.orm
 import pkg_resources
+import requests
+import requests_oauthlib
 
 from allura import model as M
 from allura.command import CreateTroveCategoriesCommand
@@ -283,3 +287,17 @@ class TestRestApiBase(TestController):
 
     def api_delete(self, path, wrap_args=None, user='test-admin', status=None, **params):
         return self._api_call('DELETE', path, wrap_args, user, status, **params)
+
+
+def oauth1_webtest(url: str, oauth_kwargs: dict, method='GET') -> tuple[str, dict, dict]:
+    oauth1 = requests_oauthlib.OAuth1(**oauth_kwargs)
+    req = requests.Request(method, f'http://localhost{url}').prepare()
+    oauth1(req)
+    return request2webtest(req)
+
+
+def request2webtest(req: requests.PreparedRequest) -> tuple[str, dict, dict]:
+    url = req.url
+    params = {}
+    headers = {k: v.decode() for k,v in req.headers.items()}
+    return url, params, headers

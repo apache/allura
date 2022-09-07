@@ -209,18 +209,29 @@ def out_audits(*messages, **kwargs):
 
 
 # not a decorator but use it with LogCapture() context manager
-def assert_logmsg_and_no_warnings_or_errors(logs, msg):
+def assert_logmsg(logs, msg, maxlevel=logging.CRITICAL+1):
     """
+    can also use logs.check() or logs.check_present()
     :param testfixtures.logcapture.LogCapture logs: LogCapture() instance
-    :param str msg: Message to look for
+    :param str msg: Message substring to look for
     """
     found_msg = False
     for r in logs.records:
         if msg in r.getMessage():
             found_msg = True
-        if r.levelno > logging.INFO:
+        if r.levelno > maxlevel:
             raise AssertionError(f'unexpected log {r.levelname} {r.getMessage()}')
-    assert found_msg, 'Did not find {} in logs: {}'.format(msg, '\n'.join([r.getMessage() for r in logs.records]))
+    assert found_msg, \
+        'Did not find "{}" in these logs: {}'.format(msg, '\n'.join([r.getMessage() for r in logs.records]))
+
+
+def assert_logmsg_and_no_warnings_or_errors(logs, msg):
+    """
+    can also use logs.check() or logs.check_present()
+    :param testfixtures.logcapture.LogCapture logs: LogCapture() instance
+    :param str msg: Message substring to look for
+    """
+    return assert_logmsg(logs, msg, maxlevel=logging.INFO)
 
 
 def assert_equivalent_urls(url1, url2):
