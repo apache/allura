@@ -19,16 +19,12 @@
 
 import os
 import sys
-import six.moves.urllib.request
-import six.moves.urllib.parse
-import six.moves.urllib.error
-import six.moves.urllib.parse
 from optparse import OptionParser
-import json
-
-from six.moves.configparser import ConfigParser, NoOptionError
+from configparser import ConfigParser, NoOptionError
 import webbrowser
-import oauth2 as oauth
+
+import requests
+from requests_oauthlib import OAuth1Session
 
 
 def main():
@@ -45,32 +41,29 @@ def main():
     base_url = options.to_wiki.split('/rest/')[0]
     oauth_client = make_oauth_client(base_url)
 
-    wiki_data = six.moves.urllib.request.urlopen(options.from_wiki).read()
-    wiki_json = json.loads(wiki_data)['pages']
+    wiki_json = requests.get(options.from_wiki).json()['pages']
     for p in wiki_json:
-        from_url = options.from_wiki + six.moves.urllib.parse.quote(p)
-        to_url = options.to_wiki + six.moves.urllib.parse.quote(p)
+        from_url = options.from_wiki.rstrip('/') + '/' + p
+        to_url = options.to_wiki.rstrip('/') + '/' + p
         try:
-            page_data = six.moves.urllib.request.urlopen(from_url).read()
-            page_json = json.loads(page_data)
+            page_json = requests.get(from_url).json()
             if options.debug:
                 print(page_json['text'])
                 break
-            resp = oauth_client.request(
-                to_url, 'POST', body=six.moves.urllib.parse.urlencode(dict(text=page_json['text'].encode('utf-8'))))
-            if resp[0]['status'] == '200':
+            resp = oauth_client.post(to_url, data=dict(text=page_json['text']))
+            if resp.status_code == 200:
                 print("Posted {} to {}".format(page_json['title'], to_url))
             else:
-                print("Error posting {} to {}: {} (project may not exist)".format(page_json['title'], to_url, resp[0]['status']))
+                print("Error posting {} to {}: {} (project may not exist)".format(page_json['title'], to_url, resp.status_code))
                 break
         except Exception:
             print("Error processing " + p)
             raise
 
 
-def make_oauth_client(base_url):
+def make_oauth_client(base_url) -> requests.Session:
     """
-    Build an oauth.Client with which callers can query Allura.
+    Build an oauth client with which callers can query Allura.
     """
     config_file = os.path.join(os.environ['HOME'], '.allurarc')
     cp = ConfigParser()
@@ -80,49 +73,38 @@ def make_oauth_client(base_url):
     AUTHORIZE_URL = base_url + '/rest/oauth/authorize'
     ACCESS_TOKEN_URL = base_url + '/rest/oauth/access_token'
     oauth_key = option(cp, base_url, 'oauth_key',
-                       'Forge API OAuth Key (%s/auth/oauth/): ' % base_url)
+                       'Forge API OAuth Consumer Key (%s/auth/oauth/): ' % base_url)
     oauth_secret = option(cp, base_url, 'oauth_secret',
-                          'Forge API Oauth Secret: ')
-    consumer = oauth.Consumer(oauth_key, oauth_secret)
+                          'Forge API Oauth Consumer Secret: ')
 
     try:
         oauth_token = cp.get(base_url, 'oauth_token')
         oauth_token_secret = cp.get(base_url, 'oauth_token_secret')
     except NoOptionError:
-        client = oauth.Client(consumer)
-        resp, content = client.request(REQUEST_TOKEN_URL, 'GET')
-        assert resp['status'] == '200', resp
-
-        request_token = dict(six.moves.urllib.parse.parse_qsl(content))
-        pin_url = "{}?oauth_token={}".format(
-            AUTHORIZE_URL, request_token['oauth_token'])
-        if getattr(webbrowser.get(), 'name', '') == 'links':
-            # sandboxes
+        oauthSess = OAuth1Session(oauth_key, client_secret=oauth_secret)
+        request_token = oauthSess.fetch_request_token(REQUEST_TOKEN_URL)
+        pin_url = oauthSess.authorization_url(AUTHORIZE_URL, request_token['oauth_token'])
+        if isinstance(webbrowser.get(), webbrowser.GenericBrowser):
             print("Go to %s" % pin_url)
         else:
             webbrowser.open(pin_url)
         oauth_verifier = input('What is the PIN? ')
-
-        token = oauth.Token(
-            request_token['oauth_token'], request_token['oauth_token_secret'])
-        token.set_verifier(oauth_verifier)
-        client = oauth.Client(consumer, token)
-        resp, content = client.request(ACCESS_TOKEN_URL, "GET")
-        access_token = dict(six.moves.urllib.parse.parse_qsl(content))
+        access_token = oauthSess.fetch_access_token(ACCESS_TOKEN_URL, oauth_verifier)
         oauth_token = access_token['oauth_token']
         oauth_token_secret = access_token['oauth_token_secret']
 
         cp.set(base_url, 'oauth_token', oauth_token)
         cp.set(base_url, 'oauth_token_secret', oauth_token_secret)
+        # save oauth token for later use
+        cp.write(open(config_file, 'w'))
+        print(f'Saving oauth tokens in {config_file} for later re-use')
+        print()
 
-    # save oauth token for later use
-    cp.write(open(config_file, 'w'))
-    print(f'Saving oauth tokens in {config_file} for later re-use')
-    print()
+    else:
+        oauthSess = OAuth1Session(oauth_key, client_secret=oauth_secret,
+                                  resource_owner_key=oauth_token, resource_owner_secret=oauth_token_secret)
 
-    access_token = oauth.Token(oauth_token, oauth_token_secret)
-    oauth_client = oauth.Client(consumer, access_token)
-    return oauth_client
+    return oauthSess
 
 
 def option(cp, section, key, prompt=None):
