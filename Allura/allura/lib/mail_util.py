@@ -301,11 +301,15 @@ class SMTPClient:
             log.warning('No valid addrs in %s, so not sending mail',
                         list(map(str, addrs)))
             return
+
+        self.send_raw(config.return_path, smtp_addrs, content)
+
+    def send_raw(self, addr_from, smtp_addrs, content):
         if not self._client:
             self._connect()
         try:
             self._client.sendmail(
-                config.return_path,
+                addr_from,
                 smtp_addrs,
                 content)
             need_retry = False
@@ -322,7 +326,7 @@ class SMTPClient:
             # maybe could sleep?  or if we're in a task, reschedule it somehow?
             self._connect()
             self._client.sendmail(
-                config.return_path,
+                addr_from,
                 smtp_addrs,
                 content)
 
