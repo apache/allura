@@ -82,32 +82,24 @@ Python code example to create a new ticket:
 ### OAuth 1.0 Application Authorization (Third-Party Apps)
 
 
-If you want your application to be able to use the API on behalf of another user, that user must authorize your application to act on their behalf.  This is usually accomplished by obtaining a request token and directing the user authorize the request.  The following is an example of how one would authorize an application in Python using the python-oauth2 library.  First, run `pip install oauth2` and `pip install certifi`.
+If you want your application to be able to use the API on behalf of another user, that user must authorize your application to act on their behalf.  This is usually accomplished by obtaining a request token and directing the user authorize the request.  The following is an example of how one would authorize an application in Python using the requests_oauthlib library.  First, run `pip install requests_oauthlib`
 
-    import oauth2 as oauth  # misleading package name, oauth2 implements OAuth 1.0 spec
-    import certifi
-    from urllib.parse import parse_qs, parse_qsl, urlencode
+    from requests_oauthlib import OAuth1Session
     import webbrowser
 
     CONSUMER_KEY = '<consumer key from registration>'
     CONSUMER_SECRET = '<consumer secret from registration>'
-    REQUEST_TOKEN_URL = 'https://sourceforge.net/rest/oauth/request_token'
-    AUTHORIZE_URL = 'https://sourceforge.net/rest/oauth/authorize'
-    ACCESS_TOKEN_URL = 'https://sourceforge.net/rest/oauth/access_token'
+    REQUEST_TOKEN_URL = 'https://forge-allura.apache.org/rest/oauth/request_token'
+    AUTHORIZE_URL = 'https://forge-allura.apache.org/rest/oauth/authorize'
+    ACCESS_TOKEN_URL = 'https://forge-allura.apache.org/rest/oauth/access_token'
     
-    consumer = oauth.Consumer(CONSUMER_KEY, CONSUMER_SECRET)
-    client = oauth.Client(consumer)
-    client.ca_certs = certifi.where()
+    oauth = OAuth1Session(CONSUMER_KEY, client_secret=CONSUMER_SECRET)
     
     # Step 1: Get a request token. This is a temporary token that is used for 
     # having the user authorize an access token and to sign the request to obtain 
     # said access token.
     
-    resp, content = client.request(REQUEST_TOKEN_URL, 'GET')
-    if resp['status'] != '200':
-        raise Exception("Invalid response %s." % resp['status'])
-    
-    request_token = dict(parse_qsl(content.decode('utf-8')))
+    request_token = oauth.fetch_request_token(REQUEST_TOKEN_URL)
     
     # these are intermediate tokens and not needed later
     # print("Request Token:")
@@ -119,7 +111,7 @@ If you want your application to be able to use the API on behalf of another user
     # redirect. In a web application you would redirect the user to the URL
     # below, specifying the additional parameter oauth_callback=<your callback URL>.
     
-    webbrowser.open("%s?oauth_token=%s" % (AUTHORIZE_URL, request_token['oauth_token']))
+    webbrowser.open(oauth.authorization_url(AUTHORIZE_URL, request_token['oauth_token']))
     
     # Since we didn't specify a callback, the user must now enter the PIN displayed in 
     # their browser.  If you had specified a callback URL, it would have been called with 
@@ -131,13 +123,7 @@ If you want your application to be able to use the API on behalf of another user
     # request token to sign this request. After this is done you throw away the
     # request token and use the access token returned. You should store this 
     # access token somewhere safe, like a database, for future use.
-    token = oauth.Token(request_token[b'oauth_token'].decode(), request_token[b'oauth_token_secret'].decode())
-    token.set_verifier(oauth_verifier)
-    client = oauth.Client(consumer, token)
-    client.ca_certs = certifi.where()
-    
-    resp, content = client.request(ACCESS_TOKEN_URL, "GET")
-    access_token = dict(parse_qsl(content.decode('utf-8')))
+    access_token = oauth.fetch_access_token(ACCESS_TOKEN_URL, oauth_verifier)
     
     print("Access Token:")
     print("    - oauth_token        = %s" % access_token['oauth_token'])
@@ -149,10 +135,7 @@ If you want your application to be able to use the API on behalf of another user
 
 You can then use your access token with the REST API.  For instance script to create a wiki page might look like this:
 
-    from urllib.parse import urlparse, parse_qsl, urlencode
-
-    import oauth2 as oauth
-    import certifi
+    from requests_oauthlib import OAuth1Session
     
     PROJECT='test'
     
@@ -162,17 +145,14 @@ You can then use your access token with the REST API.  For instance script to cr
     ACCESS_KEY='<access key from previous script>'
     ACCESS_SECRET='<access secret from previous script>'
     
-    URL_BASE='https://sourceforge.net/rest/'
+    URL_BASE='https://forge-allura.apache.org/rest/'
     
-    consumer = oauth.Consumer(CONSUMER_KEY, CONSUMER_SECRET)
-    access_token = oauth.Token(ACCESS_KEY, ACCESS_SECRET)
-    client = oauth.Client(consumer, access_token)
-    client.ca_certs = certifi.where()
+    oauth = OAuth1Session(CONSUMER_KEY, client_secret=CONSUMER_SECRET,
+                          resource_owner_key=ACCESS_KEY, resource_owner_secret=ACCESS_SECRET)
     
-    response = client.request(
-        URL_BASE + 'p/' + PROJECT + '/wiki/TestPage', 'POST',
-        body=urlencode(dict(
-                text='This is a test page')))
+    response = oauth.post(URL_BASE + 'p/' + PROJECT + '/wiki/TestPage',
+                          data=dict(text='This is a test page'))
+    response.raise_for_status()
     print("Done.  Response was:")
     print(response)
 
