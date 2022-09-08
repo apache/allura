@@ -321,7 +321,7 @@ class ValidatingTestApp(PostParamCheckingTestApp):
             import feedparser
             d = feedparser.parse(resp.text)
             assert d.bozo == 0, 'Non-wellformed feed'
-        elif content_type.startswith('image/'):
+        elif content_type.startswith(('image/', 'application/x-www-form-urlencoded')):
             pass
         else:
             assert False, 'Unexpected output content type: ' + content_type

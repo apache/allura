@@ -289,11 +289,13 @@ class TestRestApiBase(TestController):
         return self._api_call('DELETE', path, wrap_args, user, status, **params)
 
 
-def oauth1_webtest(url: str, oauth_kwargs: dict, method='GET') -> tuple[str, dict, dict]:
+def oauth1_webtest(url: str, oauth_kwargs: dict, method='GET') -> tuple[str, dict, dict, dict]:
     oauth1 = requests_oauthlib.OAuth1(**oauth_kwargs)
     req = requests.Request(method, f'http://localhost{url}').prepare()
     oauth1(req)
-    return request2webtest(req)
+    url, params, headers = request2webtest(req)
+    extra_environ = {'username': '*anonymous'}  # we don't want to be magically logged in when hitting /rest/oauth/
+    return url, params, headers, extra_environ
 
 
 def request2webtest(req: requests.PreparedRequest) -> tuple[str, dict, dict]:

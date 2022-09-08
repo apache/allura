@@ -19,8 +19,6 @@ import logging
 import typing
 from datetime import datetime
 
-
-import oauth2 as oauth
 from tg import tmpl_context as c, app_globals as g
 
 from paste.deploy.converters import aslist
@@ -60,12 +58,6 @@ class OAuthToken(MappedClass):
     secret_key = FieldProperty(str, if_missing=h.cryptographic_nonce)
     last_access = FieldProperty(datetime)
 
-    def to_string(self):
-        return oauth.Token(self.api_key, self.secret_key).to_string()
-
-    def as_token(self):
-        return oauth.Token(self.api_key, self.secret_key)
-
 
 class OAuthConsumerToken(OAuthToken):
 
@@ -90,11 +82,6 @@ class OAuthConsumerToken(OAuthToken):
     @property
     def description_html(self):
         return g.markdown.cached_convert(self, 'description')
-
-    @property
-    def consumer(self):
-        '''OAuth compatible consumer object'''
-        return oauth.Consumer(self.api_key, self.secret_key)
 
     @classmethod
     def upsert(cls, name, user):
@@ -130,7 +117,7 @@ class OAuthRequestToken(OAuthToken):
     callback = FieldProperty(str)
     validation_pin = FieldProperty(str)
 
-    consumer_token = RelationProperty('OAuthConsumerToken')
+    consumer_token: OAuthConsumerToken = RelationProperty('OAuthConsumerToken')
 
 
 class OAuthAccessToken(OAuthToken):
@@ -162,3 +149,27 @@ class OAuthAccessToken(OAuthToken):
         if self.api_key in tokens:
             return True
         return False
+
+
+def dummy_oauths():
+    from allura.controllers.rest import Oauth1Validator
+    # oauthlib implementation NEEDS these "dummy" values.  If a request comes in with an invalid param, it runs
+    # the regular oauth methods but using these dummy values, so that everything takes constant time
+    # so these need to exist in the database even though they're called "dummy" values
+    dummy_cons_tok = OAuthConsumerToken(
+        api_key=Oauth1Validator().dummy_client,
+        name='dummy client, for oauthlib implementation',
+        user_id=None,
+    )
+    session(dummy_cons_tok).flush(dummy_cons_tok)
+    dummy_req_tok = OAuthRequestToken(
+        api_key=Oauth1Validator().dummy_request_token,
+        user_id=None,
+        validation_pin='dummy-pin',
+    )
+    session(dummy_req_tok).flush(dummy_req_tok)
+    dummy_access_tok = OAuthAccessToken(
+        api_key=Oauth1Validator().dummy_access_token,
+        user_id=None,
+    )
+    session(dummy_access_tok).flush(dummy_access_tok)

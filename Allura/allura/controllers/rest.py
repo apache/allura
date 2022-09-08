@@ -18,9 +18,10 @@
 """REST Controller"""
 import json
 import logging
-from six.moves.urllib.parse import unquote
+from urllib.parse import unquote, urlparse, parse_qs
 
-import oauth2 as oauth
+import oauthlib.oauth1
+import oauthlib.common
 from paste.util.converters import asbool
 from webob import exc
 import tg
@@ -118,14 +119,136 @@ class RestController:
         return NeighborhoodRestController(neighborhood), remainder
 
 
+class Oauth1Validator(oauthlib.oauth1.RequestValidator):
+
+    def validate_client_key(self, client_key: str, request: oauthlib.common.Request) -> bool:
+        return M.OAuthConsumerToken.query.get(api_key=client_key) is not None
+
+    def get_client_secret(self, client_key, request):
+        return M.OAuthConsumerToken.query.get(api_key=client_key).secret_key  # NoneType error? you need dummy_oauths()
+
+    def save_request_token(self, token: dict, request: oauthlib.common.Request) -> None:
+        consumer_token = M.OAuthConsumerToken.query.get(api_key=request.client_key)
+        req_token = M.OAuthRequestToken(
+            api_key=token['oauth_token'],
+            secret_key=token['oauth_token_secret'],
+            consumer_token_id=consumer_token._id,
+            callback=request.oauth_params.get('oauth_callback', 'oob'),
+        )
+        session(req_token).flush()
+        log.info('Saving new request token with key: %s', req_token.api_key)
+
+    def verify_request_token(self, token: str, request: oauthlib.common.Request) -> bool:
+        return M.OAuthRequestToken.query.get(api_key=token) is not None
+
+    def validate_request_token(self, client_key: str, token: str, request: oauthlib.common.Request) -> bool:
+        req_tok = M.OAuthRequestToken.query.get(api_key=token)
+        if not req_tok:
+            return False
+        return oauthlib.common.safe_string_equals(req_tok.consumer_token.api_key, client_key)
+
+    def invalidate_request_token(self, client_key: str, request_token: str, request: oauthlib.common.Request) -> None:
+        M.OAuthRequestToken.query.remove({'api_key': request_token})
+
+    def validate_verifier(self, client_key: str, token: str, verifier: str, request: oauthlib.common.Request) -> bool:
+        req_tok = M.OAuthRequestToken.query.get(api_key=token)
+        return oauthlib.common.safe_string_equals(req_tok.validation_pin, verifier)  # NoneType error? you need dummy_oauths()
+
+    def save_verifier(self, token: str, verifier: dict, request: oauthlib.common.Request) -> None:
+        req_tok = M.OAuthRequestToken.query.get(api_key=token)
+        req_tok.validation_pin = verifier['oauth_verifier']
+        session(req_tok).flush(req_tok)
+
+    def get_redirect_uri(self, token: str, request: oauthlib.common.Request) -> str:
+        return M.OAuthRequestToken.query.get(api_key=token).callback
+
+    def get_request_token_secret(self, client_key: str, token: str, request: oauthlib.common.Request) -> str:
+        return M.OAuthRequestToken.query.get(api_key=token).secret_key  # NoneType error? you need dummy_oauths()
+
+    def save_access_token(self, token: dict, request: oauthlib.common.Request) -> None:
+        consumer_token = M.OAuthConsumerToken.query.get(api_key=request.client_key)
+        request_token = M.OAuthRequestToken.query.get(api_key=request.resource_owner_key)
+        tok = M.OAuthAccessToken(
+            api_key=token['oauth_token'],
+            secret_key=token['oauth_token_secret'],
+            consumer_token_id=consumer_token._id,
+            request_token_id=request_token._id,
+            user_id=request_token.user_id,
+        )
+        session(tok).flush(tok)
+
+    def validate_access_token(self, client_key: str, token: str, request: oauthlib.common.Request) -> bool:
+        return M.OAuthAccessToken.query.get(api_key=token) is not None
+
+    def get_access_token_secret(self, client_key: str, token: str, request: oauthlib.common.Request) -> str:
+        return M.OAuthAccessToken.query.get(api_key=token).secret_key  # NoneType error? you need dummy_oauths()
+
+    @property
+    def enforce_ssl(self) -> bool:
+        # don't enforce SSL in limited situations
+        if request.environ.get('paste.testing'):
+            # test suite is running
+            return False
+        elif asbool(config.get('debug')) and config['base_url'].startswith('http://'):
+            # development w/o https
+            return False
+        else:
+            return True
+
+    @property
+    def safe_characters(self):
+        # add a few characters, so tests can have clear readable values
+        return super(Oauth1Validator, self).safe_characters | {'_', '-'}
+
+    def get_default_realms(self, client_key, request):
+        return []
+
+    def validate_requested_realms(self, client_key, realms, request):
+        return True
+
+    def get_realms(self, token, request):
+        return []
+
+    def validate_realms(self, client_key, token, request, uri=None, realms=None) -> bool:
+        return True
+
+    def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
+                                     request, request_token=None, access_token=None) -> bool:
+        # TODO: record and check nonces from reuse
+        return True
+
+    def validate_redirect_uri(self, client_key, redirect_uri, request) -> bool:
+        # TODO: have application owner specify redirect uris, save on OAuthConsumerToken
+        return True
+
+    @property
+    def dummy_client(self) -> str:
+        return 'dummy-client-key-for-oauthlib'
+
+    @property
+    def dummy_request_token(self) -> str:
+        return 'dummy-request-token-for-oauthlib'
+
+    @property
+    def dummy_access_token(self) -> str:
+        return 'dummy-access-token-for-oauthlib'
+
+
+class AlluraOauth1Server(oauthlib.oauth1.WebApplicationServer):
+    def validate_request_token_request(self, request):
+        # this is NOT standard OAuth1 (spec requires the param)
+        # but initial Allura implementation defaulted it to "oob" so we'll continue to do that
+        # (this is called within create_request_token_response)
+        if not request.redirect_uri:
+            request.redirect_uri = 'oob'
+        return super().validate_request_token_request(request)
+
+
 class OAuthNegotiator:
 
     @property
     def server(self):
-        result = oauth.Server()
-        result.add_signature_method(oauth.SignatureMethod_PLAINTEXT())
-        result.add_signature_method(oauth.SignatureMethod_HMAC_SHA1())
-        return result
+        return AlluraOauth1Server(Oauth1Validator())
 
     def _authenticate(self):
         bearer_token_prefix = 'Bearer '
@@ -152,70 +275,57 @@ class OAuthNegotiator:
                 raise exc.HTTPUnauthorized
             access_token.last_access = datetime.utcnow()
             return access_token
-        req = oauth.Request.from_request(
-            request.method,
-            request.url.split('?')[0],
+
+        provider = oauthlib.oauth1.ResourceEndpoint(Oauth1Validator())
+        valid: bool
+        oauth_req: oauthlib.common.Request
+        valid, oauth_req = provider.validate_protected_resource_request(
+            request.url,
+            http_method=request.method,
+            body=request.body,
             headers=request.headers,
-            parameters=dict(request.params),
-            query_string=request.query_string
-        )
-        if 'oauth_consumer_key' not in req:
-            log.error('Missing consumer token')
-            return None
-        if 'oauth_token' not in req:
-            log.error('Missing access token')
+            realms=[])
+        if not valid:
             raise exc.HTTPUnauthorized
-        consumer_token = M.OAuthConsumerToken.query.get(api_key=req['oauth_consumer_key'])
-        access_token = M.OAuthAccessToken.query.get(api_key=req['oauth_token'])
-        if consumer_token is None:
-            log.error('Invalid consumer token')
-            return None
-        if access_token is None:
-            log.error('Invalid access token')
-            raise exc.HTTPUnauthorized
-        consumer = consumer_token.consumer
-        try:
-            self.server.verify_request(req, consumer, access_token.as_token())
-        except oauth.Error as e:
-            log.error('Invalid signature %s %s', type(e), e)
-            raise exc.HTTPUnauthorized
+
+        access_token = M.OAuthAccessToken.query.get(api_key=oauth_req.oauth_params['oauth_token'])
         access_token.last_access = datetime.utcnow()
         return access_token
 
     @expose()
     def request_token(self, **kw):
-        req = oauth.Request.from_request(
-            request.method,
-            request.url.split('?')[0],
-            headers=request.headers,
-            parameters=dict(request.params),
-            query_string=request.query_string
-        )
-        consumer_token = M.OAuthConsumerToken.query.get(api_key=req.get('oauth_consumer_key'))
-        if consumer_token is None:
-            log.error('Invalid consumer token')
-            raise exc.HTTPUnauthorized
-        consumer = consumer_token.consumer
-        try:
-            self.server.verify_request(req, consumer, None)
-        except oauth.Error as e:
-            log.error('Invalid signature %s %s', type(e), e)
-            raise exc.HTTPUnauthorized
-        req_token = M.OAuthRequestToken(
-            consumer_token_id=consumer_token._id,
-            callback=req.get('oauth_callback', 'oob')
-        )
-        session(req_token).flush()
-        log.info('Saving new request token with key: %s', req_token.api_key)
-        return req_token.to_string()
+        headers, body, status = self.server.create_request_token_response(
+            request.url,
+            http_method=request.method,
+            body=request.body,
+            headers=request.headers)
+        response.headers = headers
+        response.status_int = status
+        return body
 
     @expose('jinja:allura:templates/oauth_authorize.html')
-    def authorize(self, oauth_token=None):
+    def authorize(self, **kwargs):
         security.require_authenticated()
+
+        try:
+            realms, credentials = self.server.get_realms_and_credentials(
+                request.url,
+                http_method=request.method,
+                body=request.body,
+                headers=request.headers)
+        except oauthlib.oauth1.OAuth1Error as oae:
+            log.info(f'oauth1 authorize error: {oae!r}')
+            response.headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+            response.status_int = oae.status_code
+            body = oae.urlencoded
+            return body
+        oauth_token = credentials.get('resource_owner_key', 'unknown')
+
         rtok = M.OAuthRequestToken.query.get(api_key=oauth_token)
         if rtok is None:
             log.error('Invalid token %s', oauth_token)
             raise exc.HTTPUnauthorized
+        # store what user this is, so later use of the token can act as them
         rtok.user_id = c.user._id
         return dict(
             oauth_token=oauth_token,
@@ -225,60 +335,39 @@ class OAuthNegotiator:
     @require_post()
     def do_authorize(self, yes=None, no=None, oauth_token=None):
         security.require_authenticated()
+
         rtok = M.OAuthRequestToken.query.get(api_key=oauth_token)
         if no:
             rtok.delete()
             flash('%s NOT AUTHORIZED' % rtok.consumer_token.name, 'error')
             redirect('/auth/oauth/')
-        if rtok.callback == 'oob':
-            rtok.validation_pin = h.nonce(6)
+
+        headers, body, status = self.server.create_authorization_response(
+            request.url,
+            http_method=request.method,
+            body=request.body,
+            headers=request.headers,
+            realms=[])
+
+        if status == 200:
+            verifier = str(parse_qs(body)['oauth_verifier'][0])
+            rtok.validation_pin = verifier
             return dict(rtok=rtok)
-        rtok.validation_pin = h.nonce(20)
-        if '?' in rtok.callback:
-            url = rtok.callback + '&'
         else:
-            url = rtok.callback + '?'
-        url += 'oauth_token={}&oauth_verifier={}'.format(
-            rtok.api_key, rtok.validation_pin)
-        redirect(url)
+            response.headers = headers
+            response.status_int = status
+            return body
 
     @expose()
     def access_token(self, **kw):
-        req = oauth.Request.from_request(
-            request.method,
-            request.url.split('?')[0],
-            headers=request.headers,
-            parameters=dict(request.params),
-            query_string=request.query_string
-        )
-        consumer_token = M.OAuthConsumerToken.query.get(
-            api_key=req['oauth_consumer_key'])
-        request_token = M.OAuthRequestToken.query.get(
-            api_key=req['oauth_token'])
-        if consumer_token is None:
-            log.error('Invalid consumer token')
-            raise exc.HTTPUnauthorized
-        if request_token is None:
-            log.error('Invalid request token')
-            raise exc.HTTPUnauthorized
-        pin = req['oauth_verifier']
-        if pin != request_token.validation_pin:
-            log.error('Invalid verifier')
-            raise exc.HTTPUnauthorized
-        rtok = request_token.as_token()
-        rtok.set_verifier(pin)
-        consumer = consumer_token.consumer
-        try:
-            self.server.verify_request(req, consumer, rtok)
-        except oauth.Error as e:
-            log.error('Invalid signature %s %s', type(e), e)
-            raise exc.HTTPUnauthorized
-        acc_token = M.OAuthAccessToken(
-            consumer_token_id=consumer_token._id,
-            request_token_id=request_token._id,
-            user_id=request_token.user_id,
-        )
-        return acc_token.to_string()
+        headers, body, status = self.server.create_access_token_response(
+            request.url,
+            http_method=request.method,
+            body=request.body,
+            headers=request.headers)
+        response.headers = headers
+        response.status_int = status
+        return body
 
 
 def rest_has_access(obj, user, perm):
