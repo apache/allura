@@ -28,8 +28,6 @@ from six.moves.urllib.parse import urlencode
 from bson import ObjectId
 import re
 
-from testfixtures import LogCapture
-
 from ming.orm.ormsession import ThreadLocalORMSession, session
 from tg import config, expose
 from mock import patch, Mock
@@ -51,6 +49,7 @@ from allura.tests import decorators as td
 from allura.tests.decorators import audits, out_audits, assert_logmsg
 from alluratest.controller import setup_trove_categories, TestRestApiBase, oauth1_webtest
 from allura import model as M
+from allura.model.oauth import dummy_oauths
 from allura.lib import plugin
 from allura.lib import helpers as h
 from allura.lib.multifactor import TotpService, RecoveryCodeService
@@ -1897,15 +1896,22 @@ class TestOAuth(TestController):
         # now use the tokens & secrets to make a full OAuth request:
         oauth_token = atok['oauth_token'][0]
         oauth_secret = atok['oauth_token_secret'][0]
-        oaurl, oaparams, oahdrs = oauth1_webtest('/rest/p/test/', dict(
+        oaurl, oaparams, oahdrs, oaextraenv = oauth1_webtest('/rest/p/test/', dict(
             client_key='api_key_api_key_12345',
             client_secret='test-client-secret',
             resource_owner_key=oauth_token,
             resource_owner_secret=oauth_secret,
             signature_type='query'
         ))
-        self.app.get(oaurl, oaparams, oahdrs, status=200)
-        self.app.get(oaurl.replace('oauth_signature=', 'removed='), oaparams, oahdrs, status=401)
+        resp = self.app.get(oaurl, oaparams, oahdrs, oaextraenv, status=200)
+        for tool in resp.json['tools']:
+            if tool['name'] == 'admin':
+                break  # good, found Admin
+        else:
+            raise AssertionError(f"No 'admin' tool in response, maybe authorizing as correct user failed. {resp.json}")
+
+        # definitely bad request
+        self.app.get(oaurl.replace('oauth_signature=', 'removed='), oaparams, oahdrs, oaextraenv, status=401)
 
     def test_authorize_ok(self):
         user = M.User.by_username('test-admin')
@@ -1926,7 +1932,8 @@ class TestOAuth(TestController):
         assert_in('api_key_reqtok_12345', r.text)
 
     def test_authorize_invalid(self):
-        self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok_12345'}, status=401)
+        resp = self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok_12345'}, status=400)
+        resp.mustcontain('error=invalid_client')
 
     def test_do_authorize_no(self):
         user = M.User.by_username('test-admin')
@@ -2005,6 +2012,10 @@ class TestOAuthRequestToken(TestController):
         client_secret='test-client-secret',
     )
 
+    def setUp(self):
+        super().setUp()
+        dummy_oauths()
+
     def test_request_token_valid(self):
         user = M.User.by_username('test-user')
         consumer_token = M.OAuthConsumerToken(
@@ -2014,24 +2025,21 @@ class TestOAuthRequestToken(TestController):
         )
         ThreadLocalORMSession.flush_all()
         r = self.app.post(*oauth1_webtest('/rest/oauth/request_token', self.oauth_params, method='POST'))
-
+        r.mustcontain('oauth_token=')
+        r.mustcontain('oauth_token_secret=')
         request_token = M.OAuthRequestToken.query.get(consumer_token_id=consumer_token._id)
         assert_is_not_none(request_token)
-        assert_equal(r.text, request_token.to_string())
 
     def test_request_token_no_consumer_token_matching(self):
-        with LogCapture() as logs:
-            self.app.post(*oauth1_webtest('/rest/oauth/request_token', self.oauth_params), status=401)
-        assert_logmsg(logs, 'Invalid consumer token')
+        self.app.post(*oauth1_webtest('/rest/oauth/request_token', self.oauth_params), status=401)
 
     def test_request_token_no_consumer_token_given(self):
         oauth_params = self.oauth_params.copy()
         oauth_params['signature_type'] = 'query'  # so we can more easily remove a param next
-        url, params, hdrs = oauth1_webtest('/rest/oauth/request_token', oauth_params)
+        url, params, hdrs, extraenv = oauth1_webtest('/rest/oauth/request_token', oauth_params)
         url = url.replace('oauth_consumer_key', 'gone')
-        with LogCapture() as logs:
-            self.app.post(url, params, hdrs, status=401)
-        assert_logmsg(logs, 'Invalid consumer token')
+        resp = self.app.post(url, params, hdrs, extraenv, status=400)
+        resp.mustcontain('error_description=Missing+mandatory+OAuth+parameters')
 
     def test_request_token_invalid(self):
         user = M.User.by_username('test-user')
@@ -2041,10 +2049,8 @@ class TestOAuthRequestToken(TestController):
             secret_key='test-client-secret--INVALID',
         )
         ThreadLocalORMSession.flush_all()
-        with LogCapture() as logs:
-            self.app.post(*oauth1_webtest('/rest/oauth/request_token', self.oauth_params, method='POST'),
-                          status=401)
-        assert_logmsg(logs, "Invalid signature <class 'oauth2.Error'> Invalid signature.")
+        self.app.post(*oauth1_webtest('/rest/oauth/request_token', self.oauth_params, method='POST'),
+                      status=401)
 
 
 class TestOAuthAccessToken(TestController):
@@ -2057,10 +2063,12 @@ class TestOAuthAccessToken(TestController):
         verifier='good_verifier_123456',
     )
 
+    def setUp(self):
+        super().setUp()
+        dummy_oauths()
+
     def test_access_token_no_consumer(self):
-        with LogCapture() as logs:
-            self.app.get(*oauth1_webtest('/rest/oauth/access_token', self.oauth_params), status=401)
-        assert_logmsg(logs, 'Invalid consumer token')
+        self.app.get(*oauth1_webtest('/rest/oauth/access_token', self.oauth_params), status=401)
 
     def test_access_token_no_request(self):
         user = M.User.by_username('test-admin')
@@ -2070,9 +2078,7 @@ class TestOAuthAccessToken(TestController):
             description='ctok_desc',
         )
         ThreadLocalORMSession.flush_all()
-        with LogCapture() as logs:
-            self.app.get(*oauth1_webtest('/rest/oauth/access_token', self.oauth_params), status=401)
-        assert_logmsg(logs, 'Invalid request token')
+        self.app.get(*oauth1_webtest('/rest/oauth/access_token', self.oauth_params), status=401)
 
     def test_access_token_bad_pin(self):
         user = M.User.by_username('test-admin')
@@ -2089,12 +2095,10 @@ class TestOAuthAccessToken(TestController):
             validation_pin='good_verifier_123456',
         )
         ThreadLocalORMSession.flush_all()
-        with LogCapture() as logs:
-            oauth_params = self.oauth_params.copy()
-            oauth_params['verifier'] = 'bad_verifier_1234567'
-            self.app.get(*oauth1_webtest('/rest/oauth/access_token', oauth_params),
-                         status=401)
-        assert_logmsg(logs, 'Invalid verifier')
+        oauth_params = self.oauth_params.copy()
+        oauth_params['verifier'] = 'bad_verifier_1234567'
+        self.app.get(*oauth1_webtest('/rest/oauth/access_token', oauth_params),
+                     status=401)
 
     def test_access_token_bad_sig(self):
         user = M.User.by_username('test-admin')
@@ -2113,11 +2117,9 @@ class TestOAuthAccessToken(TestController):
             secret_key='test-token-secret--INVALID',
         )
         ThreadLocalORMSession.flush_all()
-        with LogCapture() as logs:
-            self.app.get(*oauth1_webtest('/rest/oauth/access_token', self.oauth_params), status=401)
-        assert_logmsg(logs, "Invalid signature <class 'oauth2.Error'> Invalid signature.")
+        self.app.get(*oauth1_webtest('/rest/oauth/access_token', self.oauth_params), status=401)
 
-    def test_access_token_ok(self):
+    def test_access_token_ok(self, signature_type='auth_header'):
         user = M.User.by_username('test-admin')
         ctok = M.OAuthConsumerToken(
             api_key='api_key_api_key_12345',
@@ -2125,7 +2127,7 @@ class TestOAuthAccessToken(TestController):
             user_id=user._id,
             description='ctok_desc',
         )
-        M.OAuthRequestToken(
+        req_tok = M.OAuthRequestToken(
             api_key='api_key_reqtok_12345',
             secret_key='test-token-secret',
             consumer_token_id=ctok._id,
@@ -2135,16 +2137,14 @@ class TestOAuthAccessToken(TestController):
         )
         ThreadLocalORMSession.flush_all()
 
+        oauth_params = dict(self.oauth_params, signature_type=signature_type)
         r = self.app.get(*oauth1_webtest('/rest/oauth/access_token', self.oauth_params))
         atok = parse_qs(r.text)
         assert_equal(len(atok['oauth_token']), 1)
         assert_equal(len(atok['oauth_token_secret']), 1)
 
-        oauth_params = dict(self.oauth_params, signature_type='query')
-        r = self.app.get(*oauth1_webtest('/rest/oauth/access_token', oauth_params))
-        atok = parse_qs(r.text)
-        assert_equal(len(atok['oauth_token']), 1)
-        assert_equal(len(atok['oauth_token_secret']), 1)
+    def test_access_token_ok_by_query(self):
+        self.test_access_token_ok(signature_type='query')
 
 
 class TestDisableAccount(TestController):

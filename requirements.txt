@@ -61,8 +61,6 @@ html5lib==1.1
     #   -r requirements.in
     #   pypeline
     #   textile
-httplib2==0.19.0
-    # via oauth2
 idna==3.3
     # via requests
 importlib-metadata==4.12.0
@@ -91,10 +89,10 @@ ming==0.12.0
     # via -r requirements.in
 mock==4.0.3
     # via -r requirements.in
-oauth2 @ https://github.com/joestump/python-oauth2/archive/b94f69b1ad195513547924e380d9265133e995fa.zip
-    # via -r requirements.in
 oauthlib==3.2.0
-    # via requests-oauthlib
+    # via
+    #   -r requirements.in
+    #   requests-oauthlib
 paginate==0.5.6
     # via -r requirements.in
 paste==3.5.1
@@ -123,8 +121,6 @@ pymongo==3.11.4
     #   -r requirements.in
     #   activitystream
     #   ming
-pyparsing==2.4.7
-    # via httplib2
 pypeline[creole,markdown,rst,textile]==0.6.0
     # via -r requirements.in
 pysolr==3.9.0

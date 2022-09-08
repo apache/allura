@@ -27,6 +27,7 @@ from tg import tmpl_context as c, app_globals as g
 from paste.deploy.converters import asbool
 import ew
 
+from allura.model.oauth import dummy_oauths
 from ming import Session, mim
 from ming.orm import state, session
 from ming.orm.ormsession import ThreadLocalORMSession
@@ -265,6 +266,10 @@ def bootstrap(command, conf, vars):
         sub = p0.new_subproject('sub1', project_name='A Subproject')
         with h.push_config(c, user=u_admin):
             sub.install_app('wiki')
+
+    if not test_run:
+        # only when running setup-app do we need this.  the few tests that need it do it themselves
+        dummy_oauths()
 
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
