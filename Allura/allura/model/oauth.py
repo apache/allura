@@ -72,7 +72,10 @@ class OAuthConsumerToken(OAuthToken):
     class __mongometa__:
         polymorphic_identity = 'consumer'
         name = 'oauth_consumer_token'
-        unique_indexes = [('name', 'user_id')]
+        unique_indexes = [
+            ('name', 'user_id'),
+            ('api_key',),
+        ]
 
     query: 'Query[OAuthConsumerToken]'
 
