@@ -1859,15 +1859,15 @@ class TestOAuth(TestController):
     def test_interactive(self):
         user = M.User.by_username('test-admin')
         M.OAuthConsumerToken(
-            api_key='api_key',
-            secret_key='dummy-client-secret',
+            api_key='api_key_api_key_12345',
+            secret_key='test-client-secret',
             user_id=user._id,
             description='ctok_desc',
         )
         ThreadLocalORMSession.flush_all()
         oauth_params = dict(
-            client_key='api_key',
-            client_secret='dummy-client-secret',
+            client_key='api_key_api_key_12345',
+            client_secret='test-client-secret',
             callback_uri='http://my.domain.com/callback',
         )
         r = self.app.post(*oauth1_webtest('/rest/oauth/request_token', oauth_params, method='POST'))
@@ -1883,8 +1883,8 @@ class TestOAuth(TestController):
         assert pin
 
         oauth_params = dict(
-            client_key='api_key',
-            client_secret='dummy-client-secret',
+            client_key='api_key_api_key_12345',
+            client_secret='test-client-secret',
             resource_owner_key=rtok,
             resource_owner_secret=rsecr,
             verifier=pin,
@@ -1898,8 +1898,8 @@ class TestOAuth(TestController):
         oauth_token = atok['oauth_token'][0]
         oauth_secret = atok['oauth_token_secret'][0]
         oaurl, oaparams, oahdrs = oauth1_webtest('/rest/p/test/', dict(
-            client_key='api_key',
-            client_secret='dummy-client-secret',
+            client_key='api_key_api_key_12345',
+            client_secret='test-client-secret',
             resource_owner_key=oauth_token,
             resource_owner_secret=oauth_secret,
             signature_type='query'
@@ -1910,106 +1910,106 @@ class TestOAuth(TestController):
     def test_authorize_ok(self):
         user = M.User.by_username('test-admin')
         ctok = M.OAuthConsumerToken(
-            api_key='api_key',
+            api_key='api_key_api_key_12345',
             user_id=user._id,
             description='ctok_desc',
         )
         M.OAuthRequestToken(
-            api_key='api_key_reqtok',
+            api_key='api_key_reqtok_12345',
             consumer_token_id=ctok._id,
             callback='oob',
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
-        r = self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok'})
+        r = self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok_12345'})
         assert_in('ctok_desc', r.text)
-        assert_in('api_key_reqtok', r.text)
+        assert_in('api_key_reqtok_12345', r.text)
 
     def test_authorize_invalid(self):
-        self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok'}, status=401)
+        self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok_12345'}, status=401)
 
     def test_do_authorize_no(self):
         user = M.User.by_username('test-admin')
         ctok = M.OAuthConsumerToken(
-            api_key='api_key',
+            api_key='api_key_api_key_12345',
             user_id=user._id,
             description='ctok_desc',
         )
         M.OAuthRequestToken(
-            api_key='api_key_reqtok',
+            api_key='api_key_reqtok_12345',
             consumer_token_id=ctok._id,
             callback='oob',
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
         self.app.post('/rest/oauth/do_authorize',
-                      params={'no': '1', 'oauth_token': 'api_key_reqtok'})
-        assert_is_none(M.OAuthRequestToken.query.get(api_key='api_key_reqtok'))
+                      params={'no': '1', 'oauth_token': 'api_key_reqtok_12345'})
+        assert_is_none(M.OAuthRequestToken.query.get(api_key='api_key_reqtok_12345'))
 
     def test_do_authorize_oob(self):
         user = M.User.by_username('test-admin')
         ctok = M.OAuthConsumerToken(
-            api_key='api_key',
+            api_key='api_key_api_key_12345',
             user_id=user._id,
             description='ctok_desc',
         )
         M.OAuthRequestToken(
-            api_key='api_key_reqtok',
+            api_key='api_key_reqtok_12345',
             consumer_token_id=ctok._id,
             callback='oob',
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
-        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key_reqtok'})
+        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key_reqtok_12345'})
         assert_is_not_none(r.html.find(text=re.compile('^PIN: ')))
 
     def test_do_authorize_cb(self):
         user = M.User.by_username('test-admin')
         ctok = M.OAuthConsumerToken(
-            api_key='api_key',
+            api_key='api_key_api_key_12345',
             user_id=user._id,
             description='ctok_desc',
         )
         M.OAuthRequestToken(
-            api_key='api_key_reqtok',
+            api_key='api_key_reqtok_12345',
             consumer_token_id=ctok._id,
             callback='http://my.domain.com/callback',
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
-        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key_reqtok'})
-        assert r.location.startswith('http://my.domain.com/callback?oauth_token=api_key_reqtok&oauth_verifier=')
+        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key_reqtok_12345'})
+        assert r.location.startswith('http://my.domain.com/callback?oauth_token=api_key_reqtok_12345&oauth_verifier=')
 
     def test_do_authorize_cb_params(self):
         user = M.User.by_username('test-admin')
         ctok = M.OAuthConsumerToken(
-            api_key='api_key',
+            api_key='api_key_api_key_12345',
             user_id=user._id,
             description='ctok_desc',
         )
         M.OAuthRequestToken(
-            api_key='api_key_reqtok',
+            api_key='api_key_reqtok_12345',
             consumer_token_id=ctok._id,
             callback='http://my.domain.com/callback?myparam=foo',
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
-        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key_reqtok'})
-        assert r.location.startswith('http://my.domain.com/callback?myparam=foo&oauth_token=api_key_reqtok&oauth_verifier=')
+        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key_reqtok_12345'})
+        assert r.location.startswith('http://my.domain.com/callback?myparam=foo&oauth_token=api_key_reqtok_12345&oauth_verifier=')
 
 
 class TestOAuthRequestToken(TestController):
 
     oauth_params = dict(
-        client_key='api_key',
-        client_secret='dummy-client-secret',
+        client_key='api_key_api_key_12345',
+        client_secret='test-client-secret',
     )
 
     def test_request_token_valid(self):
         user = M.User.by_username('test-user')
         consumer_token = M.OAuthConsumerToken(
-            api_key='api_key',
-            secret_key='dummy-client-secret',
+            api_key='api_key_api_key_12345',
+            secret_key='test-client-secret',
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
@@ -2036,9 +2036,9 @@ class TestOAuthRequestToken(TestController):
     def test_request_token_invalid(self):
         user = M.User.by_username('test-user')
         M.OAuthConsumerToken(
-            api_key='api_key',
+            api_key='api_key_api_key_12345',
             user_id=user._id,
-            secret_key='dummy-client-secret--INVALID',
+            secret_key='test-client-secret--INVALID',
         )
         ThreadLocalORMSession.flush_all()
         with LogCapture() as logs:
@@ -2050,11 +2050,11 @@ class TestOAuthRequestToken(TestController):
 class TestOAuthAccessToken(TestController):
 
     oauth_params = dict(
-        client_key='api_key',
-        client_secret='dummy-client-secret',
-        resource_owner_key='api_key_reqtok',
-        resource_owner_secret='dummy-token-secret',
-        verifier='good',
+        client_key='api_key_api_key_12345',
+        client_secret='test-client-secret',
+        resource_owner_key='api_key_reqtok_12345',
+        resource_owner_secret='test-token-secret',
+        verifier='good_verifier_123456',
     )
 
     def test_access_token_no_consumer(self):
@@ -2065,7 +2065,7 @@ class TestOAuthAccessToken(TestController):
     def test_access_token_no_request(self):
         user = M.User.by_username('test-admin')
         M.OAuthConsumerToken(
-            api_key='api_key',
+            api_key='api_key_api_key_12345',
             user_id=user._id,
             description='ctok_desc',
         )
@@ -2077,21 +2077,21 @@ class TestOAuthAccessToken(TestController):
     def test_access_token_bad_pin(self):
         user = M.User.by_username('test-admin')
         ctok = M.OAuthConsumerToken(
-            api_key='api_key',
+            api_key='api_key_api_key_12345',
             user_id=user._id,
             description='ctok_desc',
         )
         M.OAuthRequestToken(
-            api_key='api_key_reqtok',
+            api_key='api_key_reqtok_12345',
             consumer_token_id=ctok._id,
             callback='http://my.domain.com/callback?myparam=foo',
             user_id=user._id,
-            validation_pin='good',
+            validation_pin='good_verifier_123456',
         )
         ThreadLocalORMSession.flush_all()
         with LogCapture() as logs:
             oauth_params = self.oauth_params.copy()
-            oauth_params['verifier'] = 'bad'
+            oauth_params['verifier'] = 'bad_verifier_1234567'
             self.app.get(*oauth1_webtest('/rest/oauth/access_token', oauth_params),
                          status=401)
         assert_logmsg(logs, 'Invalid verifier')
@@ -2099,18 +2099,18 @@ class TestOAuthAccessToken(TestController):
     def test_access_token_bad_sig(self):
         user = M.User.by_username('test-admin')
         ctok = M.OAuthConsumerToken(
-            api_key='api_key',
+            api_key='api_key_api_key_12345',
             user_id=user._id,
             description='ctok_desc',
-            secret_key='dummy-client-secret',
+            secret_key='test-client-secret',
         )
         M.OAuthRequestToken(
-            api_key='api_key_reqtok',
+            api_key='api_key_reqtok_12345',
             consumer_token_id=ctok._id,
             callback='http://my.domain.com/callback?myparam=foo',
             user_id=user._id,
-            validation_pin='good',
-            secret_key='dummy-token-secret--INVALID',
+            validation_pin='good_verifier_123456',
+            secret_key='test-token-secret--INVALID',
         )
         ThreadLocalORMSession.flush_all()
         with LogCapture() as logs:
@@ -2120,18 +2120,18 @@ class TestOAuthAccessToken(TestController):
     def test_access_token_ok(self):
         user = M.User.by_username('test-admin')
         ctok = M.OAuthConsumerToken(
-            api_key='api_key',
-            secret_key='dummy-client-secret',
+            api_key='api_key_api_key_12345',
+            secret_key='test-client-secret',
             user_id=user._id,
             description='ctok_desc',
         )
         M.OAuthRequestToken(
-            api_key='api_key_reqtok',
-            secret_key='dummy-token-secret',
+            api_key='api_key_reqtok_12345',
+            secret_key='test-token-secret',
             consumer_token_id=ctok._id,
             callback='http://my.domain.com/callback?myparam=foo',
             user_id=user._id,
-            validation_pin='good',
+            validation_pin='good_verifier_123456',
         )
         ThreadLocalORMSession.flush_all()
 
