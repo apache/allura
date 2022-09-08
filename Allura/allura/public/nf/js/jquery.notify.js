@@ -78,7 +78,7 @@
                 $msg.removeClass(o.newClass).addClass(o.activeClass);
                 $msg.each(function() {
                     var self = this;
-                    if (!$(self).hasClass(o.stickyClass) || !$(self).hasClass(o.persistentClass)) {
+                    if (!$(self).hasClass(o.stickyClass) && !$(self).hasClass(o.persistentClass)) {
                         var timer = $(self).attr('data-timer') || o.timer;
                         setTimeout(function() {
                             closer($(self), o);
