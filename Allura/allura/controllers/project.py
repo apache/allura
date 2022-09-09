@@ -364,7 +364,12 @@ class ProjectController(FeedController):
             c.project = subproject
             c.app = None
             return ProjectController(), remainder
-        raise exc.HTTPNotFound(name)
+
+        if c.project.is_nbhd_project:
+            raise exc.HTTPNotFound(name)
+        else:
+            # if a tool under a project doesn't exist, redirect to the first valid tool instead of 404
+            self.index()
 
     @expose('jinja:allura:templates/members.html')
     @with_trailing_slash
@@ -399,11 +404,10 @@ class ProjectController(FeedController):
         if mount is not None:
             if hasattr(app, 'default_redirect'):
                 app.default_redirect()
-            # 301 redirect for user profiles only
-            args = dict(redirect_with=exc.HTTPMovedPermanently) if isinstance(app, UserProfileApp) else dict()
+            args = dict(redirect_with=exc.HTTPMovedPermanently)
             redirect(app.url() if callable(app.url) else app.url, **args)  # Application has property; Subproject has method
         else:
-            redirect(c.project.app_configs[0].url())
+            redirect(c.project.app_configs[0].url(), redirect_with=exc.HTTPMovedPermanently)
 
     def get_feed(self, project, app, user):
         """Return a :class:`allura.controllers.feed.FeedArgs` object describing

@@ -861,8 +861,8 @@ class TestNeighborhood(TestController):
     def test_neighborhood_project(self):
         self.app.get('/adobe/adobe-1/admin/', status=200)
         self.app.get('/p/test/sub1/wiki/')
-        self.app.get('/p/test/sub1/', status=302)
-        self.app.get('/p/test/no-such-app/', status=404)
+        self.app.get('/p/test/sub1/', status=301)
+        self.app.get('/p/test/no-such-app/', status=301)
 
     def test_neighborhood_namespace(self):
         # p/test exists, so try creating adobe/test
