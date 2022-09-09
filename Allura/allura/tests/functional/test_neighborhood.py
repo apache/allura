@@ -861,12 +861,12 @@ class TestNeighborhood(TestController):
     def test_neighborhood_project(self):
         self.app.get('/adobe/adobe-1/admin/', status=200)
         self.app.get('/p/test/sub1/wiki/')
-        self.app.get('/p/test/sub1/', status=302)
-        self.app.get('/p/test/no-such-app/', status=404)
+        self.app.get('/p/test/sub1/', status=301)
+        self.app.get('/p/test/no-such-app/', status=301)
 
     def test_neighborhood_namespace(self):
         # p/test exists, so try creating adobe/test
-        self.app.get('/adobe/test/wiki/', status=404)
+        self.app.get('/adobe/test/wiki/', status=301)
         r = self.app.post('/adobe/register',
                           params=dict(
                               project_unixname='test', project_name='Test again',
@@ -984,7 +984,7 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
 
     def test_verify_phone_no_params(self):
         with h.push_config(config, **{'project.verify_phone': 'true'}):
-            self.app.get('/p/verify_phone', status=404)
+            self.app.get('/p/verify_phone', status=301)
 
     def test_verify_phone_error(self):
         with h.push_config(config, **{'project.verify_phone': 'true'}):
@@ -1039,7 +1039,7 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
 
     def test_check_phone_verification_no_params(self):
         with h.push_config(config, **{'project.verify_phone': 'true'}):
-            self.app.get('/p/check_phone_verification', status=404)
+            self.app.get('/p/check_phone_verification', status=301)
 
     @patch.object(g, 'phone_service', autospec=True)
     def test_check_phone_verification_error(self, phone_service):
