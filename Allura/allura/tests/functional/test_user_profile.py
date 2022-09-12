@@ -26,6 +26,46 @@ from allura.tests import TestController
 from allura.tests.pytest_helpers import with_nose_compatibility
 
 
+class TestUserProfileSections(TestController):
+
+    def teardown_method(self, method):
+        super().teardown_method(method)
+        project = Project.query.get(shortname='u/test-user')
+        app = project.app_instance('profile')
+        if hasattr(type(app), '_sections'):
+            delattr(type(app), '_sections')
+
+    @td.with_user_project('test-user')
+    def test_profile_sections(self):
+        project = Project.query.get(shortname='u/test-user')
+        app = project.app_instance('profile')
+
+        def ep(n):
+            m = mock.Mock()
+            m.name = n
+            m.load()().display.return_value = 'Section %s' % n
+            return m
+        eps = list(map(ep, ['a', 'b', 'c', 'd']))
+        order = {'user_profile_sections.order': 'b, d,c , f '}
+        if hasattr(type(app), '_sections'):
+            delattr(type(app), '_sections')
+        with mock.patch('allura.lib.helpers.iter_entry_points') as iep:
+            with mock.patch.dict(tg.config, order):
+                iep.return_value = eps
+                sections = app.profile_sections
+                assert sections == [
+                    eps[1].load(),
+                    eps[3].load(),
+                    eps[2].load(),
+                    eps[0].load()]
+        r = self.app.get('/u/test-user/profile')
+        assert 'Section a' in r.text
+        assert 'Section b' in r.text
+        assert 'Section c' in r.text
+        assert 'Section d' in r.text
+        assert 'Section f' not in r.text
+
+
 @with_nose_compatibility
 class TestUserProfile(TestController):
 
@@ -229,36 +269,6 @@ class TestUserProfile(TestController):
 
         r = self.app.get('/u/test-user/profile/send_message', status=200)
         assert 'you currently have user messages disabled' in r
-
-    @td.with_user_project('test-user')
-    def test_profile_sections(self):
-        project = Project.query.get(shortname='u/test-user')
-        app = project.app_instance('profile')
-
-        def ep(n):
-            m = mock.Mock()
-            m.name = n
-            m.load()().display.return_value = 'Section %s' % n
-            return m
-        eps = list(map(ep, ['a', 'b', 'c', 'd']))
-        order = {'user_profile_sections.order': 'b, d,c , f '}
-        if hasattr(type(app), '_sections'):
-            delattr(type(app), '_sections')
-        with mock.patch('allura.lib.helpers.iter_entry_points') as iep:
-            with mock.patch.dict(tg.config, order):
-                iep.return_value = eps
-                sections = app.profile_sections
-                assert sections == [
-                    eps[1].load(),
-                    eps[3].load(),
-                    eps[2].load(),
-                    eps[0].load()]
-        r = self.app.get('/u/test-user/profile')
-        assert 'Section a' in r.text
-        assert 'Section b' in r.text
-        assert 'Section c' in r.text
-        assert 'Section d' in r.text
-        assert 'Section f' not in r.text
 
     def test_no_index_tag_in_empty_profile(self):
         r = self.app.get('/u/test-user/profile/')

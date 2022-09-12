@@ -132,6 +132,7 @@ class TestValidators(TestWebhookBase):
 
 @with_nose_compatibility
 class TestWebhookController(TestController):
+
     def setup_method(self, method):
         super().setup_method(method)
         self.patches = self.monkey_patch()
@@ -181,6 +182,56 @@ class TestWebhookController(TestController):
             assert msg in error.getText()
         else:
             assert False, 'Validation error not found'
+
+    def test_AAAA_WORKAROUND__edit(self):
+        """
+        This must run first in this test class for unknown reasons ever since
+            https://github.com/TurboGears/tg2/commit/02fb49b14e70fdd8ac16973488fb3637e5e59114
+
+        If any test runs the self.app.post from create_webhook before this one, then this test will fail on:
+            with td.audits(msg):
+                r = form.submit()
+        because WebhookValidator's `value` will be "create" instead of an objectid str
+
+        Maybe something to do with WebhookControllerMeta setup of `validate` decorators?
+        """
+        data1 = {'url': 'http://httpbin.org/post',
+                 'secret': 'secret'}
+        data2 = {'url': 'http://example.com/hook',
+                 'secret': 'secret2'}
+        self.create_webhook(data1).follow()
+        self.create_webhook(data2).follow()
+        assert M.Webhook.query.find().count() == 2
+        wh1 = M.Webhook.query.get(hook_url=data1['url'])
+        r = self.app.get(self.url + '/repo-push/%s' % wh1._id)
+        form = r.forms[0]
+        assert form['url'].value == data1['url']
+        assert form['secret'].value == data1['secret']
+        assert form['webhook'].value == str(wh1._id)
+        form['url'] = 'http://host.org/hook'
+        form['secret'] = 'new secret'
+        msg = 'edit webhook repo-push\n{} => {}\n{}'.format(
+            data1['url'], form['url'].value, 'secret changed')
+        with td.audits(msg):
+            r = form.submit()
+        wf = json.loads(self.webflash(r))
+        assert wf['status'] == 'ok'
+        assert wf['message'] == 'Edited successfully'
+        assert M.Webhook.query.find().count() == 2
+        wh1 = M.Webhook.query.get(_id=wh1._id)
+        assert wh1.hook_url == 'http://host.org/hook'
+        assert wh1.app_config_id == self.git.config._id
+        assert wh1.secret == 'new secret'
+        assert wh1.type == 'repo-push'
+
+        # Duplicates
+        r = self.app.get(self.url + '/repo-push/%s' % wh1._id)
+        form = r.forms[0]
+        form['url'] = data2['url']
+        r = form.submit()
+        self.find_error(r, '_the_form',
+                        '"repo-push" webhook already exists for Git http://example.com/hook',
+                        form_type='edit')
 
     def test_access(self):
         self.app.get(self.url + '/repo-push/')
@@ -255,56 +306,6 @@ class TestWebhookController(TestController):
         r = self.app.post(self.url + '/repo-push/create', data)
         self.find_error(r, 'url',
                         'You must provide a full domain name (like qwer.com)')
-
-    def test_AAAA_WORKAROUND__edit(self):
-        """
-        This must run first in this test class for unknown reasons ever since
-            https://github.com/TurboGears/tg2/commit/02fb49b14e70fdd8ac16973488fb3637e5e59114
-
-        If any test runs the self.app.post from create_webhook before this one, then this test will fail on:
-            with td.audits(msg):
-                r = form.submit()
-        because WebhookValidator's `value` will be "create" instead of an objectid str
-
-        Maybe something to do with WebhookControllerMeta setup of `validate` decorators?
-        """
-        data1 = {'url': 'http://httpbin.org/post',
-                 'secret': 'secret'}
-        data2 = {'url': 'http://example.com/hook',
-                 'secret': 'secret2'}
-        self.create_webhook(data1).follow()
-        self.create_webhook(data2).follow()
-        assert M.Webhook.query.find().count() == 2
-        wh1 = M.Webhook.query.get(hook_url=data1['url'])
-        r = self.app.get(self.url + '/repo-push/%s' % wh1._id)
-        form = r.forms[0]
-        assert form['url'].value == data1['url']
-        assert form['secret'].value == data1['secret']
-        assert form['webhook'].value == str(wh1._id)
-        form['url'] = 'http://host.org/hook'
-        form['secret'] = 'new secret'
-        msg = 'edit webhook repo-push\n{} => {}\n{}'.format(
-            data1['url'], form['url'].value, 'secret changed')
-        with td.audits(msg):
-            r = form.submit()
-        wf = json.loads(self.webflash(r))
-        assert wf['status'] == 'ok'
-        assert wf['message'] == 'Edited successfully'
-        assert M.Webhook.query.find().count() == 2
-        wh1 = M.Webhook.query.get(_id=wh1._id)
-        assert wh1.hook_url == 'http://host.org/hook'
-        assert wh1.app_config_id == self.git.config._id
-        assert wh1.secret == 'new secret'
-        assert wh1.type == 'repo-push'
-
-        # Duplicates
-        r = self.app.get(self.url + '/repo-push/%s' % wh1._id)
-        form = r.forms[0]
-        form['url'] = data2['url']
-        r = form.submit()
-        self.find_error(r, '_the_form',
-                        '"repo-push" webhook already exists for Git http://example.com/hook',
-                        form_type='edit')
 
     def test_edit_validation(self):
         invalid = M.Webhook(
