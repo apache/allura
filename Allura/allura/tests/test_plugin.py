@@ -35,7 +35,6 @@ from alluratest.tools import (
 from mock import Mock, MagicMock, patch
 
 from allura import model as M
-from allura.app import Application
 from allura.lib import plugin
 from allura.lib import phone
 from allura.lib import helpers as h
@@ -44,15 +43,19 @@ from allura.lib.plugin import ProjectRegistrationProvider
 from allura.lib.plugin import ThemeProvider
 from allura.lib.exceptions import ProjectConflict, ProjectShortnameInvalid
 from allura.tests.decorators import audits
+from allura.tests.exclude_from_rewrite_hook import ThemeProviderTestApp
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.tests.pytest_helpers import with_nose_compatibility
+
+
+def setup_module(module):
+    setup_basic_test()
 
 
 @with_nose_compatibility
 class TestProjectRegistrationProvider:
 
     def setup_method(self, method):
-        setup_basic_test()
         self.provider = ProjectRegistrationProvider()
 
     @patch('allura.lib.security.has_access')
@@ -170,7 +173,6 @@ class TestProjectRegistrationProviderPhoneVerification:
         self.user = UserMock()
         self.nbhd = MagicMock()
 
-
     def test_phone_verified_disabled(self):
         with h.push_config(tg.config, **{'project.verify_phone': 'false'}):
             assert self.p.phone_verified(self.user, self.nbhd)
@@ -280,36 +282,30 @@ class TestProjectRegistrationProviderPhoneVerification:
                     assert result == g.phone_service.verify.return_value
             assert 5 == g.phone_service.verify.call_count
 
+
 @with_nose_compatibility
 class TestThemeProvider:
 
     @patch('allura.app.g')
     @patch('allura.lib.plugin.g')
     def test_app_icon_str(self, plugin_g, app_g):
-        class TestApp(Application):
-            icons = {
-                24: 'images/testapp_24.png',
-            }
-        plugin_g.entry_points = {'tool': {'testapp': TestApp}}
-        assert (ThemeProvider().app_icon_url('testapp', 24) ==
-                      app_g.theme_href.return_value)
+        plugin_g.entry_points = {'tool': {'testapp': ThemeProviderTestApp}}
+        app_icon = ThemeProvider().app_icon_url('testapp', 24)
+        other = app_g.theme_href.return_value
+        assert app_icon == other
+            
         app_g.theme_href.assert_called_with('images/testapp_24.png')
 
     @patch('allura.lib.plugin.g')
     def test_app_icon_str_invalid(self, g):
         g.entry_points = {'tool': {'testapp': Mock()}}
-        assert (ThemeProvider().app_icon_url('invalid', 24) ==
-                      None)
+        assert ThemeProvider().app_icon_url('invalid', 24) == None
 
     @patch('allura.app.g')
     def test_app_icon_app(self, g):
-        class TestApp(Application):
-            icons = {
-                24: 'images/testapp_24.png',
-            }
-        app = TestApp(None, None)
-        assert (ThemeProvider().app_icon_url(app, 24) ==
-                      g.theme_href.return_value)
+        app = ThemeProviderTestApp(None, None)
+        assert ThemeProvider().app_icon_url(app, 24) == \
+            g.theme_href.return_value
         g.theme_href.assert_called_with('images/testapp_24.png')
 
 

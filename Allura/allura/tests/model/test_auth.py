@@ -352,8 +352,8 @@ def test_check_sent_user_message_times():
     assert not user1.can_send_user_message()
 
 
-@td.with_user_project('test-admin')
 @with_setup(setup_method)
+@td.with_user_project('test-admin')
 def test_user_track_active():
     # without this session flushing inside track_active raises Exception
     setup_functional_test()
