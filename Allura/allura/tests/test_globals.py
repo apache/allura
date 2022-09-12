@@ -18,6 +18,7 @@
 
 import re
 import os
+from textwrap import dedent
 import allura
 import unittest
 import hashlib
@@ -46,11 +47,6 @@ from allura.tests.pytest_helpers import with_nose_compatibility
 
 from forgewiki import model as WM
 from forgeblog import model as BM
-
-
-def setup_module(module):
-    setup_basic_test()
-    setup_unit_test()
 
 
 def squish_spaces(text):
@@ -84,8 +80,28 @@ def get_projects_property_in_the_same_order(names, prop):
 @with_nose_compatibility
 class Test():
 
+    @classmethod
+    def setup_class(cls):
+        setup_basic_test()
+        setup_global_objects()
+
     def setup_method(self, method):
         setup_global_objects()
+        p_nbhd = M.Neighborhood.query.get(name='Projects')
+        p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
+        self.acl_bak = p_test.acl.copy()
+
+    def teardown_method(self, method):
+        user = M.User.by_username('test-admin')
+        user.display_name = 'Test Admin'
+
+        p_nbhd = M.Neighborhood.query.get(name='Projects')
+        p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
+        p_test.remove_user(M.User.by_username('test-user'))
+        p_test.remove_user(M.User.by_username('test-user-0'))
+        p_test.acl = self.acl_bak
+
+        ThreadLocalORMSession.flush_all()
 
     @td.with_wiki
     def test_app_globals(self):
@@ -358,17 +374,19 @@ class Test():
 
     def test_markdown_toc(self):
         with h.push_context('test', neighborhood='Projects'):
-            r = g.markdown_wiki.convert("""[TOC]
+            r = g.markdown_wiki.convert(dedent("""\
+                [TOC]
 
-    # Header 1
+                # Header 1
 
-    ## Header 2""")
-        assert '''<ul>
-    <li><a href="#header-1">Header 1</a><ul>
-    <li><a href="#header-2">Header 2</a></li>
-    </ul>
-    </li>
-    </ul>''' in r, r
+                ## Header 2"""))
+        assert dedent('''\
+            <ul>
+            <li><a href="#header-1">Header 1</a><ul>
+            <li><a href="#header-2">Header 2</a></li>
+            </ul>
+            </li>
+            </ul>''') in r
 
     @td.with_wiki
     def test_wiki_artifact_links(self):
@@ -442,38 +460,35 @@ class Test():
             '<p>Line</p></div>')
 
         # should not raise an exception:
-        assert (
-            g.markdown.convert("<class 'foo'>") ==
-            '''<div class="markdown_content"><p>&lt;class 'foo'=""&gt;&lt;/class&gt;</p></div>''')
+        assert g.markdown.convert("<class 'foo'>") == \
+            '''<div class="markdown_content"><p>&lt;class 'foo'=""&gt;&lt;/class&gt;</p></div>'''
 
-        assert (
-            g.markdown.convert('''# Header
+        assert g.markdown.convert(dedent('''\
+            # Header
 
-    Some text in a regular paragraph
+            Some text in a regular paragraph
 
-        :::python
-        for i in range(10):
-            print i
-    ''') ==
-            # no <br
-            '<div class="markdown_content"><h1 id="header">Header</h1>\n'
-            '<p>Some text in a regular paragraph</p>\n'
-            '<div class="codehilite"><pre><span></span><code><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>\n'
-            '    <span class="nb">print</span> <span class="n">i</span>\n'
-            '</code></pre></div>\n'
-            '</div>')
+                :::python
+                for i in range(10):
+                    print i
+            ''')) == dedent('''\
+                <div class="markdown_content"><h1 id="header">Header</h1>
+                <p>Some text in a regular paragraph</p>
+                <div class="codehilite"><pre><span></span><code><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+                    <span class="nb">print</span> <span class="n">i</span>
+                </code></pre></div>
+                </div>''')
         assert (
             g.forge_markdown(email=True).convert('[Home]') ==
             # uses localhost:
             '<div class="markdown_content"><p><a class="alink" href="http://localhost/p/test/wiki/Home/">[Home]</a></p></div>')
-        assert (
-            g.markdown.convert('''
-    ~~~~
-    def foo(): pass
-    ~~~~''') ==
-            '<div class="markdown_content"><div class="codehilite"><pre><span></span><code>def foo(): pass\n'
-            '</code></pre></div>\n'
-            '</div>')
+        assert g.markdown.convert(dedent('''\
+            ~~~~
+            def foo(): pass
+            ~~~~''')) == dedent('''\
+                <div class="markdown_content"><div class="codehilite"><pre><span></span><code>def foo(): pass
+                </code></pre></div>
+                </div>''')
 
     def test_markdown_list_without_break(self):
         # this is not a valid way to make a list in original Markdown or python-markdown
@@ -482,37 +497,37 @@ class Test():
         # TODO: try https://github.com/adamb70/mdx-breakless-lists
         #       or https://gitlab.com/ayblaq/prependnewline
         assert (
-            g.markdown.convert('''\
+            g.markdown.convert(dedent('''\
     Regular text
     * first item
-    * second item''') ==
+    * second item''')) ==
             '<div class="markdown_content"><p>Regular text\n'  # no <br>
             '* first item\n'  # no <br>
             '* second item</p></div>')
 
         assert (
-            g.markdown.convert('''\
+            g.markdown.convert(dedent('''\
     Regular text
     - first item
-    - second item''') ==
+    - second item''')) ==
             '<div class="markdown_content"><p>Regular text<br/>\n'
             '- first item<br/>\n'
             '- second item</p></div>')
 
         assert (
-            g.markdown.convert('''\
+            g.markdown.convert(dedent('''\
     Regular text
     + first item
-    + second item''') ==
+    + second item''')) ==
             '<div class="markdown_content"><p>Regular text<br/>\n'
             '+ first item<br/>\n'
             '+ second item</p></div>')
 
         assert (
-            g.markdown.convert('''\
+            g.markdown.convert(dedent('''\
     Regular text
     1. first item
-    2. second item''') ==
+    2. second item''')) ==
             '<div class="markdown_content"><p>Regular text<br/>\n'
             '1. first item<br/>\n'
             '2. second item</p></div>')

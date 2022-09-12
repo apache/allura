@@ -177,14 +177,15 @@ def project_blog_posts(max_number=5, sort='timestamp', summary=False, mount_poin
         'state': 'published',
     })
     posts = posts.sort(sort, pymongo.DESCENDING).limit(int(max_number)).all()
-    output = ((dict(
-        href=post.url(),
-        title=post.title,
-        author=post.author().display_name,
-        ago=h.ago(post.timestamp),
-        description=summary and '&nbsp;' or g.markdown.cached_convert(post, 'text')))
+    output = [
+        dict(href=post.url(),
+             title=post.title,
+             author=post.author().display_name,
+             ago=h.ago(post.timestamp),
+             description=summary and '&nbsp;' or g.markdown.cached_convert(post, 'text'))
         for post in posts if security.has_access(post, 'read', project=post.app.project)() and
-        security.has_access(post.app.project, 'read', project=post.app.project)())
+            security.has_access(post.app.project, 'read', project=post.app.project)()
+    ]
     posts = BlogPosts(posts=output)
     g.resource_manager.register(posts)
     response = posts.display(posts=output)

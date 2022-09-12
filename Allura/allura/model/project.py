@@ -1102,11 +1102,29 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             ThreadLocalORMSession.flush_all()
 
     def add_user(self, user, role_names):
-        'Convenience method to add member with the given role(s).'
+        '''Convenience method to add member with the given role(s).'''
         pr = ProjectRole.by_user(user, project=self, upsert=True)
         for role_name in role_names:
             r = ProjectRole.by_name(role_name, self)
             pr.roles.append(r._id)
+
+    def remove_user(self, user, role_names=None):
+        '''Convenience method to add member with the given role(s).'''
+        pr = ProjectRole.by_user(user, project=self)
+        if not pr:
+            return
+
+        if not role_names or not isinstance(role_names, Iterable):
+            ProjectRole.query.remove({'_id': pr._id})
+            return
+
+        for role_name in role_names:
+            r = ProjectRole.by_name(role_name, self)
+            if r._id in pr.roles:
+                pr.roles.remove(r._id)
+
+        if not pr.roles:
+            pr.remove()
 
     @property
     def twitter_handle(self):

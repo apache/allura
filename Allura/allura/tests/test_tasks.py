@@ -18,6 +18,7 @@
 import operator
 import shutil
 import sys
+from textwrap import dedent
 import unittest
 
 import six
@@ -52,6 +53,7 @@ from allura.tasks import export_tasks
 from allura.tasks import admin_tasks
 from allura.tests import decorators as td
 from allura.tests.pytest_helpers import with_nose_compatibility
+from allura.tests.exclude_from_rewrite_hook import raise_compound_exception
 from allura.lib.decorators import event_handler, task
 
 
@@ -148,7 +150,7 @@ class TestEventTasks(unittest.TestCase):
         assert M.MonQTask.query.get(task_name='allura.tasks.event_tasks.event', args=['my_event4'])
 
     def test_compound_error(self):
-        t = raise_exc.post()
+        t = raise_compound_exception.post()
         with LogCapture(level=logging.ERROR) as l, \
                 mock.patch.dict(tg.config, {'monq.raise_errors': False}):  # match normal non-test behavior
             t()
@@ -158,7 +160,7 @@ class TestEventTasks(unittest.TestCase):
         assert "AssertionError('assert 0'" in msg
         assert "AssertionError('assert 5'" in msg
         assert ' on job <MonQTask ' in msg
-        assert ' (error) P:10 allura.tests.test_tasks.raise_exc ' in msg
+        assert ' (error) P:10 allura.tests.exclude_from_rewrite_hook.raise_compound_exception ' in msg
         for x in range(10):
             assert ('assert %d' % x) in t.result
 
@@ -510,16 +512,17 @@ class TestMailTasks(unittest.TestCase):
 
     @td.with_tool('test', 'Tickets', 'bugs')
     def test_receive_autoresponse(self):
-        message = '''Date: Wed, 30 Oct 2013 01:38:40 -0700
-From: <test-admin@domain.net>
-To: <1@bugs.test.p.in.localhost>
-Message-ID: <super-unique-id>
-Subject: Not here Re: Message notification
-Precedence: bulk
-X-Autoreply: yes
-Auto-Submitted: auto-replied
+        message = dedent('''\
+            Date: Wed, 30 Oct 2013 01:38:40 -0700
+            From: <test-admin@domain.net>
+            To: <1@bugs.test.p.in.localhost>
+            Message-ID: <super-unique-id>
+            Subject: Not here Re: Message notification
+            Precedence: bulk
+            X-Autoreply: yes
+            Auto-Submitted: auto-replied
 
-I'm not here'''
+            I'm not here''')
         import forgetracker
         c.user = M.User.by_username('test-admin')
         with mock.patch.object(forgetracker.tracker_main.ForgeTrackerApp, 'handle_message') as hm:
@@ -595,17 +598,6 @@ class TestNotificationTasks(unittest.TestCase):
 @event_handler('my_event')
 def _my_event(event_type, testcase, *args, **kwargs):
     testcase.called_with.append((args, kwargs))
-
-
-@task
-def raise_exc():
-    errs = []
-    for x in range(10):
-        try:
-            assert False, 'assert %d' % x
-        except Exception:
-            errs.append(sys.exc_info())
-    raise CompoundError(*errs)
 
 
 class _TestArtifact(M.Artifact):
