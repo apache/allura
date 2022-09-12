@@ -43,12 +43,12 @@ from allura.tests.pytest_helpers import with_nose_compatibility
 @with_nose_compatibility
 class TestNeighborhood(TestController):
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         self._cleanup_audit_log()
 
-    def tearDown(self):
-        super().tearDown()
+    def teardown_method(self, method):
+        super().teardown_method(method)
         self._cleanup_audit_log()
 
     def _cleanup_audit_log(self):
