@@ -2313,7 +2313,7 @@ class TestFunctionalController(TrackerTestController):
         self.app.get('/p/test/bugs/2/', status=200)  # shouldn't fail
         # ticket counts as moved
         r = self.app.get('/p/test/bugs/1/', status=301)
-        r.follow(status=404)  # and not found 'cause already deleted
+        r.follow(status=301)  # and found 'cause we don't want it to hard 404, but use default logic
 
     @td.with_tool('test', 'Tickets', 'dummy')
     def test_move_ticket_email_notifications(self):
