@@ -47,7 +47,7 @@ import six
 from ming import schema as S
 from ming import Field, collection, Index
 from ming.utils import LazyProperty
-from ming.odm import FieldProperty, session, Mapper, mapper, MappedClass
+from ming.odm import FieldProperty, session, Mapper, mapper, MappedClass, RelationProperty
 from ming.base import Object
 
 from allura.lib import helpers as h
@@ -1042,6 +1042,21 @@ CommitDoc = collection(
     Field('child_ids', [str], index=True),
     Field('repo_ids', [S.ObjectId()], index=True))
 
+class CommitStatus(MappedClass):
+    class __mongometa__:
+        session = repository_orm_session
+        name = 'commit_status'
+        indexes = ['commit_id']
+
+    query: 'Query[CommitStatus]'
+
+    state = FieldProperty(str)
+    target_url = FieldProperty(str)
+    description = FieldProperty(str)
+    context = FieldProperty(str)
+    commit_id = FieldProperty(str)
+    commit = RelationProperty('Commit')
+
 
 class Commit(MappedClass, RepoObject, ActivityObject):
     # Basic commit information
@@ -1066,6 +1081,7 @@ class Commit(MappedClass, RepoObject, ActivityObject):
     parent_ids = FieldProperty([str])
     child_ids = FieldProperty([str])
     repo_ids = FieldProperty([S.ObjectId()])
+    statuses = RelationProperty('CommitStatus', via="commit_id")
 
     type_s = 'Commit'
     # Ephemeral attrs
