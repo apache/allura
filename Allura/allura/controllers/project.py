@@ -365,8 +365,11 @@ class ProjectController(FeedController):
             c.app = None
             return ProjectController(), remainder
 
-        # if a tool doesn't exist, redirect to the first valid tool instead of 404
-        self.index()
+        if c.project.is_nbhd_project:
+            raise exc.HTTPNotFound(name)
+        else:
+            # if a tool under a project doesn't exist, redirect to the first valid tool instead of 404
+            self.index()
 
     @expose('jinja:allura:templates/members.html')
     @with_trailing_slash
