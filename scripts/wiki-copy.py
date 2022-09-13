@@ -81,7 +81,7 @@ def make_oauth_client(base_url) -> requests.Session:
         oauth_token = cp.get(base_url, 'oauth_token')
         oauth_token_secret = cp.get(base_url, 'oauth_token_secret')
     except NoOptionError:
-        oauthSess = OAuth1Session(oauth_key, client_secret=oauth_secret)
+        oauthSess = OAuth1Session(oauth_key, client_secret=oauth_secret, callback_uri='oob')
         request_token = oauthSess.fetch_request_token(REQUEST_TOKEN_URL)
         pin_url = oauthSess.authorization_url(AUTHORIZE_URL, request_token['oauth_token'])
         if isinstance(webbrowser.get(), webbrowser.GenericBrowser):
