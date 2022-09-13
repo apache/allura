@@ -361,6 +361,19 @@ class RepoRestController(RepoRootController, AppRestControllerMixin):
                 }
                 for commit in revisions
             ]}
+    @expose('json:')
+    def commit_status(self, rev=None, **kwargs):
+        if not g.commit_statuses_enabled:
+            return {'status': 'disabled', 'message': 'check your config file'}
+        params = {x : kwargs.get(x, '').strip() for x in
+                                                   ['state', 'target_url', 'description', 'context']}
+        params['commit_id'] = rev
+        status = M.CommitStatus.upsert(**params)
+        response = {'status': 'error'}
+        if status:
+            response['status'] = 'success'
+        return response
+
 
 
 class MergeRequestsController:

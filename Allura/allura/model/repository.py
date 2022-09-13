@@ -32,7 +32,6 @@ from six.moves.urllib.parse import urljoin
 from threading import Thread
 from six.moves.queue import Queue
 from itertools import chain, islice
-from difflib import SequenceMatcher
 import typing
 
 import tg
@@ -45,9 +44,10 @@ import bson
 import six
 
 from ming import schema as S
+from ming.orm import session
 from ming import Field, collection, Index
 from ming.utils import LazyProperty
-from ming.odm import FieldProperty, session, Mapper, mapper, MappedClass
+from ming.odm import FieldProperty, session, Mapper, mapper, MappedClass, RelationProperty
 from ming.base import Object
 
 from allura.lib import helpers as h
@@ -1043,6 +1043,37 @@ CommitDoc = collection(
     Field('repo_ids', [S.ObjectId()], index=True))
 
 
+class CommitStatus(MappedClass):
+    class __mongometa__:
+        session = repository_orm_session
+        name = 'commit_status'
+        indexes = [('commit_id', 'context'),]
+
+    query: 'Query[CommitStatus]'
+
+    _id = FieldProperty(S.ObjectId)
+    state = FieldProperty(str)
+    target_url = FieldProperty(str)
+    description = FieldProperty(str)
+    context = FieldProperty(str)
+    commit_id = FieldProperty(str)
+    commit = RelationProperty('Commit')
+
+    def __init__(self, **kw):
+        assert 'commit_id' in kw, 'Commit id missing'
+        super().__init__(**kw)
+
+    @classmethod
+    def upsert(cls, **kw):
+        obj = cls.query.find_and_modify(
+            query=dict(commit_id=kw.get('commit_id'), context=kw.get('context')),
+            update={'$set': kw},
+            new=True,
+            upsert=True,
+        )
+        return obj
+
+
 class Commit(MappedClass, RepoObject, ActivityObject):
     # Basic commit information
     # One of these for each commit in the physical repo on disk
@@ -1066,6 +1097,7 @@ class Commit(MappedClass, RepoObject, ActivityObject):
     parent_ids = FieldProperty([str])
     child_ids = FieldProperty([str])
     repo_ids = FieldProperty([S.ObjectId()])
+    statuses = RelationProperty('CommitStatus', via="commit_id")
 
     type_s = 'Commit'
     # Ephemeral attrs
