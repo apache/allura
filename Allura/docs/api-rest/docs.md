@@ -93,7 +93,7 @@ If you want your application to be able to use the API on behalf of another user
     AUTHORIZE_URL = 'https://forge-allura.apache.org/rest/oauth/authorize'
     ACCESS_TOKEN_URL = 'https://forge-allura.apache.org/rest/oauth/access_token'
     
-    oauth = OAuth1Session(CONSUMER_KEY, client_secret=CONSUMER_SECRET)
+    oauth = OAuth1Session(CONSUMER_KEY, client_secret=CONSUMER_SECRET, callback_uri='oob')
     
     # Step 1: Get a request token. This is a temporary token that is used for 
     # having the user authorize an access token and to sign the request to obtain 
