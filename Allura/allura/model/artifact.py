@@ -445,7 +445,7 @@ class Artifact(MappedClass, SearchIndexable):
 
         :param filename: file name
         :param fp: a file-like object (implements ``read()``)
-        :param **kw: passed through to Attachment class constructor
+        :param kw: passed through to Attachment class constructor
 
         """
         att = self.attachment_class().save_attachment(

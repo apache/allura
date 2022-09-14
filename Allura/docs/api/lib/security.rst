@@ -24,3 +24,4 @@
     .. autoclass:: RoleCache
         :members:
         :special-members: __init__
+        :noindex:

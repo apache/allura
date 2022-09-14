@@ -54,7 +54,8 @@ class ReindexCommand(base.Command):
     min_args = 1
     max_args = 1
     usage = '<ini file>'
-    summary = 'Reindex into solr and re-shortlink all artifacts'
+    summary = 'Reindex into solr and re-shortlink all artifacts\n' \
+              'By default both --refs and --tasks are enabled, but if you specify just one, the other will be disabled'
     parser = base.Command.standard_parser(verbose=True)
     parser.add_option('-p', '--project', dest='project',  default=None,
                       help='project to reindex')

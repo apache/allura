@@ -888,8 +888,7 @@ class ProjectRegistrationProvider:
         Returns True if one of the following is true:
             - phone verification is disabled
             - :param user: has 'admin' access to :param neighborhood:
-            - :param user: is has 'admin' access for some project, which belongs
-              to :param neighborhood:
+            - :param user: is has 'admin' access for some project, which belongs to :param neighborhood:
             - phone is already verified for a :param user:
 
         Otherwise returns False.

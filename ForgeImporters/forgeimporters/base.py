@@ -334,7 +334,7 @@ class ProjectImporter(BaseController):
         tool imports happen.
 
         :param project: The newly created project.
-        :param **kw: The keyword arguments that were posted to the controller
+        :param kw: The keyword arguments that were posted to the controller
             method that created the project.
 
         """

@@ -24,9 +24,6 @@ Step-by-Step Installation
 .. contents::
    :local:
 
-Step-by-Step Installation
--------------------------
-
 For a simpler setup using Docker images, see :ref:`docker-install` instead.
 
 In these instructions, we'll use `VirtualBox <http://www.virtualbox.org>`__ and `Ubuntu 18.04 <http://ubuntu.com>`_  to create a disposable sandbox for Allura development/testing.  Allura should work on other Linux systems (including OSX), but setting up all the dependencies will be different.
@@ -62,6 +59,7 @@ To install MongoDB, follow the instructions `here <https://docs.mongodb.org/manu
 Optional, for SVN support:
 
 .. code-block:: bash
+
     ~$ sudo apt-get install subversion libsvn-dev make g++ python3-svn
 
 Setting up a python virtual environment
@@ -122,6 +120,7 @@ This may take a little while.
 Optional, for SVN support: install the wheel package then use the pysvn-installer script to build a pysvn wheel.
 
 .. code-block:: bash
+
     (env-allura)~/src/allura$ pip install wheel
     (env-allura)~/src/allura$ curl https://raw.githubusercontent.com/reviewboard/pysvn-installer/master/install.py | python
 
