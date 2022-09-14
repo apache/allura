@@ -322,12 +322,14 @@ class ToolListController:
         total_entries = len(entries)
         limit, page = h.paging_sanitizer(limit, page, total_entries)
         start = page * limit
+        tool_label = g.entry_points['tool'][tool_name].tool_label if entries else None
         return dict(
             page=page,
             limit=limit,
             total_entries=total_entries,
             entries=entries[start:start + limit],
-            type=g.entry_points['tool'][tool_name].tool_label if entries else None,
+            type=tool_label,
+            tool_name=tool_label,
             )
 
 
