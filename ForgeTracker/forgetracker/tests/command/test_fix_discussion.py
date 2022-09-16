@@ -30,7 +30,7 @@ test_config = pkg_resources.resource_filename(
     'allura', '../test.ini') + '#main'
 
 
-def setUp(self):
+def setup_module(self):
     """Method called by nose before running each test"""
     setup_basic_test()
     setup_global_objects()

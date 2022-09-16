@@ -27,14 +27,9 @@ from ming.odm import session
 from bson import ObjectId
 from webob import Request
 from mock import Mock, patch
-from alluratest.tools import (
-    assert_equal,
-    assert_not_equal,
-    assert_raises,
-    assert_in,
-)
 from pygments import highlight
 from pygments.lexers import get_lexer_for_filename
+import pytest
 from tg import config
 import html5lib
 import html5lib.treewalkers
@@ -363,9 +358,9 @@ def test_empty_cursor():
     assert cursor.hint('index') == cursor
     assert cursor.extensions == []
     assert cursor.options(arg1='val1', arg2='val2') == cursor
-    assert_raises(ValueError, cursor.one)
-    assert_raises(StopIteration, cursor.next)
-    assert_raises(StopIteration, cursor._next_impl)
+    pytest.raises(ValueError, cursor.one)
+    pytest.raises(StopIteration, cursor.next)
+    pytest.raises(StopIteration, cursor._next_impl)
 
 
 def test_DateJSONEncoder():

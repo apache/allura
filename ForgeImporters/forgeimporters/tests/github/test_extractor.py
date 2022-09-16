@@ -84,7 +84,7 @@ class TestGitHubProjectExtractor(TestCase):
         response.info = lambda: headers
         return response
 
-    def setUp(self):
+    def setup_method(self, method):
         self.extractor = github.GitHubProjectExtractor('test_project')
         self.extractor.urlopen = self.mocked_urlopen
 

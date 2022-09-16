@@ -28,7 +28,7 @@ from alluratest.controller import setup_basic_test
 
 class TestBulkExport:
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
 
     @td.with_link

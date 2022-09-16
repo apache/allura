@@ -33,7 +33,7 @@ def setUp():
 
 class TrackerTestWithModel:
 
-    def setUp(self):
+    def setup_method(self, method):
         bootstrap.wipe_database()
         project_reg = plugin.ProjectRegistrationProvider.get()
         c.user = bootstrap.create_user('Test User')
@@ -49,5 +49,5 @@ class TrackerTestWithModel:
         h.set_context('test', 'bugs', neighborhood='Projects')
         tg.request_local.context.request = Request.blank('/')
 
-    def tearDown(self):
+    def teardown_method(self, method):
         ThreadLocalORMSession.close_all()

@@ -34,7 +34,7 @@ test_config = pkg_resources.resource_filename(
     'allura', '../test.ini') + '#main'
 
 
-def setUp():
+def setup_module(module):
     setup_basic_test()
     setup_global_objects()
 

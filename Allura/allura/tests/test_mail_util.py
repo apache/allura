@@ -20,7 +20,7 @@ from six.moves.email_mime_multipart import MIMEMultipart
 from six.moves.email_mime_text import MIMEText
 
 import mock
-from alluratest.tools import raises, assert_equal, assert_false, assert_true, assert_in
+import pytest
 from ming.orm import ThreadLocalORMSession
 from tg import config as tg_config
 
@@ -39,7 +39,7 @@ from allura.lib.mail_util import (
 from allura.lib.exceptions import AddressException
 from alluratest.pytest_helpers import with_nose_compatibility
 from allura.tests import decorators as td
-import six
+
 
 config = ConfigProxy(
     common_suffix='forgemail.domain',
@@ -55,9 +55,9 @@ class TestReactor(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
-    @raises(AddressException)
     def test_parse_address_bad_domain(self):
-        parse_address('foo@bar.com')
+        with pytest.raises(AddressException):
+            parse_address('foo@bar.com')
 
     @td.with_wiki
     @mock.patch.dict(tg_config, {'forgemail.domain.alternates': '.secondary.com .tertiary.com'})
@@ -65,17 +65,17 @@ class TestReactor(unittest.TestCase):
         parse_address('foo@wiki.test.p.secondary.com')
         parse_address('foo@wiki.test.p.tertiary.com')
 
-    @raises(AddressException)
     def test_parse_address_bad_project(self):
-        parse_address('foo@wiki.unicorns.p' + config.common_suffix)
+        with pytest.raises(AddressException):
+            parse_address('foo@wiki.unicorns.p' + config.common_suffix)
 
-    @raises(AddressException)
     def test_parse_address_missing_tool(self):
-        parse_address('foo@test.p' + config.common_suffix)
+        with pytest.raises(AddressException):
+            parse_address('foo@test.p' + config.common_suffix)
 
-    @raises(AddressException)
     def test_parse_address_bad_tool(self):
-        parse_address('foo@hammer.test.p' + config.common_suffix)
+        with pytest.raises(AddressException):
+            parse_address('foo@hammer.test.p' + config.common_suffix)
 
     @td.with_wiki
     def test_parse_address_good(self):
@@ -214,10 +214,10 @@ Content-Type: text/html; charset="utf-8"
 @with_nose_compatibility
 class TestHeader:
 
-    @raises(TypeError)
     def test_bytestring(self):
-        our_header = Header(b'[asdf2:wiki] Discussion for Home page')
-        assert our_header.encode() == '[asdf2:wiki] Discussion for Home page'
+        with pytest.raises(TypeError):
+            our_header = Header(b'[asdf2:wiki] Discussion for Home page')
+            assert our_header.encode() == '[asdf2:wiki] Discussion for Home page'
 
     def test_ascii(self):
         our_header = Header('[asdf2:wiki] Discussion for Home page')

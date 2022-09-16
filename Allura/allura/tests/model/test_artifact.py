@@ -22,8 +22,9 @@ import re
 from datetime import datetime
 
 from tg import tmpl_context as c
-from alluratest.tools import with_setup, assert_raises, assert_equal
+from alluratest.tools import with_setup
 from mock import patch
+import pytest
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.orm import Mapper
 from bson import ObjectId
@@ -54,13 +55,14 @@ class Checkmessage(M.Message):
 Mapper.compile_all()
 
 
-# def setup_method_wrapper(fn):
-#     fn(None)
-
 def setup_method():
     setup_basic_test()
     setup_unit_test()
     setup_with_tools()
+
+
+def teardown_module():
+    ThreadLocalORMSession.close_all()
 
 
 @td.with_wiki
@@ -73,10 +75,6 @@ def setup_with_tools():
     c.user = M.User.query.get(username='test-admin')
     Checkmessage.project = c.project
     Checkmessage.app_config = c.app.config
-
-
-def tearDown():
-    ThreadLocalORMSession.close_all()
 
 
 @with_setup(setup_method)
@@ -182,7 +180,7 @@ def test_versioning():
     assert ss.shorthand_id() == pg.shorthand_id() + '#2'
     assert ss.title == pg.title
     assert ss.text == pg.text
-    assert_raises(IndexError, pg.get_version, 42)
+    pytest.raises(IndexError, pg.get_version, 42)
     pg.revert(1)
     pg.commit()
     ThreadLocalORMSession.flush_all()

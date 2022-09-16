@@ -38,7 +38,7 @@ with_git = td.with_tool('test', 'Git', 'git-userstats-model', 'Git', type='git')
 
 class TestUserStats(unittest.TestCase):
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
         setup_global_objects()
         self.user = User.by_username('test-user-2')

@@ -22,7 +22,7 @@ from forgeimporters.github.utils import GitHubMarkdownConverter
 
 class TestGitHubMarkdownConverter:
 
-    def setUp(self):
+    def setup_method(self, method):
         self.conv = GitHubMarkdownConverter('user', 'project')
 
     def test_convert_sha(self):

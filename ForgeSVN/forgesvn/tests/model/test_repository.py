@@ -53,7 +53,7 @@ import six
 
 class TestNewRepo(unittest.TestCase):
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
         self.setup_with_tools()
 
@@ -107,7 +107,7 @@ class TestNewRepo(unittest.TestCase):
 
 class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
         self.setup_with_tools()
 
@@ -573,7 +573,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
 
 class TestSVNRev(unittest.TestCase):
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
         self.setup_with_tools()
 
@@ -687,7 +687,7 @@ class _Test(unittest.TestCase):
     def _make_log(self, ci):
         session(ci).flush(ci)
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
         setup_global_objects()
         ThreadLocalORMSession.flush_all()
@@ -697,8 +697,8 @@ class _Test(unittest.TestCase):
 
 class _TestWithRepo(_Test):
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         h.set_context('test', neighborhood='Projects')
         c.project.install_app('svn', 'test1')
         h.set_context('test', 'test1', neighborhood='Projects')
@@ -716,8 +716,8 @@ class _TestWithRepo(_Test):
 
 class _TestWithRepoAndCommit(_TestWithRepo):
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         self.ci, isnew = self._make_commit('foo')
         ThreadLocalORMSession.flush_all()
         # ThreadLocalORMSession.close_all()
@@ -880,8 +880,8 @@ class TestRepoObject(_TestWithRepoAndCommit):
 
 class TestCommit(_TestWithRepo):
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         self.ci, isnew = self._make_commit(
             'foo',
             a=dict(
@@ -1022,7 +1022,7 @@ class TestCommit(_TestWithRepo):
 
 class TestRename(unittest.TestCase):
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
         self.setup_with_tools()
 
@@ -1058,7 +1058,7 @@ class TestRename(unittest.TestCase):
 
 class TestDirectRepoAccess:
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
         self.setup_with_tools()
 

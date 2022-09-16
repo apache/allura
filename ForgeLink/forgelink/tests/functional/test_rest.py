@@ -24,8 +24,8 @@ from allura.lib import helpers as h
 
 class TestLinkApi(TestRestApiBase):
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         self.setup_with_tools()
 
     @td.with_link
@@ -80,8 +80,8 @@ class TestLinkApi(TestRestApiBase):
 
 class TestLinkHasAccess(TestRestApiBase):
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         self.setup_with_tools()
 
     @td.with_link

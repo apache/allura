@@ -21,12 +21,7 @@ import hashlib
 import datetime as dt
 
 from mock import Mock, MagicMock, patch, call
-from alluratest.tools import (
-    assert_raises,
-    assert_equal,
-    assert_not_in,
-    assert_in,
-)
+import pytest
 from datadiff import tools as dd
 from formencode import Invalid
 from ming.odm import session
@@ -100,12 +95,12 @@ class TestValidators(TestWebhookBase):
         app = self.git
         invalid_app = self.project.app_instance('src2')
         v = WebhookValidator(sender=sender, app=app, not_empty=True)
-        with assert_raises(Invalid) as cm:
+        with pytest.raises(Invalid) as cm:
             v.to_python(None)
-        assert cm.exception.msg == 'Please enter a value'
-        with assert_raises(Invalid) as cm:
+        assert cm.value.msg == 'Please enter a value'
+        with pytest.raises(Invalid) as cm:
             v.to_python('invalid id')
-        assert cm.exception.msg == 'Invalid webhook'
+        assert cm.value.msg == 'Invalid webhook'
 
         wh = M.Webhook(type='invalid type',
                        app_config_id=invalid_app.config._id,
@@ -113,16 +108,16 @@ class TestValidators(TestWebhookBase):
                        secret='secret')
         session(wh).flush(wh)
         # invalid type
-        with assert_raises(Invalid) as cm:
+        with pytest.raises(Invalid) as cm:
             v.to_python(wh._id)
-        assert cm.exception.msg == 'Invalid webhook'
+        assert cm.value.msg == 'Invalid webhook'
 
         wh.type = 'repo-push'
         session(wh).flush(wh)
         # invalild app
-        with assert_raises(Invalid) as cm:
+        with pytest.raises(Invalid) as cm:
             v.to_python(wh._id)
-        assert cm.exception.msg == 'Invalid webhook'
+        assert cm.value.msg == 'Invalid webhook'
 
         wh.app_config_id = app.config._id
         session(wh).flush(wh)

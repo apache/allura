@@ -15,8 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from alluratest.tools import assert_equal, assert_in
-
 from allura.lib import helpers as h
 from allura.tests import decorators as td
 from allura import model as M
@@ -27,8 +25,8 @@ from ming.orm import ThreadLocalORMSession
 
 class TestDiscussionApiBase(TestRestApiBase):
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         self.setup_with_tools()
 
     @td.with_discussion

@@ -27,8 +27,8 @@ from forgeimporters.github import GitHubOAuthMixin
 
 class TestGitHubOAuthMixin(TestController, TestCase):
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         setup_unit_test()
         c.user = Mock()
         self.mix = GitHubOAuthMixin()
@@ -77,6 +77,6 @@ class TestGitHubOAuthMixin(TestController, TestCase):
     def test_oauth_callback_complete(self):
         with patch.object(self.mix, 'oauth_callback_complete') as _mock, \
                 patch('forgeimporters.github.redirect') as tg_redir:
-            self.mix.oauth_callback()
+            self.mix.handle_oauth_callback()
         self.assertEqual(_mock.call_count, 1)
         self.assertEqual(tg_redir.call_count, 1)

@@ -31,8 +31,8 @@ from forgetracker import model as TM
 
 class TestStats(TestController):
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         p = M.Project.query.get(shortname='test')
         p.add_user(M.User.by_username('test-user'), ['Admin'])
 
@@ -185,8 +185,8 @@ class TestStats(TestController):
 
 class TestGitCommit(TestController, unittest.TestCase):
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         setup_basic_test()
 
         user = User.by_username('test-admin')

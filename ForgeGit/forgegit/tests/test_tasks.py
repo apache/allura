@@ -34,7 +34,7 @@ from forgegit.tests.functional.test_controllers import _TestCase as GitRealDataB
 
 class TestGitTasks(unittest.TestCase):
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
         self.setup_with_tools()
 
@@ -69,8 +69,8 @@ class TestCoreAlluraTasks(GitRealDataBaseTestCase):
     Not git-specific things we are testing, but the git tool is a useful standard repo type to use for it
     """
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         self.setup_with_tools()
 
     def test_refreshrepo(self):

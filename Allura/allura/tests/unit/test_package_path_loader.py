@@ -20,8 +20,8 @@ from collections import OrderedDict
 from unittest import TestCase
 
 import jinja2
-from alluratest.tools import assert_equal, assert_raises
 import mock
+import pytest
 from tg import config
 
 from allura.lib.package_path_loader import PackagePathLoader
@@ -81,7 +81,7 @@ class TestPackagePathLoader(TestCase):
         for ep in eps:
             ep.name = ep.ep_name
             ep.load.return_value.template_path_rules = ep.rules
-        assert_raises(jinja2.TemplateError, PackagePathLoader()._load_rules)
+        pytest.raises(jinja2.TemplateError, PackagePathLoader()._load_rules)
 
     def test_replace_signposts(self):
         ppl = PackagePathLoader()
@@ -219,14 +219,14 @@ class TestPackagePathLoader(TestCase):
         ppl.init_paths = mock.Mock()
         fs_loader().get_source.side_effect = jinja2.TemplateNotFound('test')
 
-        assert_raises(
+        pytest.raises(
             jinja2.TemplateError,
             ppl.get_source, 'env', 'allura.ext.admin:templates/audit.html')
         assert fs_loader().get_source.call_count == 1
         fs_loader().get_source.reset_mock()
 
         with mock.patch.dict(config, {'disable_template_overrides': False}):
-            assert_raises(
+            pytest.raises(
                 jinja2.TemplateError,
                 ppl.get_source, 'env', 'allura.ext.admin:templates/audit.html')
             assert fs_loader().get_source.call_count == 2

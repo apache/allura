@@ -250,6 +250,9 @@ class GitHubOAuthMixin:
     @without_trailing_slash
     @expose()
     def oauth_callback(self, **kw):
+        self.handle_oauth_callback()
+
+    def handle_oauth_callback(self):
         client_id = config.get('github_importer.client_id')
         secret = config.get('github_importer.client_secret')
         if not client_id or not secret:

@@ -31,7 +31,7 @@ def setUp():
 
 class FilesTestWithModel:
 
-    def setUp(self):
+    def setup_method(self, method):
         bootstrap.wipe_database()
         project_reg = plugin.ProjectRegistrationProvider.get()
         c.user = bootstrap.create_user('Test User')
@@ -46,6 +46,6 @@ class FilesTestWithModel:
         ThreadLocalORMSession.flush_all()
         h.set_context('test', 'files', neighborhood='Projects')
 
-    def tearDown(self):
+    def teardown_method(self, method):
         ThreadLocalORMSession.close_all()
 
