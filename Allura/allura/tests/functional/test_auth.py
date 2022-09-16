@@ -47,7 +47,7 @@ from tg import tmpl_context as c, app_globals as g
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura.tests.decorators import audits, out_audits, assert_logmsg
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 from alluratest.controller import setup_trove_categories, TestRestApiBase, oauth1_webtest
 from allura import model as M
 from allura.model.oauth import dummy_oauths

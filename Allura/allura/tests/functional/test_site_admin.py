@@ -33,7 +33,7 @@ from allura.lib import helpers as h
 from allura.lib.decorators import task
 from allura.lib.plugin import LocalAuthenticationProvider
 import six
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility

@@ -44,7 +44,7 @@ from alluratest.controller import setup_unit_test
 from allura import model as M
 from allura.lib import utils
 from allura.lib import helpers as h
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 @patch.dict('allura.lib.utils.tg.config', clear=True, foo='bar', baz='true')

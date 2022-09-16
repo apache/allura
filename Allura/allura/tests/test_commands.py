@@ -36,7 +36,7 @@ from allura.command import base, script, set_neighborhood_features, \
 from allura import model as M
 from allura.lib.exceptions import InvalidNBFeatureValueError
 from allura.tests import decorators as td
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 test_config = pkg_resources.resource_filename(

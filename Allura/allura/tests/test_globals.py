@@ -43,7 +43,7 @@ from allura import model as M
 from allura.lib import helpers as h
 from allura.lib.app_globals import ForgeMarkdown
 from allura.tests import decorators as td
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 from forgewiki import model as WM
 from forgeblog import model as BM

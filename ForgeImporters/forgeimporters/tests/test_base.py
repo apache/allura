@@ -317,7 +317,7 @@ class TestProjectToolsImportController(TestController):
             import1_page = import_main_page.click('Import', href=r'importer1$')
         url = import1_page.request.path
         assert url.endswith('/admin/ext/import/importer1'), url
-        assert_equal(import1_page.text, 'test importer 1 controller webpage')
+        assert import1_page.text == 'test importer 1 controller webpage'
 
     @mock.patch.object(base.h, 'iter_entry_points')
     def test_hidden(self, iep):
@@ -344,16 +344,16 @@ def test_get_importer_upload_path():
         neighborhood=mock.Mock(url_prefix='p/'),
     )
     with h.push_config(config, importer_upload_path='path/{nbhd}/{project}'):
-        assert_equal(base.get_importer_upload_path(project), 'path/p/prefix')
+        assert base.get_importer_upload_path(project) == 'path/p/prefix'
         project.is_nbhd_project = True
-        assert_equal(base.get_importer_upload_path(project), 'path/p/n_url')
+        assert base.get_importer_upload_path(project) == 'path/p/n_url'
         project.is_nbhd_project = False
         project.is_user_project = True
-        assert_equal(base.get_importer_upload_path(project),
+        assert (base.get_importer_upload_path(project) ==
                      'path/p/shortname')
         project.is_user_project = False
         project.is_root = True
-        assert_equal(base.get_importer_upload_path(project),
+        assert (base.get_importer_upload_path(project) ==
                      'path/p/prefix/shortname')
 
 
@@ -385,7 +385,7 @@ class TestFile:
             'data': 'data',
         }
         f = base.File('http://example.com/barbaz.jpg')
-        assert_equal(f.type, 'image/jpeg')
+        assert f.type == 'image/jpeg'
 
         f = base.File('http://example.com/barbaz')
-        assert_equal(f.type, 'image/png')
+        assert f.type == 'image/png'

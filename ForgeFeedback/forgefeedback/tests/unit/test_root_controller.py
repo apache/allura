@@ -56,7 +56,7 @@ class TestFeedbackApp(FeedbackTestWithModel):
     def test_getRating(self):
         create_feedbacks()
         rating = feedback_main.RootController().getRating()
-        assert_equal(rating, 3.5)
+        assert rating == 3.5
 
     def test_edit_feedback(self):
         create_feedbacks()

@@ -41,4 +41,4 @@ def test_unicode_lookup():
         mc = MilestoneController(root, field, milestone_urlparam)
 
     assert mc.milestone  # check that it is found
-    assert_equal(mc.milestone.name, 'Перспектива')
+    assert mc.milestone.name == 'Перспектива'

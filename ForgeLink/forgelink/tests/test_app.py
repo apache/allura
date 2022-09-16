@@ -43,4 +43,4 @@ class TestBulkExport:
         f = tempfile.TemporaryFile('w+')
         link.bulk_export(f)
         f.seek(0)
-        assert_equal(json.loads(f.read())['url'], 'http://domain.net')
+        assert json.loads(f.read())['url'] == 'http://domain.net'

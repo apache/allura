@@ -32,7 +32,7 @@ from allura.lib import plugin
 from allura.lib import helpers as h
 from allura import model as M
 import six
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility

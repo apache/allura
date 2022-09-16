@@ -77,7 +77,7 @@ class TestFiles(TestController):
         data1 = {'folder_id': str(folder_object._id), 'remarks': 'Publishing new Version'}
         self.app.post('/p/test/files/publish_folder', data1)
         resp = self.app.get('/files/')
-        assert_equals(folder_object.published, True)
+        assert folder_object.published == True
 
     def test_link_file(self):
         file_object = upload_file(self)
@@ -85,7 +85,7 @@ class TestFiles(TestController):
         data1 = {'file_id': str(db_file_object._id)}
         self.app.post('/p/test/files/link_file', data1)
         resp = self.app.get('/files/')
-        assert_true(str(db_file_object.linked_to_download) in resp)
+        assert str(db_file_object.linked_to_download) in resp
 
     def test_disable_folder(self):
         create_folder(self)
@@ -93,7 +93,7 @@ class TestFiles(TestController):
         data1 = {'folder_id': str(folder_object._id), 'status': 'True'}
         self.app.post('/p/test/files/disable_folder', data1)
         resp = self.app.get('/files/')
-        assert_true(str(folder_object.disabled) in resp)
+        assert str(folder_object.disabled) in resp
 
     def test_disable_file(self):
         file_object = upload_file(self)
@@ -101,7 +101,7 @@ class TestFiles(TestController):
         data1 = {'file_id': str(db_file_object._id), 'status': 'True'}
         self.app.post('/p/test/files/disable_file', data1)
         resp = self.app.get('/files/')
-        assert_true(str(db_file_object.disabled) in resp)
+        assert str(db_file_object.disabled) in resp
 
     def test_delete_folder(self):
         create_folder(self)

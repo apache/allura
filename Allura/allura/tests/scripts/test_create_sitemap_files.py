@@ -27,7 +27,7 @@ from alluratest.controller import setup_basic_test
 from allura import model as M
 from allura.lib import helpers as h
 from allura.scripts.create_sitemap_files import CreateSitemapFiles
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility

@@ -43,14 +43,14 @@ class TestGlobalsModel(TrackerTestWithModel):
 
     def test_next_ticket_number_increments(self):
         gl = Globals()
-        assert_equal(gl.next_ticket_num(), 1)
-        assert_equal(gl.next_ticket_num(), 2)
+        assert gl.next_ticket_num() == 1
+        assert gl.next_ticket_num() == 2
 
     def test_ticket_numbers_are_independent(self):
         with h.push_context('test', 'doc-bugs', neighborhood='Projects'):
-            assert_equal(c.app.globals.next_ticket_num(), 1)
+            assert c.app.globals.next_ticket_num() == 1
         with h.push_context('test', 'bugs', neighborhood='Projects'):
-            assert_equal(c.app.globals.next_ticket_num(), 1)
+            assert c.app.globals.next_ticket_num() == 1
 
     @mock.patch('forgetracker.model.ticket.datetime')
     def test_bin_count(self, mock_dt):
@@ -65,14 +65,14 @@ class TestGlobalsModel(TrackerTestWithModel):
         gbl.invalidate_bin_counts.reset_mock()
         gbl._bin_counts_expire = now + timedelta(minutes=5)
         bin = gbl.bin_count('bar')
-        assert_equal(bin['hits'], 2)
+        assert bin['hits'] == 2
         assert not gbl.invalidate_bin_counts.called
 
         # expired, returns value for missing bin
         gbl.invalidate_bin_counts.reset_mock()
         gbl._bin_counts_expire = now - timedelta(minutes=5)
         bin = gbl.bin_count('qux')
-        assert_equal(bin['hits'], 0)
+        assert bin['hits'] == 0
         assert gbl.invalidate_bin_counts.called
 
         # config set to no expiration
@@ -86,7 +86,7 @@ class TestGlobalsModel(TrackerTestWithModel):
         gbl.invalidate_bin_counts.reset_mock()
         gbl._bin_counts_expire = None
         bin = gbl.bin_count('qux')
-        assert_equal(bin['hits'], 0)
+        assert bin['hits'] == 0
         assert gbl.invalidate_bin_counts.called
 
     @mock.patch('forgetracker.tasks.update_bin_counts')
@@ -105,14 +105,14 @@ class TestGlobalsModel(TrackerTestWithModel):
         gbl._bin_counts_invalidated = now - timedelta(minutes=6)
         gbl.invalidate_bin_counts()
         assert mock_task.post.called
-        assert_equal(gbl._bin_counts_invalidated, now)
+        assert gbl._bin_counts_invalidated == now
 
         # never invalidated
         mock_task.reset_mock()
         gbl._bin_counts_invalidated = None
         gbl.invalidate_bin_counts()
         assert mock_task.post.called
-        assert_equal(gbl._bin_counts_invalidated, now)
+        assert gbl._bin_counts_invalidated == now
 
     @mock.patch('forgetracker.model.ticket.Bin')
     @mock.patch('forgetracker.model.ticket.search_artifact')
@@ -126,24 +126,24 @@ class TestGlobalsModel(TrackerTestWithModel):
             mock.Mock(summary='foo', terms='bar')]
         mock_search().hits = 5
 
-        assert_equal(gbl._bin_counts_data, [])  # sanity pre-check
+        assert gbl._bin_counts_data == []  # sanity pre-check
         gbl.update_bin_counts()
         assert mock_bin.query.find.called
         mock_search.assert_called_with(
             forgetracker.model.Ticket, 'bar', rows=0, short_timeout=False, fq=['-deleted_b:true'])
-        assert_equal(gbl._bin_counts_data, [{'summary': 'foo', 'hits': 5}])
-        assert_equal(gbl._bin_counts_expire, now + timedelta(minutes=60))
-        assert_equal(gbl._bin_counts_invalidated, None)
+        assert gbl._bin_counts_data == [{'summary': 'foo', 'hits': 5}]
+        assert gbl._bin_counts_expire == now + timedelta(minutes=60)
+        assert gbl._bin_counts_invalidated == None
 
     def test_append_new_labels(self):
         gbl = Globals()
-        assert_equal(gbl.append_new_labels([], ['tag1']), ['tag1'])
-        assert_equal(
-            gbl.append_new_labels(['tag1', 'tag2'], ['tag2']), ['tag1', 'tag2'])
-        assert_equal(gbl.append_new_labels(
-            ['tag1', 'tag2'], ['tag3']), ['tag1', 'tag2', 'tag3'])
-        assert_equal(gbl.append_new_labels(
-            ['tag1', 'tag2', 'tag3'], ['tag2']), ['tag1', 'tag2', 'tag3'])
+        assert gbl.append_new_labels([], ['tag1']) == ['tag1']
+        assert (
+            gbl.append_new_labels(['tag1', 'tag2'], ['tag2']) == ['tag1', 'tag2'])
+        assert gbl.append_new_labels(
+            ['tag1', 'tag2'], ['tag3']) == ['tag1', 'tag2', 'tag3']
+        assert gbl.append_new_labels(
+            ['tag1', 'tag2', 'tag3'], ['tag2']) == ['tag1', 'tag2', 'tag3']
 
 
 class TestCustomFields(TrackerTestWithModel):

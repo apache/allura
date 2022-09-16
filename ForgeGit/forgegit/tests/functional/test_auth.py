@@ -86,6 +86,6 @@ class TestGitUserPermissions(TestController):
     def test_list_repos(self):
         r = self.app.get('/auth/repo_permissions',
                          params=dict(username='test-admin'), status=200)
-        assert_equal(json.loads(r.text), {"allow_write": [
+        assert json.loads(r.text) == {"allow_write": [
             '/git/test/src-git',
-        ]})
+        ]}

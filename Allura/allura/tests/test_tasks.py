@@ -52,7 +52,7 @@ from allura.tasks import repo_tasks
 from allura.tasks import export_tasks
 from allura.tasks import admin_tasks
 from allura.tests import decorators as td
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 from allura.tests.exclude_from_rewrite_hook import raise_compound_exception
 from allura.lib.decorators import event_handler, task
 

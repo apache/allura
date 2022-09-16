@@ -101,42 +101,42 @@ class TestRootController(SVNTestController):
     def test_commit_browser_data(self):
         resp = self.app.get('/src/commit_browser_data')
         data = json.loads(resp.text)
-        assert_equal(data['max_row'], 6)
-        assert_equal(data['next_column'], 1)
+        assert data['max_row'] == 6
+        assert data['next_column'] == 1
         for val in data['built_tree'].values():
             if val['url'] == '/p/test/src/1/':
-                assert_equal(val['short_id'], '[r1]')
-                assert_equal(val['column'], 0)
-                assert_equal(val['row'], 6)
-                assert_equal(val['message'], 'Create readme')
+                assert val['short_id'] == '[r1]'
+                assert val['column'] == 0
+                assert val['row'] == 6
+                assert val['message'] == 'Create readme'
 
     def test_feed(self):
         for ext in ['', '.rss']:
             r = self.app.get('/src/feed%s' % ext)
             channel = r.xml.find('channel')
             title = channel.find('title').text
-            assert_equal(title, 'test SVN changes')
+            assert title == 'test SVN changes'
             description = channel.find('description').text
-            assert_equal(description,
+            assert (description ==
                          'Recent changes to SVN repository in test project')
             link = channel.find('link').text
-            assert_equal(link, 'http://localhost/p/test/src/')
+            assert link == 'http://localhost/p/test/src/'
             earliest_commit = channel.findall('item')[-1]
-            assert_equal(earliest_commit.find('title').text, 'Create readme')
+            assert earliest_commit.find('title').text == 'Create readme'
             link = 'http://localhost/p/test/src/1/'
-            assert_equal(earliest_commit.find('link').text, link)
-            assert_equal(earliest_commit.find('guid').text, link)
+            assert earliest_commit.find('link').text == link
+            assert earliest_commit.find('guid').text == link
         # .atom has slightly different structure
         prefix = '{http://www.w3.org/2005/Atom}'
         r = self.app.get('/src/feed.atom')
         title = r.xml.find(prefix + 'title').text
-        assert_equal(title, 'test SVN changes')
+        assert title == 'test SVN changes'
         link = r.xml.find(prefix + 'link').attrib['href']
-        assert_equal(link, 'http://localhost/p/test/src/')
+        assert link == 'http://localhost/p/test/src/'
         earliest_commit = r.xml.findall(prefix + 'entry')[-1]
-        assert_equal(earliest_commit.find(prefix + 'title').text, 'Create readme')
+        assert earliest_commit.find(prefix + 'title').text == 'Create readme'
         link = 'http://localhost/p/test/src/1/'
-        assert_equal(earliest_commit.find(prefix + 'link').attrib['href'], link)
+        assert earliest_commit.find(prefix + 'link').attrib['href'] == link
 
     def test_commit(self):
         resp = self.app.get('/src/3/tree/')
@@ -146,7 +146,7 @@ class TestRootController(SVNTestController):
         resp = self.app.get('/src/6/')
         file_url = resp.html.find("a", string="/ЗРЯЧИЙ_ТА_ПОБАЧИТЬ")['href']
         resp = self.app.get(file_url)
-        assert_in('This is readme',  # same content as the README file actually
+        assert ('This is readme' in  # same content as the README file actually
                   resp.html.select_one('.codebrowser').text)
 
         resp = self.app.get('/src/7/')
@@ -154,22 +154,22 @@ class TestRootController(SVNTestController):
             '\n\t'.join(str(t) for t in resp.html.select('.inline-diff a'))))
         file_url = resp.html.find("a", string="/with%2Furlquote-literal.txt")['href']
         file_resp = self.app.get(file_url)
-        assert_in('%2F means /',
+        assert ('%2F means /' in
                   file_resp.html.select_one('.codebrowser').text)
 
         file_url = resp.html.find("a", string='/with-percent%.txt')['href']
         file_resp = self.app.get(file_url)
-        assert_in('%%%',
+        assert ('%%%' in
                   file_resp.html.select_one('.codebrowser').text)
 
         file_url = resp.html.find("a", string="/with space.txt")['href']
         file_resp = self.app.get(file_url)
-        assert_in('spaces',
+        assert ('spaces' in
                   file_resp.html.select_one('.codebrowser').text)
 
         file_url = resp.html.find("a", string='/with"&:specials.txt')['href']
         file_resp = self.app.get(file_url)
-        assert_in('"&: encodes as %22%26%3A',
+        assert ('"&: encodes as %22%26%3A' in
                   file_resp.html.select_one('.codebrowser').text)
 
     def test_tree(self):
@@ -262,39 +262,39 @@ class TestRootController(SVNTestController):
         shutil.rmtree(c.app.repo.tarball_path, ignore_errors=True)
         r = self.app.get('/p/test/svn-tags/19/tree/')
         form = r.html.find('form', 'tarball')
-        assert_equal(form.button.text, '\xa0Download Snapshot')
-        assert_equal(form.get('action'), '/p/test/svn-tags/19/tarball')
+        assert form.button.text == '\xa0Download Snapshot'
+        assert form.get('action') == '/p/test/svn-tags/19/tarball'
 
         r = self.app.get('/p/test/svn-tags/19/tree/tags/tag-1.0/')
         form = r.html.find('form', 'tarball')
-        assert_equal(form.button.text, '\xa0Download Snapshot')
-        assert_equal(form.get('action'), '/p/test/svn-tags/19/tarball')
-        assert_equal(form.find('input', attrs=dict(name='path')).get('value'), '/tags/tag-1.0')
+        assert form.button.text == '\xa0Download Snapshot'
+        assert form.get('action') == '/p/test/svn-tags/19/tarball'
+        assert form.find('input', attrs=dict(name='path')).get('value') == '/tags/tag-1.0'
 
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/tags/tag-1.0')
-        assert_equal(r.json['status'], None)
+        assert r.json['status'] == None
         r = self.app.post('/p/test/svn-tags/19/tarball',
                           dict(path='/tags/tag-1.0')).follow()
         assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/tags/tag-1.0')
-        assert_equal(r.json['status'], 'complete')
+        assert r.json['status'] == 'complete'
 
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/trunk')
-        assert_equal(r.json['status'], None)
+        assert r.json['status'] == None
         r = self.app.post('/p/test/svn-tags/19/tarball',
                           dict(path='/trunk/')).follow()
         assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/trunk')
-        assert_equal(r.json['status'], 'complete')
+        assert r.json['status'] == 'complete'
 
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/branches/aaa/')
-        assert_equal(r.json['status'], None)
+        assert r.json['status'] == None
 
         # this is is the same as trunk snapshot, so it's ready already
         r = self.app.get('/p/test/svn-tags/19/tarball_status')
-        assert_equal(r.json['status'], 'complete')
+        assert r.json['status'] == 'complete'
 
 
 class TestImportController(SVNTestController):

@@ -48,7 +48,7 @@ class TestApp(TestDiscussionApiBase):  # creates some sample data
     @td.with_discussion
     def test_tickets_stats_24hr(self):
         # invoked normally via entry point
-        assert_equal(2, posts_24hr())
+        assert 2 == posts_24hr()
 
 
 class TestAppSitemap:
@@ -60,27 +60,27 @@ class TestAppSitemap:
 
     @td.with_discussion
     def test_sitemap_xml(self):
-        assert_equal([], c.app.sitemap_xml())
+        assert [] == c.app.sitemap_xml()
         forum = utils.create_forum(c.app, dict(
             shortname='test-forum',
             name="Test Forum",
             description="Test Forum Description",
         ))
         ThreadLocalORMSession.flush_all()
-        assert_equal([], c.app.sitemap_xml())
+        assert [] == c.app.sitemap_xml()
         thread = ForumThread(
             subject='test-thread',
         )
         thread.set_forum(forum)
         ThreadLocalORMSession.flush_all()
 
-        assert_equal([], c.app.sitemap_xml())
+        assert [] == c.app.sitemap_xml()
         thread.post(
             subject='test-post',
             text='this is a test post.',
         )
         ThreadLocalORMSession.flush_all()
-        assert_equal(1, len(c.app.sitemap_xml()))
+        assert 1 == len(c.app.sitemap_xml())
 
 
 class TestBulkExport(TestDiscussionApiBase):
@@ -98,22 +98,22 @@ class TestBulkExport(TestDiscussionApiBase):
         discussion = json.loads(f.read())
         forums = sorted(discussion['forums'], key=lambda x: x['name'])
 
-        assert_equal(forums[0]['shortname'], 'general')
-        assert_equal(
-            forums[0]['description'], 'Forum about anything you want to talk about.')
-        assert_equal(forums[0]['name'], 'General Discussion')
+        assert forums[0]['shortname'] == 'general'
+        assert (
+            forums[0]['description'] == 'Forum about anything you want to talk about.')
+        assert forums[0]['name'] == 'General Discussion'
         forums[0]['threads'] = sorted(forums[0]['threads'],
                                       key=lambda x: x['posts'][0]['subject'])
-        assert_equal(
-            forums[0]['threads'][0]['posts'][0]['text'], 'Hi boys and girls')
-        assert_equal(
-            forums[0]['threads'][0]['posts'][0]['subject'], 'Hi guys')
-        assert_equal(forums[0]['threads'][1]['posts'][0]['text'], '1st post')
-        assert_equal(
-            forums[0]['threads'][1]['posts'][0]['subject'], "Let's talk")
-        assert_equal(forums[1]['shortname'], 'héllo')
-        assert_equal(forums[1]['description'], 'Say héllo here')
-        assert_equal(forums[1]['name'], 'Say Héllo')
+        assert (
+            forums[0]['threads'][0]['posts'][0]['text'] == 'Hi boys and girls')
+        assert (
+            forums[0]['threads'][0]['posts'][0]['subject'] == 'Hi guys')
+        assert forums[0]['threads'][1]['posts'][0]['text'] == '1st post'
+        assert (
+            forums[0]['threads'][1]['posts'][0]['subject'] == "Let's talk")
+        assert forums[1]['shortname'] == 'héllo'
+        assert forums[1]['description'] == 'Say héllo here'
+        assert forums[1]['name'] == 'Say Héllo'
 
     def test_export_with_attachments(self):
         project = M.Project.query.get(shortname='test')
@@ -142,5 +142,5 @@ class TestBulkExport(TestDiscussionApiBase):
             post.slug,
             'test_file'
         )
-        assert_equal(threads[0]['posts'][0]['attachments'][0]['path'], file_path)
+        assert threads[0]['posts'][0]['attachments'][0]['path'] == file_path
         os.path.exists(file_path)

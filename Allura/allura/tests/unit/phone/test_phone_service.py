@@ -19,7 +19,7 @@ from alluratest.tools import assert_true
 from datadiff.tools import assert_equal
 
 from allura.lib.phone import PhoneService
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 class MockPhoneService(PhoneService):

@@ -22,7 +22,7 @@ from alluratest.tools import assert_equal
 import ming
 from allura.config.app_cfg import ForgeConfig, AlluraJinjaRenderer
 from alluratest.controller import setup_basic_test
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 def strip_space(s):
