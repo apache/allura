@@ -48,7 +48,7 @@ from forgewiki import model as WM
 
 class TestNewGit(unittest.TestCase):
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
         self.setup_with_tools()
 
@@ -126,7 +126,7 @@ class TestNewGit(unittest.TestCase):
 
 class TestGitRepo(unittest.TestCase, RepoImplTestBase):
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
         self.setup_with_tools()
 
@@ -373,7 +373,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         self.assertEqual(new_tree.other_ids, orig_tree.other_ids)
 
     def test_refresh(self):
-        # test results of things that ran during setUp
+        # test results of things that ran during setup_method
         notification = M.Notification.query.find({'subject': '[test:src-git] 5 new commits to Git'}).first()
         assert notification
         domain = '.'.join(reversed(c.app.url[1:-1].split('/'))).replace('_', '-')
@@ -1026,7 +1026,7 @@ class TestGitImplementation(unittest.TestCase):
 
 class TestGitCommit(unittest.TestCase):
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
         self.setup_with_tools()
 
@@ -1102,7 +1102,7 @@ class TestGitCommit(unittest.TestCase):
 
 class TestGitHtmlView(unittest.TestCase):
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
         self.setup_with_tools()
 
@@ -1133,7 +1133,7 @@ class TestGitHtmlView(unittest.TestCase):
 
 class TestGitRename(unittest.TestCase):
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
         self.setup_with_tools()
 

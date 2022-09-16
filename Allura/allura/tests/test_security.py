@@ -16,7 +16,7 @@
 #       under the License.
 
 from tg import tmpl_context as c
-from alluratest.tools import assert_equal, assert_raises
+import pytest
 
 from ming.odm import ThreadLocalODMSession
 from allura.tests import decorators as td
@@ -51,7 +51,7 @@ def _add_to_group(user, role):
 
 @patch('allura.lib.security.requests.get', side_effect=Timeout())
 def test_check_breached_password(r_get):
-    with assert_raises(HIBPClientError):
+    with pytest.raises(HIBPClientError):
         HIBPClient.check_breached_password('qwerty')
 
 

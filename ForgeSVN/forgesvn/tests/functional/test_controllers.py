@@ -38,8 +38,8 @@ from allura.tests.decorators import with_tool
 
 class SVNTestController(TestController):
 
-    def setUp(self):
-        TestController.setUp(self)
+    def setup_method(self, method):
+        super().setup_method(method)
         self.setup_with_tools()
 
     def _make_app(self, mount_point, name):
@@ -351,8 +351,8 @@ class TestImportController(SVNTestController):
 
 class SVNTestRenames(TestController):
 
-    def setUp(self):
-        TestController.setUp(self)
+    def setup_method(self, method):
+        super().setup_method(method)
         self.setup_with_tools()
 
     @with_svn

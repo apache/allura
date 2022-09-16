@@ -44,8 +44,8 @@ import six
 
 
 class _TestCase(TestController):
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         self.setup_with_tools()
 
     @with_git
@@ -78,8 +78,8 @@ class _TestCase(TestController):
 
 
 class TestUIController(TestController):
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         self.setup_with_tools()
 
     @with_git
@@ -570,8 +570,8 @@ class TestRestController(_TestCase):
 
 
 class TestHasAccessAPI(TestRestApiBase):
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         self.setup_with_tools()
 
     @with_git
@@ -620,8 +620,8 @@ class TestHasAccessAPI(TestRestApiBase):
 
 
 class TestFork(_TestCase):
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         to_project = M.Project.query.get(
             shortname='test2', neighborhood_id=c.project.neighborhood_id)
         r = self.app.post('/src-git/fork', params=dict(
@@ -969,8 +969,8 @@ class TestFork(_TestCase):
 
 
 class TestDiff(TestController):
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         self.setup_with_tools()
 
     @with_git
@@ -998,8 +998,8 @@ class TestDiff(TestController):
 
 
 class TestGitRename(TestController):
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         self.setup_with_tools()
 
     @with_git
@@ -1066,8 +1066,8 @@ class TestGitRename(TestController):
 
 
 class TestGitBranch(TestController):
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         self.setup_with_tools()
 
     @with_git
@@ -1121,8 +1121,8 @@ class TestGitBranch(TestController):
 
 
 class TestIncludeMacro(_TestCase):
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         setup_global_objects()
 
     def test_parse_repo(self):

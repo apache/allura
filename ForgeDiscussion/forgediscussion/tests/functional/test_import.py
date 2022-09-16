@@ -31,8 +31,8 @@ from alluratest.controller import TestRestApiBase
 
 class TestImportController(TestRestApiBase):  # TestController):
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         here_dir = os.path.dirname(__file__)
         self.app.get('/discussion/')
         self.json_text = open(here_dir + '/data/sf.json').read()

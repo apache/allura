@@ -28,7 +28,7 @@ from forgesvn.tests import with_svn
 
 class TestSVNApp(unittest.TestCase):
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
         self.setup_with_tools()
 

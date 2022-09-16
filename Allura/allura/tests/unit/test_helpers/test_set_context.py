@@ -15,7 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from alluratest.tools import assert_raises
+import pytest
 from tg import tmpl_context as c
 from bson import ObjectId
 
@@ -101,14 +101,14 @@ class TestWhenProjectIsNotFound(WithDatabase):
 
     def test_that_it_raises_an_exception(self):
         nbhd = create_neighborhood()
-        assert_raises(NoSuchProjectError,
+        pytest.raises(NoSuchProjectError,
                       set_context,
                       'myproject',
                       neighborhood=nbhd)
 
     def test_proper_exception_when_id_lookup(self):
         create_neighborhood()
-        assert_raises(NoSuchProjectError,
+        pytest.raises(NoSuchProjectError,
                       set_context,
                       ObjectId(),
                       neighborhood=None)
@@ -118,7 +118,7 @@ class TestWhenProjectIsNotFound(WithDatabase):
 class TestWhenNeighborhoodIsNotFound(WithDatabase):
 
     def test_that_it_raises_an_exception(self):
-        assert_raises(NoSuchNeighborhoodError,
+        pytest.raises(NoSuchNeighborhoodError,
                       set_context,
                       'myproject',
                       neighborhood='myneighborhood')

@@ -28,7 +28,7 @@ from forgegit.tests import with_git
 
 class TestGitApp(unittest.TestCase):
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
         self.setup_with_tools()
 

@@ -29,8 +29,8 @@ from forgeblog import model as BM
 
 class TestBlogApi(TestRestApiBase):
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         self.setup_with_tools()
 
     @td.with_tool('test', 'Blog', 'blog')

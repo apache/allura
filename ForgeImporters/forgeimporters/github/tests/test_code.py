@@ -35,7 +35,7 @@ with_git = with_tool(test_project_with_repo, 'git', 'src', 'git')
 
 class TestGitHubRepoImporter(TestCase):
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_unit_test()
 
     def _make_project(self, gh_proj_name=None):

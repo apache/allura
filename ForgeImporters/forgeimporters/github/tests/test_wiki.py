@@ -74,7 +74,7 @@ class TestGitHubWikiImporter(TestCase):
                 project=p, user=u, url='foo')
             g.post_event.assert_called_once_with('project_updated')
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
         self.blob1 = Mock()
         self.blob1.name = 'Home.md'

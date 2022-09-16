@@ -32,8 +32,8 @@ from forgetracker import model as TM
 
 class TestTrackerApiBase(TestRestApiBase):
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         self.setup_with_tools()
 
     @td.with_tool('test', 'Tickets', 'bugs',
@@ -101,8 +101,8 @@ class TestRestNewTicket(TestTrackerApiBase):
 
 class TestRestUpdateTicket(TestTrackerApiBase):
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         ticket_view = self.create_ticket()
         self.ticket_args = ticket_view.json['ticket']
 
@@ -124,8 +124,8 @@ class TestRestUpdateTicket(TestTrackerApiBase):
 
 class TestRestIndex(TestTrackerApiBase):
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         self.create_ticket()
 
     def test_ticket_index(self):
@@ -169,8 +169,8 @@ class TestRestIndex(TestTrackerApiBase):
 
 class TestRestDiscussion(TestTrackerApiBase):
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         ticket_view = self.create_ticket()
         self.ticket_args = ticket_view.json['ticket']
 

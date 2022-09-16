@@ -47,8 +47,8 @@ class TestGitHubImportController(TestController, TestCase):
 
 class TestGitHubOAuth(TestController):
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         tg.config['github_importer.client_id'] = 'client_id'
         tg.config['github_importer.client_secret'] = 'secret'
 

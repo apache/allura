@@ -20,8 +20,8 @@ import errno
 
 from formencode import Invalid
 import mock
+import pytest
 from tg import expose, config
-from alluratest.tools import assert_equal, assert_raises
 from webob.exc import HTTPUnauthorized
 
 from alluratest.controller import TestController, setup_basic_test
@@ -89,7 +89,7 @@ def test_import_tool_failed(g, ToolImporter, format_exc):
     importer.import_tool.side_effect = RuntimeError('my error')
     ToolImporter.return_value = importer
 
-    with assert_raises(RuntimeError):
+    with pytest.raises(RuntimeError):
         base.import_tool('forgeimporters.base.ToolImporter', project_name='project_name')
     g.post_event.assert_called_once_with(
         'import_tool_task_failed',
@@ -248,7 +248,7 @@ class TestToolImporter(TestCase):
 
 class TestToolsValidator(TestCase):
 
-    def setUp(self):
+    def setup_method(self, method):
         self.tv = base.ToolsValidator('good-source')
 
     @mock.patch.object(base.ToolImporter, 'by_name')
@@ -372,8 +372,8 @@ def test_save_importer_upload(giup, os):
         fp.write.assert_called_once_with('data')
 
     os.makedirs.side_effect = OSError(errno.EACCES, 'foo')
-    assert_raises(OSError, base.save_importer_upload,
-                  'project', 'file', 'data')
+    with pytest.raises(OSError):
+        base.save_importer_upload('project', 'file', 'data')
 
 
 class TestFile:

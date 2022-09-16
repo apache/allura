@@ -28,15 +28,6 @@ import mock
 import PIL
 from bs4 import BeautifulSoup
 from mock import patch
-from alluratest.tools import (
-    assert_true,
-    assert_false,
-    assert_equal,
-    assert_in,
-    assert_raises,
-    assert_not_in,
-    assert_not_equal,
-)
 from formencode.variabledecode import variable_encode
 from tg import tmpl_context as c
 from tg import app_globals as g
@@ -1415,7 +1406,6 @@ class TestFunctionalController(TrackerTestController):
         canonical = response.html.select_one('link[rel=canonical]')
         assert 'page=' not in canonical
 
-
     def test_search_with_strange_chars(self):
         r = self.app.get('/p/test/bugs/search/?' +
                          urlencode({'q': 'tést'}))
@@ -2753,9 +2743,10 @@ def post_install_hook(app):
 
 
 class TestEmailMonitoring(TrackerTestController):
-    def __init__(self):
-        super().__init__()
-        self.test_email = 'mailinglist@example.com'
+
+    @classmethod
+    def setup_class(cls):
+        cls.test_email = 'mailinglist@example.com'
 
     def _set_options(self, monitoring_type='AllTicketChanges'):
         r = self.app.post('/admin/bugs/set_options', params={
@@ -2887,8 +2878,8 @@ class TestEmailMonitoring(TrackerTestController):
 
 
 class TestCustomUserField(TrackerTestController):
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         params = dict(
             custom_fields=[
                 dict(name='_code_review', label='Code Review', type='user',
@@ -3018,8 +3009,8 @@ class TestShowDefaultFields(TrackerTestController):
 
 
 class TestBulkMove(TrackerTestController):
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         self.new_ticket(summary='A New Hope')
         self.new_ticket(summary='The Empire Strikes Back')
         self.new_ticket(summary='Return Of The Jedi')

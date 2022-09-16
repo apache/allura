@@ -19,7 +19,7 @@
 import datetime
 
 import six
-from alluratest.tools import assert_raises, assert_in, with_setup
+from alluratest.tools import with_setup
 from testfixtures import OutputCapture
 
 from datadiff.tools import assert_equal
@@ -27,6 +27,7 @@ from datadiff.tools import assert_equal
 from ming.base import Object
 from ming.orm import ThreadLocalORMSession
 from mock import Mock, call, patch
+import pytest
 import pymongo
 import pkg_resources
 
@@ -47,22 +48,21 @@ class EmptyClass:
     pass
 
 
-def setup_method():
+def setup_module():
     """Method called by nose before running each test"""
     setup_basic_test()
     setup_global_objects()
     setup_unit_test()
 
-@with_setup(setup_method)
+
 def test_script():
     cmd = script.ScriptCommand('script')
     cmd.run(
         [test_config, pkg_resources.resource_filename('allura', 'tests/tscript.py')])
-    assert_raises(ValueError, cmd.run,
+    pytest.raises(ValueError, cmd.run,
                   [test_config, pkg_resources.resource_filename('allura', 'tests/tscript_error.py')])
 
 
-@with_setup(setup_method)
 def test_set_neighborhood_max_projects():
     neighborhood = M.Neighborhood.query.find().first()
     n_id = neighborhood._id
@@ -80,13 +80,12 @@ def test_set_neighborhood_max_projects():
     assert neighborhood.features['max_projects'] is None
 
     # check validation
-    assert_raises(InvalidNBFeatureValueError, cmd.run,
+    pytest.raises(InvalidNBFeatureValueError, cmd.run,
                   [test_config, str(n_id), 'max_projects', 'string'])
-    assert_raises(InvalidNBFeatureValueError, cmd.run,
+    pytest.raises(InvalidNBFeatureValueError, cmd.run,
                   [test_config, str(n_id), 'max_projects', '2.8'])
 
 
-@with_setup(setup_method)
 def test_set_neighborhood_private():
     neighborhood = M.Neighborhood.query.find().first()
     n_id = neighborhood._id
@@ -104,15 +103,14 @@ def test_set_neighborhood_private():
     assert not neighborhood.features['private_projects']
 
     # check validation
-    assert_raises(InvalidNBFeatureValueError, cmd.run,
+    pytest.raises(InvalidNBFeatureValueError, cmd.run,
                   [test_config, str(n_id), 'private_projects', 'string'])
-    assert_raises(InvalidNBFeatureValueError, cmd.run,
+    pytest.raises(InvalidNBFeatureValueError, cmd.run,
                   [test_config, str(n_id), 'private_projects', '1'])
-    assert_raises(InvalidNBFeatureValueError, cmd.run,
+    pytest.raises(InvalidNBFeatureValueError, cmd.run,
                   [test_config, str(n_id), 'private_projects', '2.8'])
 
 
-@with_setup(setup_method)
 def test_set_neighborhood_google_analytics():
     neighborhood = M.Neighborhood.query.find().first()
     n_id = neighborhood._id
@@ -130,15 +128,14 @@ def test_set_neighborhood_google_analytics():
     assert not neighborhood.features['google_analytics']
 
     # check validation
-    assert_raises(InvalidNBFeatureValueError, cmd.run,
+    pytest.raises(InvalidNBFeatureValueError, cmd.run,
                   [test_config, str(n_id), 'google_analytics', 'string'])
-    assert_raises(InvalidNBFeatureValueError, cmd.run,
+    pytest.raises(InvalidNBFeatureValueError, cmd.run,
                   [test_config, str(n_id), 'google_analytics', '1'])
-    assert_raises(InvalidNBFeatureValueError, cmd.run,
+    pytest.raises(InvalidNBFeatureValueError, cmd.run,
                   [test_config, str(n_id), 'google_analytics', '2.8'])
 
 
-@with_setup(setup_method)
 def test_set_neighborhood_css():
     neighborhood = M.Neighborhood.query.find().first()
     n_id = neighborhood._id
@@ -161,19 +158,18 @@ def test_set_neighborhood_css():
     assert neighborhood.features['css'] == 'custom'
 
     # check validation
-    assert_raises(InvalidNBFeatureValueError, cmd.run,
+    pytest.raises(InvalidNBFeatureValueError, cmd.run,
                   [test_config, str(n_id), 'css', 'string'])
-    assert_raises(InvalidNBFeatureValueError, cmd.run,
+    pytest.raises(InvalidNBFeatureValueError, cmd.run,
                   [test_config, str(n_id), 'css', '1'])
-    assert_raises(InvalidNBFeatureValueError, cmd.run,
+    pytest.raises(InvalidNBFeatureValueError, cmd.run,
                   [test_config, str(n_id), 'css', '2.8'])
-    assert_raises(InvalidNBFeatureValueError, cmd.run,
+    pytest.raises(InvalidNBFeatureValueError, cmd.run,
                   [test_config, str(n_id), 'css', 'None'])
-    assert_raises(InvalidNBFeatureValueError, cmd.run,
+    pytest.raises(InvalidNBFeatureValueError, cmd.run,
                   [test_config, str(n_id), 'css', 'True'])
 
 
-@with_setup(setup_method)
 def test_update_neighborhood():
     cmd = create_neighborhood.UpdateNeighborhoodCommand('update-neighborhood')
     cmd.run([test_config, 'Projects', 'True'])
@@ -363,7 +359,7 @@ class TestTaskdCleanupCommand:
         self.cmd_class._complete_suspicious_tasks = lambda x: []
 
     def teardown_method(self, method):
-        # need to clean up setUp mocking for unit tests below to work properly
+        # need to clean up setup_method mocking for unit tests below to work properly
         self.cmd_class._check_taskd_status = self.old_check_taskd_status
         self.cmd_class._check_task = self.old_check_task
         self.cmd_class._busy_tasks = self.old_busy_tasks
@@ -508,9 +504,6 @@ class TestReindexAsTask:
 
 @with_nose_compatibility
 class TestReindexCommand:
-
-    def setup_method(self, method):
-        setup_method()
 
     @patch('allura.command.show_models.g')
     def test_skip_solr_delete(self, g):

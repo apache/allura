@@ -23,7 +23,7 @@ from allura.lib import security
 from allura.lib import helpers as h
 
 
-def setUp():
+def setup_module(module):
     setup_basic_test()
     setup_global_objects()
     h.set_context('test', neighborhood='Projects')

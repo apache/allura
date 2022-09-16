@@ -23,7 +23,7 @@ from paste.deploy.converters import asint
 import ming
 from cryptography.hazmat.primitives.twofactor import InvalidToken
 from mock import patch, Mock
-from alluratest.tools import assert_equal, assert_raises
+import pytest
 from tg import config
 
 from allura import model as M
@@ -112,11 +112,11 @@ class TestTotpService:
         srv.verify(totp, '283397', None)
 
         time.return_value = self.sample_time + 60
-        with assert_raises(InvalidToken):
+        with pytest.raises(InvalidToken):
             srv.verify(totp, '283397', None)
 
         time.return_value = self.sample_time - 30
-        with assert_raises(InvalidToken):
+        with pytest.raises(InvalidToken):
             srv.verify(totp, '283397', None)
 
     def test_get_qr_code(self):
@@ -166,12 +166,12 @@ class TestAnyTotpServiceImplementation:
         totp = srv.Totp(key=self.sample_key)
 
         # 4th attempt (good or bad) will trip over the default limit of 3 in 30s
-        with assert_raises(InvalidToken):
+        with pytest.raises(InvalidToken):
             srv.verify(totp, '34dfvdasf', user)
-        with assert_raises(InvalidToken):
+        with pytest.raises(InvalidToken):
             srv.verify(totp, '234asdfsadf', user)
         srv.verify(totp, '283397', user)
-        with assert_raises(MultifactorRateLimitError):
+        with pytest.raises(MultifactorRateLimitError):
             srv.verify(totp, '283397', user)
 
 
@@ -269,9 +269,9 @@ class TestAnyRecoveryCodeServiceImplementation:
     def test_verify_fail(self):
         recovery = self.Service()
         user = self.mock_user()
-        with assert_raises(InvalidRecoveryCode):
+        with pytest.raises(InvalidRecoveryCode):
             recovery.verify_and_remove_code(user, '11111')
-        with assert_raises(InvalidRecoveryCode):
+        with pytest.raises(InvalidRecoveryCode):
             recovery.verify_and_remove_code(user, '')
 
     def test_verify_and_remove_code(self):
@@ -296,12 +296,12 @@ class TestAnyRecoveryCodeServiceImplementation:
         recovery.replace_codes(user, codes)
 
         # 4th attempt (good or bad) will trip over the default limit of 3 in 30s
-        with assert_raises(InvalidRecoveryCode):
+        with pytest.raises(InvalidRecoveryCode):
             recovery.verify_and_remove_code(user, '13485u0233')
-        with assert_raises(InvalidRecoveryCode):
+        with pytest.raises(InvalidRecoveryCode):
             recovery.verify_and_remove_code(user, '34123rdxafs')
         recovery.verify_and_remove_code(user, '11111')
-        with assert_raises(MultifactorRateLimitError):
+        with pytest.raises(MultifactorRateLimitError):
             recovery.verify_and_remove_code(user, '22222')
 
 
@@ -345,5 +345,5 @@ class TestGoogleAuthenticatorPamFilesystemRecoveryCodeService(TestAnyRecoveryCod
         GoogleAuthenticatorPamFilesystemTotpService().set_secret_key(self.mock_user(), None)
 
         # then it errors because no .google-authenticator file
-        with assert_raises(IOError):
+        with pytest.raises(IOError):
             super().test_replace_codes()

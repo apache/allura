@@ -16,6 +16,7 @@
 #       under the License.
 
 import mock
+import pytest
 import random
 import logging
 from six.moves.email_mime_text import MIMEText
@@ -30,7 +31,6 @@ from ming.odm import ThreadLocalORMSession
 from tg import tmpl_context as c
 from tg import config
 
-from alluratest.tools import assert_equal, assert_in, assert_not_in, assert_true, assert_false, assert_raises
 import feedparser
 
 from allura import model as M
@@ -45,8 +45,8 @@ log = logging.getLogger(__name__)
 
 
 class TestForumEmail(TestController):
-    def setUp(self):
-        TestController.setUp(self)
+    def setup_method(self, method):
+        super().setup_method(method)
         c.user = M.User.by_username('test-admin')
         self.app.get('/discussion/')
         r = self.app.get('/admin/discussion/forums')
@@ -136,8 +136,8 @@ class TestForumMessageHandling(TestController):
     Tests all the "handle_message" related logic, which is what inbound emails run through
     '''
 
-    def setUp(self):
-        TestController.setUp(self)
+    def setup_method(self, method):
+        super().setup_method(method)
         self.app.get('/discussion/')
         r = self.app.get('/admin/discussion/forums')
         form = r.forms['add-forum']
@@ -302,8 +302,8 @@ class TestForumMessageHandling(TestController):
 
 
 class TestForum(TestController):
-    def setUp(self):
-        TestController.setUp(self)
+    def setup_method(self, method):
+        super().setup_method(method)
         self.app.get('/discussion/')
         r = self.app.get('/admin/discussion/forums')
         form = r.forms['add-forum']
@@ -496,7 +496,7 @@ class TestForum(TestController):
             self.test_posting()
 
             # second should fail
-            with assert_raises(Exception):
+            with pytest.raises(Exception):
                 self.test_posting()
 
     def test_notifications_escaping(self):

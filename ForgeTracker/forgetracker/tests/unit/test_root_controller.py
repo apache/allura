@@ -32,16 +32,16 @@ from forgetracker import tracker_main
 
 class WithUserAndBugsApp(TrackerTestWithModel):
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         c.user = User(username='test-user')
         h.set_context('test', 'bugs', neighborhood='Projects')
 
 
 class TestWhenSearchingWithCustomFields(WithUserAndBugsApp):
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         with solr_search_returning_colors_are_wrong_ticket():
             self.response = tracker_main.RootController().search(q='friends')
 
@@ -57,8 +57,8 @@ class TestWhenSearchingWithCustomFields(WithUserAndBugsApp):
 
 class TestWhenLoadingFrontPage(WithUserAndBugsApp):
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         with mongo_search_returning_colors_are_wrong_ticket():
             self.response = tracker_main.RootController().index()
 

@@ -17,10 +17,7 @@
 
 import webob
 from mock import patch
-from alluratest.tools import (
-    assert_equal,
-    assert_raises,
-)
+import pytest
 import tg
 
 from allura.lib import patches
@@ -33,9 +30,9 @@ def empty_func():
 @patch.object(patches, 'request', webob.Request.blank('/foo/bar'))
 def test_with_trailing_slash():
     patches.apply()
-    with assert_raises(webob.exc.HTTPMovedPermanently) as raised:
+    with pytest.raises(webob.exc.HTTPMovedPermanently) as raised:
         tg.decorators.with_trailing_slash(empty_func)()
-    assert raised.exception.location == 'http://localhost/foo/bar/'
+    assert raised.value.location == 'http://localhost/foo/bar/'
 
 
 @patch.object(patches, 'request', webob.Request.blank('/foo/bar/?a=b'))
@@ -48,17 +45,17 @@ def test_with_trailing_slash_ok():
 @patch.object(patches, 'request', webob.Request.blank('/foo/bar?foo=bar&baz=bam'))
 def test_with_trailing_slash_qs():
     patches.apply()
-    with assert_raises(webob.exc.HTTPMovedPermanently) as raised:
+    with pytest.raises(webob.exc.HTTPMovedPermanently) as raised:
         tg.decorators.with_trailing_slash(empty_func)()
-    assert raised.exception.location == 'http://localhost/foo/bar/?foo=bar&baz=bam'
+    assert raised.value.location == 'http://localhost/foo/bar/?foo=bar&baz=bam'
 
 
 @patch.object(patches, 'request', webob.Request.blank('/foo/bar/'))
 def test_without_trailing_slash():
     patches.apply()
-    with assert_raises(webob.exc.HTTPMovedPermanently) as raised:
+    with pytest.raises(webob.exc.HTTPMovedPermanently) as raised:
         tg.decorators.without_trailing_slash(empty_func)()
-    assert raised.exception.location == 'http://localhost/foo/bar'
+    assert raised.value.location == 'http://localhost/foo/bar'
 
 
 @patch.object(patches, 'request', webob.Request.blank('/foo/bar?a=b'))
@@ -71,6 +68,6 @@ def test_without_trailing_slash_ok():
 @patch.object(patches, 'request', webob.Request.blank('/foo/bar/?foo=bar&baz=bam'))
 def test_without_trailing_slash_qs():
     patches.apply()
-    with assert_raises(webob.exc.HTTPMovedPermanently) as raised:
+    with pytest.raises(webob.exc.HTTPMovedPermanently) as raised:
         tg.decorators.without_trailing_slash(empty_func)()
-    assert raised.exception.location == 'http://localhost/foo/bar?foo=bar&baz=bam'
+    assert raised.value.location == 'http://localhost/foo/bar?foo=bar&baz=bam'

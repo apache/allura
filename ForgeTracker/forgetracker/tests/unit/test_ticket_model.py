@@ -22,16 +22,10 @@ import six.moves.urllib.request
 import six.moves.urllib.error
 
 import mock
+import pytest
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.orm import session
 from ming import schema
-from alluratest.tools import (
-    raises,
-    assert_equal,
-    assert_in,
-    assert_true,
-    assert_false,
-)
 from forgetracker.model import Ticket, TicketAttachment
 from forgetracker.tests.unit import TrackerTestWithModel
 from forgetracker.import_support import ResettableStream
@@ -76,9 +70,9 @@ class TestTicketModel(TrackerTestWithModel):
         ticket = Ticket.query.get(summary='my ticket')
         assert ticket.custom_fields == dict(my_field='my value')
 
-    @raises(schema.Invalid)
     def test_ticket_num_required(self):
-        Ticket(summary='my ticket')
+        with pytest.raises(schema.Invalid):
+            Ticket(summary='my ticket')
 
     def test_ticket_num_required2(self):
         t = Ticket(summary='my ticket', ticket_num=12)

@@ -17,7 +17,7 @@
 
 import os
 from mock import patch
-from alluratest.tools import assert_in, assert_not_in, assert_equal, assert_false, assert_true, assert_raises
+import pytest
 from webtest.app import AppError
 from ming.odm import session
 

@@ -34,7 +34,7 @@ from alluratest.pytest_helpers import with_nose_compatibility
 class TestAkismet(unittest.TestCase):
 
     @mock.patch('allura.lib.spam.akismetfilter.akismet')
-    def setUp(self, akismet_lib):
+    def setup_method(self, method, akismet_lib):
         self.akismet = AkismetSpamFilter({'spam.key': 'example', 'base_url': 'http://localhost/'})
 
         def side_effect(*args, **kw):

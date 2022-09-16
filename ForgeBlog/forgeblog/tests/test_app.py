@@ -34,7 +34,7 @@ from forgeblog import model as BM
 
 class TestApp:
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
 
     @td.with_tool('test', 'Blog', 'blog')
@@ -75,7 +75,7 @@ class TestApp:
 
 class TestBulkExport:
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
         setup_global_objects()
 
