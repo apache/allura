@@ -1,9 +1,20 @@
-Unreleased
+Version 1.14.0  (September 2022)
 
-[#8413] This release drops support for Python 3.6.
+Upgrade Instructions
+
+  To install updated dependencies, run:
+    pip install -r requirements.txt --no-deps --upgrade --upgrade-strategy=only-if-needed
+  Run: `./rebuild-all.bash` to get new ForgeFiles app available
+  Run: `paster ensure_index development.ini` in Allura dir
+
+  If switching from Python 3.6 to 3.7, you will need to make a completely new python virtual environment,
+  and run `pip install ...` in it, and then use it to run Allura.
+
+  If using docker, rebuild the allura image and restart containers.
 
 Breaking Changes
- * [#8399] In an effort to update the Docker startup steps to make them as 
+ * [#8413] [#8390] drop support for Python 2.7 and 3.6.  Only Python 3.7 is supported in this release.
+ * [#8399] In an effort to update the Docker startup steps to make them as
    easy as possible and compatible across as many OS's as possible, the default
    allura-data location has been moved from `/allura-data` to `./allura-data`.
    This will likely break existing Docker deployments. To fix your deployment,
@@ -12,6 +23,166 @@ Breaking Changes
    ./allura-data).
  * Remove the `force_ssl.logged_in` config option.  It is recommended to use https for
    all visitors, whether logged in or not.
+ * [#8438] gravatar integration is disabled by default, for privacy reasons.  If you wish to enable it, add
+   `use_gravatar = true` to your .ini file
+
+Major New Features
+ * [#8368] new Files App
+
+Security
+ * [#8414] Added a new validator to restrict private/internal ips from being submitted in import forms
+ * Many package upgrades
+
+General
+ * [#8388] consolidate markdown_syntax and search_help pages
+ * [#8402] Remove PreChecked Checkboxes
+ * [#8424] Better Error Handling For Wiki And Discussion Pages
+ * [#8404] SMTP maximum allowed line length
+ * [#8430] improve SMTP retry logic
+ * [#8401] Project Icon URL Param Issue
+ * [#8454] Prevent Anonymous Github Imports
+ * [#8403] Github Importer Enhancements
+ * page and limit url params are now being included in threaded comments links
+ * underscores in user's mentions parse correctly
+ * Remove gittip_button macro; gittip is defunct
+ * Avoid occasional errors in cached_convert logging
+ * Prevent discussion stats endpoint from 500ing if hit without parameters
+
+Code Repositories
+ * [#5593] Create backlink from ticket when commit message contains ticket link
+ * [#8060] Commit overview and diff changes are a bit messed up
+ * [#8431] handle dir/file/symlink changes better
+ * [#8432] diffs - add max file size
+ * [#8450] API to list repos
+ * Lower SVN import retry count significantly; block imports from plugins.svn.wordpress.org since it has millions of revisions
+
+Wikis
+ * [#8246] Set Home dialog validation fix
+ * [#8459] Wiki Tool Installation Optional
+
+Tickets
+ * [#8434] Tickets Tool Search Better Error Handling
+ * [#8457] Tickets Tool Actions Bug
+
+Admin & Accounts
+ * [#8393] Password recovery - resend verification mail for pending users
+ * [#8391] Unsubscribe from a project when a user is removed from Admin group
+ * [#8448] Oauth Authorize Screen Visual Update
+ * [#8451] [#8458] record more admin actions in audit log
+ * [#8405] added last_access field to save the last access date for OAuth tokens
+ * Only activate+enable users exactly when needed
+ * Make "enter" do the natural thing when adding an email to an account
+ * Added checkbox option that sends message replies to users active email address
+ * Ensure audit log email is the same as what was actually used
+ * Show multifactor setup key in addition to QR code
+ * various TaskCommand improvements triggered by expansions to purge command
+ * add filter by age of task to TaskCommands
+
+SEO
+ * [#8418] SEO - omit certain empty apps/tools from sitemap
+ * [#8420] Add "nofollow" to Markdown Syntax
+ * [#8421] SEO - omit certain empty apps/tools from sitemap - pt2
+ * [#8423] Wiki Page Versions Improvement
+ * [#8429] Add noindex,follow to Authorization Redirects
+ * [#8435] Robots Tag For Wiki History Pages
+ * [#8437] Do Not Index Empty Blog and Discussion Forums
+ * [#8439] Tool Search Add noindex, follow
+ * [#8440] Add Canonical Link To Project Activity
+ * [#8441] Project Members Page Better Title and H1
+ * [#8442] Code Repos Links Should nofollow
+ * [#8443] Project Activity And User Profile Link Add nofollow
+ * [#8444] Add Canonical Link For Tool Sections
+ * [#8446] Link Directly To User Profiles
+ * [#8462] 301 to default tool instead of 404 under projects
+ * [#8417] Added nofollow to generated links for RSS and Atom feeds
+ * Better detection of empty wiki pages
+ * noindex, follow on discussion stats page
+ * added noindex, follow header tag to project search
+ * On forums, use a 404 page instead of redirecting to a "deleted" page
+ * added missing trailing slash on stats link
+ * rel=nofollow on diff link, lots of them and not very useful content for search indexing
+ * 301 instead of 302 for http/https redirects
+ * Avoid extra redirect for /p/foo => /p/foo/ since the latter will do its own redir anyway
+ * Preserve exact URL in pagination helper
+
+Performance
+ * [#4359] Reduce duplicate queries in threaded discussion display
+ * [#8409] Speed up anonymous user handling
+ * [#8410] Markdown performance mitigation
+ * [#8416] Use regex library instead of re
+ * [#8422] optimize more discussion thread queries
+ * [#8447] restrict thread pre-caching to not be so greedy
+ * update timermiddleware with perf improvement
+ * post_widget.html has_access() cleanup:
+ * make some markdown macros cacheable
+ * Disable ming validation measurement since there can be a lot; fix requests Timer
+ * Add post/forum_post index
+
+For Developers
+ * [#8364] empty ProjectRole cleanup
+ * [#8389] CC-BY 4.0 and SIL Open Font License review & clarification
+ * [#8392] Allow further downstream customization of SiteNotifications
+ * [#8399] Broken Docker Setup Guide and Config + werkzeug upgrade
+ * [#8411] Inline Defaults for *.yml Files
+ * [#8415] Remove py2/3 bridging code
+ * [#8427] Fix tests to work with latest git
+ * [#8449] [#8452] [#8453] jQuery Upgrade
+ * init Memorable.items sooner, should fix error when sf_markitup.js calls Memorable.add before Memorable.initialize ran (due to jquery upgrade)
+ * [#8460] allow sending already-formatted message
+ * [#8412] added new method default_redirect
+ * fix sphinx documentation issues
+ * make "c" a template global too
+ * Fix sticky notifications
+ * install docs: update Docker/IP wording
+ * Remove node-sass npm dep
+ * remove some "with context" from template imports
+ * has_access() works with == not just is/bool checks
+ * Add generic require_method helper, alongside require_post
+ * Create a .git-blame-ignore-revs file
+ * create .asf.yaml
+ * New Relic: keep original transaction name if 500 error page is used
+ * Allow memoize_cleanup to work with dicts or objects
+ * Change ldap to simple_bind_s (does same thing, lets mockldap be used in tests)
+ * Fix LdapUserPreferencesProvider.get_pref return.  Support multi-valued ldap prefs
+ * Adds method to fetch multiple troves by their IDs
+ * Add block to permit customization of user message notices
+ * Include the incoming mail task id in logging
+ * Have a field to track user registration date, not just rely on _id
+ * switch from npm install -> npm ci
+ * Log more details about image failures
+ * updated the flash message if the picture upload raises an exception
+ * Use default correctly in User.get_tool_data
+ * HIBP better exception handling inside function and added basic test
+ * Convert document/collection mapping to be like other MappedClass types
+ * Special property hinting
+ * Add type hints for all mapped classes' query attrs
+ * Remove old unused OldProjectRole class
+ * Handle historical activities with null icon_url value
+ * Configuration improvement to global tooltips
+ * fixing icon cache issues by updating the activitystream icon_url with the value from default_avatar_image
+ * Remove invalid sourceMappingURL setting
+ * Remove ancient IE css & html conditionals
+ * Remove pb.transformie.min.js and jquery.browser shim
+ * renamed model field and added a datetime field
+ * added two new model fields to store additional email information
+ * Remove some tool_data.sfx.userid mentions (not part Allura itself)
+ * Let really_unicode() preserve Markup types.  Probably faster in most cases too
+ * Fix SitemapEntry html attrs being skipped/clobbered in a few places
+ * Change the exec call used by paster script cmd, to preserve the filename (helps when running coverage.py on a paster script cmd)
+ * [#8394] upgrade pillow dependency
+ * [#8396] Upgrade requests.  and more
+ * [#8397] upgrade more packages
+ * [#8400] Upgrade Ming and dependencies
+ * [#8408] Upgrade markdown
+ * [#8425] Upgrade Jinja to 3.1.1
+ * [#8428] upgrade pip & friends
+ * [#8445] Package Upgrades
+ * upgrade oauthlib
+ * Upgrade waitress
+ * new pypeline package which allows <summary> html tag
+ * Upgrade requests & urllib3 to latest
+ * remove sql-only twophase_transaction helper
+ * Update copyright year
 
 
 Version 1.13.0  (May 2021)
