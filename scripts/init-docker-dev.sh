@@ -54,7 +54,8 @@ pip install -q -r requirements.txt
 /allura/rebuild-all.bash
 echo
 
-if [[ ! -e /allura/Allura/allura/public/nf/js/build/transpiled.js || ! -e /allura/Allura/allura/nf/responsive/css/styles.css ]]; then
+if [[ ! -e /allura/Allura/allura/public/nf/js/build/transpiled.js ]]; then
+            #  || ! -e /allura/Allura/allura/nf/responsive/css/styles.css
   echo -e "Installing npm packages"
   npm ci  # if we want more progress displayed:  --loglevel http
 
