@@ -28,9 +28,6 @@ from testfixtures import TempDirectory
 
 
 class TestFiles(TestController):
-    def setUp(self):
-        TestController.setUp(self)
-
     def test_files(self):
         c.user = M.User.by_username('test-admin')
         r = self.app.get('/files/')

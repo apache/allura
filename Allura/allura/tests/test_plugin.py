@@ -23,16 +23,8 @@ from tg import tmpl_context as c
 from webob import Request, exc
 from bson import ObjectId
 from ming.orm.ormsession import ThreadLocalORMSession
-from alluratest.tools import (
-    assert_equals,
-    assert_equal,
-    assert_raises,
-    assert_is_none,
-    assert_is,
-    assert_true,
-    assert_false,
-)
 from mock import Mock, MagicMock, patch
+import pytest
 
 from allura import model as M
 from allura.lib import plugin
@@ -78,16 +70,16 @@ class TestProjectRegistrationProvider:
         v = self.provider.shortname_validator.to_python
 
         v('thisislegit', neighborhood=nbhd)
-        assert_raises(ProjectShortnameInvalid, v,
+        pytest.raises(ProjectShortnameInvalid, v,
                       'not valid', neighborhood=nbhd)
-        assert_raises(ProjectShortnameInvalid, v,
+        pytest.raises(ProjectShortnameInvalid, v,
                       'this-is-valid-but-too-long', neighborhood=nbhd)
-        assert_raises(ProjectShortnameInvalid, v,
+        pytest.raises(ProjectShortnameInvalid, v,
                       'this is invalid and too long', neighborhood=nbhd)
-        assert_raises(ProjectShortnameInvalid, v,
+        pytest.raises(ProjectShortnameInvalid, v,
                       'end-dash-', neighborhood=nbhd)
         Project.query.get.return_value = Mock()
-        assert_raises(ProjectConflict, v, 'thisislegit', neighborhood=nbhd)
+        pytest.raises(ProjectConflict, v, 'thisislegit', neighborhood=nbhd)
 
 
 @with_nose_compatibility
@@ -652,7 +644,7 @@ class TestLocalAuthenticationProvider:
         user.__ming__ = Mock()
         self.provider.validate_password = lambda u, p: False
         self.provider._encode_password = Mock()
-        assert_raises(
+        pytest.raises(
             exc.HTTPUnauthorized,
             self.provider.set_password, user, 'old', 'new')
         assert self.provider._encode_password.call_count == 0

@@ -25,7 +25,7 @@ from allura.lib import security
 from allura.tests import decorators as td
 
 
-def setUp():
+def setup_module(module):
     setup_basic_test()
     setup_with_tools()
 

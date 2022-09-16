@@ -36,14 +36,14 @@ from forgesvn.tests import with_svn
 
 class TestRepoTasks(unittest.TestCase):
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
         self.setup_with_tools()
         if asbool(tg.config.get('smtp.mock')):
             self.smtp_mock = mock.patch('allura.lib.mail_util.smtplib.SMTP')
             self.smtp_mock.start()
 
-    def tearDown(self):
+    def teardown_method(self, method):
         if asbool(tg.config.get('smtp.mock')):
             self.smtp_mock.stop()
 

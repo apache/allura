@@ -18,7 +18,7 @@
 from tg import tmpl_context as c
 import mock
 from ming.base import Object
-from alluratest.tools import assert_raises
+import pytest
 from formencode import validators as fev
 
 from alluratest.controller import setup_unit_test
@@ -73,8 +73,8 @@ def test_config_option_with_validator():
     v = fev.NotEmpty()
     opt = app.ConfigOption('test1', str, None, validator=v)
     assert opt.validate('val') == 'val'
-    assert_raises(fev.Invalid, opt.validate, None)
-    assert_raises(fev.Invalid, opt.validate, '')
+    pytest.raises(fev.Invalid, opt.validate, None)
+    pytest.raises(fev.Invalid, opt.validate, '')
 
 
 @with_setup(setup_method)

@@ -35,7 +35,7 @@ from forgewiki.wiki_main import ForgeWikiApp
 
 class TestBulkExport:
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
         setup_global_objects()
         self.setup_with_tools()
@@ -127,7 +127,7 @@ class TestBulkExport:
 
 class TestApp:
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
         setup_global_objects()
         self.setup_with_tools()

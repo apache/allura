@@ -70,7 +70,7 @@ def main(args):
                         debug_html=args.debug_html)
     print(json.dumps(counts))
     write_csv(counts, args.id, args.data_file)
-    test.tearDown()
+    test.teardown_method(method)
 
 
 def setup(test):
@@ -79,7 +79,7 @@ def setup(test):
                                   'stats.debug_line_length': 1000,
                                   }), \
             patch('timermiddleware.log.isEnabledFor', return_value=True):  # can't set this via logging configuration since setUp() will load a logging config and then start using it before we have a good place to tweak it
-        test.setUp()
+        test.setup_method(method)
 
     tmw_log = logging.getLogger('timermiddleware')
     tmw_log.disabled = 0  # gets disabled when .ini file is loaded; dumb.

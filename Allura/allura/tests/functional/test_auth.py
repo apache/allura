@@ -32,16 +32,6 @@ from ming.orm.ormsession import ThreadLocalORMSession, session
 from tg import config, expose
 from mock import patch, Mock
 import mock
-from alluratest.tools import (
-    assert_equal,
-    assert_not_equal,
-    assert_is_none,
-    assert_is_not_none,
-    assert_in,
-    assert_not_in,
-    assert_true,
-    assert_false,
-)
 from tg import tmpl_context as c, app_globals as g
 
 from allura.tests import TestController
@@ -1896,8 +1886,8 @@ class TestOAuth(TestController):
         )
         r = self.app.get(*oauth1_webtest('/rest/oauth/access_token', oauth_params))
         atok = parse_qs(r.text)
-        assert_equal(len(atok['oauth_token']), 1)
-        assert_equal(len(atok['oauth_token_secret']), 1)
+        assert len(atok['oauth_token']) == 1
+        assert len(atok['oauth_token_secret']) == 1
 
         # now use the tokens & secrets to make a full OAuth request:
         oauth_token = atok['oauth_token'][0]
@@ -1934,8 +1924,8 @@ class TestOAuth(TestController):
         )
         ThreadLocalORMSession.flush_all()
         r = self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok_12345'})
-        assert_in('ctok_desc', r.text)
-        assert_in('api_key_reqtok_12345', r.text)
+        assert 'ctok_desc' in r.text
+        assert 'api_key_reqtok_12345' in r.text
 
     def test_authorize_invalid(self):
         resp = self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok_12345'}, status=400)
@@ -1957,7 +1947,7 @@ class TestOAuth(TestController):
         ThreadLocalORMSession.flush_all()
         self.app.post('/rest/oauth/do_authorize',
                       params={'no': '1', 'oauth_token': 'api_key_reqtok_12345'})
-        assert_is_none(M.OAuthRequestToken.query.get(api_key='api_key_reqtok_12345'))
+        assert M.OAuthRequestToken.query.get(api_key='api_key_reqtok_12345') is None
 
     def test_do_authorize_oob(self):
         user = M.User.by_username('test-admin')
@@ -1974,7 +1964,7 @@ class TestOAuth(TestController):
         )
         ThreadLocalORMSession.flush_all()
         r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key_reqtok_12345'})
-        assert_is_not_none(r.html.find(text=re.compile('^PIN: ')))
+        assert r.html.find(text=re.compile('^PIN: ')) is not None
 
     def test_do_authorize_cb(self):
         user = M.User.by_username('test-admin')
@@ -2018,8 +2008,8 @@ class TestOAuthRequestToken(TestController):
         client_secret='test-client-secret',
     )
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         dummy_oauths()
 
     def test_request_token_valid(self):
@@ -2034,7 +2024,7 @@ class TestOAuthRequestToken(TestController):
         r.mustcontain('oauth_token=')
         r.mustcontain('oauth_token_secret=')
         request_token = M.OAuthRequestToken.query.get(consumer_token_id=consumer_token._id)
-        assert_is_not_none(request_token)
+        assert request_token is not None
 
     def test_request_token_no_consumer_token_matching(self):
         self.app.post(*oauth1_webtest('/rest/oauth/request_token', self.oauth_params), status=401)
@@ -2069,8 +2059,8 @@ class TestOAuthAccessToken(TestController):
         verifier='good_verifier_123456',
     )
 
-    def setUp(self):
-        super().setUp()
+    def setup_method(self, method):
+        super().setup_method(method)
         dummy_oauths()
 
     def test_access_token_no_consumer(self):

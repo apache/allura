@@ -49,7 +49,7 @@ def setup_method():
     ThreadLocalORMSession.close_all()
 
 
-def tearDown():
+def teardown_module():
     ThreadLocalORMSession.close_all()
 
 
@@ -209,7 +209,7 @@ def test_attachment_methods():
         n.text)
 
 
-@with_setup(setup_method, tearDown())
+@with_setup(setup_method)
 def test_multiple_attachments():
     test_file1 = FieldStorage()
     test_file1.name = 'file_info'

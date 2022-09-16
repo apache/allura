@@ -29,8 +29,8 @@ log = logging.getLogger(__name__)
 
 class TestForumAdmin(TestController):
 
-    def setUp(self):
-        TestController.setUp(self)
+    def setup_method(self, method):
+        super().setup_method(method)
         self.app.get('/discussion/')
 
     def test_forum_CRUD(self):

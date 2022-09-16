@@ -53,7 +53,7 @@ class TestApp(TestDiscussionApiBase):  # creates some sample data
 
 class TestAppSitemap:
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
         setup_unit_test()
         self.user = M.User.query.get(username='root')

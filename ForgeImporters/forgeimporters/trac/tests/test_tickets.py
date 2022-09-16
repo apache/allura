@@ -40,7 +40,7 @@ from forgeimporters.trac.tickets import (
 
 class TestTracTicketImporter(TestCase):
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_unit_test()
 
     @patch('forgeimporters.trac.tickets.session')
@@ -110,9 +110,9 @@ class TestTracTicketImporter(TestCase):
 
 class TestTracTicketImportController(TestController, TestCase):
 
-    def setUp(self):
+    def setup_method(self, method):
         """Mount Trac import controller on the Tracker admin controller"""
-        super().setUp()
+        super().setup_method(method)
         from forgetracker.tracker_main import TrackerAdminController
         self.importer = TrackerAdminController._importer = TracTicketImportController(TracTicketImporter())
 

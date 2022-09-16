@@ -38,7 +38,7 @@ from alluratest.pytest_helpers import with_nose_compatibility
 
 class TestApp:
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_basic_test()
 
     @td.with_tracker

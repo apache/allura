@@ -26,7 +26,7 @@ from allura.tests import decorators as td
 from allura.lib import helpers as h
 
 
-def setUp():
+def setup_module(module):
     setup_basic_test()
     setup_with_tools()
 

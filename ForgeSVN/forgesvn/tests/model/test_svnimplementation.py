@@ -26,7 +26,7 @@ from forgesvn.model.svn import SVNImplementation
 
 class TestSVNImplementation:
 
-    def setUp(self):
+    def setup_method(self, method):
         setup_unit_test()
 
     def test_compute_tree_new(self):
