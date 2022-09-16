@@ -19,7 +19,7 @@
 from __future__ import annotations
 
 import os
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 import six.moves.urllib.request
 import six.moves.urllib.parse
 import six.moves.urllib.error

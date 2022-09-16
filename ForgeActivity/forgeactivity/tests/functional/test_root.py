@@ -95,9 +95,9 @@ class TestActivityController(TestController):
         })]
         r = self.app.get('/p/test/activity/')
         timeline = r.html.find('ul', 'timeline')
-        assert_equal(1, len(timeline.findAll('li')))
+        assert 1 == len(timeline.findAll('li'))
         activity = timeline.find('li')
-        assert_equal(activity.time['title'], "2013-12-04 21:48:19")
+        assert activity.time['title'] == "2013-12-04 21:48:19"
         h1 = """\
         <h1>
          <img alt="Administrator 1" class="emboss x32 avatar" src="/u/test-admin/user_icon" title="Administrator 1"/>
@@ -114,13 +114,13 @@ class TestActivityController(TestController):
          </a>
         </h1>
         """
-        assert_equal(dedent(h1), activity.h1.prettify())
+        assert dedent(h1) == activity.h1.prettify()
         p = """\
         <p>
          Just wanted to leave a comment on this...
         </p>
         """
-        assert_equal(dedent(p), activity.p.prettify())
+        assert dedent(p) == activity.p.prettify()
 
     @td.with_tool('u/test-user-1', 'activity')
     @td.with_user_project('test-user-1')
@@ -170,11 +170,11 @@ class TestActivityController(TestController):
             create_timeline.side_effect = orig_create_timeline
             M.MonQTask.run_ready()
             # 3 aggregations: 1 actor, 1 follower, 1 project
-            assert_equal(create_timeline.call_count, 3)
+            assert create_timeline.call_count == 3
             create_timeline.reset_mock()
             self.app.get('/u/test-admin/activity/')
             self.app.get('/u/test-user-1/activity/')
-            assert_equal(create_timeline.call_count, 0)
+            assert create_timeline.call_count == 0
 
     @td.with_tool('test', 'activity')
     @patch('forgeactivity.main.g.director')
@@ -213,17 +213,17 @@ class TestActivityController(TestController):
         })]
         r = self.app.get('/p/test/activity/feed.rss')
         timeline = r.xml.find('channel')
-        assert_equal(1, len(timeline.findall('item')))
+        assert 1 == len(timeline.findall('item'))
         activity = timeline.find('item')
-        assert_equal(activity.find('pubDate').text,
+        assert (activity.find('pubDate').text ==
                      'Wed, 04 Dec 2013 21:48:19 -0000')
-        assert_equal(activity.find('title').text,
+        assert (activity.find('title').text ==
                      'Administrator 1 posted a comment on ticket #34')
-        assert_equal(activity.find('description').text,
+        assert (activity.find('description').text ==
                      'Just wanted to leave a comment on this...')
-        assert_equal(activity.find('guid').text,
+        assert (activity.find('guid').text ==
                      'http://localhost/p/test/unicode•º/?limit=25#ed7c')
-        assert_equal(activity.find('link').text,
+        assert (activity.find('link').text ==
                      'http://localhost/p/test/unicode%E2%80%A2%C2%BA/?limit=25#ed7c')
 
     @td.with_tool('test', 'activity')
@@ -244,10 +244,10 @@ class TestActivityController(TestController):
 
         r = self.app.get('/p/test/activity/feed.rss')
         timeline = r.xml.find('channel')
-        assert_equal(1, len(timeline.findall('item')))
+        assert 1 == len(timeline.findall('item'))
         activity = timeline.find('item')
 
-        assert_equal(activity.find('title').text, 'Administrator 1 created ticket #34')
+        assert activity.find('title').text == 'Administrator 1 created ticket #34'
 
     @td.with_tool('u/test-user-1', 'activity')
     @td.with_user_project('test-user-1')
@@ -287,15 +287,15 @@ class TestActivityController(TestController):
         })]
         r = self.app.get('/u/test-user-1/activity/feed.rss')
         timeline = r.xml.find('channel')
-        assert_equal(1, len(timeline.findall('item')))
+        assert 1 == len(timeline.findall('item'))
         activity = timeline.find('item')
-        assert_equal(activity.find('pubDate').text,
+        assert (activity.find('pubDate').text ==
                      'Wed, 04 Dec 2013 21:48:19 -0000')
-        assert_equal(activity.find('title').text,
+        assert (activity.find('title').text ==
                      'Administrator 1 posted a comment on ticket #34')
-        assert_equal(activity.find('description').text,
+        assert (activity.find('description').text ==
                      'Just wanted to leave a comment on this...')
-        assert_equal(activity.find('link').text,
+        assert (activity.find('link').text ==
                      'http://localhost/p/test/tickets/34/?limit=25#ed7c')
 
     @td.with_tool('test', 'activity')
@@ -335,20 +335,20 @@ class TestActivityController(TestController):
         })]
         r = self.app.get('/p/test/activity/feed.atom')
         timeline = r.xml
-        assert_equal(1, len(timeline.findall(
-            '{http://www.w3.org/2005/Atom}entry')))
+        assert 1 == len(timeline.findall(
+            '{http://www.w3.org/2005/Atom}entry'))
         activity = timeline.find('{http://www.w3.org/2005/Atom}entry')
-        assert_equal(
-            activity.find('{http://www.w3.org/2005/Atom}published').text,
+        assert (
+            activity.find('{http://www.w3.org/2005/Atom}published').text ==
             '2013-12-04T21:48:19Z')
-        assert_equal(
-            activity.find('{http://www.w3.org/2005/Atom}title').text,
+        assert (
+            activity.find('{http://www.w3.org/2005/Atom}title').text ==
             'Administrator 1 posted a comment on ticket #34')
-        assert_equal(
-            activity.find('{http://www.w3.org/2005/Atom}summary').text,
+        assert (
+            activity.find('{http://www.w3.org/2005/Atom}summary').text ==
             'Just wanted to leave a comment on this...')
-        assert_equal(
-            activity.find('{http://www.w3.org/2005/Atom}link').get('href'),
+        assert (
+            activity.find('{http://www.w3.org/2005/Atom}link').get('href') ==
             'http://localhost/p/test/tickets/34/?limit=25#ed7c')
 
     @td.with_tool('u/test-user-1', 'activity')
@@ -389,20 +389,20 @@ class TestActivityController(TestController):
         })]
         r = self.app.get('/u/test-user-1/activity/feed.atom')
         timeline = r.xml
-        assert_equal(1, len(timeline.findall(
-            '{http://www.w3.org/2005/Atom}entry')))
+        assert 1 == len(timeline.findall(
+            '{http://www.w3.org/2005/Atom}entry'))
         activity = timeline.find('{http://www.w3.org/2005/Atom}entry')
-        assert_equal(
-            activity.find('{http://www.w3.org/2005/Atom}published').text,
+        assert (
+            activity.find('{http://www.w3.org/2005/Atom}published').text ==
             '2013-12-04T21:48:19Z')
-        assert_equal(
-            activity.find('{http://www.w3.org/2005/Atom}title').text,
+        assert (
+            activity.find('{http://www.w3.org/2005/Atom}title').text ==
             'Administrator 1 posted a comment on ticket #34')
-        assert_equal(
-            activity.find('{http://www.w3.org/2005/Atom}summary').text,
+        assert (
+            activity.find('{http://www.w3.org/2005/Atom}summary').text ==
             'Just wanted to leave a comment on this...')
-        assert_equal(
-            activity.find('{http://www.w3.org/2005/Atom}link').get('href'),
+        assert (
+            activity.find('{http://www.w3.org/2005/Atom}link').get('href') ==
             'http://localhost/p/test/tickets/34/?limit=25#ed7c')
 
     @td.with_tool('u/test-user-1', 'activity')
@@ -459,7 +459,7 @@ class TestActivityController(TestController):
         activity3 = Activity(**dict(activity_data, node_id='User:abc', owner_id='User:abc'))
         ThreadLocalODMSession.flush_all()
         activity_id = str(activity._id)
-        assert_equal(Activity.query.find({'obj.activity_extras.summary': 'Sensitive private info, oops'}).count(), 3)
+        assert Activity.query.find({'obj.activity_extras.summary': 'Sensitive private info, oops'}).count() == 3
 
         self.app.post('/u/test-user-1/activity/delete_item',
                       {'activity_id': activity_id},
@@ -467,4 +467,4 @@ class TestActivityController(TestController):
                       status=200)
         ThreadLocalODMSession.flush_all()
 
-        assert_equal(Activity.query.find({'obj.activity_extras.summary': 'Sensitive private info, oops'}).count(), 0)
+        assert Activity.query.find({'obj.activity_extras.summary': 'Sensitive private info, oops'}).count() == 0

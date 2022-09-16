@@ -34,20 +34,20 @@ class TestLinkApi(TestRestApiBase):
 
     def test_rest_link(self):
         r = self.api_get('/rest/p/test/link')
-        assert_equal(r.json['url'], None)
+        assert r.json['url'] == None
 
         r = self.api_post('/rest/p/test/link',
                           url='http://google.com')
-        assert_equal(r.json['url'], 'http://google.com')
+        assert r.json['url'] == 'http://google.com'
 
         self.api_post('/rest/p/test/link',
                       url='http://yahoo.com')
         r = self.api_get('/rest/p/test/link')
-        assert_equal(r.json['url'], 'http://yahoo.com')
+        assert r.json['url'] == 'http://yahoo.com'
 
         self.api_post('/rest/p/test/link')
         r = self.api_get('/rest/p/test/link')
-        assert_equal(r.json['url'], 'http://yahoo.com')
+        assert r.json['url'] == 'http://yahoo.com'
 
     def test_rest_link_get_permissions(self):
         self.app.get('/rest/p/test/link',
@@ -75,7 +75,7 @@ class TestLinkApi(TestRestApiBase):
                       extra_environ={'username': '*anonymous'},
                       status=200)
         r = self.api_get('/rest/p/test/link')
-        assert_equal(r.json['url'], 'http://yahoo.com')
+        assert r.json['url'] == 'http://yahoo.com'
 
 
 class TestLinkHasAccess(TestRestApiBase):
@@ -98,13 +98,13 @@ class TestLinkHasAccess(TestRestApiBase):
         r = self.api_get(
             '/rest/p/test/link/has_access?user=babadook&perm=read',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False
         r = self.api_get(
             '/rest/p/test/link/has_access?user=test-user&perm=jump',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False
 
     def test_has_access_not_admin(self):
         """
@@ -120,10 +120,10 @@ class TestLinkHasAccess(TestRestApiBase):
         r = self.api_get(
             '/rest/p/test/link/has_access?user=test-admin&perm=configure',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], True)
+        assert r.status_int == 200
+        assert r.json['result'] == True
         r = self.api_get(
             '/rest/p/test/link/has_access?user=test-user&perm=configure',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False

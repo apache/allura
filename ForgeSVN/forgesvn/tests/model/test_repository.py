@@ -82,25 +82,25 @@ class TestNewRepo(unittest.TestCase):
         assert self.rev.index_id().startswith('allura/model/repo/Commit#')
         self.rev.author_url
         self.rev.committer_url
-        assert_equal(self.rev.tree._id, self.rev.tree_id)
-        assert_equal(self.rev.shorthand_id(), f'[r{latest_rev}]')
-        assert_equal(self.rev.symbolic_ids, ([], []))
-        assert_equal(self.rev.url(), f'/p/test/src/{latest_rev}/')
+        assert self.rev.tree._id == self.rev.tree_id
+        assert self.rev.shorthand_id() == f'[r{latest_rev}]'
+        assert self.rev.symbolic_ids == ([], [])
+        assert self.rev.url() == f'/p/test/src/{latest_rev}/'
         all_cis = list(self.repo.log(self.rev._id, limit=25))
-        assert_equal(len(all_cis), latest_rev)
+        assert len(all_cis) == latest_rev
         self.rev.tree.ls()
-        assert_equal(self.rev.tree.readme(), ('README', 'This is readme\nAnother Line\n'))
-        assert_equal(self.rev.tree.path(), '/')
-        assert_equal(self.rev.tree.url(), f'/p/test/src/{latest_rev}/tree/')
+        assert self.rev.tree.readme() == ('README', 'This is readme\nAnother Line\n')
+        assert self.rev.tree.path() == '/'
+        assert self.rev.tree.url() == f'/p/test/src/{latest_rev}/tree/'
         self.rev.tree.by_name['README']
         assert self.rev.tree.is_blob('README') is True
-        assert_equal(self.rev.tree['a']['b']['c'].ls(), [])
+        assert self.rev.tree['a']['b']['c'].ls() == []
         self.assertRaises(KeyError, lambda: self.rev.tree['a']['b']['d'])
 
-        assert_equal(self.rev.authored_user, None)
-        assert_equal(self.rev.committed_user, None)
-        assert_equal(
-            sorted(self.rev.webhook_info.keys()),
+        assert self.rev.authored_user == None
+        assert self.rev.committed_user == None
+        assert (
+            sorted(self.rev.webhook_info.keys()) ==
             sorted(['id', 'url', 'timestamp', 'message', 'author',
                     'committer', 'added', 'removed', 'renamed', 'modified', 'copied']))
 
@@ -235,11 +235,11 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
 
     def test_log_id_only(self):
         entries = list(self.repo.log(id_only=True, limit=25))
-        assert_equal(entries, [7, 6, 5, 4, 3, 2, 1])
+        assert entries == [7, 6, 5, 4, 3, 2, 1]
 
     def test_log(self):
         entries = list(self.repo.log(id_only=False, limit=25))
-        assert_equal(entries[len(entries)-6:],  # only 6, so this test doesn't have to change when commits added
+        assert (entries[len(entries)-6:] ==  # only 6, so this test doesn't have to change when commits added
                      [
             {'parents': [5],
              'refs': [],
@@ -327,7 +327,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
 
     def test_log_file(self):
         entries = list(self.repo.log(path='/README', id_only=False, limit=25))
-        assert_equal(entries, [
+        assert entries == [
             {'authored': {'date': datetime(2010, 10, 8, 15, 32, 48, 272296),
                           'email': '',
                           'name': 'rick446'},
@@ -352,7 +352,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
              'refs': [],
              'size': 15,
              'rename_details': {}},
-        ])
+        ]
 
     def test_is_file(self):
         assert self.repo.is_file('/README')
@@ -407,9 +407,9 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
 
     def test_diff_copy(self):
         entry = self.repo.commit(next(self.repo.log(5, id_only=True, limit=1)))
-        assert_equals(dict(entry.diffs), dict(
+        assert dict(entry.diffs) == dict(
                 copied=[{'new': '/b', 'old': '/a', 'ratio': 1}],  renamed=[],
-                changed=[], removed=[], added=[], total=1))
+                changed=[], removed=[], added=[], total=1)
 
     def test_commit(self):
         entry = self.repo.commit(1)
@@ -432,16 +432,16 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
     @skipUnless(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
     def test_tarball(self):
         tmpdir = tg.config['scm.repos.tarball.root']
-        assert_equal(self.repo.tarball_path,
+        assert (self.repo.tarball_path ==
                      os.path.join(tmpdir, 'svn/t/te/test/testsvn'))
-        assert_equal(self.repo.tarball_url('1'),
+        assert (self.repo.tarball_url('1') ==
                      'file:///svn/t/te/test/testsvn/test-src-r1.zip')
         self.repo.tarball('1')
         assert os.path.isfile(
             os.path.join(tmpdir, "svn/t/te/test/testsvn/test-src-r1.zip"))
         tarball_zip = ZipFile(
             os.path.join(tmpdir, 'svn/t/te/test/testsvn/test-src-r1.zip'), 'r')
-        assert_equal(tarball_zip.namelist(),
+        assert (tarball_zip.namelist() ==
                      ['test-src-r1/', 'test-src-r1/README'])
         shutil.rmtree(self.repo.tarball_path.encode('utf-8'),
                       ignore_errors=True)
@@ -461,7 +461,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         tag_content = sorted(['test-svn-tags-r19-tags-tag-1.0/',
                               'test-svn-tags-r19-tags-tag-1.0/svn-commit.tmp',
                               'test-svn-tags-r19-tags-tag-1.0/README'])
-        assert_equal(sorted(snapshot.namelist()), tag_content)
+        assert sorted(snapshot.namelist()) == tag_content
         os.remove(fn)
 
         # a directory (of tags)
@@ -473,7 +473,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                                'test-svn-tags-r19-tags/tag-1.0/',
                                'test-svn-tags-r19-tags/tag-1.0/svn-commit.tmp',
                                'test-svn-tags-r19-tags/tag-1.0/README'])
-        assert_equal(sorted(snapshot.namelist()), tags_content)
+        assert sorted(snapshot.namelist()) == tags_content
         os.remove(fn)
 
         # no path, but there are trunk in the repo
@@ -487,7 +487,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                                 'test-svn-tags-r19-trunk/bbb.txt',
                                 'test-svn-tags-r19-trunk/ccc.txt',
                                 'test-svn-tags-r19-trunk/README'])
-        assert_equal(sorted(snapshot.namelist()), trunk_content)
+        assert sorted(snapshot.namelist()) == trunk_content
         os.remove(fn)
 
         # no path, and no trunk dir
@@ -497,7 +497,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         self.repo.tarball('1')
         assert os.path.isfile(fn), fn
         snapshot = ZipFile(fn, 'r')
-        assert_equal(snapshot.namelist(), ['test-src-r1/', 'test-src-r1/README'])
+        assert snapshot.namelist() == ['test-src-r1/', 'test-src-r1/README']
         shutil.rmtree(os.path.join(tmpdir, 'svn/t/te/test/testsvn/'),
                       ignore_errors=True)
         shutil.rmtree(tarball_path, ignore_errors=True)
@@ -568,7 +568,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                 'url': 'http://localhost/p/test/src/',
             },
         }
-        assert_equals(payload, expected_payload)
+        assert payload == expected_payload
 
 
 class TestSVNRev(unittest.TestCase):
@@ -614,17 +614,17 @@ class TestSVNRev(unittest.TestCase):
     def test_log(self):
         # path only
         commits = list(self.repo.log(self.repo.head, id_only=True, limit=25))
-        assert_equal(commits, [7, 6, 5, 4, 3, 2, 1])
+        assert commits == [7, 6, 5, 4, 3, 2, 1]
         commits = list(self.repo.log(self.repo.head, 'README', id_only=True, limit=25))
-        assert_equal(commits, [3, 1])
+        assert commits == [3, 1]
         commits = list(self.repo.log(1, 'README', id_only=True, limit=25))
-        assert_equal(commits, [1])
+        assert commits == [1]
         commits = list(self.repo.log(self.repo.head, 'a/b/c/', id_only=True, limit=25))
-        assert_equal(commits, [4, 2])
+        assert commits == [4, 2]
         commits = list(self.repo.log(3, 'a/b/c/', id_only=True, limit=25))
-        assert_equal(commits, [2])
-        assert_equal(
-            list(self.repo.log(self.repo.head, 'does/not/exist', id_only=True, limit=25)), [])
+        assert commits == [2]
+        assert (
+            list(self.repo.log(self.repo.head, 'does/not/exist', id_only=True, limit=25)) == [])
 
     def test_notification_email(self):
         setup_global_objects()
@@ -644,8 +644,8 @@ class TestSVNRev(unittest.TestCase):
         n = M.Notification.query.find({'subject': '[test:src] New commit [r1] by rick446'}).first()
 
         assert n
-        assert_in('By rick446', n.text)
-        assert_in('Create readme', n.text)
+        assert 'By rick446' in n.text
+        assert 'Create readme' in n.text
 
 
 class _Test(unittest.TestCase):
@@ -770,12 +770,12 @@ class TestRepo(_TestWithRepo):
         assert i['name_s'] == 'test1', i
 
     def test_scm_host_url(self):
-        assert_equal(self.repo.clone_url('rw', 'nobody'),
+        assert (self.repo.clone_url('rw', 'nobody') ==
                      'svn+ssh://nobody@localhost:8022/scm-repo/p/test/test1/')
-        assert_equal(self.repo.clone_url('https', 'nobody'),
+        assert (self.repo.clone_url('https', 'nobody') ==
                      'https://nobody@localhost:8022/scm-repo/p/test/test1/')
         with h.push_config(self.repo.app.config.options, external_checkout_url='https://$username@foo.com/'):
-            assert_equal(self.repo.clone_url('https', 'user'),
+            assert (self.repo.clone_url('https', 'user') ==
                          'https://user@foo.com/')
 
     def test_guess_type(self):
@@ -821,8 +821,8 @@ class TestRepo(_TestWithRepo):
         notifications = M.Notification.query.find().all()
         for n in notifications:
             if '100 new commits' in n.subject:
-                assert_in('By Test Committer on 10/08/2010 15:32', n.text)
-                assert_in('http://localhost/ci/foo99/', n.text)
+                assert 'By Test Committer on 10/08/2010 15:32' in n.text
+                assert 'http://localhost/ci/foo99/' in n.text
                 break
         else:
             assert False, 'Did not find notification'
@@ -945,7 +945,7 @@ class TestCommit(_TestWithRepo):
             'removed': [],
             'total': 5,
         }
-        assert_equal(self.ci.diffs.added,
+        assert (self.ci.diffs.added ==
                      ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'])
         assert (self.ci.diffs.copied
                 == self.ci.diffs.changed
@@ -969,8 +969,8 @@ class TestCommit(_TestWithRepo):
             'removed': ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'],
             'total': 10,
         }
-        assert_equal(ci.diffs.added, ['b', 'b/a', 'b/a/a', 'b/a/b', 'b/b'])
-        assert_equal(ci.diffs.removed, ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'])
+        assert ci.diffs.added == ['b', 'b/a', 'b/a/a', 'b/a/b', 'b/b']
+        assert ci.diffs.removed == ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b']
         assert (ci.diffs.copied
                 == ci.diffs.changed
                 == [])
@@ -1004,17 +1004,17 @@ class TestCommit(_TestWithRepo):
             'renamed': [],
             'total': 2
         }
-        assert_equal(ci.diffs.added, ['b/a/z', 'b/c'])
-        assert_equal(ci.diffs.changed, [])
-        assert_equal(ci.diffs.removed, ['/b/a/b', 'b/b'])
+        assert ci.diffs.added == ['b/a/z', 'b/c']
+        assert ci.diffs.changed == []
+        assert ci.diffs.removed == ['/b/a/b', 'b/b']
         # see mock for open_blob
-        assert_equal(len(ci.diffs.copied), 2)
-        assert_equal(ci.diffs.copied[1]['old'], 'b/a/b')
-        assert_equal(ci.diffs.copied[1]['new'], 'b/c')
-        assert_equal(ci.diffs.copied[1]['ratio'], 1)
-        assert_equal(ci.diffs.copied[1]['diff'], '')
-        assert_equal(ci.diffs.copied[0]['old'], 'b/b')
-        assert_equal(ci.diffs.copied[0]['new'], 'b/a/z')
+        assert len(ci.diffs.copied) == 2
+        assert ci.diffs.copied[1]['old'] == 'b/a/b'
+        assert ci.diffs.copied[1]['new'] == 'b/c'
+        assert ci.diffs.copied[1]['ratio'] == 1
+        assert ci.diffs.copied[1]['diff'] == ''
+        assert ci.diffs.copied[0]['old'] == 'b/b'
+        assert ci.diffs.copied[0]['new'] == 'b/a/z'
 
     def test_context(self):
         self.ci.context()
@@ -1042,19 +1042,18 @@ class TestRename(unittest.TestCase):
 
     def test_log_file_with_rename(self):
         entry = list(self.repo.log(path='/dir/b.txt', id_only=False, limit=1))[0]
-        assert_equal(entry['id'], 3)
-        assert_equal(entry['rename_details']['path'], '/dir/a.txt')
-        assert_equal(
-            entry['rename_details']['commit_url'],
-            self.repo.url_for_commit(2)  # previous revision
-        )
+        assert entry['id'] == 3
+        assert entry['rename_details']['path'] == '/dir/a.txt'
+        assert (
+            entry['rename_details']['commit_url'] ==
+            self.repo.url_for_commit(2))
 
     def test_check_changed_path(self):
         changed_path = {'copyfrom_path': '/test/path', 'path': '/test/path2'}
         result = self.repo._impl._check_changed_path(
             changed_path, '/test/path2/file.txt')
-        assert_equal({'path': '/test/path2/file.txt',
-                     'copyfrom_path': '/test/path/file.txt'}, result)
+        assert {'path': '/test/path2/file.txt',
+                     'copyfrom_path': '/test/path/file.txt'} == result
 
 
 class TestDirectRepoAccess:
@@ -1088,7 +1087,7 @@ class TestDirectRepoAccess:
             'renamed': [],
             'total': 1,
         }
-        assert_equals(diffs, expected)
+        assert diffs == expected
 
         _id = self.repo._impl._oid(2)
         diffs = self.repo.commit(_id).diffs
@@ -1100,7 +1099,7 @@ class TestDirectRepoAccess:
             'copied': [],
             'total': 4,
         }
-        assert_equals(diffs, expected)
+        assert diffs == expected
 
         _id = self.repo._impl._oid(3)
         diffs = self.repo.commit(_id).diffs
@@ -1112,7 +1111,7 @@ class TestDirectRepoAccess:
             'copied': [],
             'total': 1,
         }
-        assert_equals(diffs, expected)
+        assert diffs == expected
 
         _id = self.repo._impl._oid(4)
         diffs = self.repo.commit(_id).diffs
@@ -1124,4 +1123,4 @@ class TestDirectRepoAccess:
             'copied': [],
             'total': 1,
         }
-        assert_equals(diffs, expected)
+        assert diffs == expected

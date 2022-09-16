@@ -90,13 +90,13 @@ class TestRestNewTicket(TestTrackerApiBase):
             summary = 'Second ticket'
             self.create_ticket(summary=summary)
             t = TM.Ticket.query.get(summary=summary)
-            assert_not_equal(t, None)
+            assert t != None
         # Set rate limit to 1 in first hour of project
         with h.push_config(config, **{'forgetracker.rate_limits': '{"3600": 1}'}):
             summary = 'Third ticket'
             self.create_ticket(summary=summary, status=429)
             t = TM.Ticket.query.get(summary=summary)
-            assert_equal(t, None)
+            assert t == None
 
 
 class TestRestUpdateTicket(TestTrackerApiBase):
@@ -152,7 +152,7 @@ class TestRestIndex(TestTrackerApiBase):
         # make sure it didn't get removed from the db too
         ticket_config = M.AppConfig.query.get(
             project_id=c.project._id, tool_name='tickets')
-        assert_equal(ticket_config.options.get('TicketMonitoringEmail'),
+        assert (ticket_config.options.get('TicketMonitoringEmail') ==
                      'test@localhost')
 
     @td.with_tool('test', 'Tickets', 'dummy')
@@ -164,7 +164,7 @@ class TestRestIndex(TestTrackerApiBase):
             params={'tracker': str(dummy_tracker.config._id)}).follow()
 
         ticket = self.api_get('/rest/p/test/bugs/1/')
-        assert_equal(ticket.request.path, '/rest/p/test/dummy/1/')
+        assert ticket.request.path == '/rest/p/test/dummy/1/'
 
 
 class TestRestDiscussion(TestTrackerApiBase):
@@ -206,11 +206,11 @@ class TestRestSearch(TestTrackerApiBase):
     def test_no_criteria(self, paged_search):
         paged_search.return_value = dict(tickets=[self.ticket])
         r = self.api_get('/rest/p/test/bugs/search')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['tickets'][0]['summary'], 'our test ticket')
-        assert_equal(r.json['tickets'][0]['ticket_num'], 5)
-        assert_equal(r.json['tickets'][0]['status'], 'open')
-        assert_equal(r.json['tickets'][0]['labels'], ['tiny', 'minor'])
+        assert r.status_int == 200
+        assert r.json['tickets'][0]['summary'] == 'our test ticket'
+        assert r.json['tickets'][0]['ticket_num'] == 5
+        assert r.json['tickets'][0]['status'] == 'open'
+        assert r.json['tickets'][0]['labels'] == ['tiny', 'minor']
         assert 'description' not in r.json
         assert 'discussion_thread' not in r.json
 
@@ -227,16 +227,16 @@ class TestRestSearch(TestTrackerApiBase):
         )
         r = self.api_get('/rest/p/test/bugs/search',
                          q=q, sort='status', limit='2')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['limit'], 2)
-        assert_equal(r.json['q'], q)
-        assert_equal(r.json['sort'], 'status')
-        assert_equal(r.json['count'], 1)
-        assert_equal(r.json['page'], 0)
-        assert_equal(r.json['tickets'][0]['summary'], 'our test ticket')
-        assert_equal(r.json['tickets'][0]['ticket_num'], 5)
-        assert_equal(r.json['tickets'][0]['status'], 'open')
-        assert_equal(r.json['tickets'][0]['labels'], ['tiny', 'minor'])
+        assert r.status_int == 200
+        assert r.json['limit'] == 2
+        assert r.json['q'] == q
+        assert r.json['sort'] == 'status'
+        assert r.json['count'] == 1
+        assert r.json['page'] == 0
+        assert r.json['tickets'][0]['summary'] == 'our test ticket'
+        assert r.json['tickets'][0]['ticket_num'] == 5
+        assert r.json['tickets'][0]['status'] == 'open'
+        assert r.json['tickets'][0]['labels'] == ['tiny', 'minor']
         assert 'description' not in r.json
         assert 'discussion_thread' not in r.json
 
@@ -253,13 +253,13 @@ class TestRestHasAccess(TestTrackerApiBase):
         r = self.api_get(
             '/rest/p/test/bugs/has_access?user=babadook&perm=read',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False
         r = self.api_get(
             '/rest/p/test/bugs/has_access?user=test-user&perm=jump',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False
 
     def test_has_access_not_admin(self):
         """
@@ -275,10 +275,10 @@ class TestRestHasAccess(TestTrackerApiBase):
         r = self.api_get(
             '/rest/p/test/bugs/has_access?user=test-admin&perm=delete',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], True)
+        assert r.status_int == 200
+        assert r.json['result'] == True
         r = self.api_get(
             '/rest/p/test/bugs/has_access?user=test-user&perm=delete',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False

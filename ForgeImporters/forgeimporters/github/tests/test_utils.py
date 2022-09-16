@@ -28,67 +28,67 @@ class TestGitHubMarkdownConverter:
     def test_convert_sha(self):
         text = '16c999e8c71134401a78d4d46435517b2271d6ac'
         result = self.conv.convert(text)
-        assert_equal(result, '[16c999]')
+        assert result == '[16c999]'
 
         text = 'some context  16c999e8c71134401a78d4d46435517b2271d6ac '
         result = self.conv.convert(text)
-        assert_equal(result, 'some context  [16c999] ')
+        assert result == 'some context  [16c999] '
 
     def test_convert_user_sha(self):
         text = 'user@16c999e8c71134401a78d4d46435517b2271d6ac'
         result = self.conv.convert(text)
-        assert_equal(result, '[16c999]')
+        assert result == '[16c999]'
 
         # Not an owner of current project
         text = 'another-user@16c999e8c71134401a78d4d46435517b2271d6ac'
         result = self.conv.convert(text)
-        assert_equal(result, text)
+        assert result == text
 
     def test_convert_user_repo_sha(self):
         text = 'user/project@16c999e8c71134401a78d4d46435517b2271d6ac'
         result = self.conv.convert(text)
-        assert_equal(result, '[16c999]')
+        assert result == '[16c999]'
 
         # Not a current project
         text = 'user/p@16c999e8c71134401a78d4d46435517b2271d6ac'
         result = self.conv.convert(text)
-        assert_equal(result, '[user/p@16c999]'
+        assert (result == '[user/p@16c999]'
                              '(https://github.com/user/p/commit/16c999e8c71134401a78d4d46435517b2271d6ac)')
 
     def test_convert_ticket(self):
         text = 'Ticket #1'
         result = self.conv.convert(text)
-        assert_equal(result, 'Ticket [#1]')
-        assert_equal(self.conv.convert('#1'), '[#1]')
+        assert result == 'Ticket [#1]'
+        assert self.conv.convert('#1') == '[#1]'
 
     def test_convert_user_ticket(self):
         text = 'user#1'
         result = self.conv.convert(text)
-        assert_equal(result, '[#1]')
+        assert result == '[#1]'
 
         # Not an owner of current project
         text = 'another-user#1'
         result = self.conv.convert(text)
-        assert_equal(result, 'another-user#1')
+        assert result == 'another-user#1'
 
     def test_convert_user_repo_ticket(self):
         text = 'user/project#1'
         result = self.conv.convert(text)
-        assert_equal(result, '[#1]')
+        assert result == '[#1]'
 
         # Not a current project
         text = 'user/p#1'
         result = self.conv.convert(text)
-        assert_equal(result, '[user/p#1](https://github.com/user/p/issues/1)')
+        assert result == '[user/p#1](https://github.com/user/p/issues/1)'
 
     def test_convert_strikethrough(self):
         text = '~~mistake~~'
-        assert_equal(self.conv.convert(text), '<s>mistake</s>')
+        assert self.conv.convert(text) == '<s>mistake</s>'
 
     def test_inline_code_block(self):
         text = 'This `~~some text~~` converts to this ~~strike out~~.'
         result = 'This `~~some text~~` converts to this <s>strike out</s>.'
-        assert_equal(self.conv.convert(text).strip(), result)
+        assert self.conv.convert(text).strip() == result
 
     def test_convert_code_blocks(self):
         text = '''```python
@@ -111,7 +111,7 @@ Two code blocks here!
         console.log(i);
     }'''
 
-        assert_equal(self.conv.convert(text).strip(), result)
+        assert self.conv.convert(text).strip() == result
 
     def test_code_blocks_without_newline_before(self):
         text = '''
@@ -126,9 +126,9 @@ There are some code snippet:
 
     print 'Hello'
 Pretty cool, ha?'''
-        assert_equal(self.conv.convert(text).strip(), result.strip())
+        assert self.conv.convert(text).strip() == result.strip()
         text = text.replace('```', '~~~')
-        assert_equal(self.conv.convert(text).strip(), result.strip())
+        assert self.conv.convert(text).strip() == result.strip()
 
         text = '''
 There are some code snippet:
@@ -143,4 +143,4 @@ There are some code snippet:
     :::python
     print 'Hello'
 Pretty cool, ha?'''
-        assert_equal(self.conv.convert(text).strip(), result.strip())
+        assert self.conv.convert(text).strip() == result.strip()

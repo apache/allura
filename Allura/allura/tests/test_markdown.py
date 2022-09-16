@@ -19,7 +19,7 @@ import unittest
 import mock
 
 from allura.lib import markdown_extensions as mde
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility

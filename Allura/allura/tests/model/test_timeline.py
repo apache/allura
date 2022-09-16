@@ -20,7 +20,7 @@ from alluratest.tools import assert_equal
 from allura import model as M
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility

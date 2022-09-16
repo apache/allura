@@ -26,7 +26,7 @@ from alluratest.tools import with_setup
 from allura import app
 from allura.lib.app_globals import Icon
 from allura.lib import mail_util
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 def setup_method():

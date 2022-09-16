@@ -35,7 +35,7 @@ def hit_mock():
 
 def test_get_facets():
     hit,expected = hit_mock()
-    assert_equal(get_facets(hit), expected)
+    assert get_facets(hit) == expected
 
 
 @mock.patch('forgetracker.search.search')
@@ -56,4 +56,4 @@ def test_query_filter_choices(c, search):
               'facet.sort': 'index',
               'facet.mincount': 1}
     search.assert_called_once_with(None, **params)
-    assert_equal(result, expected)
+    assert result == expected

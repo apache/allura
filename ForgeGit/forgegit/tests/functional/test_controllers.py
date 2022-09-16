@@ -109,7 +109,7 @@ class TestUIController(TestController):
                         'added', 'eee.txt',
                         'added', 'ggg.txt']
         for i, item in enumerate(sortedCommits):
-            assert_equal(actualCommit[i], ''.join(item.findAll(text=True)).strip())
+            assert actualCommit[i] == ''.join(item.findAll(text=True)).strip()
 
 
 class TestRootController(_TestCase):
@@ -156,8 +156,8 @@ class TestRootController(_TestCase):
     def test_commit_browser_data(self):
         resp = self.app.get('/src-git/commit_browser_data')
         data = json.loads(resp.text)
-        assert_equal(
-            data['built_tree']['df30427c488aeab84b2352bdf88a3b19223f9d7a'],
+        assert (
+            data['built_tree']['df30427c488aeab84b2352bdf88a3b19223f9d7a'] ==
             {'url': '/p/test/src-git/ci/df30427c488aeab84b2352bdf88a3b19223f9d7a/',
              'oid': 'df30427c488aeab84b2352bdf88a3b19223f9d7a',
              'short_id': '[df3042]',
@@ -175,7 +175,7 @@ class TestRootController(_TestCase):
         assert '<div class="markdown_content"><p>Change README</div>' in resp, resp
         assert 'tree/README?format=raw">Download</a>' not in resp
         assert 'Tree' in resp.html.findAll('td')[2].text, resp.html.findAll('td')[2].text
-        assert_in('by Rick Copeland', squish_spaces(resp.html.findAll('td')[0].text))
+        assert 'by Rick Copeland' in squish_spaces(resp.html.findAll('td')[0].text)
         resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/README')
         assert 'View' in resp.html.findAll('td')[2].text
         assert 'Change README' in resp
@@ -230,29 +230,29 @@ class TestRootController(_TestCase):
             r = self.app.get('/src-git/feed%s' % ext)
             channel = r.xml.find('channel')
             title = channel.find('title').text
-            assert_equal(title, 'test Git changes')
+            assert title == 'test Git changes'
             description = channel.find('description').text
-            assert_equal(description,
+            assert (description ==
                          'Recent changes to Git repository in test project')
             link = channel.find('link').text
-            assert_equal(link, 'http://localhost/p/test/src-git/')
+            assert link == 'http://localhost/p/test/src-git/'
             earliest_commit = channel.findall('item')[-1]
-            assert_equal(earliest_commit.find('title').text, 'Initial commit')
+            assert earliest_commit.find('title').text == 'Initial commit'
             link = 'http://localhost/p/test/src-git/ci/9a7df788cf800241e3bb5a849c8870f2f8259d98/'
-            assert_equal(earliest_commit.find('link').text, link)
-            assert_equal(earliest_commit.find('guid').text, link)
+            assert earliest_commit.find('link').text == link
+            assert earliest_commit.find('guid').text == link
 
         # .atom has slightly different structure
         prefix = '{http://www.w3.org/2005/Atom}'
         r = self.app.get('/src-git/feed.atom')
         title = r.xml.find(prefix + 'title').text
-        assert_equal(title, 'test Git changes')
+        assert title == 'test Git changes'
         link = r.xml.find(prefix + 'link').attrib['href']
-        assert_equal(link, 'http://localhost/p/test/src-git/')
+        assert link == 'http://localhost/p/test/src-git/'
         earliest_commit = r.xml.findall(prefix + 'entry')[-1]
-        assert_equal(earliest_commit.find(prefix + 'title').text, 'Initial commit')
+        assert earliest_commit.find(prefix + 'title').text == 'Initial commit'
         link = 'http://localhost/p/test/src-git/ci/9a7df788cf800241e3bb5a849c8870f2f8259d98/'
-        assert_equal(earliest_commit.find(prefix + 'link').attrib['href'], link)
+        assert earliest_commit.find(prefix + 'link').attrib['href'] == link
 
     def test_tree(self):
         ci = self._get_ci()
@@ -288,26 +288,26 @@ class TestRootController(_TestCase):
         ci = self._get_ci(repo='/p/test/weird-chars/')
         url = ci + 'tree/' + h.urlquote('привіт.txt') + '?format=raw'
         resp = self.app.get(url)
-        assert_in('Привіт!\nWhich means Hello!', resp.text)
-        assert_equal(six.ensure_text(resp.headers.get('Content-Disposition')),
+        assert 'Привіт!\nWhich means Hello!' in resp.text
+        assert (six.ensure_text(resp.headers.get('Content-Disposition')) ==
                      'attachment;filename="%D0%BF%D1%80%D0%B8%D0%B2%D1%96%D1%82.txt"')
 
         url = ci + 'tree/' + h.urlquote('with space.txt') + '?format=raw'
         resp = self.app.get(url)
-        assert_in('with space', resp.text)
-        assert_equal(six.ensure_text(resp.headers.get('Content-Disposition')),
+        assert 'with space' in resp.text
+        assert (six.ensure_text(resp.headers.get('Content-Disposition')) ==
                      'attachment;filename="with%20space.txt"')
 
         url = ci + 'tree/' + h.urlquote('with%2Furlquote-literal.txt') + '?format=raw'
         resp = self.app.get(url)
-        assert_in('%2F means /', resp.body.decode('utf-8'))
-        assert_equal(resp.headers.get('Content-Disposition'),
+        assert '%2F means /' in resp.body.decode('utf-8')
+        assert (resp.headers.get('Content-Disposition') ==
                      'attachment;filename="with%252Furlquote-literal.txt"')
 
         url = ci + 'tree/' + h.urlquote('with"&:specials.txt') + '?format=raw'
         resp = self.app.get(url)
-        assert_in('"&: encodes as %22%26%3A', resp.body.decode('utf-8'))
-        assert_equal(resp.headers.get('Content-Disposition'),
+        assert '"&: encodes as %22%26%3A' in resp.body.decode('utf-8')
+        assert (resp.headers.get('Content-Disposition') ==
                      'attachment;filename="with%22%26%3Aspecials.txt"')
 
     def test_file_too_large(self):
@@ -336,17 +336,17 @@ class TestRootController(_TestCase):
         ci = self._get_ci(repo='/p/test/weird-chars/')
         resp = self.app.get(h.urlquote(ci + 'tree/привіт.txt') + '?diff=407950e8fba4dbc108ffbce0128ed1085c52cfd7')
         diffhtml = str(resp.html.select_one('.diffbrowser'))
-        assert_in(textwrap.dedent('''\
+        assert (textwrap.dedent('''\
                     <span class="gd">--- a/привіт.txt</span><span class="w"></span>
                     <span class="gi">+++ b/привіт.txt</span><span class="w"></span>
                     <span class="gu">@@ -1 +1,2 @@</span><span class="w"></span>
                     <span class="w"> </span>Привіт!<span class="w"></span>
-                    <span class="gi">+Which means Hello!</span><span class="w"></span>'''),
+                    <span class="gi">+Which means Hello!</span><span class="w"></span>''') in
                   diffhtml)
 
         resp = self.app.get(h.urlquote(ci + 'tree/привіт.txt') + '?diff=407950e8fba4dbc108ffbce0128ed1085c52cfd7&diformat=sidebyside')
         diffhtml = str(resp.html.select_one('.diffbrowser'))
-        assert_in(textwrap.dedent('''\
+        assert (textwrap.dedent('''\
                     <thead>
                     <th class="lineno"></th>
                     <th>a/привіт.txt</th>
@@ -367,7 +367,7 @@ class TestRootController(_TestCase):
                     </pre></td>
                     <td class="lineno">2</td>
                     <td class="diff-add"><pre>Which means Hello!
-                    </pre></td>'''),
+                    </pre></td>''') in
                   diffhtml)
 
     def test_diff_view_mode(self):
@@ -434,31 +434,31 @@ class TestRootController(_TestCase):
         r = self.app.get(ci + 'tree/',
                          extra_environ={'username': str(user.username)})
         opts = self.subscription_options(r)
-        assert_equal(opts['subscribed'], False)
+        assert opts['subscribed'] == False
 
         # subscribe
         r = self.app.post(str(ci + 'tree/subscribe'),
                           {'subscribe': 'True'},
                           extra_environ={'username': str(user.username)})
-        assert_equal(r.json, {'status': 'ok', 'subscribed': True})
+        assert r.json == {'status': 'ok', 'subscribed': True}
         # user is subscribed
         assert M.Mailbox.subscribed(user_id=user._id)
         r = self.app.get(ci + 'tree/',
                          extra_environ={'username': str(user.username)})
         opts = self.subscription_options(r)
-        assert_equal(opts['subscribed'], True)
+        assert opts['subscribed'] == True
 
         # unsubscribe
         r = self.app.post(str(ci + 'tree/subscribe'),
                           {'unsubscribe': 'True'},
                           extra_environ={'username': str(user.username)})
-        assert_equal(r.json, {'status': 'ok', 'subscribed': False})
+        assert r.json == {'status': 'ok', 'subscribed': False}
         # user is not subscribed
         assert not M.Mailbox.subscribed(user_id=user._id)
         r = self.app.get(ci + 'tree/',
                          extra_environ={'username': str(user.username)})
         opts = self.subscription_options(r)
-        assert_equal(opts['subscribed'], False)
+        assert opts['subscribed'] == False
 
     def test_timezone(self):
         ci = self._get_ci()
@@ -501,15 +501,15 @@ class TestRootController(_TestCase):
         self.setup_testgit_index_repo()
         r = self.app.get('/p/test/testgit-index/ci/master/tree/index/')
         form = r.html.find('form', 'tarball')
-        assert_equal(form.get('action'), '/p/test/testgit-index/ci/master/tarball')
-        assert_equal(form.input.get('value'), '/index')
+        assert form.get('action') == '/p/test/testgit-index/ci/master/tarball'
+        assert form.input.get('value') == '/index'
 
     def test_default_branch(self):
-        assert_equal(c.app.default_branch_name, 'master')
+        assert c.app.default_branch_name == 'master'
         c.app.repo.set_default_branch('zz')
-        assert_equal(c.app.default_branch_name, 'zz')
+        assert c.app.default_branch_name == 'zz'
         c.app.repo.set_default_branch('master')
-        assert_equal(c.app.default_branch_name, 'master')
+        assert c.app.default_branch_name == 'master'
 
     def test_set_default_branch(self):
         r = self.app.get('/p/test/admin/src-git/set_default_branch_name')
@@ -521,41 +521,41 @@ class TestRootController(_TestCase):
         r = self.app.get('/p/test/src-git/').follow().follow()
         assert '<span class="scm-branch-label">zz</span>' in r
         # 'bad' is a file name which in zz, but not in master
-        assert_in('bad</a>', r)
+        assert 'bad</a>' in r
 
         self.app.post('/p/test/admin/src-git/set_default_branch_name',
                       params={'branch_name': 'master'})
         r = self.app.get('/p/test/src-git/').follow().follow()
-        assert_not_in('bad</a>', r)
-        assert_in('README</a>', r)
+        assert 'bad</a>' not in r
+        assert 'README</a>' in r
 
     def test_set_checkout_url(self):
         r = self.app.get('/p/test/admin/src-git/checkout_url')
         r.form['external_checkout_url'].value = 'http://foo.bar/baz'
         r.form['merge_disabled'].checked = True
         r = r.form.submit()
-        assert_equal(json.loads(self.webflash(r))['message'],
+        assert (json.loads(self.webflash(r))['message'] ==
                      "External checkout URL successfully changed. One-click merge disabled.")
         # for some reason c.app.config.options has old values still
         app_config = M.AppConfig.query.get(_id=c.app.config._id)
-        assert_equal(app_config.options['external_checkout_url'], 'http://foo.bar/baz')
-        assert_equal(app_config.options['merge_disabled'], True)
+        assert app_config.options['external_checkout_url'] == 'http://foo.bar/baz'
+        assert app_config.options['merge_disabled'] == True
 
     def test_refresh(self):
         r = self.app.get('/p/test/src-git/refresh')
-        assert_in('refresh queued', r)
-        assert_equal(1, M.MonQTask.query.find(dict(task_name='allura.tasks.repo_tasks.refresh')).count())
+        assert 'refresh queued' in r
+        assert 1 == M.MonQTask.query.find(dict(task_name='allura.tasks.repo_tasks.refresh')).count()
 
         r = self.app.get('/p/test/src-git/refresh', extra_environ={'HTTP_REFERER': '/p/test/src-git/'},
                          status=302)
-        assert_in('is being refreshed', self.webflash(r))
-        assert_equal(2, M.MonQTask.query.find(dict(task_name='allura.tasks.repo_tasks.refresh')).count())
+        assert 'is being refreshed' in self.webflash(r)
+        assert 2 == M.MonQTask.query.find(dict(task_name='allura.tasks.repo_tasks.refresh')).count()
 
 
 class TestRestController(_TestCase):
     def test_index(self):
         resp = self.app.get('/rest/p/test/src-git/', status=200)
-        assert_equal(resp.json, {
+        assert resp.json == {
             'api_url': 'http://localhost/rest/p/test/src-git/',
             'url': 'http://localhost/p/test/src-git/',
             'mount_label': 'Git',
@@ -563,7 +563,7 @@ class TestRestController(_TestCase):
             'name': 'git',
             'clone_url_file': '/srv/git/p/test/testgit',  # should be "src-git" but test data is weird?
             'commit_count': 5,
-        })
+        }
 
     def test_commits(self):
         self.app.get('/rest/p/test/src-git/commits', status=200)
@@ -588,13 +588,13 @@ class TestHasAccessAPI(TestRestApiBase):
         r = self.api_get(
             '/rest/p/test/src-git/has_access?user=babadook&perm=read',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False
         r = self.api_get(
             '/rest/p/test/src-git/has_access?user=test-user&perm=jump',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False
 
     def test_has_access_not_admin(self):
         """
@@ -610,13 +610,13 @@ class TestHasAccessAPI(TestRestApiBase):
         r = self.api_get(
             '/rest/p/test/src-git/has_access?user=test-admin&perm=create',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], True)
+        assert r.status_int == 200
+        assert r.json['result'] == True
         r = self.api_get(
             '/rest/p/test/src-git/has_access?user=test-user&perm=create',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False
 
 
 class TestFork(_TestCase):
@@ -723,20 +723,20 @@ class TestFork(_TestCase):
 
     def test_merge_request_detail_view(self):
         r, mr_num = self._request_merge()
-        assert_in('wants to merge', r)
+        assert 'wants to merge' in r
 
         merge_instructions = r.html.findAll('textarea')[0].getText()
-        assert_in('git checkout master', merge_instructions)
-        assert_in('git fetch /srv/git/p/test2/code master', merge_instructions)
+        assert 'git checkout master' in merge_instructions
+        assert 'git fetch /srv/git/p/test2/code master' in merge_instructions
         c_id = self.forked_repo.get_heads()[0]['object_id']
-        assert_in(f'git merge {c_id}', merge_instructions)
+        assert f'git merge {c_id}' in merge_instructions
         assert_regexp_matches(str(r), r'[0-9]+ seconds? ago')
 
         merge_form = r.html.find('div', {'class': 'merge-help-text merge-ok'})
         assert merge_form
-        assert_in('Merge request has no conflicts. You can merge automatically.', merge_form.getText())
+        assert 'Merge request has no conflicts. You can merge automatically.' in merge_form.getText()
 
-        assert_not_in('Improve documentation', r)  # no details yet
+        assert 'Improve documentation' not in r  # no details yet
 
         # a task is busy/ready to compute
         r = self.app.get('/p/test/src-git/merge-requests/1/commits_html', status=202)  # 202 used for "busy"
@@ -746,16 +746,16 @@ class TestFork(_TestCase):
         ThreadLocalORMSession.close_all()  # close ming connections so that new data gets loaded later
 
         def assert_commit_details(r):
-            assert_in('Improve documentation', r.text)
+            assert 'Improve documentation' in r.text
             revs = r.html.findAll('tr', attrs={'class': 'rev'})
-            assert_equal(len(revs), 1)
+            assert len(revs) == 1
             rev_links = revs[0].findAll('a', attrs={'class': 'rev'})
             browse_links = revs[0].findAll('a', attrs={'class': 'browse'})
-            assert_equal(rev_links[0].get('href'), '/p/test2/code/ci/%s/' % c_id)
-            assert_equal(rev_links[0].getText(), '[%s]' % c_id[:6])
-            assert_equal(browse_links[0].get('href'),
+            assert rev_links[0].get('href') == '/p/test2/code/ci/%s/' % c_id
+            assert rev_links[0].getText() == '[%s]' % c_id[:6]
+            assert (browse_links[0].get('href') ==
                          '/p/test2/code/ci/%s/tree' % c_id)
-            assert_equal(browse_links[0].getText().strip(), 'Tree')
+            assert browse_links[0].getText().strip() == 'Tree'
 
         r = self.app.get('/p/test/src-git/merge-requests/1/commits_html', status=200)
         assert_commit_details(r)
@@ -764,16 +764,16 @@ class TestFork(_TestCase):
         assert_commit_details(r)
 
         r = self.app.get('/p/test/src-git/merge-requests/1/can_merge_task_status')
-        assert_equal(r.json, {'status': 'ready'})
+        assert r.json == {'status': 'ready'}
         r = self.app.get('/p/test/src-git/merge-requests/1/can_merge_result')
-        assert_equal(r.json, {'can_merge': None})
+        assert r.json == {'can_merge': None}
         r = self.app.get('/p/test/src-git/merge-requests/1/merge_task_status')
-        assert_equal(r.json, {'status': None})
+        assert r.json == {'status': None}
 
     def test_merge_request_detail_noslash(self):
         self._request_merge()
         r = self.app.get('/p/test/src-git/merge-requests/1', status=301)
-        assert_equal(r.location, 'http://localhost/p/test/src-git/merge-requests/1/')
+        assert r.location == 'http://localhost/p/test/src-git/merge-requests/1/'
 
     def test_merge_request_with_deleted_repo(self):
         self._request_merge()
@@ -811,19 +811,19 @@ class TestFork(_TestCase):
     def test_merge_request_default_branches(self):
         _select_val = lambda r, n: r.html.find('select', {'name': n}).find(selected=True).string
         r = self.app.get('/p/test2/code/request_merge')
-        assert_equal(_select_val(r, 'source_branch'), 'master')
-        assert_equal(_select_val(r, 'target_branch'), 'master')
+        assert _select_val(r, 'source_branch') == 'master'
+        assert _select_val(r, 'target_branch') == 'master'
         r = self.app.get('/p/test2/code/ci/zz/tree/').click('Request Merge')
-        assert_equal(_select_val(r, 'source_branch'), 'zz')
-        assert_equal(_select_val(r, 'target_branch'), 'master')
+        assert _select_val(r, 'source_branch') == 'zz'
+        assert _select_val(r, 'target_branch') == 'master'
         GM.Repository.query.get(_id=c.app.repo._id).default_branch_name = 'zz'
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/p/test2/code/request_merge')
-        assert_equal(_select_val(r, 'source_branch'), 'master')
-        assert_equal(_select_val(r, 'target_branch'), 'zz')
+        assert _select_val(r, 'source_branch') == 'master'
+        assert _select_val(r, 'target_branch') == 'zz'
         r = self.app.get('/p/test2/code/ci/zz/tree/').click('Request Merge')
-        assert_equal(_select_val(r, 'source_branch'), 'zz')
-        assert_equal(_select_val(r, 'target_branch'), 'zz')
+        assert _select_val(r, 'source_branch') == 'zz'
+        assert _select_val(r, 'target_branch') == 'zz'
 
     def test_merge_request_with_branch(self):
         def get_mr_page(r):
@@ -955,7 +955,7 @@ class TestFork(_TestCase):
         mr_commits.side_effect = Exception
         r = self.app.get('/p/test/src-git/merge-requests/%s/' % mr_num)
         # errors don't show up on the page directly any more, so just assert that the bg task is there
-        assert_in('commits-loading', r)
+        assert 'commits-loading' in r
         self.app.get('/p/test/src-git/merge-requests/%s/commits_html' % mr_num, status=202)  # 202 used for "busy"
 
     def test_merge_request_validation_error(self):
@@ -1042,9 +1042,9 @@ class TestGitRename(TestController):
 
         # the diff portion of the output
         resp_no_ws = re.sub(r'\s+', '', str(resp))
-        assert_in('<a href="/p/test/src-git/ci/fbb0644603bb6ecee3ebb62efe8c86efc9b84ee6/tree/f.txt" rel="nofollow">f.txt</a>'
+        assert ('<a href="/p/test/src-git/ci/fbb0644603bb6ecee3ebb62efe8c86efc9b84ee6/tree/f.txt" rel="nofollow">f.txt</a>'
                   'to<a href="/p/test/src-git/ci/b120505a61225e6c14bee3e5b5862db81628c35c/tree/f2.txt" rel="nofollow">f2.txt</a>'
-                  .replace(' ', ''), resp_no_ws)
+                  .replace(' ', '') in resp_no_ws)
         assert '<span class="empty-diff">File was renamed.</span>' in resp
 
     def test_directory_changed_type(self):
@@ -1052,11 +1052,11 @@ class TestGitRename(TestController):
         resp = self.app.get('/src-git/ci/7b1c9ef214eb0ef8c06bada0966dd941f442beec/')
 
         resp_no_ws = re.sub(r'\s+', '', str(resp))
-        assert_in('<a href="/p/test/src-git/ci/7b1c9ef214eb0ef8c06bada0966dd941f442beec/tree/b_dir" rel="nofollow">b_dir</a>'
+        assert ('<a href="/p/test/src-git/ci/7b1c9ef214eb0ef8c06bada0966dd941f442beec/tree/b_dir" rel="nofollow">b_dir</a>'
                   '</h6>'
                   '<div id="diff-3" class="inline-diff-body">'
                   '<span class="empty-diff">Symlink.</span>'
-                  .replace(' ', ''), resp_no_ws)
+                  .replace(' ', '') in resp_no_ws)
 
     def test_symlink_in_tree(self):
         # change a_dir to a file; b_dir to a symlink
@@ -1085,7 +1085,7 @@ class TestGitBranch(TestController):
     def test_exotic_default_branch(self):
         r = self.app.get('/src-git/').follow().follow()
         assert 'README</a>' in r
-        assert_equal(c.app.repo.get_default_branch('master'), 'test')
+        assert c.app.repo.get_default_branch('master') == 'test'
 
     def test_branch_with_slashes(self):
         branches_page = self.app.get('/src-git/ref/master/branches/')
@@ -1126,19 +1126,19 @@ class TestIncludeMacro(_TestCase):
         setup_global_objects()
 
     def test_parse_repo(self):
-        assert_equal(macro.parse_repo('app'), None)
-        assert_equal(macro.parse_repo('proj:app'), None)
-        assert_equal(macro.parse_repo('nbhd:test:src-git'), None)
-        assert_equal(macro.parse_repo('a:b:c:d:e:f'), None)
-        assert_not_equal(macro.parse_repo('src-git'), None)
-        assert_not_equal(macro.parse_repo('test:src-git'), None)
-        assert_not_equal(macro.parse_repo('p:test:src-git'), None)
+        assert macro.parse_repo('app') == None
+        assert macro.parse_repo('proj:app') == None
+        assert macro.parse_repo('nbhd:test:src-git') == None
+        assert macro.parse_repo('a:b:c:d:e:f') == None
+        assert macro.parse_repo('src-git') != None
+        assert macro.parse_repo('test:src-git') != None
+        assert macro.parse_repo('p:test:src-git') != None
 
     def test_include_file_no_repo(self):
         expected = '[[include repo %s (not found)]]'
-        assert_equal(macro.include_file(None), expected % None)
-        assert_equal(macro.include_file('a:b'), expected % 'a:b')
-        assert_equal(macro.include_file('repo'), expected % 'repo')
+        assert macro.include_file(None) == expected % None
+        assert macro.include_file('a:b') == expected % 'a:b'
+        assert macro.include_file('repo') == expected % 'repo'
 
     def test_include_file_permissions(self):
         h.set_context('test', 'src-git', neighborhood='Projects')
@@ -1149,13 +1149,13 @@ class TestIncludeMacro(_TestCase):
             acl.remove(read_perm)
         c.user = M.User.anonymous()
         expected = "[[include: you don't have a read permission for repo src-git]]"
-        assert_equal(macro.include_file('src-git'), expected)
+        assert macro.include_file('src-git') == expected
 
     def test_include_file_cant_find_file(self):
         expected = "[[include can't find file %s in revision %s]]"
-        assert_equal(macro.include_file('src-git', 'a.txt'),
+        assert (macro.include_file('src-git', 'a.txt') ==
                      expected % ('a.txt', '1e146e67985dcd71c74de79613719bef7bddca4a'))
-        assert_equal(macro.include_file('src-git', 'a.txt', '6a45885ae7347f1cac5103b0050cc1be6a1496c8'),
+        assert (macro.include_file('src-git', 'a.txt', '6a45885ae7347f1cac5103b0050cc1be6a1496c8') ==
                      expected % ('a.txt', '6a45885ae7347f1cac5103b0050cc1be6a1496c8'))
 
     @patch('allura.model.repo.Blob.has_pypeline_view', new_callable=PropertyMock)
@@ -1164,9 +1164,9 @@ class TestIncludeMacro(_TestCase):
         has_html_view.return_value = False
         has_pypeline_view.return_value = False
         expected = "[[include can't display file README in revision 1e146e67985dcd71c74de79613719bef7bddca4a]]"
-        assert_equal(macro.include_file('src-git', 'README'), expected)
+        assert macro.include_file('src-git', 'README') == expected
 
     def test_include_file_display(self):
         result = macro.include_file('src-git', 'README')
-        assert_in('This is readme', result)
-        assert_in('Another Line', result)
+        assert 'This is readme' in result
+        assert 'Another Line' in result

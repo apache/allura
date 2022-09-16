@@ -122,14 +122,14 @@ def test_pull_rss_feeds(parsefeed):
     parsefeed.assert_called_with('http://example.com/news/feed/')
     posts = BM.BlogPost.query.find(
         {'app_config_id': tmp_app._id}).sort('timestamp', 1)
-    assert_equal(posts.count(), 4)
+    assert posts.count() == 4
     posts = posts.all()
-    assert_equal(posts[0].title, 'Test')
-    assert_equal(posts[0].text, 'This is a test [link](http://example.com/)')
-    assert_equal(posts[1].title, 'Default Title 2')
-    assert_equal(posts[1].text, 'Test feed [link](http://example.com/)')
-    assert_equal(posts[2].title, 'Default Title 3')
-    assert_equal(posts[2].text, rendered_html_content)
-    assert_equal(posts[3].title, 'Default Title 4')
-    assert_equal(posts[3].text, rendered_html_content)
+    assert posts[0].title == 'Test'
+    assert posts[0].text == 'This is a test [link](http://example.com/)'
+    assert posts[1].title == 'Default Title 2'
+    assert posts[1].text == 'Test feed [link](http://example.com/)'
+    assert posts[2].title == 'Default Title 3'
+    assert posts[2].text == rendered_html_content
+    assert posts[3].title == 'Default Title 4'
+    assert posts[3].text == rendered_html_content
 

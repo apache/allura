@@ -28,7 +28,7 @@ from allura.model.session import (
     ArtifactSessionExtension,
     substitute_extensions,
 )
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 def test_extensions_cm():

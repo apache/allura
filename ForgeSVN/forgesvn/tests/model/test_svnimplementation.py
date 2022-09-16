@@ -51,8 +51,8 @@ class TestSVNImplementation:
 
         tree_id = impl.compute_tree_new(commit, path)
 
-        assert_equal(impl._svn.info2.call_args[0]
-                     [0], 'file://' + g.tmpdir + '/code/trunk/foo')
+        assert (impl._svn.info2.call_args[0]
+                     [0] == 'file://' + g.tmpdir + '/code/trunk/foo')
         assert lcd_partial.called
 
     def test_last_commit_ids(self):
@@ -73,9 +73,9 @@ class TestSVNImplementation:
         commit._id = '5057636b9c1040636b81e4b1:6'
         entries = impl.last_commit_ids(commit, [path])
 
-        assert_equal(entries, {path.strip('/'): '5057636b9c1040636b81e4b1:1'})
-        assert_equal(impl._svn.info2.call_args[0]
-                     [0], 'file://' + g.tmpdir + '/code/trunk')
+        assert entries == {path.strip('/'): '5057636b9c1040636b81e4b1:1'}
+        assert (impl._svn.info2.call_args[0]
+                     [0] == 'file://' + g.tmpdir + '/code/trunk')
 
     @patch('forgesvn.model.svn.svn_path_exists')
     def test__tarball_path_clean(self, path_exists):
@@ -85,16 +85,16 @@ class TestSVNImplementation:
         impl = SVNImplementation(repo)
         path_exists.return_value = False
         # edge cases
-        assert_equal(impl._tarball_path_clean(None), '')
-        assert_equal(impl._tarball_path_clean(''), '')
+        assert impl._tarball_path_clean(None) == ''
+        assert impl._tarball_path_clean('') == ''
         # common
-        assert_equal(impl._tarball_path_clean('/some/path/'), 'some/path')
-        assert_equal(impl._tarball_path_clean('some/path'), 'some/path')
-        assert_equal(impl._tarball_path_clean('/some/path/tags/1.0/some/dir'), 'some/path/tags/1.0/some/dir')
+        assert impl._tarball_path_clean('/some/path/') == 'some/path'
+        assert impl._tarball_path_clean('some/path') == 'some/path'
+        assert impl._tarball_path_clean('/some/path/tags/1.0/some/dir') == 'some/path/tags/1.0/some/dir'
         # with fallback to trunk
         path_exists.return_value = True
-        assert_equal(impl._tarball_path_clean(None), 'trunk')
-        assert_equal(impl._tarball_path_clean(''), 'trunk')
+        assert impl._tarball_path_clean(None) == 'trunk'
+        assert impl._tarball_path_clean('') == 'trunk'
 
     @patch('forgesvn.model.svn.svn_path_exists')
     def test_update_checkout_url(self, svn_path_exists):
@@ -104,14 +104,14 @@ class TestSVNImplementation:
         svn_path_exists.side_effect = lambda path: False
         opts['checkout_url'] = 'invalid'
         impl.update_checkout_url()
-        assert_equal(opts['checkout_url'], '')
+        assert opts['checkout_url'] == ''
 
         svn_path_exists.side_effect = lambda path: path.endswith('trunk')
         opts['checkout_url'] = 'invalid'
         impl.update_checkout_url()
-        assert_equal(opts['checkout_url'], 'trunk')
+        assert opts['checkout_url'] == 'trunk'
 
         svn_path_exists.side_effect = lambda path: path.endswith('trunk')
         opts['checkout_url'] = ''
         impl.update_checkout_url()
-        assert_equal(opts['checkout_url'], 'trunk')
+        assert opts['checkout_url'] == 'trunk'

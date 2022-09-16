@@ -42,7 +42,7 @@ from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects, setup_functional_test
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 def setup_method():

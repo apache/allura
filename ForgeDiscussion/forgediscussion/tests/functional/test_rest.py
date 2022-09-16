@@ -66,55 +66,55 @@ class TestRootRestController(TestDiscussionApiBase):
     def test_forum_list(self):
         forums = self.api_get('/rest/p/test/discussion/')
         forums = forums.json['forums']
-        assert_equal(len(forums), 2)
+        assert len(forums) == 2
         forums = sorted(forums, key=lambda x: x['name'])
-        assert_equal(forums[0]['name'], 'General Discussion')
-        assert_equal(
-            forums[0]['description'], 'Forum about anything you want to talk about.')
-        assert_equal(forums[0]['num_topics'], 2)
-        assert_equal(
-            forums[0]['url'], 'http://localhost/rest/p/test/discussion/general/')
-        assert_equal(forums[0]['last_post']['subject'], 'Hi guys')
-        assert_equal(forums[0]['last_post']['author'], 'test-admin')
-        assert_equal(forums[0]['last_post']['text'], 'Hi boys and girls')
-        assert_equal(forums[1]['name'], 'Say Héllo')
-        assert_equal(forums[1]['description'], 'Say héllo here')
-        assert_equal(forums[1]['num_topics'], 0)
-        assert_equal(
-            forums[1]['url'], 'http://localhost/rest/p/test/discussion/h%C3%A9llo/')
-        assert_equal(forums[1]['last_post'], None)
+        assert forums[0]['name'] == 'General Discussion'
+        assert (
+            forums[0]['description'] == 'Forum about anything you want to talk about.')
+        assert forums[0]['num_topics'] == 2
+        assert (
+            forums[0]['url'] == 'http://localhost/rest/p/test/discussion/general/')
+        assert forums[0]['last_post']['subject'] == 'Hi guys'
+        assert forums[0]['last_post']['author'] == 'test-admin'
+        assert forums[0]['last_post']['text'] == 'Hi boys and girls'
+        assert forums[1]['name'] == 'Say Héllo'
+        assert forums[1]['description'] == 'Say héllo here'
+        assert forums[1]['num_topics'] == 0
+        assert (
+            forums[1]['url'] == 'http://localhost/rest/p/test/discussion/h%C3%A9llo/')
+        assert forums[1]['last_post'] == None
 
     def test_forum(self):
         forum = self.api_get('/rest/p/test/discussion/general/')
         forum = forum.json['forum']
-        assert_equal(forum['name'], 'General Discussion')
-        assert_equal(
-            forum['description'], 'Forum about anything you want to talk about.')
+        assert forum['name'] == 'General Discussion'
+        assert (
+            forum['description'] == 'Forum about anything you want to talk about.')
         topics = forum['topics']
-        assert_equal(len(topics), 2)
-        assert_equal(topics[0]['subject'], 'Hi guys')
-        assert_equal(topics[0]['num_views'], 0)
-        assert_equal(topics[0]['num_replies'], 1)
-        assert_equal(topics[0]['last_post']['author'], 'test-admin')
-        assert_equal(topics[0]['last_post']['text'], 'Hi boys and girls')
+        assert len(topics) == 2
+        assert topics[0]['subject'] == 'Hi guys'
+        assert topics[0]['num_views'] == 0
+        assert topics[0]['num_replies'] == 1
+        assert topics[0]['last_post']['author'] == 'test-admin'
+        assert topics[0]['last_post']['text'] == 'Hi boys and girls'
         t = ForumThread.query.find({'subject': 'Hi guys'}).first()
         url = 'http://localhost/rest/p/test/discussion/general/thread/%s/' % t._id
-        assert_equal(topics[0]['url'], url)
-        assert_equal(topics[1]['subject'], 'Let\'s talk')
-        assert_equal(topics[1]['num_views'], 0)
-        assert_equal(topics[1]['num_replies'], 1)
-        assert_equal(topics[1]['last_post']['author'], 'test-admin')
-        assert_equal(topics[1]['last_post']['text'], '1st post')
+        assert topics[0]['url'] == url
+        assert topics[1]['subject'] == 'Let\'s talk'
+        assert topics[1]['num_views'] == 0
+        assert topics[1]['num_replies'] == 1
+        assert topics[1]['last_post']['author'] == 'test-admin'
+        assert topics[1]['last_post']['text'] == '1st post'
         t = ForumThread.query.find({'subject': 'Let\'s talk'}).first()
         url = 'http://localhost/rest/p/test/discussion/general/thread/%s/' % t._id
-        assert_equal(topics[1]['url'], url)
+        assert topics[1]['url'] == url
 
     def test_forum_show_ok_topics(self):
         forum = self.api_get('/rest/p/test/discussion/general/')
         forum = forum.json['forum']
-        assert_equal(forum['name'], 'General Discussion')
+        assert forum['name'] == 'General Discussion'
         topics = forum['topics']
-        assert_equal(len(topics), 2)
+        assert len(topics) == 2
         self.create_topic('general', 'Hi again', 'It should not be shown')
         t = ForumThread.query.find({'subject': 'Hi again'}).first()
         first_post = t.first_post
@@ -122,57 +122,57 @@ class TestRootRestController(TestDiscussionApiBase):
         first_post.commit()
         forum = self.api_get('/rest/p/test/discussion/general/')
         forum = forum.json['forum']
-        assert_equal(forum['name'], 'General Discussion')
+        assert forum['name'] == 'General Discussion'
         topics = forum['topics']
-        assert_equal(len(topics), 2)
+        assert len(topics) == 2
 
     def test_topic(self):
         forum = self.api_get('/rest/p/test/discussion/general/')
         forum = forum.json['forum']
-        assert_equal(forum['name'], 'General Discussion')
-        assert_equal(
-            forum['description'], 'Forum about anything you want to talk about.')
+        assert forum['name'] == 'General Discussion'
+        assert (
+            forum['description'] == 'Forum about anything you want to talk about.')
         topics = forum['topics']
         topic = self.api_get(topics[0]['url'][len('http://localhost'):])
         topic = topic.json['topic']
-        assert_equal(len(topic['posts']), 1)
-        assert_equal(topic['subject'], 'Hi guys')
-        assert_equal(topic['posts'][0]['text'], 'Hi boys and girls')
-        assert_equal(topic['posts'][0]['subject'], 'Hi guys')
-        assert_in('timestamp', topic['posts'][0])
-        assert_in('last_edited', topic['posts'][0])
+        assert len(topic['posts']) == 1
+        assert topic['subject'] == 'Hi guys'
+        assert topic['posts'][0]['text'] == 'Hi boys and girls'
+        assert topic['posts'][0]['subject'] == 'Hi guys'
+        assert 'timestamp' in topic['posts'][0]
+        assert 'last_edited' in topic['posts'][0]
 
     def test_forum_list_pagination(self):
         resp = self.app.get('/rest/p/test/discussion/?limit=1')
         forums = resp.json['forums']
-        assert_equal(len(forums), 1)
-        assert_equal(forums[0]['name'], 'General Discussion')
-        assert_equal(resp.json['count'], 2)
-        assert_equal(resp.json['page'], 0)
-        assert_equal(resp.json['limit'], 1)
+        assert len(forums) == 1
+        assert forums[0]['name'] == 'General Discussion'
+        assert resp.json['count'] == 2
+        assert resp.json['page'] == 0
+        assert resp.json['limit'] == 1
         resp = self.app.get('/rest/p/test/discussion/?limit=1&page=1')
         forums = resp.json['forums']
-        assert_equal(len(forums), 1)
-        assert_equal(forums[0]['name'], 'Say Héllo')
-        assert_equal(resp.json['count'], 2)
-        assert_equal(resp.json['page'], 1)
-        assert_equal(resp.json['limit'], 1)
+        assert len(forums) == 1
+        assert forums[0]['name'] == 'Say Héllo'
+        assert resp.json['count'] == 2
+        assert resp.json['page'] == 1
+        assert resp.json['limit'] == 1
 
     def test_forum_pagination(self):
         resp = self.app.get('/rest/p/test/discussion/general/?limit=1')
         topics = resp.json['forum']['topics']
-        assert_equal(len(topics), 1)
-        assert_equal(topics[0]['subject'], 'Hi guys')
-        assert_equal(resp.json['count'], 2)
-        assert_equal(resp.json['page'], 0)
-        assert_equal(resp.json['limit'], 1)
+        assert len(topics) == 1
+        assert topics[0]['subject'] == 'Hi guys'
+        assert resp.json['count'] == 2
+        assert resp.json['page'] == 0
+        assert resp.json['limit'] == 1
         resp = self.app.get('/rest/p/test/discussion/general/?limit=1&page=1')
         topics = resp.json['forum']['topics']
-        assert_equal(len(topics), 1)
-        assert_equal(topics[0]['subject'], 'Let\'s talk')
-        assert_equal(resp.json['count'], 2)
-        assert_equal(resp.json['page'], 1)
-        assert_equal(resp.json['limit'], 1)
+        assert len(topics) == 1
+        assert topics[0]['subject'] == 'Let\'s talk'
+        assert resp.json['count'] == 2
+        assert resp.json['page'] == 1
+        assert resp.json['limit'] == 1
 
     def test_topic_pagination(self):
         thread = ForumThread.query.find({'subject': 'Hi guys'}).first()
@@ -180,25 +180,25 @@ class TestRootRestController(TestDiscussionApiBase):
         url = '/rest/p/test/discussion/general/thread/%s/' % thread._id
         resp = self.app.get(url + '?limit=1')
         posts = resp.json['topic']['posts']
-        assert_equal(len(posts), 1)
-        assert_equal(posts[0]['text'], 'Hi boys and girls')
-        assert_equal(resp.json['count'], 2)
-        assert_equal(resp.json['page'], 0)
-        assert_equal(resp.json['limit'], 1)
+        assert len(posts) == 1
+        assert posts[0]['text'] == 'Hi boys and girls'
+        assert resp.json['count'] == 2
+        assert resp.json['page'] == 0
+        assert resp.json['limit'] == 1
         resp = self.app.get(url + '?limit=1&page=1')
         posts = resp.json['topic']['posts']
-        assert_equal(len(posts), 1)
-        assert_equal(posts[0]['text'], 'I am second post')
-        assert_equal(resp.json['count'], 2)
-        assert_equal(resp.json['page'], 1)
-        assert_equal(resp.json['limit'], 1)
+        assert len(posts) == 1
+        assert posts[0]['text'] == 'I am second post'
+        assert resp.json['count'] == 2
+        assert resp.json['page'] == 1
+        assert resp.json['limit'] == 1
 
     def test_topic_show_ok_only(self):
         thread = ForumThread.query.find({'subject': 'Hi guys'}).first()
         url = '/rest/p/test/discussion/general/thread/%s/' % thread._id
         resp = self.app.get(url)
         posts = resp.json['topic']['posts']
-        assert_equal(len(posts), 1)
+        assert len(posts) == 1
         thread.post('Hello', 'I am not ok post')
         last_post = thread.last_post
         last_post.status = 'pending'
@@ -206,7 +206,7 @@ class TestRootRestController(TestDiscussionApiBase):
         ThreadLocalORMSession.flush_all()
         resp = self.app.get(url)
         posts = resp.json['topic']['posts']
-        assert_equal(len(posts), 1)
+        assert len(posts) == 1
 
     def test_security(self):
         p = M.Project.query.get(shortname='test')
@@ -240,11 +240,11 @@ class TestRootRestController(TestDiscussionApiBase):
             form['forum-1.members_only'] = True
         form.submit()
         r = self.api_get('/rest/p/test/discussion/')
-        assert_equal(len(r.json['forums']), 2)
+        assert len(r.json['forums']) == 2
         r = self.app.get('/rest/p/test/discussion/',
                          extra_environ={'username': '*anonymous'})
-        assert_equal(len(r.json['forums']), 1)
-        assert_equal(r.json['forums'][0]['shortname'], 'general')
+        assert len(r.json['forums']) == 1
+        assert r.json['forums'][0]['shortname'] == 'general'
 
     def test_has_access_no_params(self):
         self.api_get('/rest/p/test/discussion/has_access', status=404)
@@ -256,13 +256,13 @@ class TestRootRestController(TestDiscussionApiBase):
         r = self.api_get(
             '/rest/p/test/discussion/has_access?user=babadook&perm=read',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False
         r = self.api_get(
             '/rest/p/test/discussion/has_access?user=test-user&perm=jump',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False
 
     def test_has_access_not_admin(self):
         """
@@ -278,10 +278,10 @@ class TestRootRestController(TestDiscussionApiBase):
         r = self.api_get(
             '/rest/p/test/discussion/has_access?user=test-admin&perm=post',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], True)
+        assert r.status_int == 200
+        assert r.json['result'] == True
         r = self.api_get(
             '/rest/p/test/discussion/has_access?user=*anonymous&perm=admin',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False

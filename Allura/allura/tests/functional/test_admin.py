@@ -32,7 +32,7 @@ import six
 
 import allura
 from allura.tests import TestController
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 from allura.tests import decorators as td
 from allura.tests.decorators import audits, out_audits
 from alluratest.controller import TestRestApiBase, setup_trove_categories

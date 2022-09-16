@@ -33,7 +33,7 @@ from allura.tests import decorators as td
 from forgetracker import model as TM
 from forgetracker.site_stats import tickets_stats_24hr
 from forgetracker.tests.functional.test_root import TrackerTestController
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 class TestApp:
@@ -54,7 +54,7 @@ class TestApp:
         c.app.handle_message('1', msg)
         # message gets added as a post on the ticket
         post = M.Post.query.get(_id=message_id)
-        assert_equal(post["text"], message)
+        assert post["text"] == message
 
     @td.with_tracker
     def test_inbound_email_no_match(self):
@@ -66,7 +66,7 @@ class TestApp:
         c.app.handle_message('6789', msg)
         # no new message
         post = M.Post.query.get(_id=message_id)
-        assert_equal(post, None)
+        assert post == None
 
     @td.with_tracker
     def test_uninstall(self):
@@ -83,22 +83,22 @@ class TestApp:
         # invoked normally via entry point
         TM.Ticket.new()
         TM.Ticket.new()
-        assert_equal(2, tickets_stats_24hr())
+        assert 2 == tickets_stats_24hr()
 
     @td.with_tracker
     def test_sitemap_xml(self):
-        assert_equal([], c.app.sitemap_xml())
+        assert [] == c.app.sitemap_xml()
         TM.Ticket.new()
-        assert_equal(1, len(c.app.sitemap_xml()))
+        assert 1 == len(c.app.sitemap_xml())
 
     @td.with_tracker
     def test_sitemap_xml_ignored(self):
         TM.Ticket.new(form_fields=dict(deleted=True))
-        assert_equal([], c.app.sitemap_xml())
+        assert [] == c.app.sitemap_xml()
         # still add to sitemap even if only tickets are closed
         TM.Ticket.new(form_fields=dict(
             status=c.app.globals.closed_status_names[0]))
-        assert_equal(1, len(c.app.sitemap_xml()))
+        assert 1 == len(c.app.sitemap_xml())
 
 
 class TestBulkExport(TrackerTestController):
@@ -132,26 +132,26 @@ class TestBulkExport(TrackerTestController):
 
         tickets = sorted(tracker['tickets'],
                          key=operator.itemgetter('summary'))
-        assert_equal(len(tickets), 2)
+        assert len(tickets) == 2
         ticket_foo = tickets[1]
-        assert_equal(ticket_foo['summary'], 'foo')
-        assert_equal(ticket_foo['custom_fields']['_milestone'], '1.0')
+        assert ticket_foo['summary'] == 'foo'
+        assert ticket_foo['custom_fields']['_milestone'] == '1.0'
         posts_foo = ticket_foo['discussion_thread']['posts']
-        assert_equal(len(posts_foo), 1)
-        assert_equal(posts_foo[0]['text'], 'silly comment')
+        assert len(posts_foo) == 1
+        assert posts_foo[0]['text'] == 'silly comment'
 
         tracker_config = tracker['tracker_config']
-        assert_true('options' in list(tracker_config.keys()))
-        assert_equal(tracker_config['options']['mount_point'], 'bugs')
+        assert 'options' in list(tracker_config.keys())
+        assert tracker_config['options']['mount_point'] == 'bugs'
 
         milestones = sorted(tracker['milestones'],
                             key=operator.itemgetter('name'))
-        assert_equal(milestones[0]['name'], '1.0')
-        assert_equal(milestones[1]['name'], '2.0')
+        assert milestones[0]['name'] == '1.0'
+        assert milestones[1]['name'] == '2.0'
 
         saved_bins_summaries = [bin['summary']
                                 for bin in tracker['saved_bins']]
-        assert_true('Closed Tickets' in saved_bins_summaries)
+        assert 'Closed Tickets' in saved_bins_summaries
 
     def test_export_with_attachments(self):
 
@@ -169,5 +169,5 @@ class TestBulkExport(TrackerTestController):
             self.post.slug,
             'test_file'
         )
-        assert_equal(tickets[1]['discussion_thread']['posts'][0]['attachments'][0]['path'], file_path)
+        assert tickets[1]['discussion_thread']['posts'][0]['attachments'][0]['path'] == file_path
         os.path.exists(file_path)

@@ -109,15 +109,15 @@ class TestImportController(TestRestApiBase):  # TestController):
         return t.replace('T', ' ').replace('Z', '')
 
     def verify_ticket(self, from_api, org):
-        assert_equal(from_api['status'], org['status'])
-        assert_equal(from_api['description'], org['description'])
-        assert_equal(from_api['summary'], org['summary'])
-        assert_equal(from_api['ticket_num'], org['id'])
-        assert_equal(from_api['created_date'],
+        assert from_api['status'] == org['status']
+        assert from_api['description'] == org['description']
+        assert from_api['summary'] == org['summary']
+        assert from_api['ticket_num'] == org['id']
+        assert (from_api['created_date'] ==
                      self.time_normalize(org['date']))
-        assert_equal(from_api['mod_date'],
+        assert (from_api['mod_date'] ==
                      self.time_normalize(org['date_updated']))
-        assert_equal(from_api['custom_fields']
-                     ['_resolution'], org['resolution'])
-        assert_equal(from_api['custom_fields']['_cc'], org['cc'])
-        assert_equal(from_api['custom_fields']['_private'], org['private'])
+        assert (from_api['custom_fields']
+                     ['_resolution'] == org['resolution'])
+        assert from_api['custom_fields']['_cc'] == org['cc']
+        assert from_api['custom_fields']['_private'] == org['private']

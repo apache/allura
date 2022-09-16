@@ -26,7 +26,7 @@ from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test
 from allura.lib.solr import Solr, escape_solr_arg
 from allura.lib.search import search_app, SearchIndexable
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility

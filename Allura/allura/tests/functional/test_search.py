@@ -24,7 +24,7 @@ from allura.tests import TestController
 from allura.tests.decorators import with_tool
 
 from forgewiki.model import Page
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility

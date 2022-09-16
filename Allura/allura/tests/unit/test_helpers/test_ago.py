@@ -21,7 +21,7 @@ from mock import patch
 from alluratest.tools import assert_equal
 
 from allura.lib import helpers
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility

@@ -31,7 +31,7 @@ from allura.model.repository import zipdir, prefix_paths_union
 from allura.model.repo_refresh import (
     _group_commits,
 )
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility

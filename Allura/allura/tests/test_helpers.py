@@ -37,7 +37,7 @@ from allura.lib.search import inject_user
 from allura.lib.security import has_access
 from allura.lib.security import Credentials
 from allura.tests import decorators as td
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 from alluratest.controller import setup_basic_test
 import six
 

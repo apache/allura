@@ -29,14 +29,14 @@ class TestFeedback(FeedbackTestWithModel):
         feedback = M.Feedback()
         feedback.rating = '4'
         feedback.description = 'Very good tool'
-        assert_equal(feedback.rating, '4')
-        assert_equal(feedback.description, 'Very good tool')
-        assert_equal(feedback.activity_extras['summary'], feedback.description)
-        assert_true('allura_id' in feedback.activity_extras)
+        assert feedback.rating == '4'
+        assert feedback.description == 'Very good tool'
+        assert feedback.activity_extras['summary'] == feedback.description
+        assert 'allura_id' in feedback.activity_extras
 
     def test_index(self):
         feedback = M.Feedback()
         feedback.rating = '4'
         feedback.description = 'Good tool'
         result = feedback.index()
-        assert_equal(result["text"], 'Good tool')
+        assert result["text"] == 'Good tool'

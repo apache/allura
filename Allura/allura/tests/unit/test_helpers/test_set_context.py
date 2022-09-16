@@ -26,7 +26,7 @@ from allura.tests.unit import patches
 from allura.tests.unit.factories import (create_project,
                                          create_app_config,
                                          create_neighborhood)
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
