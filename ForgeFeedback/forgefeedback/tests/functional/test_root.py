@@ -38,31 +38,31 @@ class TestFeedback(TestController):
         self.app.get('/feedback/')
         r = self.app.get('/p/test/feedback')
         assert 'test' in r
-        assert_in('<a href="/p/test/feedback/new_feedback">Feedback</a>', r)
+        assert '<a href="/p/test/feedback/new_feedback">Feedback</a>' in r
 
     def test_new_feedback(self):
         c.user = M.User.by_username('test-admin')
         self.app.get('/feedback/')
         r = self.app.get('/p/test/feedback/new_feedback/')
-        assert_in('Provide your feedback for <b> Test Project</b>', r)
-        assert_in('Enter your feedback here', r)
+        assert 'Provide your feedback for <b> Test Project</b>' in r
+        assert 'Enter your feedback here' in r
 
     def test_create_feedback(self):
         resp = post_feedback(self)
         resp = resp.follow()
-        assert_in('Good tool', resp)
+        assert 'Good tool' in resp
 
     def test_edit_feedback(self):
         post_feedback(self)
         data = {'rating': '2', 'description': 'Not useful'}
         resp = self.app.post('/p/test/feedback/edit_user_review', data)
         resp = resp.follow()
-        assert_in('Not useful', resp)
+        assert 'Not useful' in resp
 
     def test_delete_feedback(self):
         post_feedback(self)
         resp = self.app.post('/p/test/feedback/delete_feedback')
-        assert_in('Success', resp)
+        assert 'Success' in resp
 
 
 def post_feedback(self):

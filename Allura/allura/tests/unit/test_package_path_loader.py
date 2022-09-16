@@ -25,7 +25,7 @@ import mock
 from tg import config
 
 from allura.lib.package_path_loader import PackagePathLoader
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility

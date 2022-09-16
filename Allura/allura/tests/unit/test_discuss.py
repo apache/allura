@@ -18,7 +18,7 @@
 from allura import model as M
 from allura.tests.unit import WithDatabase
 from allura.tests.unit.patches import fake_app_patch
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility

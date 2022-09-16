@@ -23,7 +23,7 @@ from mock import patch
 
 from allura.tests import TestController
 import allura.lib.gravatar as gravatar
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility

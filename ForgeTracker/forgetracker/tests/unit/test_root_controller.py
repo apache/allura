@@ -49,7 +49,7 @@ class TestWhenSearchingWithCustomFields(WithUserAndBugsApp):
         expected = [dict(sortable_name='_iteration_number_s',
                          name='_iteration_number',
                          label='Iteration Number')]
-        assert_equal(self.response['sortable_custom_fields'], expected)
+        assert self.response['sortable_custom_fields'] == expected
 
     def test_that_tickets_are_listed(self):
         assert self.response['tickets'][0].summary == 'colors are wrong'

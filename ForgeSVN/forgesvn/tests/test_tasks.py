@@ -57,7 +57,7 @@ class TestRepoTasks(unittest.TestCase):
             repo_tasks.init()
             M.main_orm_session.flush()
             assert f.called_with()
-            assert_equal(ns, M.Notification.query.find().count())
+            assert ns == M.Notification.query.find().count()
 
     def test_clone(self):
         ns = M.Notification.query.find().count()

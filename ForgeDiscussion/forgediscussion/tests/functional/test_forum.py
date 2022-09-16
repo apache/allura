@@ -156,8 +156,8 @@ class TestForumMessageHandling(TestController):
         self.user = M.User.query.get(username='root')
 
     def test_has_access(self):
-        assert_false(c.app.has_access(M.User.anonymous(), 'testforum'))
-        assert_true(c.app.has_access(M.User.query.get(username='root'), 'testforum'))
+        assert not c.app.has_access(M.User.anonymous(), 'testforum')
+        assert c.app.has_access(M.User.query.get(username='root'), 'testforum')
 
     def test_post(self):
         self._post('testforum', 'Test Thread', 'Nothing here')
@@ -168,19 +168,19 @@ class TestForumMessageHandling(TestController):
     def test_reply(self):
         self._post('testforum', 'Test Thread', 'Nothing here',
                    message_id='test_reply@domain.net')
-        assert_equal(FM.ForumThread.query.find().count(), 1)
+        assert FM.ForumThread.query.find().count() == 1
         posts = FM.ForumPost.query.find()
-        assert_equal(posts.count(), 1)
-        assert_equal(FM.ForumThread.query.get().num_replies, 1)
-        assert_equal(FM.ForumThread.query.get().first_post_id, 'test_reply@domain.net')
+        assert posts.count() == 1
+        assert FM.ForumThread.query.get().num_replies == 1
+        assert FM.ForumThread.query.get().first_post_id == 'test_reply@domain.net'
 
         post = posts.first()
         self._post('testforum', 'Test Reply', 'Nothing here, either',
                    message_id='test_reply-msg2@domain.net',
                    in_reply_to=['test_reply@domain.net'])
-        assert_equal(FM.ForumThread.query.find().count(), 1)
-        assert_equal(FM.ForumPost.query.find().count(), 2)
-        assert_equal(FM.ForumThread.query.get().first_post_id, 'test_reply@domain.net')
+        assert FM.ForumThread.query.find().count() == 1
+        assert FM.ForumPost.query.find().count() == 2
+        assert FM.ForumThread.query.get().first_post_id == 'test_reply@domain.net'
 
     def test_reply_using_references_headers(self):
         self._post('testforum', 'Test Thread', 'Nothing here',
@@ -193,8 +193,8 @@ class TestForumMessageHandling(TestController):
                    message_id='second-message-id',
                    in_reply_to=['some-other-id@not.helpful.com'],
                    references=refs)
-        assert_equal(FM.ForumThread.query.find().count(), 1)
-        assert_equal(FM.ForumPost.query.find().count(), 2)
+        assert FM.ForumThread.query.find().count() == 1
+        assert FM.ForumPost.query.find().count() == 2
 
         prev_post = FM.ForumPost.query.find().sort('timestamp', pymongo.DESCENDING).first()
         refs = M.Notification._references(thread, prev_post) + ['second-message-id']
@@ -202,8 +202,8 @@ class TestForumMessageHandling(TestController):
                    message_id='third-message-id',
                    # missing in_reply_to altogether
                    references=refs)
-        assert_equal(FM.ForumThread.query.find().count(), 1)
-        assert_equal(FM.ForumPost.query.find().count(), 3)
+        assert FM.ForumThread.query.find().count() == 1
+        assert FM.ForumPost.query.find().count() == 3
 
     def test_attach(self):
         # runs handle_artifact_message() with filename field
@@ -367,7 +367,7 @@ class TestForum(TestController):
         form['add_forum.description'] = '<a href="http://cnn.com">This is CNN</a>'
         form.submit()
         r = self.app.get('/discussion/')
-        assert_equal(len(r.html.findAll('a', rel='nofollow')), 2)
+        assert len(r.html.findAll('a', rel='nofollow')) == 2
 
     def test_forum_search(self):
         self.app.get('/discussion/search')
@@ -459,13 +459,13 @@ class TestForum(TestController):
             params[f.find('input', {'style': 'width: 90%'})['name']] = "this is my post"
             r = self.app.post('/discussion/save_new_topic', params=params)
 
-        assert_equal(5, FM.ForumPost.query.find({'status': 'ok'}).count())
+        assert 5 == FM.ForumPost.query.find({'status': 'ok'}).count()
 
         r = self.app.post('/discussion/testforum/moderate/save_moderation_bulk_user', params={
             'username': 'test-admin',
             'spam': '1'})
-        assert_in('5 posts marked as spam', self.webflash(r))
-        assert_equal(5, FM.ForumPost.query.find({'status': 'spam'}).count())
+        assert '5 posts marked as spam' in self.webflash(r)
+        assert 5 == FM.ForumPost.query.find({'status': 'spam'}).count()
 
     def test_posting(self):
         r = self.app.get('/discussion/create_topic/')
@@ -514,7 +514,7 @@ class TestForum(TestController):
         r = self.app.post('/discussion/save_new_topic', params=params)
         n = M.Notification.query.find(
             dict(subject="[test:discussion] this is <h2> o'clock")).first()
-        assert_in('---\n\n[this is &lt;h2&gt; o&#39;clock]', n.text)
+        assert '---\n\n[this is &lt;h2&gt; o&#39;clock]' in n.text
 
     def _set_anon_allowed(self):
         r = self.app.get('/admin/discussion/permissions')
@@ -557,7 +557,7 @@ class TestForum(TestController):
         assert 'name="approve"' not in r
         assert 'name="spam"' not in r
         assert "Post content" not in r
-        assert_equal(spam_checker.check.call_args[0][0], 'Test Thread\nPost content')
+        assert spam_checker.check.call_args[0][0] == 'Test Thread\nPost content'
 
         # assert unapproved thread replies do not appear
         f = thread.html.find('div', {'class': 'comment-row reply_post_form'}).find('form')
@@ -572,7 +572,7 @@ class TestForum(TestController):
         r = self.app.get(thread.request.url,
                          extra_environ=dict(username='*anonymous'))
         assert 'anon reply to anon post' not in r
-        assert_equal(spam_checker.check.call_args[0][0], 'anon reply to anon post content')
+        assert spam_checker.check.call_args[0][0] == 'anon reply to anon post content'
 
         # assert moderation controls appear for admin
         r = self.app.get(thread.request.url)
@@ -619,8 +619,8 @@ class TestForum(TestController):
         ThreadLocalORMSession.flush_all()
         t = M.Thread()
         p = M.Post(thread=t)
-        assert_in('TestRole', [r.name for r in c.project.named_roles])
-        assert_false(t.is_spam(p))
+        assert 'TestRole' in [r.name for r in c.project.named_roles]
+        assert not t.is_spam(p)
 
     def test_thread(self):
         r = self.app.get('/discussion/create_topic/')
@@ -717,7 +717,7 @@ class TestForum(TestController):
     def check_announcement_table(self, response, topic_name):
         assert response.html.find(text='Announcements')
         rows = self.get_table_rows(response, 'announcements')
-        assert_equal(len(rows), 1)
+        assert len(rows) == 1
         cell = rows[0].findAll('td', {'class': 'topic'})
         assert topic_name in str(cell)
 
@@ -739,7 +739,7 @@ class TestForum(TestController):
             flags='Announcement',
             discussion='testforum'))
         thread2 = FM.ForumThread.query.get(_id=thread_id)
-        assert_equal(thread2.flags, ['Announcement'])
+        assert thread2.flags == ['Announcement']
 
         # Check that announcements are on front discussion page
         r = self.app.get('/discussion/')
@@ -804,7 +804,7 @@ class TestForum(TestController):
         # Check that threads are ordered in reverse creation order
         r = self.app.get('/discussion/testforum/')
         rows = self.get_table_rows(r, 'forum_threads')
-        assert_equal(len(rows), 2)
+        assert len(rows) == 2
         assert 'topic2' in str(rows[0])
         assert 'topic1' in str(rows[1])
 
@@ -813,12 +813,12 @@ class TestForum(TestController):
             flags='Sticky',
             discussion='testforum'))
         thread1 = FM.ForumThread.query.get(_id=tid1)
-        assert_equal(thread1.flags, ['Sticky'])
+        assert thread1.flags == ['Sticky']
 
         # Check that Sticky thread is at the top
         r = self.app.get('/discussion/testforum/')
         rows = self.get_table_rows(r, 'forum_threads')
-        assert_equal(len(rows), 2)
+        assert len(rows) == 2
         assert 'topic1' in rows[0].text
         assert 'topic2' in rows[1].text
 
@@ -827,14 +827,14 @@ class TestForum(TestController):
             flags='',
             discussion='testforum'))
         thread1 = FM.ForumThread.query.get(_id=tid1)
-        assert_equal(thread1.flags, [])
+        assert thread1.flags == []
 
         # Would check that threads are again in reverse creation order,
         # but so far we actually sort by mod_date, and resetting a flag
         # updates it
         r = self.app.get('/discussion/testforum/')
         rows = self.get_table_rows(r, 'forum_threads')
-        assert_equal(len(rows), 2)
+        assert len(rows) == 2
         # assert 'topic2' in str(rows[0])
         # assert 'topic1' in str(rows[1])
 
@@ -868,7 +868,7 @@ class TestForum(TestController):
         # make sure the posts are in the original thread
         posts = thread.html.find('div', {'id': 'comment'}).findAll(
             'div', {'class': 'discussion-post'})
-        assert_equal(len(posts), 2)
+        assert len(posts) == 2
         # move the thread
         r = self.app.post(url + 'moderate', params=dict(
             flags='',
@@ -876,7 +876,7 @@ class TestForum(TestController):
         # make sure all the posts got moved
         posts = r.html.find('div', {'id': 'comment'}).findAll(
             'div', {'class': 'discussion-post'})
-        assert_equal(len(posts), 2)
+        assert len(posts) == 2
 
     def test_rename_thread(self):
         # make the topic
@@ -914,11 +914,11 @@ class TestForum(TestController):
         sidebar = r.html.find('div', {'id': 'sidebar'})
         sidebar_menu = str(sidebar)
         sidebar_links = [i['href'] for i in sidebar.findAll('a')]
-        assert_in("/p/test/discussion/create_topic/", sidebar_links)
-        assert_in("/p/test/discussion/new_forum", sidebar_links)
-        assert_in('<h3 class="">Help</h3>', sidebar_menu)
-        assert_in("/nf/markdown_syntax", sidebar_links)
-        assert_not_in("flag_as_spam", sidebar_links)
+        assert "/p/test/discussion/create_topic/" in sidebar_links
+        assert "/p/test/discussion/new_forum" in sidebar_links
+        assert '<h3 class="">Help</h3>' in sidebar_menu
+        assert "/nf/markdown_syntax" in sidebar_links
+        assert "flag_as_spam" not in sidebar_links
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
@@ -931,18 +931,18 @@ class TestForum(TestController):
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'AAA'
         thread = self.app.post('/discussion/save_new_topic', params=params).follow()
         thread_sidebarmenu = str(thread.html.find('div', {'id': 'sidebar'}))
-        assert_in("flag_as_spam", thread_sidebarmenu)
+        assert "flag_as_spam" in thread_sidebarmenu
 
     def test_sidebar_menu_anon(self):
         r = self.app.get('/discussion/')
         sidebar = r.html.find('div', {'id': 'sidebar'})
         sidebar_menu = str(sidebar)
         sidebar_links = [i['href'] for i in sidebar.findAll('a')]
-        assert_in("/p/test/discussion/create_topic/", sidebar_links)
-        assert_in("/p/test/discussion/new_forum", sidebar_links)
-        assert_in('<h3 class="">Help</h3>', sidebar_menu)
-        assert_in("/nf/markdown_syntax", sidebar_links)
-        assert_not_in("flag_as_spam", sidebar_menu)
+        assert "/p/test/discussion/create_topic/" in sidebar_links
+        assert "/p/test/discussion/new_forum" in sidebar_links
+        assert '<h3 class="">Help</h3>' in sidebar_menu
+        assert "/nf/markdown_syntax" in sidebar_links
+        assert "flag_as_spam" not in sidebar_menu
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
@@ -956,7 +956,7 @@ class TestForum(TestController):
         thread = self.app.post('/discussion/save_new_topic',
                                params=params).follow(extra_environ=dict(username='*anonymous'))
         thread_sidebar_menu = str(thread.html.find('div', {'id': 'sidebar'}))
-        assert_not_in("flag_as_spam", thread_sidebar_menu)
+        assert "flag_as_spam" not in thread_sidebar_menu
 
     def test_feed(self):
         for ext in ['', '.rss', '.atom']:
@@ -1006,7 +1006,7 @@ class TestForum(TestController):
         # View the thread and make sure project last_updated is not updated
         self.app.get(url)
         timestamp_after = M.Project.query.get(shortname='test').last_updated
-        assert_equal(timestamp_before, timestamp_after)
+        assert timestamp_before == timestamp_after
 
 
 class TestForumStats(TestController):
@@ -1042,7 +1042,7 @@ class TestForumStats(TestController):
         ])
         r = self.app.get(
             '/discussion/stats_data?begin=2013-01-01&end=2013-01-06')
-        assert_equal(r.json, {
+        assert r.json == {
             'begin': '2013-01-01 00:00:00',
             'end': '2013-01-06 00:00:00',
             'data': [
@@ -1053,4 +1053,4 @@ class TestForumStats(TestController):
                 [1357344000000, 2],
                 [1357430400000, 0],
             ]
-        })
+        }

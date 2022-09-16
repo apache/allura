@@ -29,7 +29,7 @@ from tg import config
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
 from allura.lib import helpers as h
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility

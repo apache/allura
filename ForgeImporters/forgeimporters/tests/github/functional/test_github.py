@@ -62,16 +62,16 @@ class TestGitHubOAuth(TestController):
         oauth.return_value = oauth_instance
 
         user = M.User.by_username('test-admin')
-        assert_equal(user.get_tool_data('GitHubProjectImport', 'token'), None)
+        assert user.get_tool_data('GitHubProjectImport', 'token') == None
         r = self.app.get('/p/import_project/github/')
-        assert_equal(r.status_int, 302)
-        assert_equal(r.location, redirect)
+        assert r.status_int == 302
+        assert r.location == redirect
         session.__setitem__.assert_has_calls([
             call('github.oauth.state', 'state'),
             call('github.oauth.redirect',
                  'http://localhost/p/import_project/github/')
         ])
-        assert_equal(session.save.call_count, 1)
+        assert session.save.call_count == 1
 
         r = self.app.get(redirect)
         session.get.assert_has_calls([
@@ -79,14 +79,14 @@ class TestGitHubOAuth(TestController):
             call('github.oauth.redirect', '/')
         ])
         user = M.User.by_username('test-admin')
-        assert_equal(user.get_tool_data('GitHubProjectImport', 'token'), 'abc')
+        assert user.get_tool_data('GitHubProjectImport', 'token') == 'abc'
 
         with patch('forgeimporters.github.requests.post') as valid_access_token_post:
             valid_access_token_post.return_value = Mock(status_code=200)
             r = self.app.get('/p/import_project/github/')
 
         # token in user data, so oauth isn't triggered
-        assert_equal(r.status_int, 200)
+        assert r.status_int == 200
 
         valid_access_token_post.assert_called_once_with('https://api.github.com/applications/client_id/token',
                                                         auth=requests.auth.HTTPBasicAuth('client_id', 'secret'),
@@ -96,5 +96,5 @@ class TestGitHubOAuth(TestController):
 
     def test_project_import_login_required(self):
         r = self.app.get('/p/import_project/github/', extra_environ=dict(username='*anonymous'))
-        assert_equal(None, r.location)
+        assert None == r.location
         r.mustcontain('Login Required')

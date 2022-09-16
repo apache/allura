@@ -34,10 +34,10 @@ class TestUpload(FilesTestWithModel):
         upload_folder.published = True
         upload_folder.remark = 'Publishing new Version'
         upload_folder.disabled = False
-        assert_equal(upload_folder.folder_name, 'testFolder')
-        assert_true(upload_folder.published)
-        assert_equal(upload_folder.remark, 'Publishing new Version')
-        assert_false(upload_folder.disabled)
+        assert upload_folder.folder_name == 'testFolder'
+        assert upload_folder.published
+        assert upload_folder.remark == 'Publishing new Version'
+        assert not upload_folder.disabled
 
     def test_upload_file(self):
         '''Creates an object of the UploadFiles Collection and tests its fields'''
@@ -48,7 +48,7 @@ class TestUpload(FilesTestWithModel):
         upload_file.file_url = 'TestFolder/testFile'
         upload_file.linked_to_download = True
         upload_file.published = False
-        assert_equal(upload_file.filename, 'testFile')
-        assert_equal(upload_file.filetype, 'project_file')
-        assert_true(upload_file.linked_to_download)
-        assert_false(upload_file.published)
+        assert upload_file.filename == 'testFile'
+        assert upload_file.filetype == 'project_file'
+        assert upload_file.linked_to_download
+        assert not upload_file.published

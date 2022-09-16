@@ -39,7 +39,7 @@ class TestWikiApi(TestRestApiBase):
 
     def test_get_root(self):
         r = self.app.get('/rest/p/test/wiki/')
-        assert_equal(r.json, {'pages': ['Home']})
+        assert r.json == {'pages': ['Home']}
 
     def test_get_page(self):
         r = self.app.get('/p/test/wiki/Home/')
@@ -49,17 +49,17 @@ class TestWikiApi(TestRestApiBase):
                       upload_files=[('file_info', 'test_root.py', content)])
         r = self.app.get('/rest/p/test/wiki/Home/')
         r = json.loads(r.text)
-        assert_equal(r['attachments'][0]['url'],
+        assert (r['attachments'][0]['url'] ==
                      'http://localhost/p/test/wiki/Home/attachment/test_root.py')
-        assert_equal(r['discussion_thread_url'], 'http://localhost/rest%s' %
+        assert (r['discussion_thread_url'] == 'http://localhost/rest%s' %
                      discussion_url)
-        assert_equal(r['discussion_thread']['_id'],
+        assert (r['discussion_thread']['_id'] ==
                      discussion_url.split('/')[-2])
         self.app.post('/wiki/Home/attach',
                       upload_files=[('file_info', '__init__.py', content), ])
         r = self.app.get('/rest/p/test/wiki/Home/')
         r = json.loads(r.text)
-        assert_equal(len(r['attachments']), 2)
+        assert len(r['attachments']) == 2
 
     def test_page_does_not_exist(self):
         r = self.api_get('/rest/p/test/wiki/fake/', status=404)
@@ -70,10 +70,10 @@ class TestWikiApi(TestRestApiBase):
             'labels': 'head hunting,dark side'
         }
         r = self.api_post('/rest/p/test/wiki/Home/', **data)
-        assert_equal(r.status_int, 200)
+        assert r.status_int == 200
         r = self.api_get('/rest/p/test/wiki/Home/')
-        assert_equal(r.json['text'], data['text'])
-        assert_equal(r.json['labels'], data['labels'].split(','))
+        assert r.json['text'] == data['text']
+        assert r.json['labels'] == data['labels'].split(',')
 
     def test_create_page(self):
         data = {
@@ -81,10 +81,10 @@ class TestWikiApi(TestRestApiBase):
             'labels': 'head hunting,dark side'
         }
         r = self.api_post(h.urlquote('/rest/p/test/wiki/tést/'), **data)
-        assert_equal(r.status_int, 200)
+        assert r.status_int == 200
         r = self.api_get(h.urlquote('/rest/p/test/wiki/tést/'))
-        assert_equal(r.json['text'], data['text'])
-        assert_equal(r.json['labels'], data['labels'].split(','))
+        assert r.json['text'] == data['text']
+        assert r.json['labels'] == data['labels'].split(',')
 
     def test_create_page_limit(self):
         data = {
@@ -95,12 +95,12 @@ class TestWikiApi(TestRestApiBase):
         with h.push_config(tg.config, **{'forgewiki.rate_limits': '{}'}):
             r = self.api_post('/rest/p/test/wiki/page1/', status=200, **data)
             p = Page.query.get(title='page1')
-            assert_not_equal(p, None)
+            assert p != None
         # Set rate limit to 1 in first hour of project
         with h.push_config(tg.config, **{'forgewiki.rate_limits': '{"3600": 1}'}):
             r = self.api_post('/rest/p/test/wiki/page2/', status=429, **data)
             p = Page.query.get(title='page2')
-            assert_equal(p, None)
+            assert p == None
 
     # http://blog.watchfire.com/wfblog/2011/10/json-based-xss-exploitation.html
     def test_json_encoding_security(self):
@@ -108,15 +108,15 @@ class TestWikiApi(TestRestApiBase):
                       text='foo <img src=x onerror=alert(1)> bar')
         r = self.api_get('/rest/p/test/wiki/foo.html')
         # raw text is not an HTML tag
-        assert_in(r'foo \u003Cimg src=x onerror=alert(1)> bar', r.text)
+        assert r'foo \u003Cimg src=x onerror=alert(1)> bar' in r.text
         # and json still is parsed into correct content
-        assert_equal(r.json['text'], 'foo <img src=x onerror=alert(1)> bar')
+        assert r.json['text'] == 'foo <img src=x onerror=alert(1)> bar'
 
     def test_json_encoding_directly(self):
         # used in @expose('json'), monkey-patched in our patches.py
-        assert_equal(tg.jsonify.encode('<'), r'"\u003C"')
+        assert tg.jsonify.encode('<') == r'"\u003C"'
         # make sure these are unchanged
-        assert_equal(json.dumps('<'), '"<"')
+        assert json.dumps('<') == '"<"'
 
 
 class TestWikiHasAccess(TestRestApiBase):
@@ -139,13 +139,13 @@ class TestWikiHasAccess(TestRestApiBase):
         r = self.api_get(
             '/rest/p/test/wiki/has_access?user=babadook&perm=read',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False
         r = self.api_get(
             '/rest/p/test/wiki/has_access?user=test-user&perm=jump',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False
 
     def test_has_access_not_admin(self):
         """
@@ -161,10 +161,10 @@ class TestWikiHasAccess(TestRestApiBase):
         r = self.api_get(
             '/rest/p/test/wiki/has_access?user=test-admin&perm=create',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], True)
+        assert r.status_int == 200
+        assert r.json['result'] == True
         r = self.api_get(
             '/rest/p/test/wiki/has_access?user=test-user&perm=create',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False

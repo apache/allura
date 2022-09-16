@@ -51,26 +51,26 @@ class TestApp:
 
     @td.with_tool('test', 'Blog', 'blog')
     def test_sitemap_xml(self):
-        assert_equal([], c.app.sitemap_xml())
+        assert [] == c.app.sitemap_xml()
         BM.BlogPost.new(
             title='Blog Title',
             state='draft',
             text='This is my first blog Post',
         )
-        assert_equal([], c.app.sitemap_xml())
+        assert [] == c.app.sitemap_xml()
         BM.BlogPost.new(
             title='Blog Title',
             state='published',
             text='This is my first blog Post',
             deleted=True
         )
-        assert_equal([], c.app.sitemap_xml())
+        assert [] == c.app.sitemap_xml()
         BM.BlogPost.new(
             title='Blog Title',
             state='published',
             text='This is my first blog Post',
         )
-        assert_equal(1, len(c.app.sitemap_xml()))
+        assert 1 == len(c.app.sitemap_xml())
 
 
 class TestBulkExport:
@@ -107,14 +107,14 @@ class TestBulkExport:
         blog = json.loads(f.read())
         blog['posts'] = sorted(
             blog['posts'], key=lambda x: x['title'], reverse=True)
-        assert_equal(blog['posts'][0]['title'], 'Test2 title')
-        assert_equal(blog['posts'][0]['text'], 'test2 post')
-        assert_equal(blog['posts'][1]['title'], 'Test title')
-        assert_equal(blog['posts'][1]['text'], 'test post')
-        assert_equal(blog['posts'][1]['labels'],
+        assert blog['posts'][0]['title'] == 'Test2 title'
+        assert blog['posts'][0]['text'] == 'test2 post'
+        assert blog['posts'][1]['title'] == 'Test title'
+        assert blog['posts'][1]['text'] == 'test post'
+        assert (blog['posts'][1]['labels'] ==
                      ['the firstlabel', 'the second label'])
-        assert_equal(blog['posts'][1]['discussion_thread']
-                     ['posts'][0]['text'], 'test comment')
+        assert (blog['posts'][1]['discussion_thread']
+                     ['posts'][0]['text'] == 'test comment')
 
     @td.with_tool('test', 'Blog', 'blog')
     def test_export_with_attachments(self):
@@ -148,6 +148,6 @@ class TestBulkExport:
             post.discussion_thread._id,
             list(post.discussion_thread.post_class().query.find())[0].slug
         )
-        assert_equal(blog['posts'][0]['discussion_thread']['posts'][0]
-                     ['attachments'][0]['path'], file_path)
+        assert (blog['posts'][0]['discussion_thread']['posts'][0]
+                     ['attachments'][0]['path'] == file_path)
         assert os.path.exists(os.path.join(temp_dir, file_path))

@@ -25,7 +25,7 @@ from allura.tests import TestController
 from allura import model as M
 from allura.lib import helpers as h
 from tg import config
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility

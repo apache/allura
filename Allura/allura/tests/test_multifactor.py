@@ -32,7 +32,7 @@ from allura.lib.multifactor import GoogleAuthenticatorFile, TotpService, Mongodb
 from allura.lib.multifactor import GoogleAuthenticatorPamFilesystemTotpService
 from allura.lib.multifactor import RecoveryCodeService, MongodbRecoveryCodeService
 from allura.lib.multifactor import GoogleAuthenticatorPamFilesystemRecoveryCodeService
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility

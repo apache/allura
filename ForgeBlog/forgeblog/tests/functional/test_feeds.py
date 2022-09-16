@@ -68,10 +68,10 @@ class TestFeeds(TestController):
     def test_rss_feed_contains_self_link(self):
         r = self.app.get('/blog/feed.rss')
         # atom namespace included
-        assert_in('<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">', r)
+        assert '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">' in r
         # ...and atom:link points to feed url
-        assert_in('<atom:link href="http://localhost/blog/feed.rss" '
-                  'rel="self" type="application/rss+xml"></atom:link>', r)
+        assert ('<atom:link href="http://localhost/blog/feed.rss" '
+                  'rel="self" type="application/rss+xml"></atom:link>' in r)
 
     def test_post_feeds(self):
         self._post()
@@ -82,7 +82,7 @@ class TestFeeds(TestController):
         assert 'Nothing to see' in response
         self._post(title='test', text='*sometext*')
         response = self.app.get('/blog/feed')
-        assert_in('&lt;div class="markdown_content"&gt;&lt;p&gt;&lt;em&gt;sometext&lt;/em&gt;&lt;/p&gt;&lt;/div&gt;',
+        assert ('&lt;div class="markdown_content"&gt;&lt;p&gt;&lt;em&gt;sometext&lt;/em&gt;&lt;/p&gt;&lt;/div&gt;' in
                   response)
 
     def test_related_artifacts(self):
@@ -142,7 +142,7 @@ class TestFeeds(TestController):
         ThreadLocalORMSession.flush_all()
 
         resp = self.app.get(h.urlquote("/blog/" + self._blog_date() + "/my-pôst/feed.rss"))
-        assert_in('boring comment', resp)
+        assert 'boring comment' in resp
 
         resp = self.app.get("/blog/feed.rss")
-        assert_not_in('boring comment', resp)
+        assert 'boring comment' not in resp

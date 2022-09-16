@@ -33,11 +33,11 @@ class TestBlogPost(BlogTestWithModel):
     def test_new(self):
         post = M.BlogPost.new(
             title='test', text='test message', state='published')
-        assert_equal(post.title, 'test')
-        assert_equal(post.text, 'test message')
-        assert_equal(post.state, 'published')
-        assert_equal(post.activity_extras['summary'], post.title)
-        assert_true('allura_id' in post.activity_extras)
+        assert post.title == 'test'
+        assert post.text == 'test message'
+        assert post.state == 'published'
+        assert post.activity_extras['summary'] == post.title
+        assert 'allura_id' in post.activity_extras
 
 
 class TestFeed(BlogTestWithModel):
@@ -57,7 +57,7 @@ class TestFeed(BlogTestWithModel):
             description=post.text,
             author=post.author(),
             pubdate=post.timestamp)
-        assert_equal(f.pubdate, datetime(2012, 10, 29, 9, 57, 21, 465000))
+        assert f.pubdate == datetime(2012, 10, 29, 9, 57, 21, 465000)
 
 
 class TestHtmlPreview(BlogTestWithModel):
@@ -77,14 +77,14 @@ class TestHtmlPreview(BlogTestWithModel):
                 "esse cillum dolore eu fugiat nulla pariatur. Excepteur sint "
                 "occaecat cupidatat non proident, sunt in culpa qui officia "
                 "deserunt mollit anim id est laborum.")
-        assert_equal(self._make_post(text).html_text_preview, wrapped(text))
+        assert self._make_post(text).html_text_preview == wrapped(text)
 
     def test_single_short_paragraph(self):
         text = ("Lorem ipsum dolor sit amet, consectetur adipisicing elit, "
                 "sed do eiusmod tempor incididunt ut labore et dolore magna "
                 "aliqua. Ut enim ad minim veniam, quis nostrud exercitation "
                 "ullamco laboris nisi ut aliquip ex ea commodo consequat.")
-        assert_equal(self._make_post(text).html_text_preview, wrapped(text))
+        assert self._make_post(text).html_text_preview == wrapped(text)
 
     def test_multi_paragraph_short(self):
         text = ("Lorem ipsum dolor sit amet, consectetur adipisicing elit, "
@@ -100,7 +100,7 @@ class TestHtmlPreview(BlogTestWithModel):
                     '<p>Ut enim ad minim veniam, quis nostrud exercitation '
                     'ullamco laboris nisi ut aliquip ex ea commodo '
                     'consequat.</p></div>')
-        assert_equal(self._make_post(text).html_text_preview, expected)
+        assert self._make_post(text).html_text_preview == expected
 
     def test_multi_paragraph_long(self):
         text = ("Lorem ipsum dolor sit amet, consectetur adipisicing elit, "
@@ -134,4 +134,4 @@ class TestHtmlPreview(BlogTestWithModel):
                     'anim id est laborum.... '
                     '<a class="" href="/p/test/blog/%s/%02i/untitled/">'
                     'read more</a></p></div>') % (now.year, now.month)
-        assert_equal(self._make_post(text).html_text_preview, expected)
+        assert self._make_post(text).html_text_preview == expected

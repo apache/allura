@@ -72,22 +72,22 @@ class TestBulkExport:
         f.seek(0)
         wiki = json.loads(f.read())
         pages = sorted(wiki['pages'], key=operator.itemgetter('title'))
-        assert_equal(len(pages), 3)
-        assert_equal(pages[0]['title'], 'A New Hope')
-        assert_equal(pages[0]['text'], 'Star Wars Episode IV: A New Hope')
-        assert_equal(pages[0]['mod_date'], '2013-07-05 00:00:00')
-        assert_equal(pages[0]['labels'], ['star wars', 'movies'])
-        assert_equal(len(pages[0]['discussion_thread']['posts']), 2)
+        assert len(pages) == 3
+        assert pages[0]['title'] == 'A New Hope'
+        assert pages[0]['text'] == 'Star Wars Episode IV: A New Hope'
+        assert pages[0]['mod_date'] == '2013-07-05 00:00:00'
+        assert pages[0]['labels'] == ['star wars', 'movies']
+        assert len(pages[0]['discussion_thread']['posts']) == 2
 
-        assert_equal(pages[1]['title'], 'Return of the Jedi')
-        assert_equal(pages[1]['text'],
+        assert pages[1]['title'] == 'Return of the Jedi'
+        assert (pages[1]['text'] ==
                      'Star Wars Episode VI: Return of the Jedi')
-        assert_equal(len(pages[1]['discussion_thread']['posts']), 0)
+        assert len(pages[1]['discussion_thread']['posts']) == 0
 
-        assert_equal(pages[2]['title'], 'The Empire Strikes Back')
-        assert_equal(pages[2]['text'],
+        assert pages[2]['title'] == 'The Empire Strikes Back'
+        assert (pages[2]['text'] ==
                      'Star Wars Episode V: The Empire Strikes Back')
-        assert_equal(len(pages[2]['discussion_thread']['posts']), 0)
+        assert len(pages[2]['discussion_thread']['posts']) == 0
 
     def add_page_with_attachmetns(self):
         self.page = WM.Page.upsert('ZTest_title')
@@ -160,7 +160,7 @@ class TestApp:
         msg = dict(payload=message, message_id=message_id, headers={'Subject': 'test'})
         self.wiki.handle_message('A_New_Hope', msg)
         post = M.Post.query.get(_id=message_id)
-        assert_equal(post["text"], message)
+        assert post["text"] == message
 
     def test_uninstall(self):
         assert WM.Page.query.get(title='A New Hope')

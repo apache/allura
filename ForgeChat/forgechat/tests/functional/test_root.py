@@ -39,9 +39,9 @@ class TestRootController(TestController):
         data = {'channel': 'test channel',
                 '_session_id': self.app.cookies['_session_id']}
         ch = CM.ChatChannel.query.get()
-        assert_equal(ch.channel, '')
+        assert ch.channel == ''
         resp = self.app.post('/p/test/admin/chat/configure', data)
         expected = {'status': 'ok', 'message': 'Chat options updated'}
-        assert_equal(json.loads(self.webflash(resp)), expected)
+        assert json.loads(self.webflash(resp)) == expected
         ch = CM.ChatChannel.query.get()
-        assert_equal(ch.channel, 'test channel')
+        assert ch.channel == 'test channel'

@@ -47,7 +47,7 @@ def test_role_assignments():
     def check_access(perm):
         pred = security.has_access(c.app, perm)
         return pred(user=admin), pred(user=user), pred(user=anon)
-    assert_equal(check_access('read'), (True, True, True))
-    assert_equal(check_access('create'), (True, False, False))
-    assert_equal(check_access('update'), (True, False, False))
-    assert_equal(check_access('delete'), (True, False, False))
+    assert check_access('read') == (True, True, True)
+    assert check_access('create') == (True, False, False)
+    assert check_access('update') == (True, False, False)
+    assert check_access('delete') == (True, False, False)

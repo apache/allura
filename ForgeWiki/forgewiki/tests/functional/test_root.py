@@ -80,7 +80,7 @@ class TestRootController(TestController):
 
     def test_root_new_page(self):
         response = self.app.get('/wiki/new_page?title=' + h.urlquote('tést'))
-        assert_equal(response.location, 'http://localhost/wiki/t%C3%A9st/')
+        assert response.location == 'http://localhost/wiki/t%C3%A9st/'
 
     def test_root_new_search(self):
         self.app.get(h.urlquote('/wiki/tést/'))
@@ -95,10 +95,10 @@ class TestRootController(TestController):
     @patch('allura.lib.search.search')
     def test_search(self, search):
         r = self.app.get('/wiki/search/?q=test')
-        assert_in(
-            '<a href="/wiki/search/?q=test&amp;sort=score+asc" class="strong">relevance</a>', r)
-        assert_in(
-            '<a href="/wiki/search/?q=test&amp;sort=mod_date_dt+desc" class="">date</a>', r)
+        assert (
+            '<a href="/wiki/search/?q=test&amp;sort=score+asc" class="strong">relevance</a>' in r)
+        assert (
+            '<a href="/wiki/search/?q=test&amp;sort=mod_date_dt+desc" class="">date</a>' in r)
 
         p = M.Project.query.get(shortname='test')
         r = self.app.get('/wiki/search/?q=test&sort=score+asc')
@@ -147,7 +147,7 @@ class TestRootController(TestController):
         assert btn is not None, "Can't find a help button"
         div = r.html.find('div', attrs={'id': 'lightbox_search_help_modal'})
         assert div is not None, "Can't find help text"
-        assert_in('To search for an exact phrase', div.text)
+        assert 'To search for an exact phrase' in div.text
 
     def test_nonexistent_page_edit(self):
         resp = self.app.get(h.urlquote('/wiki/tést/'))
@@ -188,7 +188,7 @@ class TestRootController(TestController):
                 'text': 'sometext',
                 'labels': 'test label',
                 }).follow()
-        assert_in('<a href="/p/test/wiki/search/?q=labels_t:%22test label%22&parser=standard">test label (1)</a>',
+        assert ('<a href="/p/test/wiki/search/?q=labels_t:%22test label%22&parser=standard">test label (1)</a>' in
                   response)
 
     def test_title_slashes(self):
@@ -347,14 +347,14 @@ class TestRootController(TestController):
                                             <script>alert(1)</script>""")
         self.app.post('/wiki/testdiff/update', params=d)
         response = self.app.get('/wiki/testdiff/diff?v1=1&v2=2')
-        assert_in('# Now fix <del> permissons. </del> <ins> permissions. </ins> '
-                  'Wrong permissions may cause <ins> a </ins> massive slowdown!',
+        assert ('# Now fix <del> permissons. </del> <ins> permissions. </ins> '
+                  'Wrong permissions may cause <ins> a </ins> massive slowdown!' in
                   response)
-        assert_not_in('<script>alert', response)
-        assert_in('&lt;script&gt;alert', response)
+        assert '<script>alert' not in response
+        assert '&lt;script&gt;alert' in response
         response = self.app.get('/wiki/testdiff/diff?v1=2&v2=1')
-        assert_in('# Now fix <del> permissions. </del> <ins> permissons. </ins> '
-                  'Wrong permissions may cause <del> a </del> massive slowdown!',
+        assert ('# Now fix <del> permissions. </del> <ins> permissons. </ins> '
+                  'Wrong permissions may cause <del> a </del> massive slowdown!' in
                   response)
 
     def test_page_raw(self):
@@ -405,8 +405,8 @@ class TestRootController(TestController):
                 'text': 'sometext',
                 'labels': '',
                 })
-        assert_equal(spam_checker.check.call_args[0][0], 'tést\nsometext')
-        assert_equal(response.location, 'http://localhost/wiki/t%C3%A9st/')
+        assert spam_checker.check.call_args[0][0] == 'tést\nsometext'
+        assert response.location == 'http://localhost/wiki/t%C3%A9st/'
 
     def test_page_get_markdown(self):
         self.app.post(
@@ -450,7 +450,7 @@ class TestRootController(TestController):
                 'text': 'sometext',
                 'labels': 'yellow,green',
                 })
-        assert_equal(response.location, 'http://localhost/wiki/t%C3%A9st/')
+        assert response.location == 'http://localhost/wiki/t%C3%A9st/'
         response = self.app.post(
             h.urlquote('/wiki/tést/update'),
             params={
@@ -458,7 +458,7 @@ class TestRootController(TestController):
                 'text': 'sometext',
                 'labels': 'yellow',
                 })
-        assert_equal(response.location, 'http://localhost/wiki/t%C3%A9st/')
+        assert response.location == 'http://localhost/wiki/t%C3%A9st/'
 
     def test_page_label_count(self):
         labels = "label"
@@ -539,7 +539,7 @@ class TestRootController(TestController):
         self.app.post(h.urlquote('/wiki/tést/attach'), upload_files=[upload])
         page_editor = self.app.get(h.urlquote('/wiki/tést/edit'))
         download = page_editor.click(description=file_name)
-        assert_true(download.body == file_data)
+        assert download.body == file_data
 
     def test_new_image_attachment_content(self):
         self.app.post('/wiki/TEST/update', params={
@@ -679,7 +679,7 @@ class TestRootController(TestController):
             'labels': '',
             })
         homepage_admin = self.app.get('/admin/wiki/home', validate_chunk=True)
-        assert_equal(homepage_admin.form['new_home'].value, 'Home')
+        assert homepage_admin.form['new_home'].value == 'Home'
         homepage_admin.form['new_home'].value = 'our_néw_home'
         homepage_admin.form.submit()
         root_path = self.app.get('/wiki/', status=301)
@@ -783,7 +783,7 @@ class TestRootController(TestController):
         # first request caches html, second serves from cache
         r = self.app.get('/wiki/cache/')
         r = self.app.get('/wiki/cache/')
-        assert_true(html in r)
+        assert html in r
 
     def test_page_delete(self):
         self.app.post('/wiki/aaa/update', params={
@@ -814,7 +814,7 @@ class TestRootController(TestController):
         # undelete it
         undelete_url = deletedpath + 'undelete'
         response = self.app.post(undelete_url)
-        assert_equal(response.json, {'location': './edit'})
+        assert response.json == {'location': './edit'}
         response = self.app.get(deletedpath + 'edit')
         assert 'Edit bbb' in response
 
@@ -877,20 +877,20 @@ class TestRootController(TestController):
         # Set rate limit to unlimit
         with h.push_config(config, **{'forgewiki.rate_limits': '{}'}):
             r = self.app.get('/p/test/wiki/new-page-title/')
-            assert_equal(r.status_int, 302)
-            assert_equal(
-                r.location,
+            assert r.status_int == 302
+            assert (
+                r.location ==
                 'http://localhost/p/test/wiki/new-page-title/edit')
-            assert_equal(self.webflash(r), '')
+            assert self.webflash(r) == ''
         # Set rate limit to 1 in first hour of project
         with h.push_config(config, **{'forgewiki.rate_limits': '{"3600": 1}'}):
             r = self.app.get('/p/test/wiki/new-page-title/')
-            assert_equal(r.status_int, 302)
-            assert_equal(r.location, 'http://localhost/p/test/wiki/')
+            assert r.status_int == 302
+            assert r.location == 'http://localhost/p/test/wiki/'
             wf = json.loads(self.webflash(r))
-            assert_equal(wf['status'], 'error')
-            assert_equal(
-                wf['message'],
+            assert wf['status'] == 'error'
+            assert (
+                wf['message'] ==
                 'Page create/edit rate limit exceeded. Please try again later.')
 
     def test_rate_limit_update(self):
@@ -899,23 +899,23 @@ class TestRootController(TestController):
             r = self.app.post(
                 '/p/test/wiki/page1/update',
                 dict(text='Some text', title='page1')).follow()
-            assert_in('Some text', r)
+            assert 'Some text' in r
             p = model.Page.query.get(title='page1')
-            assert_not_equal(p, None)
+            assert p != None
         # Set rate limit to 1 in first hour of project
         with h.push_config(config, **{'forgewiki.rate_limits': '{"3600": 1}'}):
             r = self.app.post(
                 '/p/test/wiki/page2/update',
                 dict(text='Some text', title='page2'))
-            assert_equal(r.status_int, 302)
-            assert_equal(r.location, 'http://localhost/p/test/wiki/')
+            assert r.status_int == 302
+            assert r.location == 'http://localhost/p/test/wiki/'
             wf = json.loads(self.webflash(r))
-            assert_equal(wf['status'], 'error')
-            assert_equal(
-                wf['message'],
+            assert wf['status'] == 'error'
+            assert (
+                wf['message'] ==
                 'Page create/edit rate limit exceeded. Please try again later.')
             p = model.Page.query.get(title='page2')
-            assert_equal(p, None)
+            assert p == None
 
     def test_rate_limit_by_user(self):
         # also test that multiple edits to a page counts as one page towards the limit
@@ -926,45 +926,45 @@ class TestRootController(TestController):
         with h.push_config(config, **{'forgewiki.rate_limits_per_user': '{"3600": 5}'}):
             r = self.app.post('/p/test/wiki/page123/update',  # page 4 (remember, 3 other projects' wiki pages)
                               dict(text='Starting a new page, ok', title='page123'))
-            assert_equal(self.webflash(r), '')
+            assert self.webflash(r) == ''
             r = self.app.post('/p/test/wiki/page123/update',
                               dict(text='Editing some', title='page123'))
-            assert_equal(self.webflash(r), '')
+            assert self.webflash(r) == ''
             r = self.app.post('/p/test/wiki/page123/update',
                               dict(text='Still editing', title='page123'))
-            assert_equal(self.webflash(r), '')
+            assert self.webflash(r) == ''
             r = self.app.post('/p/test/wiki/pageABC/update',  # page 5
                               dict(text='Another new page', title='pageABC'))
-            assert_equal(self.webflash(r), '')
+            assert self.webflash(r) == ''
             r = self.app.post('/p/test/wiki/pageZZZZZ/update',  # page 6
                               dict(text='This new page hits the limit', title='pageZZZZZ'))
             wf = json.loads(self.webflash(r))
-            assert_equal(wf['status'], 'error')
-            assert_equal(wf['message'], 'Page create/edit rate limit exceeded. Please try again later.')
+            assert wf['status'] == 'error'
+            assert wf['message'] == 'Page create/edit rate limit exceeded. Please try again later.'
 
     def test_sidebar_admin_menu(self):
         r = self.app.get('/p/test/wiki/Home/')
         menu = r.html.find('div', {'id': 'sidebar-admin-menu'})
-        assert_equal(menu['class'], ['hidden'])  # (not expanded)
+        assert menu['class'] == ['hidden']  # (not expanded)
         menu = [li.find('span').getText() for li in menu.findAll('li')]
-        assert_equal(
-            menu,
+        assert (
+            menu ==
             ['Set Home', 'Permissions', 'Options', 'Rename', 'Delete Everything'])
 
     def test_sidebar_admin_menu_is_expanded(self):
         r = self.app.get('/p/test/admin/wiki/permissions')
         menu = r.html.find('div', {'id': 'sidebar-admin-menu'})
-        assert_not_in('hidden', menu.get('class', []))  # expanded
+        assert 'hidden' not in menu.get('class', [])  # expanded
 
     def test_sidebar_admin_menu_invisible_to_not_admin(self):
         def assert_invisible_for(username):
             env = {'username': str(username)}
             r = self.app.get('/p/test/wiki/Home/', extra_environ=env)
             menu = r.html.find('div', {'id': 'sidebar-admin-menu'})
-            assert_equal(menu, None)
+            assert menu == None
         assert_invisible_for('*anonymous')
         assert_invisible_for('test-user')
 
     def test_no_index_tag_on_empty_wiki(self):
         r = self.app.get('/u/test-user/wiki/Home/')
-        assert_in('content="noindex, follow"', r.text)
+        assert 'content="noindex, follow"' in r.text

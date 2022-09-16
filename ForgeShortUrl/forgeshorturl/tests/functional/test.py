@@ -43,7 +43,7 @@ class TestRootController(TestController):
         response.form['full_url'] = 'http://www.google.com/'
         response.form.submit()
         redir = self.app.get('/url/test', status=302)
-        assert_equal(redir.location, 'http://www.google.com/')
+        assert redir.location == 'http://www.google.com/'
 
     def test_shorturl_http_head(self):
         response = self.app.get('/admin/url/add')
@@ -51,7 +51,7 @@ class TestRootController(TestController):
         response.form['full_url'] = 'http://www.google.com/'
         response.form.submit()
         r = self.app.head('/url/test', status=302)
-        assert_equal(r.location, 'http://www.google.com/')
+        assert r.location == 'http://www.google.com/'
 
     def test_shorturl_update(self):
         response = self.app.get('/admin/url/add')
@@ -59,7 +59,7 @@ class TestRootController(TestController):
         response.form['full_url'] = 'http://www.google.com/'
         response.form.submit()
         redir = self.app.get('/url/g', status=302)
-        assert_equal(redir.location, 'http://www.google.com/')
+        assert redir.location == 'http://www.google.com/'
 
         response = self.app.get('/url/')
         form = response.forms['short-url-form']
@@ -69,7 +69,7 @@ class TestRootController(TestController):
         form.action = '/admin/url/add/'
         form.submit()
         redir = self.app.get('/url/g', status=302)
-        assert_equal(redir.location, 'http://www.yahoo.com/')
+        assert redir.location == 'http://www.yahoo.com/'
 
     def test_shorturl_not_found(self):
         self.app.post('/admin/url/add',
@@ -148,7 +148,7 @@ class TestRootController(TestController):
 
             url = ShortUrl.build_short_url(app, 's')
 
-            assert_equal(url, 'b:n:p:m:s')
+            assert url == 'b:n:p:m:s'
 
     def test_short_url(self):
         response = self.app.get('/admin/url/add')
@@ -162,4 +162,4 @@ class TestRootController(TestController):
                 'short_url.url_pattern': '{base_url}:{nbhd}:{project}:{mount_point}:{short_name}',
                 'base_url': 'b',
         }):
-            assert_equal(surl.short_url(), 'b:p:test:url:test')
+            assert surl.short_url() == 'b:p:test:url:test'

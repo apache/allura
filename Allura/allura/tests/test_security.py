@@ -28,7 +28,7 @@ from forgewiki import model as WM
 from allura.lib.security import HIBPClientError, HIBPClient
 from mock import Mock, patch
 from requests.exceptions import Timeout
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 def _allow(obj, role, perm):

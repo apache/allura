@@ -27,19 +27,19 @@ class TestSVNAuth(TestController):
     @with_svn
     def test_refresh_repo(self):
         r = self.app.get('/auth/refresh_repo')
-        assert_equal(r.text, 'No repo specified')
+        assert r.text == 'No repo specified'
 
         r = self.app.get('/auth/refresh_repo/p/gbalksdfh')
-        assert_equal(r.text, 'No project at /p/gbalksdfh')
+        assert r.text == 'No project at /p/gbalksdfh'
 
         r = self.app.get('/auth/refresh_repo/p/test')
-        assert_equal(r.text, '/p/test does not include a repo mount point')
+        assert r.text == '/p/test does not include a repo mount point'
 
         r = self.app.get('/auth/refresh_repo/p/test/blah/')
-        assert_equal(r.text, 'Cannot find repo at /p/test/blah')
+        assert r.text == 'Cannot find repo at /p/test/blah'
 
         r = self.app.get('/auth/refresh_repo/p/test/src/')
-        assert_equal(r.text,
+        assert (r.text ==
                      '<Repository /tmp/svn/p/test/src> refresh queued.\n')
 
 
@@ -52,6 +52,6 @@ class TestSVNUserPermissions(TestController):
     def test_list_repos(self):
         r = self.app.get('/auth/repo_permissions',
                          params=dict(username='test-admin'), status=200)
-        assert_equal(json.loads(r.text), {"allow_write": [
+        assert json.loads(r.text) == {"allow_write": [
             '/svn/test/src',
-        ]})
+        ]}

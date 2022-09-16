@@ -37,7 +37,7 @@ from allura.lib.mail_util import (
     _parse_message_id,
 )
 from allura.lib.exceptions import AddressException
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 from allura.tests import decorators as td
 import six
 

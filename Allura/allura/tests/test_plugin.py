@@ -45,7 +45,7 @@ from allura.lib.exceptions import ProjectConflict, ProjectShortnameInvalid
 from allura.tests.decorators import audits
 from allura.tests.exclude_from_rewrite_hook import ThemeProviderTestApp
 from alluratest.controller import setup_basic_test, setup_global_objects
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 def setup_module(module):

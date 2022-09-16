@@ -26,7 +26,7 @@ from datetime import datetime
 from bson import ObjectId
 
 from allura.lib.spam.akismetfilter import AKISMET_AVAILABLE, AkismetSpamFilter
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 @unittest.skipIf(not AKISMET_AVAILABLE, "Akismet not available")

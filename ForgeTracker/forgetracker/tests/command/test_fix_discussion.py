@@ -70,18 +70,18 @@ def test_fix_discussion():
     tracker = M.AppConfig.query.find({'options.mount_point': 'bugs'}).first()
     t1 = TM.Ticket.query.get(ticket_num=1)
     t2 = TM.Ticket.query.get(ticket_num=2)
-    assert_not_equal(
-        t1.discussion_thread.discussion.app_config_id, tracker._id)
-    assert_not_equal(t2.discussion_thread.discussion_id, tracker.discussion_id)
+    assert (
+        t1.discussion_thread.discussion.app_config_id != tracker._id)
+    assert t2.discussion_thread.discussion_id != tracker.discussion_id
 
     cmd = fix_discussion.FixDiscussion('fix-discussion')
     cmd.run([test_config, 'test'])
 
     t1 = TM.Ticket.query.get(ticket_num=1)
     t2 = TM.Ticket.query.get(ticket_num=2)
-    assert_equal(t1.discussion_thread.discussion.app_config_id, tracker._id)
-    assert_equal(t2.discussion_thread.discussion_id, tracker.discussion_id)
+    assert t1.discussion_thread.discussion.app_config_id == tracker._id
+    assert t2.discussion_thread.discussion_id == tracker.discussion_id
     for p in t2.discussion_thread.posts:
-        assert_equal(p.app_config_id, tracker._id)
-        assert_equal(p.app_id, tracker._id)
-        assert_equal(p.discussion_id, tracker.discussion_id)
+        assert p.app_config_id == tracker._id
+        assert p.app_id == tracker._id
+        assert p.discussion_id == tracker.discussion_id

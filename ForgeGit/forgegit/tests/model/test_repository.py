@@ -85,8 +85,8 @@ class TestNewGit(unittest.TestCase):
         c.lcid_cache = {}
         self.rev.tree.ls()
         # print self.rev.tree.readme()
-        assert_equal(self.rev.tree.readme(), (
-            'README', 'This is readme\nAnother Line\n'))
+        assert self.rev.tree.readme() == (
+            'README', 'This is readme\nAnother Line\n')
         assert self.rev.tree.path() == '/'
         assert self.rev.tree.url() == (
             '/p/test/src-git/ci/'
@@ -109,17 +109,17 @@ class TestNewGit(unittest.TestCase):
                 '/p/test/src-git/ci/'
                 '1e146e67985dcd71c74de79613719bef7bddca4a/')
 
-        assert_equal(self.rev.authored_user, None)
-        assert_equal(self.rev.committed_user, None)
+        assert self.rev.authored_user == None
+        assert self.rev.committed_user == None
         user = M.User.upsert('rick')
         email = user.claim_address('rcopeland@geek.net')
         email.confirmed = True
         session(email).flush(email)
         rev = self.repo.commit(self.rev._id)  # to update cached values of LazyProperty
-        assert_equal(rev.authored_user, user)
-        assert_equal(rev.committed_user, user)
-        assert_equal(
-            sorted(rev.webhook_info.keys()),
+        assert rev.authored_user == user
+        assert rev.committed_user == user
+        assert (
+            sorted(rev.webhook_info.keys()) ==
             sorted(['id', 'url', 'timestamp', 'message', 'author',
                     'committer', 'added', 'removed', 'renamed', 'modified', 'copied']))
 
@@ -257,15 +257,15 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
 
     def test_log_id_only(self):
         entries = list(self.repo.log(id_only=True))
-        assert_equal(entries, [
+        assert entries == [
             '1e146e67985dcd71c74de79613719bef7bddca4a',
             'df30427c488aeab84b2352bdf88a3b19223f9d7a',
             '6a45885ae7347f1cac5103b0050cc1be6a1496c8',
-            '9a7df788cf800241e3bb5a849c8870f2f8259d98'])
+            '9a7df788cf800241e3bb5a849c8870f2f8259d98']
 
     def test_log(self):
         entries = list(self.repo.log(id_only=False))
-        assert_equal(entries, [
+        assert entries == [
             {'authored': {'date': datetime.datetime(2010, 10, 7, 18, 44, 11),
                           'email': 'rcopeland@geek.net',
                           'name': 'Rick Copeland'},
@@ -314,15 +314,15 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
              'refs': [],
              'size': None,
              'rename_details': {}},
-        ])
+        ]
 
     def test_log_unicode(self):
         entries = list(self.repo.log(path='völundr', id_only=False))
-        assert_equal(entries, [])
+        assert entries == []
 
     def test_log_file(self):
         entries = list(self.repo.log(path='README', id_only=False))
-        assert_equal(entries, [
+        assert entries == [
             {'authored': {'date': datetime.datetime(2010, 10, 7, 18, 44, 11),
                           'email': 'rcopeland@geek.net',
                           'name': 'Rick Copeland'},
@@ -347,7 +347,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
              'refs': [],
              'size': 15,
              'rename_details': {}},
-        ])
+        ]
 
     def test_commit(self):
         entry = self.repo.commit('HEAD')
@@ -379,13 +379,13 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         domain = '.'.join(reversed(c.app.url[1:-1].split('/'))).replace('_', '-')
         common_suffix = tg.config['forgemail.domain']
         email = f'noreply@{domain}{common_suffix}'
-        assert_in(email, notification['reply_to_address'])
+        assert email in notification['reply_to_address']
 
         commit1_loc = notification.text.find('Initial commit')
         assert commit1_loc != -1
         commit2_loc = notification.text.find('Remove file')
         assert commit2_loc != -1
-        assert_less(commit1_loc, commit2_loc)
+        assert commit1_loc < commit2_loc
 
     def test_notification_email(self):
         send_notifications(
@@ -394,7 +394,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
 
         n = M.Notification.query.find({'subject': '[test:src-git] New commit [1e146e] by Rick Copeland'}).first()
         assert n
-        assert_in('Change README', n.text)
+        assert 'Change README' in n.text
 
     def test_notification_email_multiple_commits(self):
         send_notifications(self.repo, ['df30427c488aeab84b2352bdf88a3b19223f9d7a',
@@ -458,7 +458,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             .get_payload(decode=True).decode('utf-8')
 
         # no extra HTML in commit messages
-        assert_in('''-----
+        assert '''-----
 
 Add foo.txt.  Commit ref [616d24f8dd4e95cadd8e93df5061f09855d1a066] *bold* <b>bold</b>
 
@@ -468,20 +468,20 @@ Add foo.txt.  Commit ref [616d24f8dd4e95cadd8e93df5061f09855d1a066] *bold* <b>bo
 
 http://example.com/
 
-By Dave Brondsema''', text_body)
+By Dave Brondsema''' in text_body
         # these bracketed links could look like HTML tags, ensure they don't get removed
-        assert_in('further messages, please visit <http://localhost/auth/subscriptions/>', text_body)
+        assert 'further messages, please visit <http://localhost/auth/subscriptions/>' in text_body
 
         # limited markdown handling of commit messages (see `markdown_commit`)
         # and HTML escaped
-        assert_in('''<hr/>
+        assert '''<hr/>
 <div class="markdown_content"><p>Add foo.txt.  Commit ref <a class="alink" href="http://localhost/p/test/weird-chars/ci/616d24f8dd4e95cadd8e93df5061f09855d1a066/">[616d24f8dd4e95cadd8e93df5061f09855d1a066]</a> *bold* &lt;b&gt;bold&lt;/b&gt;</p>
 <p>* one<br/>
 * two<br/>
 * three</p>
 <p>http://example.com/</p></div>
 
-<p>By Dave Brondsema''', html_body)
+<p>By Dave Brondsema''' in html_body
 
     def test_commit_artifact_references(self):
         self._setup_weird_chars_repo()
@@ -500,9 +500,9 @@ By Dave Brondsema''', text_body)
         if os.path.isfile(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip")):
             os.remove(
                 os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip"))
-        assert_equal(self.repo.tarball_path,
+        assert (self.repo.tarball_path ==
                      os.path.join(tmpdir, 'git/t/te/test/testgit.git'))
-        assert_equal(self.repo.tarball_url('HEAD'),
+        assert (self.repo.tarball_url('HEAD') ==
                      'file:///git/t/te/test/testgit.git/test-src-git-HEAD.zip')
         self.repo.tarball('HEAD')
         assert os.path.isfile(
@@ -556,20 +556,20 @@ By Dave Brondsema''', text_body)
             os.removedirs(
                 os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD/"))
         self.repo.tarball('HEAD')
-        assert_equal(self.repo.get_tarball_status('HEAD'), 'complete')
+        assert self.repo.get_tarball_status('HEAD') == 'complete'
 
         os.remove(
             os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip"))
-        assert_equal(self.repo.get_tarball_status('HEAD'), None)
+        assert self.repo.get_tarball_status('HEAD') == None
 
     def test_tarball_status_task(self):
-        assert_equal(self.repo.get_tarball_status('HEAD'), None)
+        assert self.repo.get_tarball_status('HEAD') == None
 
         # create tarball task in MonQTask and check get_tarball_status
         tarball.post('HEAD', '')
 
         # task created
-        assert_equal(self.repo.get_tarball_status('HEAD'), 'ready')
+        assert self.repo.get_tarball_status('HEAD') == 'ready'
 
         task = M.MonQTask.query.get(**{
             'task_name': 'allura.tasks.repo_tasks.tarball',
@@ -580,12 +580,12 @@ By Dave Brondsema''', text_body)
         # task is running
         task.state = 'busy'
         task.query.session.flush_all()
-        assert_equal(self.repo.get_tarball_status('HEAD'), 'busy')
+        assert self.repo.get_tarball_status('HEAD') == 'busy'
 
         # when state is complete, but file don't exists, then status is None
         task.state = 'complete'
         task.query.session.flush_all()
-        assert_equal(self.repo.get_tarball_status('HEAD'), None)
+        assert self.repo.get_tarball_status('HEAD') == None
 
     def test_is_empty(self):
         assert not self.repo.is_empty()
@@ -604,13 +604,13 @@ By Dave Brondsema''', text_body)
 
     def test_default_branch_set(self):
         self.repo.default_branch_name = 'zz'
-        assert_equal(self.repo.get_default_branch('master'), 'zz')
+        assert self.repo.get_default_branch('master') == 'zz'
 
     def test_default_branch_non_standard_unset(self):
         with mock.patch.object(self.repo, 'get_branches') as gb,\
              mock.patch.object(self.repo, 'set_default_branch') as set_db:
             gb.return_value = [Object(name='foo')]
-            assert_equal(self.repo.get_default_branch('master'), 'foo')
+            assert self.repo.get_default_branch('master') == 'foo'
             set_db.assert_called_once_with('foo')
 
     def test_default_branch_non_standard_invalid(self):
@@ -618,7 +618,7 @@ By Dave Brondsema''', text_body)
              mock.patch.object(self.repo, 'set_default_branch') as set_db:
             self.repo.default_branch_name = 'zz'
             gb.return_value = [Object(name='foo')]
-            assert_equal(self.repo.get_default_branch('master'), 'foo')
+            assert self.repo.get_default_branch('master') == 'foo'
             set_db.assert_called_once_with('foo')
 
     def test_default_branch_invalid(self):
@@ -626,28 +626,28 @@ By Dave Brondsema''', text_body)
              mock.patch.object(self.repo, 'set_default_branch') as set_db:
             self.repo.default_branch_name = 'zz'
             gb.return_value = [Object(name='foo'), Object(name='master')]
-            assert_equal(self.repo.get_default_branch('master'), 'master')
+            assert self.repo.get_default_branch('master') == 'master'
             set_db.assert_called_once_with('master')
 
     def test_default_branch_no_clobber(self):
         with mock.patch.object(self.repo, 'get_branches') as gb:
             gb.return_value = []
             self.repo.default_branch_name = 'zz'
-            assert_equal(self.repo.get_default_branch('master'), 'zz')
+            assert self.repo.get_default_branch('master') == 'zz'
 
     def test_default_branch_clobber_none(self):
         with mock.patch.object(self.repo, 'get_branches') as gb:
             gb.return_value = []
             self.repo.default_branch_name = None
-            assert_equal(self.repo.get_default_branch('master'), 'master')
+            assert self.repo.get_default_branch('master') == 'master'
 
     def test_clone_url(self):
-        assert_equal(
-            self.repo.clone_url('file', 'nobody'),
+        assert (
+            self.repo.clone_url('file', 'nobody') ==
             '/srv/git/p/test/testgit')
         with h.push_config(self.repo.app.config.options, external_checkout_url='https://$username@foo.com/'):
-            assert_equal(
-                self.repo.clone_url('https', 'user'),
+            assert (
+                self.repo.clone_url('https', 'user') ==
                 'https://user@foo.com/')
 
     def test_webhook_payload(self):
@@ -707,7 +707,7 @@ By Dave Brondsema''', text_body)
                 'url': 'http://localhost/p/test/src-git/',
             },
         }
-        assert_equals(payload, expected_payload)
+        assert payload == expected_payload
 
     def test_can_merge(self):
         mr = mock.Mock(downstream_repo=Object(full_fs_path='downstream-url'),
@@ -717,7 +717,7 @@ By Dave Brondsema''', text_body)
         git = mock.Mock()
         git.merge_tree.return_value = 'clean merge'
         self.repo._impl._git.git = git
-        assert_equal(self.repo.can_merge(mr), True)
+        assert self.repo.can_merge(mr) == True
         git.fetch.assert_called_once_with('downstream-url', 'source-branch')
         git.merge_base.assert_called_once_with('cid', 'target-branch')
         git.merge_tree.assert_called_once_with(
@@ -725,7 +725,7 @@ By Dave Brondsema''', text_body)
             'target-branch',
             'cid')
         git.merge_tree.return_value = '+<<<<<<<'
-        assert_equal(self.repo.can_merge(mr), False)
+        assert self.repo.can_merge(mr) == False
 
     @mock.patch('forgegit.model.git_repo.tempfile', autospec=True)
     @mock.patch('forgegit.model.git_repo.git', autospec=True)
@@ -748,13 +748,13 @@ By Dave Brondsema''', text_body)
             bare=False,
             shared=True)
         tmp_repo = GitImplementation.return_value._git
-        assert_equal(
-            tmp_repo.git.fetch.call_args_list,
+        assert (
+            tmp_repo.git.fetch.call_args_list ==
             [mock.call('origin', 'target-branch'),
              mock.call('downstream-url', 'source-branch')])
         tmp_repo.git.checkout.assert_called_once_with('target-branch')
-        assert_equal(
-            tmp_repo.git.config.call_args_list,
+        assert (
+            tmp_repo.git.config.call_args_list ==
             [mock.call('user.name', b'Test Admin'),
              mock.call('user.email', 'allura@localhost')])
         msg = 'Merge downstream-repo-url branch source-branch into target-branch'
@@ -802,7 +802,7 @@ By Dave Brondsema''', text_body)
             'copied': [],
             'total': 2,
         }
-        assert_equals(diffs, expected)
+        assert diffs == expected
 
         diffs = repo.paged_diffs('f3de6a0e7601cdde326054a1cc708afdc1dbe70b')
         expected = {
@@ -813,7 +813,7 @@ By Dave Brondsema''', text_body)
             'changed': ['привіт.txt'],
             'total': 1,
         }
-        assert_equals(diffs, expected)
+        assert diffs == expected
 
         # initial commit is special, but must work too
         diffs = repo.paged_diffs('afaa6d93eb5661fb04f8e10e9ba1039b7441a6c7')
@@ -825,7 +825,7 @@ By Dave Brondsema''', text_body)
             'renamed': [],
             'total': 1,
         }
-        assert_equals(diffs, expected)
+        assert diffs == expected
 
         # pagination
         diffs = repo.paged_diffs('407950e8fba4dbc108ffbce0128ed1085c52cfd7', start=0, end=1)
@@ -837,7 +837,7 @@ By Dave Brondsema''', text_body)
             'changed': [],
             'total': 2,  # there are two total changes but result is limited to first
         }
-        assert_equals(diffs, expected)
+        assert diffs == expected
         diffs = repo.paged_diffs('407950e8fba4dbc108ffbce0128ed1085c52cfd7', start=1, end=2)
         expected = {
             'added': ['привіт.txt'],
@@ -847,7 +847,7 @@ By Dave Brondsema''', text_body)
             'changed': [],
             'total': 2,  # there are two total changes but result is limited to second
         }
-        assert_equals(diffs, expected)
+        assert diffs == expected
         diffs = repo.paged_diffs('346c52c1dddc729e2c2711f809336401f0ff925e')  # Test copy
         expected = {
             'added': ['README.copy'],
@@ -857,7 +857,7 @@ By Dave Brondsema''', text_body)
             'changed': ['README'],
             'total': 2,
         }
-        assert_equals(diffs, expected)
+        assert diffs == expected
         diffs = repo.paged_diffs('3cb2bbcd7997f89060a14fe8b1a363f01883087f')  # Test rename
         expected = {
             'added': ['README'],
@@ -867,7 +867,7 @@ By Dave Brondsema''', text_body)
             'changed': [],
             'total': 2,
         }
-        assert_equals(diffs, expected)
+        assert diffs == expected
         diffs = repo.paged_diffs('616d24f8dd4e95cadd8e93df5061f09855d1a066')  # Test type change
         expected = {
             'added': [],
@@ -877,7 +877,7 @@ By Dave Brondsema''', text_body)
             'changed': ['README.copy'],
             'total': 1,
         }
-        assert_equals(diffs, expected)
+        assert diffs == expected
 
     @mock.patch.dict('allura.lib.app_globals.config',  {'scm.commit.git.detect_copies': 'true'})
     @td.with_tool('test', 'Git', 'src-weird', 'Git', type='git')
@@ -905,7 +905,7 @@ By Dave Brondsema''', text_body)
             'changed': ['README'],
             'total': 2,
         }
-        assert_equals(diffs, expected)
+        assert diffs == expected
         diffs = repo.paged_diffs('3cb2bbcd7997f89060a14fe8b1a363f01883087f')  # Test rename
         expected = {
             'added': [],
@@ -915,11 +915,11 @@ By Dave Brondsema''', text_body)
             'changed': [],
             'total': 1,
         }
-        assert_equals(diffs, expected)
+        assert diffs == expected
 
     def test_merge_base(self):
         res = self.repo._impl.merge_base(self.merge_request)
-        assert_equal(res, '1e146e67985dcd71c74de79613719bef7bddca4a')
+        assert res == '1e146e67985dcd71c74de79613719bef7bddca4a'
 
     def test_merge_request_commits(self):
         res = self.repo.merge_request_commits(self.merge_request)
@@ -938,7 +938,7 @@ By Dave Brondsema''', text_body)
              'refs': ['zz'],
              'rename_details': {},
              'size': None}]
-        assert_equals(res, expected)
+        assert res == expected
 
     def test_merge_request_commits_tmp_dir(self):
         """
@@ -950,19 +950,19 @@ By Dave Brondsema''', text_body)
         opt = {'scm.merge_list.git.use_tmp_dir': True}
         with h.push_config(tg.config, **opt):
             res_with_tmp = self.repo.merge_request_commits(mr)
-        assert_equals(res_without_tmp, res_with_tmp)
+        assert res_without_tmp == res_with_tmp
 
     def test_cached_branches(self):
         with mock.patch.dict('allura.lib.app_globals.config', {'repo_refs_cache_threshold': '0'}):
             rev = GM.Repository.query.get(_id=self.repo['_id'])
             branches = rev._impl._get_refs('branches')
-            assert_equal(rev.cached_branches, branches)
+            assert rev.cached_branches == branches
 
     def test_cached_tags(self):
         with mock.patch.dict('allura.lib.app_globals.config', {'repo_refs_cache_threshold': '0'}):
             rev = GM.Repository.query.get(_id=self.repo['_id'])
             tags = rev._impl._get_refs('tags')
-            assert_equal(rev.cached_tags, tags)
+            assert rev.cached_tags == tags
 
 
 class TestGitImplementation(unittest.TestCase):
@@ -1069,35 +1069,35 @@ class TestGitCommit(unittest.TestCase):
     def test_log(self):
         # path only
         commits = list(self.repo.log(id_only=True))
-        assert_equal(commits, [
+        assert commits == [
             "1e146e67985dcd71c74de79613719bef7bddca4a",
             "df30427c488aeab84b2352bdf88a3b19223f9d7a",
             "6a45885ae7347f1cac5103b0050cc1be6a1496c8",
             "9a7df788cf800241e3bb5a849c8870f2f8259d98",
-        ])
+        ]
         commits = list(self.repo.log(self.repo.head, 'README', id_only=True))
-        assert_equal(commits, [
+        assert commits == [
             "1e146e67985dcd71c74de79613719bef7bddca4a",
             "df30427c488aeab84b2352bdf88a3b19223f9d7a",
-        ])
+        ]
         commits = list(
             self.repo.log("df30427c488aeab84b2352bdf88a3b19223f9d7a", 'README', id_only=True))
-        assert_equal(commits, [
+        assert commits == [
             "df30427c488aeab84b2352bdf88a3b19223f9d7a",
-        ])
+        ]
         commits = list(self.repo.log(self.repo.head, '/a/b/c/', id_only=True))
-        assert_equal(commits, [
+        assert commits == [
             "6a45885ae7347f1cac5103b0050cc1be6a1496c8",
             "9a7df788cf800241e3bb5a849c8870f2f8259d98",
-        ])
+        ]
         commits = list(
             self.repo.log("9a7df788cf800241e3bb5a849c8870f2f8259d98", '/a/b/c/', id_only=True))
-        assert_equal(commits, [
+        assert commits == [
             "9a7df788cf800241e3bb5a849c8870f2f8259d98",
-        ])
+        ]
         commits = list(
             self.repo.log(self.repo.head, '/does/not/exist/', id_only=True))
-        assert_equal(commits, [])
+        assert commits == []
 
 
 class TestGitHtmlView(unittest.TestCase):

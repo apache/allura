@@ -49,7 +49,7 @@ from alluratest.controller import (
     TestRestApiBase,
 )
 import six
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 # important to be distinct from 'test' and 'test2' which ForgeGit and

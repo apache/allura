@@ -257,15 +257,15 @@ class Test(TestController):
         with h.push_config(tg.config, **{'forgeblog.rate_limits': '{"3600": 0}'}):
             r = self._post()
             wf = json.loads(self.webflash(r))
-            assert_equal(wf['status'], 'error')
-            assert_equal(wf['message'], 'Create/edit rate limit exceeded. Please try again later.')
+            assert wf['status'] == 'error'
+            assert wf['message'] == 'Create/edit rate limit exceeded. Please try again later.'
 
     def test_rate_limit_form(self):
         with h.push_config(tg.config, **{'forgeblog.rate_limits': '{"3600": 0}'}):
             r = self.app.get('/blog/new')
             wf = json.loads(self.webflash(r))
-            assert_equal(wf['status'], 'error')
-            assert_equal(wf['message'], 'Create/edit rate limit exceeded. Please try again later.')
+            assert wf['status'] == 'error'
+            assert wf['message'] == 'Create/edit rate limit exceeded. Please try again later.'
 
     def test_admin_external_feed_invalid(self):
         r = self.app.get('/blog/')
@@ -273,7 +273,7 @@ class Test(TestController):
         form = r.forms[0]
         form['new_exfeed'].value = 'asdfasdf'
         r = form.submit()
-        assert_in('Invalid', self.webflash(r))
+        assert 'Invalid' in self.webflash(r)
 
     def test_admin_external_feed_ok(self):
         # sidebar menu doesn't expose link to this, unless "forgeblog.exfeed" config is true, but can use form anyway
@@ -282,7 +282,7 @@ class Test(TestController):
         form = r.forms[0]
         form['new_exfeed'].value = 'https://example.com/feed.rss'
         r = form.submit()
-        assert_in('External feeds updated', self.webflash(r))
+        assert 'External feeds updated' in self.webflash(r)
 
         r = self.app.get('/admin/blog/exfeed')
         r.mustcontain('https://example.com/feed.rss')

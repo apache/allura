@@ -45,21 +45,21 @@ class TestBlogApi(TestRestApiBase):
             'labels': 'label1, label2'
         }
         r = self.api_post('/rest/p/test/blog/', **data)
-        assert_equal(
-            r.location, 'http://localhost/rest/p/test/blog/%s/%s/test/' %
+        assert (
+            r.location == 'http://localhost/rest/p/test/blog/%s/%s/test/' %
             (date.today().strftime("%Y"), date.today().strftime("%m")))
-        assert_equal(r.status_int, 201)
+        assert r.status_int == 201
         url = '/rest' + BM.BlogPost.query.find().first().url()
         r = self.api_get('/rest/p/test/blog/')
-        assert_equal(r.json['posts'][0]['title'], 'test')
-        assert_in(url, r.json['posts'][0]['url'])
+        assert r.json['posts'][0]['title'] == 'test'
+        assert url in r.json['posts'][0]['url']
 
         r = self.api_get(url)
-        assert_equal(r.json['title'], data['title'])
-        assert_equal(r.json['text'], data['text'])
-        assert_equal(r.json['author'], 'test-admin')
-        assert_equal(r.json['state'], data['state'])
-        assert_equal(r.json['labels'], data['labels'].split(','))
+        assert r.json['title'] == data['title']
+        assert r.json['text'] == data['text']
+        assert r.json['author'] == 'test-admin'
+        assert r.json['state'] == data['state']
+        assert r.json['labels'] == data['labels'].split(',')
 
     def test_update_post(self):
         data = {
@@ -69,7 +69,7 @@ class TestBlogApi(TestRestApiBase):
             'labels': 'label1, label2'
         }
         r = self.api_post('/rest/p/test/blog/', **data)
-        assert_equal(r.status_int, 201)
+        assert r.status_int == 201
         url = '/rest' + BM.BlogPost.query.find().first().url()
         data = {
             'text': 'test text2',
@@ -78,10 +78,10 @@ class TestBlogApi(TestRestApiBase):
         }
         self.api_post(url, **data)
         r = self.api_get(url)
-        assert_equal(r.json['title'], 'test')
-        assert_equal(r.json['text'], data['text'])
-        assert_equal(r.json['state'], data['state'])
-        assert_equal(r.json['labels'], data['labels'].split(','))
+        assert r.json['title'] == 'test'
+        assert r.json['text'] == data['text']
+        assert r.json['state'] == data['state']
+        assert r.json['labels'] == data['labels'].split(',')
 
     def test_delete_post(self):
         data = {
@@ -90,7 +90,7 @@ class TestBlogApi(TestRestApiBase):
             'labels': 'label1, label2'
         }
         r = self.api_post('/rest/p/test/blog/', **data)
-        assert_equal(r.status_int, 201)
+        assert r.status_int == 201
         url = '/rest' + BM.BlogPost.query.find().first().url()
         self.api_post(url, delete='')
         r = self.api_get(url, status=404)
@@ -149,16 +149,16 @@ class TestBlogApi(TestRestApiBase):
                       extra_environ={'username': '*anonymous'},
                       status=200)
         r = self.api_get(url)
-        assert_equal(r.json['title'], 'test2')
-        assert_equal(r.json['text'], 'test text2')
-        assert_equal(r.json['state'], 'published')
+        assert r.json['title'] == 'test2'
+        assert r.json['text'] == 'test text2'
+        assert r.json['state'] == 'published'
 
     def test_permission_draft_post(self):
         self.api_post('/rest/p/test/blog/', title='test',
                       text='test text', state='draft')
         r = self.app.get('/rest/p/test/blog/',
                          extra_environ={'username': '*anonymous'})
-        assert_equal(r.json['posts'], [])
+        assert r.json['posts'] == []
         url = '/rest' + BM.BlogPost.query.find().first().url()
         self.app.post(url,
                       params=dict(title='test2', text='test text2',
@@ -172,19 +172,19 @@ class TestBlogApi(TestRestApiBase):
         acl.append(anon_write)
         r = self.app.get('/rest/p/test/blog/',
                          extra_environ={'username': '*anonymous'})
-        assert_equal(r.json['posts'][0]['title'], 'test')
+        assert r.json['posts'][0]['title'] == 'test'
 
     def test_draft_post(self):
         self.api_post('/rest/p/test/blog/', title='test',
                       text='test text', state='draft')
         r = self.app.get('/rest/p/test/blog/',
                          extra_environ={'username': '*anonymous'})
-        assert_equal(r.json['posts'], [])
+        assert r.json['posts'] == []
         url = '/rest' + BM.BlogPost.query.find().first().url()
         self.api_post(url, state='published')
         r = self.app.get('/rest/p/test/blog/',
                          extra_environ={'username': '*anonymous'})
-        assert_equal(r.json['posts'][0]['title'], 'test')
+        assert r.json['posts'][0]['title'] == 'test'
 
     def test_pagination(self):
         self.api_post('/rest/p/test/blog/', title='test1',
@@ -194,23 +194,23 @@ class TestBlogApi(TestRestApiBase):
         self.api_post('/rest/p/test/blog/', title='test3',
                       text='test text3', state='published')
         r = self.api_get('/rest/p/test/blog/', limit='1', page='0')
-        assert_equal(r.json['posts'][0]['title'], 'test3')
-        assert_equal(len(r.json['posts']), 1)
-        assert_equal(r.json['count'], 3)
-        assert_equal(r.json['limit'], 1)
-        assert_equal(r.json['page'], 0)
+        assert r.json['posts'][0]['title'] == 'test3'
+        assert len(r.json['posts']) == 1
+        assert r.json['count'] == 3
+        assert r.json['limit'] == 1
+        assert r.json['page'] == 0
         r = self.api_get('/rest/p/test/blog/', limit='2', page='0')
-        assert_equal(r.json['posts'][0]['title'], 'test3')
-        assert_equal(r.json['posts'][1]['title'], 'test2')
-        assert_equal(len(r.json['posts']), 2)
-        assert_equal(r.json['count'], 3)
-        assert_equal(r.json['limit'], 2)
-        assert_equal(r.json['page'], 0)
+        assert r.json['posts'][0]['title'] == 'test3'
+        assert r.json['posts'][1]['title'] == 'test2'
+        assert len(r.json['posts']) == 2
+        assert r.json['count'] == 3
+        assert r.json['limit'] == 2
+        assert r.json['page'] == 0
         r = self.api_get('/rest/p/test/blog/', limit='1', page='2')
-        assert_equal(r.json['posts'][0]['title'], 'test1')
-        assert_equal(r.json['count'], 3)
-        assert_equal(r.json['limit'], 1)
-        assert_equal(r.json['page'], 2)
+        assert r.json['posts'][0]['title'] == 'test1'
+        assert r.json['count'] == 3
+        assert r.json['limit'] == 1
+        assert r.json['page'] == 2
 
     def test_has_access_no_params(self):
         self.api_get('/rest/p/test/blog/has_access', status=404)
@@ -222,13 +222,13 @@ class TestBlogApi(TestRestApiBase):
         r = self.api_get(
             '/rest/p/test/blog/has_access?user=babadook&perm=read',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False
         r = self.api_get(
             '/rest/p/test/blog/has_access?user=test-user&perm=jump',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False
 
     def test_has_access_not_admin(self):
         """
@@ -244,13 +244,13 @@ class TestBlogApi(TestRestApiBase):
         r = self.api_get(
             '/rest/p/test/blog/has_access?user=test-admin&perm=post&access_token=ABCDEF',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], True)
+        assert r.status_int == 200
+        assert r.json['result'] == True
         r = self.api_get(
             '/rest/p/test/blog/has_access?user=*anonymous&perm=admin',
             user='root')
-        assert_equal(r.status_int, 200)
-        assert_equal(r.json['result'], False)
+        assert r.status_int == 200
+        assert r.json['result'] == False
 
     def test_create_post_limit_by_project(self):
         data = {

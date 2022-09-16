@@ -30,7 +30,7 @@ from allura.tests import TestController
 from allura.tests import decorators as td
 from alluratest.controller import setup_global_objects, setup_unit_test
 from forgetracker.tests.functional.test_root import TrackerTestController
-from allura.tests.pytest_helpers import with_nose_compatibility
+from alluratest.pytest_helpers import with_nose_compatibility
 
 
 @with_nose_compatibility
