@@ -915,7 +915,7 @@ class ProjectRegistrationProvider:
                     'error': 'That phone number has already been used.'}
         count = user.get_tool_data('phone_verification', 'count') or 0
         attempt_limit = config.get('phone.attempts_limit', '5')
-        if count == int(attempt_limit):
+        if count >= int(attempt_limit):
             msg = 'Maximum phone verification attempts reached.'
             h.auditlog_user(msg, user=user)
             return {'status': 'error',
