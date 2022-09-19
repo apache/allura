@@ -365,8 +365,12 @@ class RepoRestController(RepoRootController, AppRestControllerMixin):
     def commit_status(self, rev=None, **kwargs):
         params = {x : kwargs.get(x, '').strip() for x in
                                                    ['state', 'target_url', 'description', 'context']}
-        M.CommitStatus(params)
-        return {"status": "success"}
+        params['commit_id'] = rev
+        status = M.CommitStatus.upsert(**params)
+        response = {'status': 'error'}
+        if status:
+            response['status'] = 'success'
+        return response
 
 
 
