@@ -658,6 +658,10 @@ class Globals:
             "image_height": logo['image_height']
         }
 
+    @property
+    def commit_statuses_enabled(self):
+        return asbool(config['scm.commit_statuses'])
+
 class Icon:
 
     def __init__(self, css, title=None):

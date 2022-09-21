@@ -1047,7 +1047,7 @@ class CommitStatus(MappedClass):
     class __mongometa__:
         session = repository_orm_session
         name = 'commit_status'
-        indexes = ['commit_id']
+        indexes = [('commit_id', 'context'),]
 
     query: 'Query[CommitStatus]'
 
@@ -1065,13 +1065,15 @@ class CommitStatus(MappedClass):
 
     @classmethod
     def upsert(cls, **kw):
-        obj = cls.query.find({'commit_id':kw.get('commit_id'), 'context': kw.get('context')}).one()
-        if obj is None:
+        obj = cls.query.get(commit_id=kw.get('commit_id'), context=kw.get('context'))
+        if obj is not None:
+            return obj
+        try:
             obj = cls(**kw)
-            session(obj).insert_now(obj, state(obj))
-        else:
-            obj.state = kw.get('state')
-            obj.description = kw.get('description')
+            session(obj).flush(obj)
+        except pymongo.errors.DuplicateKeyError:
+            session(obj).expunge(obj)
+            obj = cls.query.get(**kw)
         return obj
 
 
