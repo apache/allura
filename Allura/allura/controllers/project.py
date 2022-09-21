@@ -329,7 +329,7 @@ class ToolListController:
             total_entries=total_entries,
             entries=entries[start:start + limit],
             type=tool_label,
-            tool_name=tool_label,
+            tool_name=h.pluralize_tool_name(tool_label, total_entries),
             )
 
 
