@@ -1318,3 +1318,10 @@ def username_project_url(user_or_username):
         url = user.url()
 
     return f'{url}profile/'
+
+
+def pluralize_tool_name(tool_name:string, count:int):
+    pluralize_tools = ['Wiki', 'Discussion', 'Blog']
+    if tool_name is not None and tool_name in pluralize_tools:
+        return f"{tool_name}{'s'[:count^1]}"
+    return tool_name
