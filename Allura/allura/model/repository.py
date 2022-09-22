@@ -32,7 +32,6 @@ from six.moves.urllib.parse import urljoin
 from threading import Thread
 from six.moves.queue import Queue
 from itertools import chain, islice
-from difflib import SequenceMatcher
 import typing
 
 import tg
@@ -45,7 +44,7 @@ import bson
 import six
 
 from ming import schema as S
-from ming.orm import session, state
+from ming.orm import session
 from ming import Field, collection, Index
 from ming.utils import LazyProperty
 from ming.odm import FieldProperty, session, Mapper, mapper, MappedClass, RelationProperty
@@ -1043,6 +1042,7 @@ CommitDoc = collection(
     Field('child_ids', [str], index=True),
     Field('repo_ids', [S.ObjectId()], index=True))
 
+
 class CommitStatus(MappedClass):
     class __mongometa__:
         session = repository_orm_session
@@ -1065,15 +1065,12 @@ class CommitStatus(MappedClass):
 
     @classmethod
     def upsert(cls, **kw):
-        obj = cls.query.get(commit_id=kw.get('commit_id'), context=kw.get('context'))
-        if obj is not None:
-            return obj
-        try:
-            obj = cls(**kw)
-            session(obj).flush(obj)
-        except pymongo.errors.DuplicateKeyError:
-            session(obj).expunge(obj)
-            obj = cls.query.get(**kw)
+        obj = cls.query.find_and_modify(
+            query=dict(commit_id=kw.get('commit_id'), context=kw.get('context')),
+            update={'$set': kw},
+            new=True,
+            upsert=True,
+        )
         return obj
 
 
