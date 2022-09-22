@@ -33,7 +33,7 @@
                         "id": "_id"
                     }, 
                     "last_post": {
-                        "type": "object", 
+                        "type": ["object", "null"],
                         "id": "last_post", 
                         "properties": {
                             "status": {
@@ -41,7 +41,7 @@
                                 "id": "status"
                             }, 
                             "last_edited": {
-                                "type": "null", 
+                                "type": ["string", "null"],
                                 "id": "last_edited"
                             }, 
                             "author": {

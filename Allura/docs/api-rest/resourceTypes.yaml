@@ -15,7 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-- base:
+base:
     get?:
       responses: &standardResponses  # yaml syntax to alias properties
         200:
@@ -30,11 +30,11 @@
           description: Created
     delete?:
       responses: *standardResponses
-- collection:
+collection:
     type: base
     get:
       is: [ pageable, bearerAuth ]
-- generic:
+generic:
     # this is really just a shorthand for us when we have a schema & example
     # so we couldn't come up with a good name and picked something generic :)
     type: base
@@ -66,7 +66,7 @@
             application/json:
               schema: <<schema>>
     delete?:
-- searchableCollection:
+searchableCollection:
     get:
       is: [ bearerAuth ]
       queryParameters:
@@ -80,7 +80,7 @@
             application/json:
               schema: <<schema>>
               example: <<example>>
-- typedCollection:
+typedCollection:
     type: collection
     get:
       responses:
@@ -89,12 +89,12 @@
             application/json:
               schema: <<schema>>
               example: <<example>>
-- permission:
+permission:
     description: |
       Checks if a given user has permissions.
     get:
       is: [permissionTestable, bearerAuth]
-- project:
+project:
     type: base
     get:
       responses:

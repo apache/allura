@@ -46,7 +46,7 @@
                 },
                 "default": {
                   "id": "default",
-                  "type": "string"
+                  "type": ["string", "boolean"],
                 },
                 "description": {
                   "id": "description",

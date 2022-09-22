@@ -15,14 +15,14 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-- searchable:
+searchable:
     queryParameters:
       query:
         description: |
           JSON array [{"field1","value1","operator1"},{"field2","value2","operator2"},...,{"fieldN","valueN","operatorN"}] <<description>>
         example: |
           <<example>>
-- orderable:
+orderable:
     queryParameters:
       orderBy:
         description: |
@@ -34,7 +34,7 @@
         enum: [desc, asc]
         default: desc
         required: false
-- pageable:
+pageable:
     queryParameters:
       page:
         description: Skip over a number of elements by specifying a starting page
@@ -48,7 +48,7 @@
         required: false
         example: 10
         default: 25
-- permissionTestable:
+permissionTestable:
     description: |
       **Endpoints**
       Permissions can be checked at three levels:
@@ -72,7 +72,7 @@
         example: heiths
         required: true
         description: The username to check
-- bearerAuth:
+bearerAuth:
     # This can also be done with ?access_token=
     # But it's simpler in the docs / Try It interface to just show one option
     # and using the header method keeps it separate from query params that the individual API endpoints use
