@@ -1015,7 +1015,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         uids = [uid for uid in named_roles.userids_that_reach if uid is not None]
         return list(User.query.find({'_id': {'$in': uids}, 'disabled': False, 'pending': False}))
 
-    def users_with_role(self, *role_names):
+    def users_with_role(self, *role_names) -> list[User]:
         """Return all users in this project that have at least one of the roles
         specified.
 

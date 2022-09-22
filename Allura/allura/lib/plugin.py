@@ -1224,7 +1224,7 @@ class ProjectRegistrationProvider:
            It should be overridden for your specific envirnoment'''
         return None
 
-    def registration_date(self, project):
+    def registration_date(self, project) -> datetime:
         '''
         Return the datetime the project was created.
         '''
