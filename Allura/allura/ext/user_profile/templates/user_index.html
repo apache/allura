@@ -18,18 +18,19 @@
 -#}
 {% set hide_left_bar = True %}
 {% extends g.theme.master %}
-
+{% from 'allura:templates/jinja_master/lib.html' import canonical_tag %}
 {% block title %}{{user.username}} / Profile{% endblock %}
 
 {% block header %}{{ user.display_name|default(user.username) }}{% endblock %}
 
-{% block head %}
+{%- block head -%}
     {%  if noindex %}
-    <meta name="robots" content="noindex, follow">
+        <meta name="robots" content="noindex, follow">
     {%  endif %}
-  <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss">
-  <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom">
-{% endblock %}
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss">
+    <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom">
+    {{ canonical_tag() }}
+{%- endblock -%}
 
 {% block actions %}
   {{ g.icons['feed'].render(href=c.app.url + 'feed.rss', title='Follow', rel='nofollow') }}

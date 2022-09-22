@@ -17,12 +17,13 @@
        under the License.
 -#}
 {% extends 'forgewiki:templates/wiki/master.html' %}
-{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+{% from 'allura:templates/jinja_master/lib.html' import pagination_meta_tags %}
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Browse Labels{% endblock %}
 
 {% block head %}
     {{ super() }}
-    {{ lib.pagination_meta_tags(request, page, count, limit) }}
+    <meta name="robots" content="noindex, follow"/>
+    {{ pagination_meta_tags(request, page, count, limit) }}
 {% endblock %}
 
 {% block header %}Browse Labels{% endblock %}

@@ -17,15 +17,16 @@
        under the License.
 -#}
 {% extends g.theme.master %}
-{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+{% from 'allura:templates/jinja_master/lib.html' import canonical_tag %}
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}{% endblock %}
 
-{%  block head %}
+{%-  block head -%}
     {%  if noindex %}
         <meta name="robots" content="noindex, follow">
     {% endif %}
-{%  endblock %}
+    {{ canonical_tag() }}
+{%-  endblock -%}
 
 
 {% block header %}{{c.app.config.options.mount_label}}{% endblock %}
