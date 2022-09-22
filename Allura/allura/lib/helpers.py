@@ -828,6 +828,7 @@ def datetimeformat(value, format='%Y-%m-%d %H:%M:%S'):
 
 @contextmanager
 def log_output(log):
+    # TODO: replace with contextlib.redirect_stdout and redirect_stderr?
     class Writer:
 
         def __init__(self, func):

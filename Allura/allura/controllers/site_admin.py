@@ -620,6 +620,9 @@ class TaskManagerController:
         try:
             task = v.TaskValidator.to_python(task_name)
             doc = task.__doc__ or 'No doc string available'
+            doc = re.sub(r'^usage: ([^-][a-z_-]+ )?',  # remove usage: and possible incorrect binary like "mod_wsgi"
+                         'Enter CLI formatted args above, like "args": ["--foo bar baz"]\n\n',
+                         doc)
         except Invalid as e:
             error = str(e)
         return dict(doc=doc, error=error)
