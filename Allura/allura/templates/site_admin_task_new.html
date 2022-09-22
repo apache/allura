@@ -71,8 +71,9 @@
   <div>
     <label>Task Name *</label>
     <div class="input">
-      <input name="task" value="{{form_values.get('task', '')}}" />
-      <span class="note">Dotted python path to task callable</span>
+      <input name="task" value="{{form_values.get('task', '')}}"/>
+      <span class="note">Dotted python path to task callable
+          <br>e.g. allura.tasks.admin_tasks.install_app or allura.scripts.disable_users.DisableUsers</span>
     </div>
     {{error('task')}}
   </div>
@@ -100,7 +101,7 @@
     {{error('task_args')}}
   </div>
 
-  <input type="submit" /><br/>
+  <input type="submit" value="Run Task"/><br/>
 
   <pre class="doc"></pre>
   {{lib.csrf_token()}}
