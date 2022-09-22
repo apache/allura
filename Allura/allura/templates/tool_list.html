@@ -19,6 +19,11 @@
 {% set hide_left_bar = True %}
 {% extends g.theme.master %}
 
+{%- block head -%}
+    <meta name="robots" content="noindex, follow"/>
+    <link rel="canonical" href="{{ request.host_url }}/{{ prefix }}{{ c.project.shortname }}/{{ type|lower }}" />
+{%- endblock -%}
+
 {% block title %}{{c.project.name}} / {{type}} tools{% endblock %}
 
 {% block extra_css %}

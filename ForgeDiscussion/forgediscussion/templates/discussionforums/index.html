@@ -21,11 +21,12 @@
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}{% endblock %}
 
-{%  block head %}
+{%-  block head -%}
     {%  if noindex %}
         <meta name="robots" content="noindex, follow">
     {% endif %}
-{%  endblock %}
+    {{ lib.canonical_tag() }}
+{%-  endblock -%}
 
 
 {% block header %}{{c.app.config.options.mount_label}}{% endblock %}

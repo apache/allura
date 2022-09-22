@@ -884,13 +884,16 @@ This page is based on some examples from Greg Schueler, <a href="mailto:greg@var
 {%- endmacro %}
 
 {% macro canonical_tag(page=None) %}
-    {#  in case is inherithed from a child template and has no access to a page value #}
-    {% set page = request.GET['page'] if not page and 'page=' in request.query_string else page  %}
-    {% if page == '0' %}
-        <link rel="canonical" href="{{ h.querystring(request, dict(page=None,limit=None)) }}"/>
+    {% if not page and not 'page=' in request.query_string  %}
+        <link rel="canonical" href="{{ request.path_url }}" />
     {% else %}
-        <link rel="canonical" href="{{ h.querystring(request, dict(limit=None)) }}"/>
-
+        {#  in case is inherithed from a child template and has no access to a page value #}
+        {% set page = request.GET['page'] if not page and 'page=' in request.query_string else page  %}
+        {% if page == '0' %}
+            <link rel="canonical" href="{{ h.querystring(request, dict(page=None,limit=None)) }}"/>
+        {% else %}
+            <link rel="canonical" href="{{ h.querystring(request, dict(limit=None)) }}"/>
+        {% endif %}
     {% endif %}
 {% endmacro %}
 
