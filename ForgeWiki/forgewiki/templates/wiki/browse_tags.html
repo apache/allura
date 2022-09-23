@@ -22,6 +22,7 @@
 
 {% block head %}
     {{ super() }}
+    <meta name="robots" content="noindex, follow"/>
     {{ lib.pagination_meta_tags(request, page, count, limit) }}
 {% endblock %}
 
