@@ -32,6 +32,7 @@ from ming.orm.ormsession import ThreadLocalORMSession, session
 from tg import config, expose
 from mock import patch, Mock
 import mock
+import pytest
 from tg import tmpl_context as c, app_globals as g
 
 from allura.tests import TestController
@@ -562,36 +563,37 @@ class TestAuth(TestController):
         assert hash_expiry == '04-08-2020'
         return user
 
-    def test_token_generator(self):
+    @pytest.mark.parametrize(['change_params'], [
+        pytest.param({'new_addr.addr': 'test_abcd@domain.net',  # Change primary address
+                      'primary_addr': 'test@example.com'},
+                     id='change_primary'),
+        pytest.param({'new_addr.addr': 'test@example.com',  # Claim new address
+                      'new_addr.claim': 'Claim Address',
+                      'primary_addr': 'test-admin@users.localhost',
+                      'password': 'foo',
+                      'preferences.email_format': 'plain'},
+                     id='claim_new'),
+        pytest.param({'addr-1.ord': '1',  # remove test-admin@users.localhost
+                      'addr-1.delete': 'on',
+                      'addr-2.ord': '2',
+                      'new_addr.addr': '',
+                      'primary_addr': 'test-admin@users.localhost',
+                      'password': 'foo',
+                      'preferences.email_format': 'plain'},
+                     id='remove_one'),
+        pytest.param({'addr-1.ord': '1',  # Remove email
+                      'addr-2.ord': '2',
+                      'addr-2.delete': 'on',
+                      'new_addr.addr': '',
+                      'primary_addr': 'test-admin@users.localhost'},
+                     id='remove_all'),
+    ])
+    def test_email_change_invalidates_token(self, change_params):
         """ Generates new token invalidation tests.
 
         The tests cover: changing, claiming, updating, removing email addresses.
         :returns: email_change_invalidates_token
         """
-        _params = [{'new_addr.addr': 'test_abcd@domain.net',  # Change primary address
-                    'primary_addr': 'test@example.com', },
-                   {'new_addr.addr': 'test@example.com',  # Claim new address
-                    'new_addr.claim': 'Claim Address',
-                    'primary_addr': 'test-admin@users.localhost',
-                    'password': 'foo',
-                    'preferences.email_format': 'plain'},
-                   {'addr-1.ord': '1',  # remove test-admin@users.localhost
-                    'addr-1.delete': 'on',
-                    'addr-2.ord': '2',
-                    'new_addr.addr': '',
-                    'primary_addr': 'test-admin@users.localhost',
-                    'password': 'foo',
-                    'preferences.email_format': 'plain'},
-                   {'addr-1.ord': '1',  # Remove email
-                    'addr-2.ord': '2',
-                    'addr-2.delete': 'on',
-                    'new_addr.addr': '',
-                    'primary_addr': 'test-admin@users.localhost'}]
-
-        for param in _params:
-            yield self.email_change_invalidates_token, param
-
-    def email_change_invalidates_token(self, change_params):
         user = self._create_password_reset_hash()
         session(user).flush(user)
 
