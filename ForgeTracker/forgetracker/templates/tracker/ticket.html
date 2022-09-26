@@ -18,7 +18,7 @@
 -#}
 {% extends g.theme.master %}
 {% from 'allura:templates/jinja_master/lib.html' import abbr_date with context %}
-{% from 'allura:templates/jinja_master/lib.html' import canonical_tag with context %}
+{% from 'allura:templates/jinja_master/lib.html' import canonical_tag  %}
 
 {% do g.register_forge_css('css/forge/hilite.css') %}
 {% do g.register_app_css('css/tracker.css') %}
@@ -28,7 +28,7 @@
 {%- block head -%}
     <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
     <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
-    {{ lib.canonical_tag() }}
+    {{ canonical_tag() }}
 {%- endblock -%}
 
 {% block header %}#{{ticket.ticket_num}} {{ticket.summary}}{% if ticket.deleted %}<span> (deleted)</span>{% endif %}{% endblock %}

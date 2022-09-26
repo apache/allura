@@ -18,10 +18,10 @@
 -#}
 {% set hide_left_bar = True %}
 {% extends g.theme.master %}
-
+{% from 'allura:templates/jinja_master/lib.html' import canonical_tag %}
 {%- block head -%}
     <meta name="robots" content="noindex, follow"/>
-    <link rel="canonical" href="{{ request.host_url }}/{{ prefix }}{{ c.project.shortname }}/{{ type|lower }}" />
+    {{ canonical_tag() }}
 {%- endblock -%}
 
 {% block title %}{{c.project.name}} / {{type}} tools{% endblock %}

@@ -17,10 +17,10 @@
        under the License.
 -#}
 {% extends g.theme.master %}
-{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+{% from 'allura:templates/jinja_master/lib.html' import canonical_tag %}
 
 {%- block head -%}
-    {{ lib.canonical_tag() }}
+    {{ canonical_tag() }}
 {%- endblock -%}
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}: {{post.title}}{% endblock %}

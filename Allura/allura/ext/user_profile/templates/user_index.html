@@ -18,7 +18,7 @@
 -#}
 {% set hide_left_bar = True %}
 {% extends g.theme.master %}
-{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+{% from 'allura:templates/jinja_master/lib.html' import canonical_tag %}
 {% block title %}{{user.username}} / Profile{% endblock %}
 
 {% block header %}{{ user.display_name|default(user.username) }}{% endblock %}
@@ -29,7 +29,7 @@
     {%  endif %}
     <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss">
     <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom">
-    {{ lib.canonical_tag() }}
+    {{ canonical_tag() }}
 {%- endblock -%}
 
 {% block actions %}
