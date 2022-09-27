@@ -488,9 +488,10 @@ class RootController(BaseController, DispatchIndex, FeedController):
         if sort == 'recent':
             pages.sort(reverse=True, key=lambda x: (x['updated']))
             pages = pages + uv_pages
+        h1_text = f"{c.project.name} {c.app.config.options.mount_label} - Browse Pages"
         return dict(
             pages=pages, can_delete=can_delete, show_deleted=show_deleted,
-            limit=limit, count=count, page=pagenum)
+            limit=limit, count=count, page=pagenum, h1_text=h1_text)
 
     @with_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/browse_tags.html')
@@ -515,11 +516,13 @@ class RootController(BaseController, DispatchIndex, FeedController):
                     page_tags[label].append(page)
         count = len(page_tags)
         name_labels = sorted(page_tags)
+        h1_text = f"{c.project.name} {c.app.config.options.mount_label} - Browse Labels"
         return dict(labels=page_tags,
                     limit=limit,
                     count=count,
                     page=pagenum,
-                    name_labels=name_labels[start:start + limit])
+                    name_labels=name_labels[start:start + limit],
+                    h1_text=h1_text)
 
     @with_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/create_page.html')
