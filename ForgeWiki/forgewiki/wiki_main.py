@@ -238,14 +238,20 @@ The wiki uses [Markdown](%s) syntax.
             return [
                 SitemapEntry(menu_id, '.')[SitemapEntry('Pages')[pages]]]
 
-    def should_noindex_page(self, page):
+    def should_noindex_page(self, page: WM.Page) -> bool:
         """Checks whether a page should not be indexed."""
-        # If page has default name (i.e. 'Home') and has not been edited, noindex.
-        res = page and page['title'] == self.default_root_page_name and page['version'] == 1
-        if not res:
-            if page and page['text'] in ('You can edit this description', ):
-                res = True
-        return res
+        if not page:
+            # this shouldn't happen; just a safeguard for using `page` below
+            return False
+        elif (page['title'] == self.default_root_page_name and page['version'] == 1) \
+                or page['text'] in ('You can edit this description', ):
+            # If page has default name (i.e. 'Home') and has not been edited, noindex.
+            # or old default text
+            # but not if comments are visible
+            visible_comments = page.discussion_thread.find_posts(status='ok', limit=1)
+            return not visible_comments
+        else:
+            return False
 
     def create_common_wiki_menu(self, has_create_access, admin_menu=False):
         links = []

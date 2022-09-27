@@ -435,10 +435,8 @@ class Thread(Artifact, ActivityObject):
             q = q.limit(limit)
         return q
 
-    def find_posts(self, page=None, limit=None, timestamp=None,
-                   style='threaded'):
-        return self.query_posts(page=page, limit=limit,
-                                timestamp=timestamp, style=style).all()
+    def find_posts(self, *args, **kwargs):
+        return self.query_posts(*args, **kwargs).all()
 
     def url(self):
         # Can't use self.discussion because it might change during the req
