@@ -30,6 +30,7 @@ from allura import model as M
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects
 from forgewiki import model as WM
+from forgewiki.wiki_main import ForgeWikiApp
 
 
 class TestBulkExport:
@@ -134,7 +135,7 @@ class TestApp:
     @td.with_wiki
     def setup_with_tools(self):
         self.project = M.Project.query.get(shortname='test')
-        self.wiki = self.project.app_instance('wiki')
+        self.wiki: ForgeWikiApp = self.project.app_instance('wiki')
         page = WM.Page.upsert('A New Hope')
         page.text = 'Star Wars Episode IV: A New Hope'
         page.mod_date = datetime.datetime(2013, 7, 5)
@@ -166,3 +167,23 @@ class TestApp:
         # c.app.uninstall(c.project) errors out, but works ok in test_uninstall for repo tools.  So instead:
         c.project.uninstall_app('wiki')
         assert not WM.Page.query.get(title='A New Hope')
+
+    def test_should_noindex_page(self):
+        assert not self.wiki.should_noindex_page(None)
+
+        assert not self.wiki.should_noindex_page(WM.Page.query.get(title='A New Hope'))
+
+        home_page = WM.Page.query.get(title='Home')
+        assert self.wiki.should_noindex_page(home_page)
+
+        home_page.text = 'changed'
+        home_page.commit()
+        assert not self.wiki.should_noindex_page(home_page)
+
+        page_default_text = WM.Page.upsert('old_default')
+        page_default_text.text = 'You can edit this description'
+        page_default_text.commit()
+        assert self.wiki.should_noindex_page(page_default_text)
+
+        page_default_text.discussion_thread.add_post(text='test comment')
+        assert not self.wiki.should_noindex_page(page_default_text)
