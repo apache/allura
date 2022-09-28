@@ -35,6 +35,7 @@ from allura.lib import helpers as h
 from allura.lib.utils import is_ajax
 from allura import model as M
 import allura.model.repository
+from tg import tmpl_context as c, app_globals as g
 
 log = logging.getLogger(__name__)
 
@@ -455,3 +456,51 @@ class MingTaskSessionSetupMiddleware:
         # this is sufficient to ensure an ODM session is always established
         session(M.MonQTask).impl
         return self.app(environ, start_response)
+
+
+class ContentSecurityPolicyMiddleware:
+    ''' Sets Content-Security-Policy headers '''
+
+    def __init__(self, app, config):
+        self.app = app
+        self.config = config
+
+    def __call__(self, environ, start_response):
+        req = Request(environ)
+        resp = req.get_response(self.app)
+        rules = resp.headers.getall('Content-Security-Policy')
+        report_rules = resp.headers.getall('Content-Security-Policy-Report-Only')
+
+        if rules:
+            resp.headers.pop('Content-Security-Policy')
+        if report_rules:
+           resp.headers.pop('Content-Security-Policy-Report-Only')
+
+        if g.csp_report_mode and g.csp_report_uri:
+            report_rules.append(f'report-uri {g.csp_report_uri}; report-to {g.csp_report_uri}')
+
+        if self.config['base_url'].startswith('https'):
+            rules.append('upgrade-insecure-requests')
+
+        if g.csp_report_enforce and g.csp_report_uri_enforce:
+            rules.append(f'report-uri {g.csp_report_uri_enforce}; report-to {g.csp_report_uri_enforce:}')
+
+        if self.config.get('csp.frame_sources'):
+            if g.csp_report_mode:
+                report_rules.append(f"frame-src {self.config['csp.frame_sources']}")
+            else:
+                rules.append(f"frame-src {self.config['csp.frame_sources']}")
+
+        if self.config.get('csp.form_action_urls'):
+            if g.csp_report_mode:
+                report_rules.append(f"form-action {self.config['csp.form_action_urls']}")
+            else:
+                rules.append(f"form-action {self.config['csp.form_action_urls']}")
+
+        rules.append("object-src 'none'")
+        rules.append("frame-ancestors 'self'")
+        if rules:
+            resp.headers.add('Content-Security-Policy', '; '.join(rules))
+        if report_rules:
+            resp.headers.add('Content-Security-Policy-Report-Only', '; '.join(report_rules))
+        return resp(environ, start_response)
