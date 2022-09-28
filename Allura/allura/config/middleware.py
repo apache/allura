@@ -63,6 +63,7 @@ from allura.lib.custom_middleware import LoginRedirectMiddleware
 from allura.lib.custom_middleware import RememberLoginMiddleware
 from allura.lib.custom_middleware import SetRequestHostFromConfig
 from allura.lib.custom_middleware import MingTaskSessionSetupMiddleware
+from allura.lib.custom_middleware import ContentSecurityPolicyMiddleware
 from allura.lib import helpers as h
 from allura.lib.utils import configure_ming
 
@@ -142,7 +143,8 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
         Middleware = mw_ep.load()
         if getattr(Middleware, 'when', 'inner') == 'inner':
             app = Middleware(app, config)
-
+    # CSP headers
+    app = ContentSecurityPolicyMiddleware(app, config)
     # Required for sessions
     app = SessionMiddleware(app, config, data_serializer=BeakerPickleSerializerWithLatin1())
     # Handle "Remember me" functionality

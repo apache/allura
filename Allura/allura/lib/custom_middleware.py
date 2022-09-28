@@ -35,6 +35,7 @@ from allura.lib import helpers as h
 from allura.lib.utils import is_ajax
 from allura import model as M
 import allura.model.repository
+from tg import tmpl_context as c, app_globals as g
 
 log = logging.getLogger(__name__)
 
@@ -455,3 +456,28 @@ class MingTaskSessionSetupMiddleware:
         # this is sufficient to ensure an ODM session is always established
         session(M.MonQTask).impl
         return self.app(environ, start_response)
+
+
+class ContentSecurityPolicyMiddleware:
+    ''' Sets Content-Security-Policy headers '''
+
+    def __init__(self, app, config):
+        self.app = app
+        self.config = config
+
+    def __call__(self, environ, start_response):
+        req = Request(environ)
+        resp = req.get_response(self.app)
+        resp.headers.add('Content-Security-Policy', "object-src 'none'")
+        resp.headers.add('Content-Security-Policy', 'upgrade-insecure-requests')
+        report_uri = ''
+        report_suffix = ''
+        if g.csp_report_mode and g.csp_report_uri:
+            report_suffix = '-Report-Only'
+            report_uri = f'; report-uri {g.csp_report_uri}'
+        if g.csp_frame_sources:
+            resp.headers.add(f'Content-Security-Policy{report_suffix}', f"frame-src 'self' {' '.join(g.csp_frame_sources)}{report_uri}")
+        if g.csp_form_action_urls:
+            resp.headers.add(f'Content-Security-Policy{report_suffix}', f"form-action 'self' {' '.join(g.csp_form_action_urls)}{report_uri}")
+
+        return resp(environ, start_response)
