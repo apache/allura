@@ -470,6 +470,7 @@ class ContentSecurityPolicyMiddleware:
         resp = req.get_response(self.app)
         resp.headers.add('Content-Security-Policy', "object-src 'none'")
         resp.headers.add('Content-Security-Policy', 'upgrade-insecure-requests')
+        resp.headers.add('Content-Security-Policy', "frame-ancestors 'self'")
         report_uri = ''
         report_suffix = ''
         if g.csp_report_mode and g.csp_report_uri:
