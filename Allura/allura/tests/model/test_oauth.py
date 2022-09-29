@@ -16,28 +16,26 @@
 #       under the License.
 
 
-from alluratest.tools import with_setup, assert_equal, assert_not_equal
-
 from ming.odm import ThreadLocalORMSession
 
 from allura import model as M
 from alluratest.controller import setup_basic_test, setup_global_objects
 
 
-def setup_method():
-    setup_basic_test()
-    ThreadLocalORMSession.close_all()
-    setup_global_objects()
+class TestOAuthModel:
 
+    def setup_method(self):
+        setup_basic_test()
+        ThreadLocalORMSession.close_all()
+        setup_global_objects()
 
-@with_setup(setup_method)
-def test_upsert():
-    admin = M.User.by_username('test-admin')
-    user = M.User.by_username('test-user')
-    name = 'test-token'
-    token1 = M.OAuthConsumerToken.upsert(name, admin)
-    token2 = M.OAuthConsumerToken.upsert(name, admin)
-    token3 = M.OAuthConsumerToken.upsert(name, user)
-    assert M.OAuthConsumerToken.query.find().count() == 2
-    assert token1._id == token2._id
-    assert token1._id != token3._id
+    def test_upsert(self):
+        admin = M.User.by_username('test-admin')
+        user = M.User.by_username('test-user')
+        name = 'test-token'
+        token1 = M.OAuthConsumerToken.upsert(name, admin)
+        token2 = M.OAuthConsumerToken.upsert(name, admin)
+        token3 = M.OAuthConsumerToken.upsert(name, user)
+        assert M.OAuthConsumerToken.query.find().count() == 2
+        assert token1._id == token2._id
+        assert token1._id != token3._id
