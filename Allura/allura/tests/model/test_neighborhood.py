@@ -25,65 +25,64 @@ from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects
 
 
-def setup_method():
-    setup_basic_test()
-    setup_with_tools()
+class TestNeighboorhoodModel:
 
+    def setup_method(self):
+        setup_basic_test()
+        self.setup_with_tools()
 
-@td.with_wiki
-def setup_with_tools():
-    setup_global_objects()
+    @td.with_wiki
+    def setup_with_tools(self):
+        setup_global_objects()
 
+    def test_neighborhood(self):
+        neighborhood = M.Neighborhood.query.get(name='Projects')
+        # Check css output depends of neighborhood level
+        test_css = ".text{color:#000;}"
+        neighborhood.css = test_css
+        neighborhood.features['css'] = 'none'
+        assert neighborhood.get_custom_css() == ""
+        neighborhood.features['css'] = 'picker'
+        assert neighborhood.get_custom_css() == test_css
+        neighborhood.features['css'] = 'custom'
+        assert neighborhood.get_custom_css() == test_css
+        # Check max projects
+        neighborhood.features['max_projects'] = None
+        assert neighborhood.get_max_projects() is None
+        neighborhood.features['max_projects'] = 500
+        assert neighborhood.get_max_projects() == 500
 
-@with_setup(setup_method)
-def test_neighborhood():
-    neighborhood = M.Neighborhood.query.get(name='Projects')
-    # Check css output depends of neighborhood level
-    test_css = ".text{color:#000;}"
-    neighborhood.css = test_css
-    neighborhood.features['css'] = 'none'
-    assert neighborhood.get_custom_css() == ""
-    neighborhood.features['css'] = 'picker'
-    assert neighborhood.get_custom_css() == test_css
-    neighborhood.features['css'] = 'custom'
-    assert neighborhood.get_custom_css() == test_css
-    # Check max projects
-    neighborhood.features['max_projects'] = None
-    assert neighborhood.get_max_projects() is None
-    neighborhood.features['max_projects'] = 500
-    assert neighborhood.get_max_projects() == 500
+        # Check picker css styles
+        test_css_dict = {'barontop': '#444',
+                        'titlebarbackground': '#555',
+                        'projecttitlefont': 'arial,sans-serif',
+                        'projecttitlecolor': '#333',
+                        'titlebarcolor': '#666'}
+        css_text = neighborhood.compile_css_for_picker(test_css_dict)
+        assert '#333' in css_text
+        assert '#444' in css_text
+        assert '#555' in css_text
+        assert '#666' in css_text
+        assert 'arial,sans-serif' in css_text
+        neighborhood.css = css_text
+        styles_list = neighborhood.get_css_for_picker()
+        for style in styles_list:
+            assert test_css_dict[style['name']] == style['value']
 
-    # Check picker css styles
-    test_css_dict = {'barontop': '#444',
-                     'titlebarbackground': '#555',
-                     'projecttitlefont': 'arial,sans-serif',
-                     'projecttitlecolor': '#333',
-                     'titlebarcolor': '#666'}
-    css_text = neighborhood.compile_css_for_picker(test_css_dict)
-    assert '#333' in css_text
-    assert '#444' in css_text
-    assert '#555' in css_text
-    assert '#666' in css_text
-    assert 'arial,sans-serif' in css_text
-    neighborhood.css = css_text
-    styles_list = neighborhood.get_css_for_picker()
-    for style in styles_list:
-        assert test_css_dict[style['name']] == style['value']
+        # Check neighborhood custom css showing
+        neighborhood.features['css'] = 'none'
+        assert not neighborhood.allow_custom_css
+        neighborhood.features['css'] = 'picker'
+        assert neighborhood.allow_custom_css
+        neighborhood.features['css'] = 'custom'
+        assert neighborhood.allow_custom_css
 
-    # Check neighborhood custom css showing
-    neighborhood.features['css'] = 'none'
-    assert not neighborhood.allow_custom_css
-    neighborhood.features['css'] = 'picker'
-    assert neighborhood.allow_custom_css
-    neighborhood.features['css'] = 'custom'
-    assert neighborhood.allow_custom_css
+        neighborhood.anchored_tools = 'wiki:Wiki, tickets:Tickets'
+        assert neighborhood.get_anchored_tools()['wiki'] == 'Wiki'
+        assert neighborhood.get_anchored_tools()['tickets'] == 'Tickets'
 
-    neighborhood.anchored_tools = 'wiki:Wiki, tickets:Tickets'
-    assert neighborhood.get_anchored_tools()['wiki'] == 'Wiki'
-    assert neighborhood.get_anchored_tools()['tickets'] == 'Tickets'
+        neighborhood.prohibited_tools = 'wiki, tickets'
+        assert neighborhood.get_prohibited_tools() == ['wiki', 'tickets']
 
-    neighborhood.prohibited_tools = 'wiki, tickets'
-    assert neighborhood.get_prohibited_tools() == ['wiki', 'tickets']
-
-    # Check properties
-    assert neighborhood.shortname == "p"
+        # Check properties
+        assert neighborhood.shortname == "p"
