@@ -16,7 +16,6 @@
 #       under the License.
 
 import pprint
-from alluratest.tools import with_setup
 
 from ming.orm import ThreadLocalORMSession
 
@@ -24,14 +23,13 @@ from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
 
 
-def setup_method():
+def setup_module():
     setup_basic_test()
     ThreadLocalORMSession.close_all()
     setup_global_objects()
     M.MonQTask.query.remove({})
 
 
-@with_setup(setup_method)
 def test_basic_task():
     task = M.MonQTask.post(pprint.pformat, ([5, 6],))
     ThreadLocalORMSession.flush_all()
