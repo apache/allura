@@ -468,17 +468,17 @@ class ContentSecurityPolicyMiddleware:
     def __call__(self, environ, start_response):
         req = Request(environ)
         resp = req.get_response(self.app)
-        resp.headers.add('Content-Security-Policy', "object-src 'none'")
-        resp.headers.add('Content-Security-Policy', 'upgrade-insecure-requests')
-        resp.headers.add('Content-Security-Policy', "frame-ancestors 'self'")
         report_uri = ''
         report_suffix = ''
+        if self.config['base_url'].startswith('https'):
+            resp.headers.add('Content-Security-Policy', 'upgrade-insecure-requests')
         if g.csp_report_mode and g.csp_report_uri:
             report_suffix = '-Report-Only'
             report_uri = f'; report-uri {g.csp_report_uri}'
         if g.csp_frame_sources:
             resp.headers.add(f'Content-Security-Policy{report_suffix}', f"frame-src 'self' {' '.join(g.csp_frame_sources)}{report_uri}")
         if g.csp_form_action_urls:
-            resp.headers.add(f'Content-Security-Policy{report_suffix}', f"form-action 'self' {' '.join(g.csp_form_action_urls)}{report_uri}")
-
+            resp.headers.add(f'Content-Security-Policy{report_suffix}', f"form-action {' '.join(g.csp_form_action_urls)}{report_uri}")
+        resp.headers.add('Content-Security-Policy', "object-src 'none'")
+        resp.headers.add('Content-Security-Policy', "frame-ancestors 'self'")
         return resp(environ, start_response)
