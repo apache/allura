@@ -257,6 +257,9 @@ class ForgeActivityController(BaseController):
         # but only within a small time window, so we can do efficient searching
         activity_ts = activity._id.generation_time
         time_window = timedelta(hours=1)
+        log.info(f"Time Window - {time_window} Activity TS {activity_ts}")
+        log.info(f"plus 1 hr {activity_ts + time_window}")
+        log.info(f"minus 1 hr {activity_ts - time_window}")
         all_copies = Activity.query.find({
             '_id': {
                 '$gt': ObjectId.from_datetime(activity_ts - time_window),
@@ -268,6 +271,18 @@ class ForgeActivityController(BaseController):
             'verb': activity.verb,
             'tags': activity.tags,
         }).all()
+        log.info("Delete Activity Query")
+        log.info({
+            '_id': {
+                '$gt': ObjectId.from_datetime(activity_ts - time_window),
+                '$lt': ObjectId.from_datetime(activity_ts + time_window),
+            },
+            'obj': activity.obj,
+            'target': activity.target,
+            'actor': activity.actor,
+            'verb': activity.verb,
+            'tags': activity.tags,
+        })
         log.info('Deleting %s copies of activity record: %s %s %s', len(all_copies),
                  activity.actor.activity_url, activity.verb, activity.obj.activity_url)
         for activity in all_copies:
