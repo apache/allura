@@ -42,6 +42,8 @@ from allura.lib import helpers as h
 from allura.lib.decorators import require_post
 from allura.lib.widgets.form_fields import PageList
 from allura.ext.user_profile import ProfileSectionBase
+from formencode.variabledecode import variable_encode
+
 
 from .widgets.follow import FollowToggle
 import re
@@ -257,32 +259,18 @@ class ForgeActivityController(BaseController):
         # but only within a small time window, so we can do efficient searching
         activity_ts = activity._id.generation_time
         time_window = timedelta(hours=1)
-        log.info(f"Time Window - {time_window} Activity TS {activity_ts}")
-        log.info(f"plus 1 hr {activity_ts + time_window}")
-        log.info(f"minus 1 hr {activity_ts - time_window}")
-        all_copies = Activity.query.find({
+        query = {
             '_id': {
                 '$gt': ObjectId.from_datetime(activity_ts - time_window),
                 '$lt': ObjectId.from_datetime(activity_ts + time_window),
-            },
-            'obj': activity.obj,
-            'target': activity.target,
-            'actor': activity.actor,
-            'verb': activity.verb,
-            'tags': activity.tags,
-        }).all()
-        log.info("Delete Activity Query")
-        log.info({
-            '_id': {
-                '$gt': ObjectId.from_datetime(activity_ts - time_window),
-                '$lt': ObjectId.from_datetime(activity_ts + time_window),
-            },
-            'obj': activity.obj,
-            'target': activity.target,
-            'actor': activity.actor,
-            'verb': activity.verb,
-            'tags': activity.tags,
-        })
+            }
+        }
+        query.update(variable_encode(activity.obj, prepend='obj'))
+        query.update(variable_encode(activity.target, prepend='target'))
+        query.update(variable_encode(activity.actor, prepend='actor'))
+        query.update(verb=activity.verb)
+        query.update(tags=activity.tags)
+        all_copies = Activity.query.find(query).all()
         log.info('Deleting %s copies of activity record: %s %s %s', len(all_copies),
                  activity.actor.activity_url, activity.verb, activity.obj.activity_url)
         for activity in all_copies:
