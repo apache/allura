@@ -474,7 +474,7 @@ class ContentSecurityPolicyMiddleware:
             resp.headers.add('Content-Security-Policy', 'upgrade-insecure-requests')
         if g.csp_report_mode and g.csp_report_uri:
             report_suffix = '-Report-Only'
-            report_uri = f'; report-uri {g.csp_report_uri}'
+            report_uri = f'; report-uri {g.csp_report_uri}; report-to {g.csp_report_uri}'
         if g.csp_frame_sources:
             resp.headers.add(f'Content-Security-Policy{report_suffix}', f"frame-src 'self' {' '.join(g.csp_frame_sources)}{report_uri}")
         if g.csp_form_action_urls:
