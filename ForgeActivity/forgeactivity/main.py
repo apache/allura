@@ -42,6 +42,8 @@ from allura.lib import helpers as h
 from allura.lib.decorators import require_post
 from allura.lib.widgets.form_fields import PageList
 from allura.ext.user_profile import ProfileSectionBase
+from formencode.variabledecode import variable_encode
+
 
 from .widgets.follow import FollowToggle
 import re
