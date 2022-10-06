@@ -190,21 +190,26 @@ class TestRootController(TestController):
 
     def test_headers(self):
         resp = self.app.get('/p')
-        assert resp.headers.getall('Content-Security-Policy') == ["form-action 'self'", "object-src 'none'",
+        assert resp.headers.getall('Content-Security-Policy') == ["frame-src 'self' www.youtube-nocookie.com",
+                                                                  "form-action 'self'",
+                                                                  "object-src 'none'",
                                                                   "frame-ancestors 'self'"]
 
-    @mock.patch.dict(tg.config, {'csp.frame_sources': 'www.youtube-nocookie.com'})
     def test_headers_config(self):
         resp = self.app.get('/p')
         assert "frame-src 'self' www.youtube-nocookie.com" in resp.headers.getall('Content-Security-Policy')
 
-    @mock.patch.dict(tg.config, {'csp.report_mode': True, 'csp.report_uri': 'https://example.com/r/d/csp/reportOnly',
-                                 'csp.frame_sources': 'www.youtube-nocookie.com'})
+    @mock.patch.dict(tg.config, {'csp.report_mode': True, 'csp.report_uri': 'https://example.com/r/d/csp/reportOnly'})
     def test_headers_report(self):
         resp = self.app.get('/p/wiki/Home/')
         assert resp.headers.getall('Content-Security-Policy-Report-Only') == [
-            "frame-src 'self' www.youtube-nocookie.com; report-uri https://example.com/r/d/csp/reportOnly",
-            "form-action 'self'; report-uri https://example.com/r/d/csp/reportOnly"]
+            "frame-src 'self' www.youtube-nocookie.com; report-uri https://example.com/r/d/csp/reportOnly; report-to https://example.com/r/d/csp/reportOnly",
+            "form-action 'self'; report-uri https://example.com/r/d/csp/reportOnly; report-to https://example.com/r/d/csp/reportOnly"]
+
+    @mock.patch.dict(tg.config, {'csp.report_uri_enforce': 'https://example.com/r/d/csp/enforce'})
+    def test_headers_report_enforce(self):
+        resp = self.app.get('/p/wiki/Home/')
+        assert "frame-src 'self' www.youtube-nocookie.com; report-uri https://example.com/r/d/csp/enforce; report-to https://example.com/r/d/csp/enforce" in  resp.headers.getall('Content-Security-Policy')
 
 
 class TestRootWithSSLPattern(TestController):

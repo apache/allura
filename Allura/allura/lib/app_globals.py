@@ -669,23 +669,15 @@ class Globals:
         return False
 
     @property
-    def csp_frame_sources(self):
-        if config.get('csp.frame_sources'):
-            return aslist(config['csp.frame_sources'], sep=',')
-        return None
-
-    @property
-    def csp_form_action_urls(self):
-        if config.get('csp.form_action_urls'):
-            return aslist(config['csp.form_action_urls'], sep=',')
-        return None
-
-    @property
     def csp_report_uri(self):
         if config.get('csp.report_uri'):
             return config['csp.report_uri']
         return None
-
+    @property
+    def csp_report_uri_enforce(self):
+        if config.get('csp.report_uri_enforce'):
+            return config['csp.report_uri_enforce']
+        return None
 class Icon:
 
     def __init__(self, css, title=None):
