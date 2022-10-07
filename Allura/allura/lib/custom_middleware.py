@@ -471,17 +471,21 @@ class ContentSecurityPolicyMiddleware:
         report_uri = ''
         report_suffix = ''
         report_uri_enforce = ''
-        if self.config['base_url'].startswith('https'):
-            resp.headers.add('Content-Security-Policy', 'upgrade-insecure-requests')
         if g.csp_report_mode and g.csp_report_uri:
             report_suffix = '-Report-Only'
             report_uri = f'; report-uri {g.csp_report_uri}; report-to {g.csp_report_uri}'
+        rules = resp.headers.getall(f'Content-Security-Policy{report_suffix}')
+        if rules:
+            resp.headers.pop(f'Content-Security-Policy{report_suffix}')
+        if self.config['base_url'].startswith('https'):
+            rules.append('upgrade-insecure-requests')
         if g.csp_report_uri_enforce:
             report_uri_enforce = f'; report-uri {g.csp_report_uri_enforce}; report-to {g.csp_report_uri_enforce:}'
         if self.config.get('csp.frame_sources'):
-            resp.headers.add(f'Content-Security-Policy{report_suffix}', f"frame-src {self.config['csp.frame_sources']}{report_uri}{report_uri_enforce}")
+            rules.append(f"frame-src {self.config['csp.frame_sources']}{report_uri}{report_uri_enforce}")
         if self.config.get('csp.form_action_urls'):
-            resp.headers.add(f'Content-Security-Policy{report_suffix}', f"form-action {self.config['csp.form_action_urls']}{report_uri}{report_uri_enforce}")
-        resp.headers.add('Content-Security-Policy', "object-src 'none'")
-        resp.headers.add('Content-Security-Policy', "frame-ancestors 'self'")
+            rules.append(f"form-action {self.config['csp.form_action_urls']}{report_uri}{report_uri_enforce}")
+        rules.append("object-src 'none'")
+        rules.append("frame-ancestors 'self'")
+        resp.headers.add(f'Content-Security-Policy{report_suffix}', '; '.join(rules))
         return resp(environ, start_response)
