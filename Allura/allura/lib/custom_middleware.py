@@ -468,24 +468,39 @@ class ContentSecurityPolicyMiddleware:
     def __call__(self, environ, start_response):
         req = Request(environ)
         resp = req.get_response(self.app)
-        report_uri = ''
-        report_suffix = ''
-        report_uri_enforce = ''
-        if g.csp_report_mode and g.csp_report_uri:
-            report_suffix = '-Report-Only'
-            report_uri = f'; report-uri {g.csp_report_uri}; report-to {g.csp_report_uri}'
-        rules = resp.headers.getall(f'Content-Security-Policy{report_suffix}')
+        rules = resp.headers.getall('Content-Security-Policy')
+        report_rules = resp.headers.getall('Content-Security-Policy-Report-Only')
+
         if rules:
-            resp.headers.pop(f'Content-Security-Policy{report_suffix}')
+            resp.headers.pop('Content-Security-Policy')
+        if report_rules:
+           resp.headers.pop('Content-Security-Policy-Report-Only')
+
+        if g.csp_report_mode and g.csp_report_uri:
+            report_rules.append(f'report-uri {g.csp_report_uri}; report-to {g.csp_report_uri}')
+
         if self.config['base_url'].startswith('https'):
             rules.append('upgrade-insecure-requests')
-        if g.csp_report_uri_enforce:
-            report_uri_enforce = f'; report-uri {g.csp_report_uri_enforce}; report-to {g.csp_report_uri_enforce:}'
+
+        if g.csp_report_enforce and g.csp_report_uri_enforce:
+            rules.append(f'report-uri {g.csp_report_uri_enforce}; report-to {g.csp_report_uri_enforce:}')
+
         if self.config.get('csp.frame_sources'):
-            rules.append(f"frame-src {self.config['csp.frame_sources']}{report_uri}{report_uri_enforce}")
+            if g.csp_report_mode:
+                report_rules.append(f"frame-src {self.config['csp.frame_sources']}")
+            else:
+                rules.append(f"frame-src {self.config['csp.frame_sources']}")
+
         if self.config.get('csp.form_action_urls'):
-            rules.append(f"form-action {self.config['csp.form_action_urls']}{report_uri}{report_uri_enforce}")
+            if g.csp_report_mode:
+                report_rules.append(f"form-action {self.config['csp.form_action_urls']}")
+            else:
+                rules.append(f"form-action {self.config['csp.form_action_urls']}")
+
         rules.append("object-src 'none'")
         rules.append("frame-ancestors 'self'")
-        resp.headers.add(f'Content-Security-Policy{report_suffix}', '; '.join(rules))
+        if rules:
+            resp.headers.add('Content-Security-Policy', '; '.join(rules))
+        if report_rules:
+            resp.headers.add('Content-Security-Policy-Report-Only', '; '.join(report_rules))
         return resp(environ, start_response)

@@ -678,6 +678,12 @@ class Globals:
         if config.get('csp.report_uri_enforce'):
             return config['csp.report_uri_enforce']
         return None
+    @property
+    def csp_report_enforce(self):
+        if config.get('csp.report_enforce_mode'):
+            return True
+        return False
+
 class Icon:
 
     def __init__(self, css, title=None):
