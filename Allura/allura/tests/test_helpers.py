@@ -78,7 +78,7 @@ class TestMakeSafePathPortion(TestCase):
 
 def test_escape_json():
     inputdata = {"foo": "bar</script><img src=foobar onerror=alert(1)>"}
-    outputsample = '{"foo": "bar\\u003C/script>\\u003Cimg src=foobar onerror=alert(1)>"}'
+    outputsample = '{"foo": "bar\\u003c/script\\u003e\\u003cimg src=foobar onerror=alert(1)\\u003e"}'
     outputdata = h.escape_json(inputdata)
     assert_equals(outputdata, outputsample)
 

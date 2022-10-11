@@ -58,7 +58,7 @@ from formencode.variabledecode import variable_decode
 import formencode
 from markupsafe import Markup
 from jinja2.filters import escape, do_filesizeformat
-from jinja2.utils import pass_context
+from jinja2.utils import pass_context, htmlsafe_json_dumps
 from paste.deploy.converters import asbool, aslist, asint
 from webhelpers2 import date, text
 from webob.exc import HTTPUnauthorized
@@ -153,8 +153,10 @@ def make_safe_path_portion(ustr, relaxed=True):
     return s
 
 
-def escape_json(data):
-    return json.dumps(data).replace('<', '\\u003C')
+def escape_json(data) -> str:
+    # Templates should use `|tojson` instead of this
+    return str(htmlsafe_json_dumps(data))  # str() to keep previous behavior of being str, not MarkupSafe
+
 
 def querystring(request, url_params):
     """

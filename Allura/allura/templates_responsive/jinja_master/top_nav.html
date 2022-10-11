@@ -53,7 +53,7 @@
     <script>
         'use strict';
         /*global ReactDOM, React, Main, ToggleAddNewTool */
-        var _data = {{ h.escape_json(c.project.nav_data(admin_options=True, navbar_entries=navbar_entries))|safe }};
+        var _data = {{ c.project.nav_data(admin_options=True, navbar_entries=navbar_entries)|tojson }};
         $(document).ready(function () {
             $('#toggle-admin-btn').click(function () {
                 if (typeof Main === 'undefined') {
