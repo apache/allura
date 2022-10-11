@@ -121,7 +121,7 @@
 {% block extra_js %}
 <script>
 $(function() {
-    var tour = {{ h.escape_json(tour)|safe }};
+    var tour = {{ tour|tojson }};
     tour.onError = function() {
         var step = hopscotch.getCurrStepNum();
         console.warn('Error on tour step #', step, tour.steps[step]);

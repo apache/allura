@@ -79,7 +79,7 @@
 
 
 <script>
-    var _existingMountPoints = {{ h.escape_json(existing_mount_points)|safe }};
+    var _existingMountPoints = {{ existing_mount_points|tojson }};
 
     $('#admin_modal_title').hide();
     var mount_point = $('#id_url_input');
