@@ -22,7 +22,7 @@ import logging
 import tg
 import pkg_resources
 from paste import fileapp
-from paste.deploy.converters import aslist
+from paste.deploy.converters import aslist, asbool
 from tg import tmpl_context as c
 from tg.support.middlewares import _call_wsgi_application as call_wsgi_application
 from timermiddleware import Timer, TimerMiddleware
@@ -470,29 +470,33 @@ class ContentSecurityPolicyMiddleware:
         resp = req.get_response(self.app)
         rules = resp.headers.getall('Content-Security-Policy')
         report_rules = resp.headers.getall('Content-Security-Policy-Report-Only')
-
+        report_mode =  asbool(self.config.get('csp.report_mode',False))
+        report_enforce_mode = asbool(self.config.get('csp.report_enforce_mode',False))
+        report_uri = self.config.get('csp.report_uri', None)
+        report_uri_enforce = self.config.get('csp.report_uri_enforce', None)
+        
         if rules:
             resp.headers.pop('Content-Security-Policy')
         if report_rules:
            resp.headers.pop('Content-Security-Policy-Report-Only')
 
-        if g.csp_report_mode and g.csp_report_uri:
-            report_rules.append(f'report-uri {g.csp_report_uri}; report-to {g.csp_report_uri}')
+        if report_mode and report_uri:
+            report_rules.append(f'report-uri {report_uri}; report-to {report_uri}')
 
         if self.config['base_url'].startswith('https'):
             rules.append('upgrade-insecure-requests')
 
-        if g.csp_report_enforce and g.csp_report_uri_enforce:
-            rules.append(f'report-uri {g.csp_report_uri_enforce}; report-to {g.csp_report_uri_enforce:}')
+        if report_enforce_mode and report_uri_enforce:
+            rules.append(f'report-uri {report_uri_enforce}; report-to {report_uri_enforce:}')
 
         if self.config.get('csp.frame_sources'):
-            if g.csp_report_mode:
+            if report_mode:
                 report_rules.append(f"frame-src {self.config['csp.frame_sources']}")
             else:
                 rules.append(f"frame-src {self.config['csp.frame_sources']}")
 
         if self.config.get('csp.form_action_urls'):
-            if g.csp_report_mode:
+            if report_mode:
                 report_rules.append(f"form-action {self.config['csp.form_action_urls']}")
             else:
                 rules.append(f"form-action {self.config['csp.form_action_urls']}")

@@ -662,28 +662,6 @@ class Globals:
     def commit_statuses_enabled(self):
         return asbool(config['scm.commit_statuses'])
 
-    @property
-    def csp_report_mode(self):
-        if config.get('csp.report_mode'):
-            return asbool(config['csp.report_mode'])
-        return False
-
-    @property
-    def csp_report_uri(self):
-        if config.get('csp.report_uri'):
-            return config['csp.report_uri']
-        return None
-    @property
-    def csp_report_uri_enforce(self):
-        if config.get('csp.report_uri_enforce'):
-            return config['csp.report_uri_enforce']
-        return None
-    @property
-    def csp_report_enforce(self):
-        if config.get('csp.report_enforce_mode'):
-            return True
-        return False
-
 class Icon:
 
     def __init__(self, css, title=None):
