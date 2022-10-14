@@ -512,7 +512,10 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
         indexes = [
             # used in general lookups, last_post, etc
             ('discussion_id', 'status', 'timestamp'),
-            'thread_id',
+            # for update_stats()
+            ('discussion_id', 'deleted', 'status'),
+            # for update_stats() and thread_id in general
+            ('thread_id', 'status', 'deleted'),
             # for find_posts/query_posts, including full_slug sort which is useful on super big threads
             ('deleted', 'discussion_id', 'thread_id', 'full_slug'),
         ]
