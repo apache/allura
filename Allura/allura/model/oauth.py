@@ -46,7 +46,7 @@ class OAuthToken(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name = 'oauth_token'
-        indexes = ['api_key']
+        unique_indexes = ['api_key']
         polymorphic_on = 'type'
         polymorphic_identity = None
 
