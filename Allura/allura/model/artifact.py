@@ -898,7 +898,8 @@ class Feed(MappedClass):
              ('app_config_id', pymongo.ASCENDING),
              ('pubdate', pymongo.DESCENDING)),
             # used in ext/user_profile/user_main.py for user feeds
-            'author_link',
+            (('author_link', pymongo.ASCENDING),
+             ('pubdate', pymongo.DESCENDING)),
             # used in project feed
             (('project_id', pymongo.ASCENDING),
              ('pubdate', pymongo.DESCENDING)),
