@@ -481,13 +481,13 @@ class ContentSecurityPolicyMiddleware:
            resp.headers.pop('Content-Security-Policy-Report-Only')
 
         if report_mode and report_uri:
-            report_rules.append(f'report-uri {report_uri}; report-to {report_uri}')
+            report_rules.append(f'report-uri {report_uri}')
 
         if self.config['base_url'].startswith('https'):
             rules.append('upgrade-insecure-requests')
 
         if report_enforce_mode and report_uri_enforce:
-            rules.append(f'report-uri {report_uri_enforce}; report-to {report_uri_enforce:}')
+            rules.append(f'report-uri {report_uri_enforce}')
 
         if self.config.get('csp.frame_sources'):
             if report_mode:
