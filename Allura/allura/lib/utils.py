@@ -176,12 +176,14 @@ def chunked_find(cls, query=None, pagesize=1024, sort_key='_id', sort_dir=1):
         else:
             # skipping requires scanning, even for an indexed query
             q = cls.query.find(query).limit(pagesize).skip(pagesize * page)
-        results = (q.all())
+        results = q.all()
         if not results:
             break
         if sort_key:
             max_id = results[-1][sort_key]
         yield results
+        if len(results) < pagesize:
+            break
         page += 1
 
 
