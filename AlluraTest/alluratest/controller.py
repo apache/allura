@@ -169,7 +169,7 @@ class TestController:
     application_under_test = 'main'
     validate_skip = False
 
-    def setup_method(self, method):
+    def setup_method(self, method=None):
         """Method called by nose before running each test"""
         pkg = self.__module__.split('.')[0]
         self.app = ValidatingTestApp(
@@ -181,7 +181,7 @@ class TestController:
             self.smtp_mock = mock.patch('allura.lib.mail_util.smtplib.SMTP')
             self.smtp_mock.start()
 
-    def teardown_method(self, method):
+    def teardown_method(self, method=None):
         """Method called by nose after running each test"""
         if asbool(tg.config.get('smtp.mock')):
             self.smtp_mock.stop()
