@@ -32,8 +32,6 @@ creoleparser==0.7.5
     # via pypeline
 cryptography==37.0.4
     # via -r requirements.in
-datadiff==2.0.0
-    # via -r requirements.in
 decorator==5.1.1
     # via -r requirements.in
 docutils==0.18.1
@@ -135,8 +133,7 @@ pymongo==3.11.4
     #   activitystream
     #   ming
 pyparsing==2.4.7
-    # via
-    #   packaging
+    # via packaging
 pypeline[creole,markdown,rst,textile]==0.6.0
     # via -r requirements.in
 pysolr==3.9.0
