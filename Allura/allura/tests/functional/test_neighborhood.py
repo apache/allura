@@ -25,7 +25,6 @@ import six.moves.urllib.error
 import PIL
 from mock import patch
 from tg import config
-from alluratest.tools import assert_equal, assert_in, assert_not_equal
 from ming.orm.ormsession import ThreadLocalORMSession, session
 from paste.httpexceptions import HTTPFound, HTTPMovedPermanently
 from tg import app_globals as g, tmpl_context as c

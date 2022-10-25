@@ -22,7 +22,6 @@ import datetime as dt
 
 from mock import Mock, MagicMock, patch, call
 import pytest
-from datadiff import tools as dd
 from formencode import Invalid
 from ming.odm import session
 from tg import tmpl_context as c
@@ -669,7 +668,7 @@ class TestModels(TestWebhookBase):
             'hook_url': 'http://httpbin.org/post',
             'mod_date': self.wh.mod_date,
         }
-        dd.assert_equal(self.wh.__json__(), expected)
+        assert self.wh.__json__() == expected
 
 
 @with_nose_compatibility
@@ -727,7 +726,7 @@ class TestWebhookRestController(TestRestApiBase):
             'webhooks': webhooks,
             'limits': {'repo-push': {'max': 3, 'used': 3}},
         }
-        dd.assert_equal(r.json, expected)
+        assert r.json == expected
 
     def test_webhook_GET_404(self):
         r = self.api_get(self.url + '/repo-push/invalid', status=404)
@@ -743,8 +742,8 @@ class TestWebhookRestController(TestRestApiBase):
             'hook_url': 'http://httpbin.org/post/0',
             'mod_date': str(webhook.mod_date),
         }
-        dd.assert_equal(r.status_int, 200)
-        dd.assert_equal(r.json, expected)
+        assert r.status_int == 200
+        assert r.json == expected
 
     def test_create_validation(self):
         assert M.Webhook.query.find().count() == len(self.webhooks)
@@ -787,7 +786,7 @@ class TestWebhookRestController(TestRestApiBase):
             'hook_url': data['url'],
             'mod_date': str(webhook.mod_date),
         }
-        dd.assert_equal(r.json, expected)
+        assert r.json == expected
         assert M.Webhook.query.find().count() == len(self.webhooks) + 1
 
     def test_create_duplicates(self):
@@ -847,7 +846,7 @@ class TestWebhookRestController(TestRestApiBase):
             'hook_url': data['url'],
             'mod_date': str(webhook.mod_date),
         }
-        dd.assert_equal(r.json, expected)
+        assert r.json == expected
 
         # change only secret
         data = {'secret': 'new-secret'}
@@ -867,7 +866,7 @@ class TestWebhookRestController(TestRestApiBase):
             'hook_url': 'http://hook.slack.com/abcd',
             'mod_date': str(webhook.mod_date),
         }
-        dd.assert_equal(r.json, expected)
+        assert r.json == expected
 
     def test_edit_duplicates(self):
         webhook = self.webhooks[0]
@@ -891,7 +890,7 @@ class TestWebhookRestController(TestRestApiBase):
             webhook.hook_url, self.git.config.url())
         with td.audits(msg):
             r = self.api_delete(url, status=200)
-        dd.assert_equal(r.json, {'result': 'ok'})
+        assert r.json == {'result': 'ok'}
         assert M.Webhook.query.find().count() == 2
         assert M.Webhook.query.get(_id=webhook._id) == None
 

@@ -20,7 +20,6 @@ from datetime import timedelta
 import collections
 
 from tg import tmpl_context as c, app_globals as g
-from alluratest.tools import assert_equal, assert_in
 from ming.orm import ThreadLocalORMSession
 import mock
 import bson

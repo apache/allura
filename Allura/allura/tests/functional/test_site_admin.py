@@ -20,7 +20,6 @@ import datetime as dt
 import bson
 
 from mock import patch, MagicMock
-from alluratest.tools import assert_equal, assert_in, assert_not_in
 from ming.odm import ThreadLocalORMSession
 from tg import tmpl_context as c
 from tg import config
@@ -32,7 +31,6 @@ from allura.tests import decorators as td
 from allura.lib import helpers as h
 from allura.lib.decorators import task
 from allura.lib.plugin import LocalAuthenticationProvider
-import six
 from alluratest.pytest_helpers import with_nose_compatibility
 
 

@@ -17,11 +17,10 @@
 
 import calendar
 import platform
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from bson import ObjectId
 from mock import patch, Mock
-from alluratest.tools import assert_equal, assert_not_equal, assert_true
 from unittest import SkipTest
 from webob import Request
 from ming.orm.ormsession import ThreadLocalORMSession

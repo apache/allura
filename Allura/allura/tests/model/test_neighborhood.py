@@ -18,7 +18,6 @@
 """
 Model tests for neighborhood
 """
-from alluratest.tools import with_setup
 
 from allura import model as M
 from allura.tests import decorators as td

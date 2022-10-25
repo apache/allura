@@ -17,7 +17,6 @@
 import requests
 import tg
 from mock import patch, call, Mock
-from alluratest.tools import assert_equal
 from unittest import TestCase
 
 from allura.tests import TestController

@@ -20,7 +20,6 @@ import re
 import os
 
 from tg import tmpl_context as c
-from alluratest.tools import assert_equal, assert_not_in, assert_in
 from ming.orm import ThreadLocalORMSession
 
 import allura

@@ -16,18 +16,15 @@
 #       under the License.
 
 import json
-import re
 import shutil
 import os
 from unittest import skipUnless
 
-import six
 import tg
 import pkg_resources
 from tg import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
 from mock import patch
-from alluratest.tools import assert_equal, assert_in
 
 from allura import model as M
 from allura.lib import helpers as h

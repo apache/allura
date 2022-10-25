@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from alluratest.tools import assert_equal
 from allura.tests import decorators as td
 from alluratest.controller import TestRestApiBase
 from allura import model as M

@@ -20,7 +20,6 @@ from shutil import rmtree
 import xml.etree.ElementTree as ET
 
 from tg import tmpl_context as c
-from alluratest.tools import assert_in, assert_not_in
 from testfixtures import TempDirectory
 
 from alluratest.controller import setup_basic_test

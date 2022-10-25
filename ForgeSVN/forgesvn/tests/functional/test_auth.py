@@ -16,7 +16,6 @@
 #       under the License.
 
 import json
-from datadiff.tools import assert_equal
 
 from allura.tests import TestController
 from forgesvn.tests import with_svn

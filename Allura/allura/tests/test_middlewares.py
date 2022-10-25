@@ -16,8 +16,6 @@
 #       under the License.
 
 from mock import MagicMock, patch
-from datadiff.tools import assert_equal
-from alluratest.tools import assert_not_equal
 from allura.lib.custom_middleware import CORSMiddleware
 from alluratest.pytest_helpers import with_nose_compatibility
 

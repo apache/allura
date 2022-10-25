@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from nose.tools import assert_equal
 from tg import tmpl_context as c, app_globals as g
 
 from alluratest.controller import setup_basic_test, setup_global_objects

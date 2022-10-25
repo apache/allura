@@ -17,14 +17,9 @@
 
 import os
 import json
-from datetime import datetime, timedelta
-from alluratest.tools import assert_equal
 
-import ming
 from tg import config
-from tg import tmpl_context as c
 
-from allura import model as M
 from allura.lib import helpers as h
 from alluratest.controller import TestRestApiBase
 

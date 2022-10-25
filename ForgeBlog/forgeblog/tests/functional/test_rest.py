@@ -17,7 +17,6 @@
 from datetime import date
 
 import tg
-from alluratest.tools import assert_equal, assert_in
 
 from allura.lib import helpers as h
 from allura.tests import decorators as td

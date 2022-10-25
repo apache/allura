@@ -16,8 +16,6 @@
 #       under the License.
 
 from datetime import datetime, timedelta
-from tg import app_globals as g
-from datadiff.tools import assert_equal
 from unittest import skipIf
 import pkg_resources
 import mock

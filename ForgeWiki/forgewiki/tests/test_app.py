@@ -22,7 +22,6 @@ import operator
 import os
 from io import BytesIO
 
-from alluratest.tools import assert_equal
 from tg import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
 

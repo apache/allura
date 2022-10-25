@@ -17,8 +17,6 @@
 
 import json
 from mock import patch
-from datadiff.tools import assert_equal
-from alluratest.tools import assert_in, assert_not_in
 from alluratest.pytest_helpers import with_nose_compatibility
 
 from allura.lib.phone.nexmo import NexmoPhoneService

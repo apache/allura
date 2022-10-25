@@ -23,18 +23,16 @@ import logging
 
 import tg
 import PIL
-from alluratest.tools import assert_equals, assert_in, assert_not_in, assert_is_not_none, assert_greater
 from ming.orm.ormsession import ThreadLocalORMSession
 from tg import expose
 from tg import tmpl_context as c, app_globals as g
 import mock
-import six
 
 import allura
 from allura.tests import TestController
 from alluratest.pytest_helpers import with_nose_compatibility
 from allura.tests import decorators as td
-from allura.tests.decorators import audits, out_audits
+from allura.tests.decorators import audits
 from alluratest.controller import TestRestApiBase, setup_trove_categories
 from allura import model as M
 from allura.app import SitemapEntry

@@ -23,8 +23,7 @@ import time
 import PIL
 from mock import Mock, patch
 from tg import tmpl_context as c
-from alluratest.tools import module_not_available, with_setup
-from datadiff import tools as dd
+from alluratest.tools import module_not_available
 from webob import Request
 from webob.exc import HTTPUnauthorized
 from ming.orm import ThreadLocalORMSession
@@ -392,22 +391,19 @@ M & Ms - doesn't get escaped
 http://blah.com/?x=y&a=b - not escaped either
 '''
 
-    dd.assert_equal(h.plain2markdown(text), expected)
+    assert h.plain2markdown(text) == expected
 
-    dd.assert_equal(
-        h.plain2markdown('a foo  bar\n\n    code here?',
-                         preserve_multiple_spaces=True),
-        'a foo&nbsp; bar\n\n&nbsp;&nbsp;&nbsp; code here?')
+    assert h.plain2markdown('a foo  bar\n\n    code here?',
+                            preserve_multiple_spaces=True) == \
+        'a foo&nbsp; bar\n\n&nbsp;&nbsp;&nbsp; code here?'
 
-    dd.assert_equal(
-        h.plain2markdown('\ttab before (stuff)',
-                         preserve_multiple_spaces=True),
-        r'&nbsp;&nbsp;&nbsp; tab before \(stuff\)')
+    assert h.plain2markdown('\ttab before (stuff)',
+                            preserve_multiple_spaces=True) == \
+        r'&nbsp;&nbsp;&nbsp; tab before \(stuff\)'
 
-    dd.assert_equal(
-        h.plain2markdown('\ttab before (stuff)',
-                         preserve_multiple_spaces=False),
-        r'tab before \(stuff\)')
+    assert h.plain2markdown('\ttab before (stuff)',
+                            preserve_multiple_spaces=False) == \
+        r'tab before \(stuff\)'
 
 
 @td.without_module('html2text')
@@ -443,22 +439,19 @@ http://blah\.com/?x=y&a=b \- not escaped either
 back\\\-slash escaped
 '''
 
-    dd.assert_equal(h.plain2markdown(text), expected)
+    assert h.plain2markdown(text) == expected
 
-    dd.assert_equal(
-        h.plain2markdown('a foo  bar\n\n    code here?',
-                         preserve_multiple_spaces=True),
-        'a foo&nbsp; bar\n\n&nbsp;&nbsp;&nbsp; code here?')
+    assert h.plain2markdown('a foo  bar\n\n    code here?',
+                            preserve_multiple_spaces=True) == \
+        'a foo&nbsp; bar\n\n&nbsp;&nbsp;&nbsp; code here?'
 
-    dd.assert_equal(
-        h.plain2markdown('\ttab before (stuff)',
-                         preserve_multiple_spaces=True),
-        r'&nbsp;&nbsp;&nbsp; tab before \(stuff\)')
+    assert h.plain2markdown('\ttab before (stuff)',
+                            preserve_multiple_spaces=True) == \
+        r'&nbsp;&nbsp;&nbsp; tab before \(stuff\)'
 
-    dd.assert_equal(
-        h.plain2markdown('\ttab before (stuff)',
-                         preserve_multiple_spaces=False),
-        r'tab before \(stuff\)')
+    assert h.plain2markdown('\ttab before (stuff)',
+                            preserve_multiple_spaces=False) == \
+        r'tab before \(stuff\)'
 
 
 @with_nose_compatibility
