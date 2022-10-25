@@ -29,10 +29,8 @@ Please read http://pythonpaste.org/webtest/ for more information.
 import os
 from unittest import skipIf
 
-import six
-
 from tg import tmpl_context as c
-from alluratest.tools import assert_equal, module_not_available
+from alluratest.tools import module_not_available
 from ming.orm.ormsession import ThreadLocalORMSession
 import mock
 import tg

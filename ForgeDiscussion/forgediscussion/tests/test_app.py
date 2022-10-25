@@ -23,7 +23,6 @@ from cgi import FieldStorage
 from io import BytesIO
 from alluratest.controller import setup_basic_test, setup_unit_test
 
-from alluratest.tools import assert_equal
 from tg import tmpl_context as c
 
 from forgediscussion.site_stats import posts_24hr

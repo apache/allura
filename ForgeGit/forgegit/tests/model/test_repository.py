@@ -29,9 +29,7 @@ from tg import tmpl_context as c, app_globals as g
 import tg
 from ming.base import Object
 from ming.orm import ThreadLocalORMSession, session
-from alluratest.tools import assert_equal, assert_in, assert_less
 from testfixtures import TempDirectory
-from datadiff.tools import assert_equals
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h

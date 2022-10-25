@@ -29,8 +29,6 @@ from collections import defaultdict
 
 from tg import tmpl_context as c, app_globals as g
 import mock
-from alluratest.tools import assert_equal, assert_in
-from datadiff.tools import assert_equals
 import tg
 import ming
 from ming.base import Object
@@ -48,7 +46,6 @@ from forgesvn import model as SM
 from forgesvn.model.svn import svn_path_exists
 from forgesvn.tests import with_svn
 from allura.tests.decorators import with_tool
-import six
 
 
 class TestNewRepo(unittest.TestCase):

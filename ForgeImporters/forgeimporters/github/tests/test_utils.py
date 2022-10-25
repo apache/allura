@@ -15,8 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from alluratest.tools import assert_equal
-
 from forgeimporters.github.utils import GitHubMarkdownConverter
 
 

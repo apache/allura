@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from alluratest.tools import assert_equal
 from mock import Mock, patch
 from ming.orm import ThreadLocalORMSession, session
 

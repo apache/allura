@@ -19,7 +19,6 @@ import tempfile
 import mock
 
 from bson import ObjectId
-from alluratest.tools import assert_equal
 
 from allura.lib.spam.stopforumspamfilter import StopForumSpamSpamFilter
 from alluratest.pytest_helpers import with_nose_compatibility

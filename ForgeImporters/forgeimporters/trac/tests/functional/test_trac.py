@@ -15,8 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from mock import patch, Mock
-from alluratest.tools import assert_equal
+from mock import patch
 from tg import config
 
 from allura.lib import helpers as h

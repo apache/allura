@@ -16,7 +16,6 @@
 #       under the License.
 
 import json
-from datadiff.tools import assert_equal
 
 from allura.tests import TestController
 from allura.tests.decorators import with_tool

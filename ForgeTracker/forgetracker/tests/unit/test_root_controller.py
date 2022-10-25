@@ -20,7 +20,6 @@ import unittest
 from mock import Mock, patch
 from ming.orm.ormsession import session
 from tg import tmpl_context as c
-from alluratest.tools import assert_equal
 
 from allura.lib import helpers as h
 from allura.model import User

@@ -16,7 +16,6 @@
 #       under the License.
 
 import mock
-from alluratest.tools import assert_equal
 from forgetracker.search import get_facets, query_filter_choices
 
 

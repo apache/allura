@@ -15,10 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from datetime import datetime
-from alluratest.tools import assert_equal, assert_true
-from tg import tmpl_context as c
-
 from forgefeedback.tests.unit import FeedbackTestWithModel
 from forgefeedback import model as M
 

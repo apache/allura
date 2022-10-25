@@ -17,7 +17,6 @@
 
 from tg import tmpl_context as c
 from tg import config
-from alluratest.tools import assert_equal
 import mock
 
 from allura.lib import helpers as h

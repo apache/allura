@@ -21,7 +21,6 @@ import allura
 import json
 
 import PIL
-from alluratest.tools import assert_true, assert_equal, assert_in, assert_not_equal, assert_not_in
 from ming.orm.ormsession import ThreadLocalORMSession
 from mock import patch
 from tg import config

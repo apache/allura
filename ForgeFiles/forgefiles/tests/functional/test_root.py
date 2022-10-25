@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 from tg import tmpl_context as c
-from nose.tools import assert_true,assert_not_equal,assert_equals
 
 from allura import model as M
 from alluratest.controller import TestController

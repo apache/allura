@@ -22,7 +22,6 @@ import tg
 from bson import ObjectId
 from tg import app_globals as g
 import mock
-from alluratest.tools import assert_equal, assert_in, assert_not_in
 from ming.odm import ThreadLocalODMSession
 from tg import config
 

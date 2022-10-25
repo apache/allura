@@ -16,7 +16,6 @@
 #       under the License.
 
 from bson import ObjectId
-from alluratest.tools import assert_equal
 
 from allura.scripts.clear_old_notifications import ClearOldNotifications
 from alluratest.controller import setup_basic_test
