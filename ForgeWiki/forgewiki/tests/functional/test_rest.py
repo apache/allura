@@ -17,7 +17,6 @@
 
 import json
 
-from alluratest.tools import assert_equal, assert_in, assert_not_equal
 import tg
 
 from allura.lib import helpers as h

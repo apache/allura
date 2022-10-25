@@ -16,7 +16,6 @@
 #       under the License.
 
 import unittest
-from alluratest.tools import assert_equals
 
 from tg import tmpl_context as c
 from ming.orm import ThreadLocalORMSession

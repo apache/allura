@@ -21,7 +21,6 @@ import operator
 import os
 from io import BytesIO
 
-from alluratest.tools import assert_equal, assert_true
 from tg import tmpl_context as c
 from cgi import FieldStorage
 
@@ -33,7 +32,6 @@ from allura.tests import decorators as td
 from forgetracker import model as TM
 from forgetracker.site_stats import tickets_stats_24hr
 from forgetracker.tests.functional.test_root import TrackerTestController
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
 class TestApp:

@@ -18,7 +18,6 @@
 from six.moves.urllib.parse import urlparse, parse_qs
 
 import tg
-from alluratest.tools import assert_equal
 from mock import patch
 
 from allura.tests import TestController

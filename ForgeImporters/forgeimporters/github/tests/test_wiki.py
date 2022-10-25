@@ -16,7 +16,6 @@
 #       under the License.
 
 from unittest import TestCase, skipIf
-from alluratest.tools import assert_equal
 from mock import Mock, patch, call
 from ming.odm import ThreadLocalORMSession
 import git

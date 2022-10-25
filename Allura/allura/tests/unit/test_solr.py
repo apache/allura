@@ -18,7 +18,6 @@
 import unittest
 
 import mock
-from datadiff.tools import assert_equal
 from markupsafe import Markup
 
 from allura.lib import helpers as h

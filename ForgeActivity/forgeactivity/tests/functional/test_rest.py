@@ -15,8 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from datadiff.tools import assert_equal
-
 from tg import config
 from alluratest.controller import TestRestApiBase
 

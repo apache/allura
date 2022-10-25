@@ -20,8 +20,6 @@ import unittest
 
 import six
 from mock import patch, Mock, MagicMock, call
-from alluratest.tools import assert_equal
-from datadiff import tools as dd
 
 from tg import tmpl_context as c
 
@@ -320,8 +318,8 @@ class TestGroupCommits:
 
     def test_no_branches(self):
         b, t = _group_commits(self.repo, ['3', '2', '1'])
-        dd.assert_equal(b, {'__default__': ['3', '2', '1']})
-        dd.assert_equal(t, {})
+        assert b == {'__default__': ['3', '2', '1']}
+        assert t == {}
 
     def test_branches_and_tags(self):
         self.repo.symbolics_for_commit.side_effect = [
@@ -330,8 +328,8 @@ class TestGroupCommits:
             ([], []),
         ]
         b, t = _group_commits(self.repo, ['3', '2', '1'])
-        dd.assert_equal(b, {'master': ['3', '2', '1']})
-        dd.assert_equal(t, {'v1.1': ['3', '2', '1']})
+        assert b == {'master': ['3', '2', '1']}
+        assert t == {'v1.1': ['3', '2', '1']}
 
     def test_multiple_branches(self):
         self.repo.symbolics_for_commit.side_effect = [
@@ -340,8 +338,8 @@ class TestGroupCommits:
             (['test1', 'test2'], []),
         ]
         b, t = _group_commits(self.repo, ['3', '2', '1'])
-        dd.assert_equal(b, {'master': ['3', '2'],
-                            'test1': ['1'],
-                            'test2': ['1']})
-        dd.assert_equal(t, {'v1.1': ['3'],
-                            'v1.0': ['2', '1']})
+        assert b == {'master': ['3', '2'],
+                     'test1': ['1'],
+                     'test2': ['1']}
+        assert t == {'v1.1': ['3'],
+                     'v1.0': ['2', '1']}

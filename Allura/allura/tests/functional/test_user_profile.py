@@ -17,7 +17,6 @@
 
 import mock
 import tg
-from alluratest.tools import assert_equal, assert_in, assert_not_in
 
 from alluratest.controller import TestRestApiBase
 from allura.model import Project, User

@@ -20,7 +20,6 @@ import mock
 import tg
 
 from ming.orm import ThreadLocalORMSession, ThreadLocalODMSession
-from alluratest.tools import assert_equal, assert_in, assert_not_in
 from tg import tmpl_context as c
 
 from allura import model as M

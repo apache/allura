@@ -18,7 +18,6 @@
 """
 Model tests for project
 """
-from alluratest.tools import with_setup, assert_equals, assert_in
 from tg import tmpl_context as c
 from ming.orm.ormsession import ThreadLocalORMSession
 from formencode import validators as fev

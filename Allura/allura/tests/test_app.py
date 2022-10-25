@@ -23,7 +23,6 @@ from formencode import validators as fev
 from textwrap import dedent
 
 from alluratest.controller import setup_unit_test
-from alluratest.tools import with_setup
 from allura import app
 from allura.lib.app_globals import Icon
 from allura.lib import mail_util

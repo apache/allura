@@ -17,8 +17,6 @@
 
 from tg import tmpl_context as c, app_globals as g
 
-from alluratest.tools import assert_equal
-
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
 from allura.lib import security
@@ -26,7 +24,7 @@ from allura.tests import decorators as td
 from allura.lib import helpers as h
 
 
-def setup_module(module):
+def setup_module():
     setup_basic_test()
     setup_with_tools()
 

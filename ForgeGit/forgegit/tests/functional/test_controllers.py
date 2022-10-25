@@ -22,8 +22,6 @@ import shutil
 import tempfile
 import textwrap
 
-from datadiff.tools import assert_equal as dd_assert_equal
-from alluratest.tools import assert_equal, assert_in, assert_not_in, assert_not_equal
 import pkg_resources
 from alluratest.tools import assert_regexp_matches
 from tg import tmpl_context as c
@@ -892,7 +890,7 @@ class TestFork(_TestCase):
         assert '<p>changed description</p' in r
         assert 'Merge Request #1: changed summary (open)' in r
         changes = r.html.findAll('div', attrs={'class': 'markdown_content'})[-1]
-        dd_assert_equal(str(changes), """
+        assert str(changes) == """
 <div class="markdown_content"><ul>
 <li>
 <p><strong>Summary</strong>: summary --&gt; changed summary</p>
@@ -912,7 +910,7 @@ class TestFork(_TestCase):
 <span class="gi">+changed description</span><span class="w"></span>
 </code></pre></div>
 </div>
-""".strip())
+""".strip()
 
         r = self.app.get('/p/test/src-git/merge-requests').follow()
         assert '<a href="1/" rel="nofollow">changed summary</a>' in r

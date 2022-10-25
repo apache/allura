@@ -18,7 +18,6 @@ from bs4 import BeautifulSoup
 import mock
 
 from tg import config
-from alluratest.tools import assert_equals, assert_true, assert_in, assert_equal
 from ming.orm import session
 
 from allura import model as M

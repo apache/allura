@@ -17,7 +17,6 @@
 
 import operator
 import shutil
-import sys
 from textwrap import dedent
 import unittest
 
@@ -30,8 +29,6 @@ import tg
 import mock
 from tg import tmpl_context as c, app_globals as g
 
-from datadiff.tools import assert_equal
-from nose.tools import assert_in, assert_less, assert_less_equal
 from ming.orm import FieldProperty, Mapper
 from ming.orm import ThreadLocalORMSession
 from testfixtures import LogCapture
@@ -41,8 +38,6 @@ from alluratest.controller import setup_basic_test, setup_global_objects, TestCo
 from allura import model as M
 from allura.command.taskd import TaskdCommand
 from allura.lib import helpers as h
-from allura.lib import search
-from allura.lib.exceptions import CompoundError
 from allura.lib.mail_util import MAX_MAIL_LINE_OCTETS
 from allura.tasks import event_tasks
 from allura.tasks import index_tasks

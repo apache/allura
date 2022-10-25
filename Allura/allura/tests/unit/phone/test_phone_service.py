@@ -15,9 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from alluratest.tools import assert_true
-from datadiff.tools import assert_equal
-
 from allura.lib.phone import PhoneService
 from alluratest.pytest_helpers import with_nose_compatibility
 

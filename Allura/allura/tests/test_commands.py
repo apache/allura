@@ -18,11 +18,7 @@
 
 import datetime
 
-import six
-from alluratest.tools import with_setup
 from testfixtures import OutputCapture
-
-from datadiff.tools import assert_equal
 
 from ming.base import Object
 from ming.orm import ThreadLocalORMSession

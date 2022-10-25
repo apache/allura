@@ -14,7 +14,6 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-from alluratest.tools import assert_in, assert_equal
 from testfixtures import LogCapture
 
 from allura.scripts.reindex_projects import ReindexProjects

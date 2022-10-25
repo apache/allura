@@ -18,7 +18,6 @@
 
 import datetime
 
-from alluratest.tools import assert_in, assert_not_in
 from ming.orm.ormsession import ThreadLocalORMSession
 from tg import tmpl_context as c
 

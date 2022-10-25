@@ -16,7 +16,6 @@
 #       under the License.
 
 from datetime import datetime
-from alluratest.tools import assert_equal, assert_true
 from tg import tmpl_context as c
 
 from forgeblog import model as M

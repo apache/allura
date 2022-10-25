@@ -18,7 +18,6 @@
 from datetime import datetime
 
 from mock import patch
-from alluratest.tools import assert_equal
 
 from allura.lib import helpers
 from alluratest.pytest_helpers import with_nose_compatibility
