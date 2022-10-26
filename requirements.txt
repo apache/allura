@@ -91,7 +91,7 @@ ming==0.12.1
     # via -r requirements.in
 mock==4.0.3
     # via -r requirements.in
-oauthlib==3.2.1
+oauthlib==3.2.2
     # via
     #   -r requirements.in
     #   requests-oauthlib
