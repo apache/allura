@@ -78,7 +78,7 @@ markdown==3.4.1
     #   -r requirements.in
     #   markdown-checklist
     #   pypeline
-markdown-checklist==0.4.3
+markdown-checklist==0.4.4
     # via -r requirements.in
 markupsafe==2.1.0
     # via
