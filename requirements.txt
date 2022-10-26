@@ -117,7 +117,7 @@ pycparser==2.21
     # via cffi
 pyflakes==2.4.0
     # via -r requirements.in
-pygments==2.12.0
+pygments==2.13.0
     # via -r requirements.in
 pymongo==3.11.4
     # via
