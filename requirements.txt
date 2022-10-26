@@ -52,7 +52,7 @@ genshi==0.7.7
     # via creoleparser
 gitdb==4.0.9
     # via gitpython
-gitpython==3.1.27
+gitpython==3.1.29
     # via -r requirements.in
 gunicorn==20.1.0
     # via -r requirements.in
@@ -190,7 +190,7 @@ translationstring==1.4
     # via colander
 turbogears2==2.3.12
     # via -r requirements.in
-typing-extensions==4.3.0
+typing-extensions==4.4.0
     # via
     #   gitpython
     #   importlib-metadata
