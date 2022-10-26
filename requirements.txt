@@ -64,7 +64,9 @@ html5lib==1.1
 idna==3.3
     # via requests
 importlib-metadata==4.12.0
-    # via markdown
+    # via
+    #   -r requirements.in
+    #   markdown
 inflection==0.5.1
     # via profanityfilter
 iso8601==1.0.2
