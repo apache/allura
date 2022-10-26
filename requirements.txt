@@ -124,7 +124,7 @@ pymongo==3.11.4
     #   -r requirements.in
     #   activitystream
     #   ming
-pypeline[creole,markdown,rst,textile]==0.6.0
+pypeline[creole,markdown,rst,textile]==0.6.1
     # via -r requirements.in
 pysolr==3.9.0
     # via -r requirements.in
@@ -143,7 +143,7 @@ pytz==2022.1
     #   ming
 qrcode==7.3.1
     # via -r requirements.in
-regex==2022.6.2
+regex==2022.9.13
     # via
     #   regex-as-re-globally
     #   textile
