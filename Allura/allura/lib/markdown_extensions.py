@@ -311,7 +311,7 @@ class EmojiInlinePattern(markdown.inlinepatterns.Pattern):
 
     def handleMatch(self, m):
         emoji_code = m.group(2)
-        return emoji.emojize(emoji_code, use_aliases=True)
+        return emoji.emojize(emoji_code, language="alias")
 
 
 class UserMentionExtension(markdown.Extension):

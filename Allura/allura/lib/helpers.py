@@ -1288,7 +1288,7 @@ def hide_private_info(message):
 
 def emojize(text):
     """Coverts emoji codes to unicode emojis"""
-    return emoji.emojize(text, use_aliases=True)
+    return emoji.emojize(text, language="alias")
 
 
 def get_current_reaction(react_users_dict):
