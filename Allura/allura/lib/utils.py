@@ -761,7 +761,7 @@ def get_reactions_json():
     """ Returns global reactions json """
     j = OrderedDict()
     for em in get_reaction_emoji_list():
-        j[em] = emoji.emojize(em, use_aliases=True)
+        j[em] = emoji.emojize(em, language='alias')
     return json.dumps(j)
 
 
