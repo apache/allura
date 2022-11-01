@@ -38,8 +38,6 @@ setup(name='ForgeDiscussion',
           # -*- Extra requirements: -*-
           'Allura',
       ],
-      test_suite='nose.collector',
-      tests_require=['WebTest', 'BeautifulSoup'],
       entry_points="""
       # -*- Entry points: -*-
       [allura]
