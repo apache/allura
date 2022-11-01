@@ -27,7 +27,7 @@ toplevel_dir = os.path.abspath(os.path.dirname(__file__) + "/../..")
 
 def run(cmd):
     proc = Popen(cmd, shell=True, cwd=toplevel_dir, stdout=PIPE, stderr=PIPE)
-    # must capture & reprint stdount, so that nosetests can capture it
+    # must capture & reprint stdount, so that pytest can capture it
     (stdout, stderr) = proc.communicate()
     sys.stdout.write(stdout.decode('utf-8'))
     sys.stderr.write(stderr.decode('utf-8'))

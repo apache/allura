@@ -17,10 +17,8 @@
 
 
 from allura.tests import TestController
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestStaticFilesMiddleware(TestController):
 
     # this tests StaticFilesMiddleware

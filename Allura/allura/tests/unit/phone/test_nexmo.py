@@ -17,12 +17,10 @@
 
 import json
 from mock import patch
-from alluratest.pytest_helpers import with_nose_compatibility
 
 from allura.lib.phone.nexmo import NexmoPhoneService
 
 
-@with_nose_compatibility
 class TestPhoneService:
 
     def setup_method(self, method):

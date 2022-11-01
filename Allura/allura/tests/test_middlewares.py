@@ -17,10 +17,8 @@
 
 from mock import MagicMock, patch
 from allura.lib.custom_middleware import CORSMiddleware
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestCORSMiddleware:
 
     def setup_method(self, method):

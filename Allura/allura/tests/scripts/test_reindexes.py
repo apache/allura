@@ -21,10 +21,8 @@ from allura.scripts.reindex_users import ReindexUsers
 from allura.tests.decorators import assert_logmsg_and_no_warnings_or_errors
 from alluratest.controller import setup_basic_test
 from allura import model as M
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestReindexProjects:
 
     def setup_method(self, method):
@@ -49,7 +47,6 @@ class TestReindexProjects:
         assert M.MonQTask.query.find({'task_name': 'allura.tasks.index_tasks.add_projects'}).count() == 1
 
 
-@with_nose_compatibility
 class TestReindexUsers:
 
     def setup_method(self, method):

@@ -18,10 +18,8 @@
 import unittest
 
 from allura.lib.diff import HtmlSideBySideDiff
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestHtmlSideBySideDiff(unittest.TestCase):
 
     def setup_method(self, method):

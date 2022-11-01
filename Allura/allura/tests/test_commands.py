@@ -33,7 +33,6 @@ from allura.command import base, script, set_neighborhood_features, \
 from allura import model as M
 from allura.lib.exceptions import InvalidNBFeatureValueError
 from allura.tests import decorators as td
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
 test_config = pkg_resources.resource_filename(
@@ -182,7 +181,6 @@ def test_update_neighborhood():
     assert nb.has_home_tool is False
 
 
-@with_nose_compatibility
 class TestEnsureIndexCommand:
 
     def test_run(self):
@@ -269,7 +267,6 @@ class TestEnsureIndexCommand:
         ]
 
 
-@with_nose_compatibility
 class TestTaskCommand:
 
     def teardown_method(self, method):
@@ -336,7 +333,6 @@ class TestTaskCommand:
         assert M.MonQTask.query.find().count() == 0
 
 
-@with_nose_compatibility
 class TestTaskdCleanupCommand:
 
     def setup_method(self, method):
@@ -451,7 +447,6 @@ def test_status_log_retries():
     assert cmd._taskd_status.mock_calls == expected_calls
 
 
-@with_nose_compatibility
 class TestShowModels:
 
     def test_show_models(self):
@@ -463,7 +458,6 @@ class TestShowModels:
          - <FieldProperty content>
         ''' in output.captured
 
-@with_nose_compatibility
 class TestReindexAsTask:
 
     cmd = 'allura.command.show_models.ReindexCommand'
@@ -498,7 +492,6 @@ class TestReindexAsTask:
             M.MonQTask.query.remove()
 
 
-@with_nose_compatibility
 class TestReindexCommand:
 
     @patch('allura.command.show_models.g')

@@ -43,7 +43,6 @@ from alluratest.controller import (
     TestRestApiBase,
 )
 import six
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
 # important to be distinct from 'test' and 'test2' which ForgeGit and
@@ -54,7 +53,6 @@ with_git = td.with_tool(test_project_with_repo, 'git', 'src', 'Git')
 with_git2 = td.with_tool(test_project_with_repo, 'git', 'src2', 'Git2')
 
 
-@with_nose_compatibility
 class TestWebhookBase:
     def setup_method(self, method):
         setup_basic_test()
@@ -86,7 +84,6 @@ class TestWebhookBase:
         return [repo_init]
 
 
-@with_nose_compatibility
 class TestValidators(TestWebhookBase):
     @with_git2
     def test_webhook_validator(self):
@@ -124,7 +121,6 @@ class TestValidators(TestWebhookBase):
         assert v.to_python(str(wh._id)) == wh
 
 
-@with_nose_compatibility
 class TestWebhookController(TestController):
 
     def setup_method(self, method):
@@ -417,7 +413,6 @@ class TestWebhookController(TestController):
         return [text(tds[0]), text(tds[1]), link(tds[2]), delete_btn(tds[3])]
 
 
-@with_nose_compatibility
 class TestSendWebhookHelper(TestWebhookBase):
     def setup_method(self, method):
         super().setup_method(method)
@@ -522,7 +517,6 @@ class TestSendWebhookHelper(TestWebhookBase):
                     requests.post.return_value.headers))
 
 
-@with_nose_compatibility
 class TestRepoPushWebhookSender(TestWebhookBase):
     @patch('allura.webhooks.send_webhook', autospec=True)
     def test_send(self, send_webhook):
@@ -629,7 +623,6 @@ class TestRepoPushWebhookSender(TestWebhookBase):
         assert sender._convert_id('a433fa9:13') == 'r13'
 
 
-@with_nose_compatibility
 class TestModels(TestWebhookBase):
     def test_webhook_url(self):
         assert (self.wh.url() ==
@@ -671,7 +664,6 @@ class TestModels(TestWebhookBase):
         assert self.wh.__json__() == expected
 
 
-@with_nose_compatibility
 class TestWebhookRestController(TestRestApiBase):
     def setup_method(self, method):
         super().setup_method(method)

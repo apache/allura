@@ -36,10 +36,8 @@ from allura.tests import decorators as td
 from allura.lib import helpers as h
 from allura.lib import utils
 from alluratest.controller import setup_trove_categories
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestNeighborhood(TestController):
 
     def setup_method(self, method):
@@ -978,7 +976,6 @@ class TestNeighborhood(TestController):
         self.app.get('/p/_nav.json')
 
 
-@with_nose_compatibility
 class TestPhoneVerificationOnProjectRegistration(TestController):
     def test_phone_verification_fragment_renders(self):
         self.app.get('/p/phone_verification_fragment', status=200)
@@ -1114,7 +1111,6 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
             assert iframe.get('src') == '/p/phone_verification_fragment'
 
 
-@with_nose_compatibility
 class TestProjectImport(TestController):
 
     def test_not_found(self):

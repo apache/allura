@@ -19,10 +19,8 @@ import unittest
 import mock
 
 from allura.lib import markdown_extensions as mde
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestTracRef1(unittest.TestCase):
 
     @mock.patch('allura.lib.markdown_extensions.M.Shortlink.lookup')
@@ -49,7 +47,6 @@ class TestTracRef1(unittest.TestCase):
                          '[r123](/p/project/tool/artifact)')
 
 
-@with_nose_compatibility
 class TestTracRef2(unittest.TestCase):
 
     @mock.patch('allura.lib.markdown_extensions.M.Shortlink.lookup')
@@ -79,7 +76,6 @@ class TestTracRef2(unittest.TestCase):
                          '[comment:13:ticket:100](/p/project/tool/artifact/)')
 
 
-@with_nose_compatibility
 class TestTracRef3(unittest.TestCase):
 
     def test_no_app_context(self):
@@ -98,7 +94,6 @@ class TestTracRef3(unittest.TestCase):
                          '[source:file.py#L456](/p/project/tool/HEAD/tree/file.py#l456)')
 
 
-@with_nose_compatibility
 class TestPatternReplacingProcessor(unittest.TestCase):
 
     @mock.patch('allura.lib.markdown_extensions.M.Shortlink.lookup')
@@ -113,7 +108,6 @@ class TestPatternReplacingProcessor(unittest.TestCase):
             '[ticket:100](/p/project/tool/artifact)'])
 
 
-@with_nose_compatibility
 class TestCommitMessageExtension(unittest.TestCase):
 
     @mock.patch('allura.lib.markdown_extensions.TracRef2.get_comment_slug')

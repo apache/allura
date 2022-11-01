@@ -27,7 +27,6 @@ from webob import Request, Response
 
 from allura import model as M
 from alluratest.controller import setup_unit_test
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
 class File(M.File):
@@ -37,7 +36,6 @@ class File(M.File):
 Mapper.compile_all()
 
 
-@with_nose_compatibility
 class TestFile(TestCase):
 
     def setup_method(self, method):

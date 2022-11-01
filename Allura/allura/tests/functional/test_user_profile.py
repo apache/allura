@@ -22,7 +22,6 @@ from alluratest.controller import TestRestApiBase
 from allura.model import Project, User
 from allura.tests import decorators as td
 from allura.tests import TestController
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
 class TestUserProfileSections(TestController):
@@ -65,7 +64,6 @@ class TestUserProfileSections(TestController):
         assert 'Section f' not in r.text
 
 
-@with_nose_compatibility
 class TestUserProfile(TestController):
 
     @td.with_user_project('test-admin')
@@ -278,7 +276,6 @@ class TestUserProfile(TestController):
         assert 'content="noindex, follow"' not in r.text
 
 
-@with_nose_compatibility
 class TestUserProfileHasAccessAPI(TestRestApiBase):
 
     @td.with_user_project('test-admin')

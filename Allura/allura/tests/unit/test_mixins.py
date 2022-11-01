@@ -17,10 +17,8 @@
 
 from mock import Mock
 from allura.model import VotableArtifact
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestVotableArtifact:
 
     def setup_method(self, method):

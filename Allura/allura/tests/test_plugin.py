@@ -37,14 +37,12 @@ from allura.lib.exceptions import ProjectConflict, ProjectShortnameInvalid
 from allura.tests.decorators import audits
 from allura.tests.exclude_from_rewrite_hook import ThemeProviderTestApp
 from alluratest.controller import setup_basic_test, setup_global_objects
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
 def setup_module(module):
     setup_basic_test()
 
 
-@with_nose_compatibility
 class TestProjectRegistrationProvider:
 
     def setup_method(self, method):
@@ -82,7 +80,6 @@ class TestProjectRegistrationProvider:
         pytest.raises(ProjectConflict, v, 'thisislegit', neighborhood=nbhd)
 
 
-@with_nose_compatibility
 class TestProjectRegistrationProviderParseProjectFromUrl:
 
     def setup_method(self, method):
@@ -157,7 +154,6 @@ class UserMock:
         return self._projects
 
 
-@with_nose_compatibility
 class TestProjectRegistrationProviderPhoneVerification:
 
     def setup_method(self, method):
@@ -275,7 +271,6 @@ class TestProjectRegistrationProviderPhoneVerification:
             assert 5 == g.phone_service.verify.call_count
 
 
-@with_nose_compatibility
 class TestThemeProvider:
 
     @patch('allura.app.g')
@@ -301,7 +296,6 @@ class TestThemeProvider:
         g.theme_href.assert_called_with('images/testapp_24.png')
 
 
-@with_nose_compatibility
 class TestThemeProvider_notifications:
 
     Provider = ThemeProvider
@@ -623,7 +617,6 @@ class TestThemeProvider_notifications:
         assert get_note[1] == 'testid-2-False'
 
 
-@with_nose_compatibility
 class TestLocalAuthenticationProvider:
 
     def setup_method(self, method):
@@ -738,7 +731,6 @@ class TestLocalAuthenticationProvider:
         assert detail.ua == 'mybrowser'
 
 
-@with_nose_compatibility
 class TestAuthenticationProvider:
 
     def setup_method(self, method):

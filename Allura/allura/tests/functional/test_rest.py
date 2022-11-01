@@ -30,10 +30,8 @@ from alluratest.controller import TestRestApiBase
 from allura.lib import helpers as h
 from allura.lib.exceptions import Invalid
 from allura import model as M
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestRestHome(TestRestApiBase):
 
     def _patch_token(self, OAuthAccessToken):
@@ -416,7 +414,6 @@ class TestRestHome(TestRestApiBase):
         assert r.json == {}
 
 
-@with_nose_compatibility
 class TestRestNbhdAddProject(TestRestApiBase):
 
     def setup_method(self, method):
@@ -559,7 +556,6 @@ class TestRestNbhdAddProject(TestRestApiBase):
         }
 
 
-@with_nose_compatibility
 class TestDoap(TestRestApiBase):
     validate_skip = True
     ns = '{http://usefulinc.com/ns/doap#}'
@@ -625,7 +621,6 @@ class TestDoap(TestRestApiBase):
         assert ('Tickets', 'http://localhost/p/test/private-bugs/') not in tools
 
 
-@with_nose_compatibility
 class TestUserProfile(TestRestApiBase):
     @td.with_user_project('test-admin')
     def test_profile_data(self):

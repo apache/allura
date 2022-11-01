@@ -25,10 +25,8 @@ from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test
 from allura.lib.solr import Solr, escape_solr_arg
 from allura.lib.search import search_app, SearchIndexable
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestSolr(unittest.TestCase):
 
     def setup_method(self, method):
@@ -122,7 +120,6 @@ class TestSolr(unittest.TestCase):
             'username_s:admin1 || username_s:root', fq=fq, ignore_errors=False)
 
 
-@with_nose_compatibility
 class TestSearchIndexable(unittest.TestCase):
 
     def setup_method(self, method):
@@ -147,7 +144,6 @@ class TestSearchIndexable(unittest.TestCase):
         assert self.obj.solarize() == dict(text='<script>a(1)</script>')
 
 
-@with_nose_compatibility
 class TestSearch_app(unittest.TestCase):
 
     def setup_method(self, method):

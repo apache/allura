@@ -25,10 +25,8 @@ from allura.tests import TestController
 from allura import model as M
 from allura.lib import helpers as h
 from tg import config
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestDiscussBase(TestController):
 
     def _thread_link(self):
@@ -44,7 +42,6 @@ class TestDiscussBase(TestController):
         return thread_link.split('/')[-2]
 
 
-@with_nose_compatibility
 class TestDiscuss(TestDiscussBase):
 
     def _is_subscribed(self, user, thread):
@@ -399,7 +396,6 @@ class TestDiscuss(TestDiscussBase):
         r = self.app.get(post_link, status=404)
 
 
-@with_nose_compatibility
 class TestAttachment(TestDiscussBase):
 
     def setup_method(self, method):

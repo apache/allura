@@ -16,7 +16,6 @@
 #       under the License.
 
 from allura.lib.phone import PhoneService
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
 class MockPhoneService(PhoneService):
@@ -28,7 +27,6 @@ class MockPhoneService(PhoneService):
         return {'status': 'ok'}
 
 
-@with_nose_compatibility
 class TestPhoneService:
 
     def test_verify(self):

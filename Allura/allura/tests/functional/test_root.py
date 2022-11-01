@@ -40,10 +40,8 @@ from allura.tests import TestController
 from allura import model as M
 from allura.lib import helpers as h
 from alluratest.controller import setup_trove_categories
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestRootController(TestController):
 
     def setup_method(self, method):
@@ -215,7 +213,6 @@ class TestRootController(TestController):
                in resp.headers.getall('Content-Security-Policy')[0]
 
 
-@with_nose_compatibility
 class TestRootWithSSLPattern(TestController):
     def setup_method(self, method):
         with td.patch_middleware_config({'force_ssl.pattern': '^/auth'}):

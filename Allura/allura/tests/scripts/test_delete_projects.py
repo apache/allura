@@ -24,10 +24,8 @@ from allura.tests.decorators import audits, out_audits, with_user_project
 from allura import model as M
 from allura.scripts import delete_projects
 from allura.lib import plugin
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestDeleteProjects(TestController):
 
     def setup_method(self, method):

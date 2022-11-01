@@ -16,12 +16,10 @@
 #       under the License.
 
 from allura.tests import TestController
-from alluratest.pytest_helpers import with_nose_compatibility
 
 app = None
 
 
-@with_nose_compatibility
 class TestDispatch(TestController):
 
     validate_skip = True

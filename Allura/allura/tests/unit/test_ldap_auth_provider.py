@@ -31,10 +31,8 @@ from allura.lib import plugin
 from allura.lib import helpers as h
 from allura import model as M
 import six
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestLdapAuthenticationProvider:
 
     def setup_method(self, method):

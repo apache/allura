@@ -20,12 +20,10 @@ from mock import patch
 import random
 import gc
 
-from alluratest.pytest_helpers import with_nose_compatibility
 from allura.lib.decorators import task, memoize
 from alluratest.controller import setup_basic_test, setup_global_objects
 
 
-@with_nose_compatibility
 class TestTask(TestCase):
 
     def setup_method(self, method):
@@ -63,7 +61,6 @@ class TestTask(TestCase):
         func.post('test', foo=2, delay=1)
 
 
-@with_nose_compatibility
 class TestMemoize:
 
     def test_function(self):

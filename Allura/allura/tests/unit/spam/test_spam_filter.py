@@ -25,7 +25,6 @@ from allura import model as M
 from allura.model.artifact import SpamCheckResult
 from alluratest.controller import setup_basic_test
 from forgewiki import model as WM
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
 class MockFilter(SpamFilter):
@@ -46,7 +45,6 @@ class MockFilter2(SpamFilter):
         return True
 
 
-@with_nose_compatibility
 class TestSpamFilter(unittest.TestCase):
 
     def test_check(self):
@@ -75,7 +73,6 @@ class TestSpamFilter(unittest.TestCase):
         self.assertTrue(log.exception.called)
 
 
-@with_nose_compatibility
 class TestSpamFilterFunctional:
 
     def setup_method(self, method):
@@ -95,7 +92,6 @@ class TestSpamFilterFunctional:
         assert results[0].user.username == 'test-user'
 
 
-@with_nose_compatibility
 class TestChainedSpamFilter:
 
     def test(self):

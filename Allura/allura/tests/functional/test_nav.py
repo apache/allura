@@ -22,10 +22,8 @@ from tg import app_globals as g
 
 from allura.tests import TestController
 from allura.lib import helpers as h
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestNavigation(TestController):
     """
     Test div-logo and nav-left:

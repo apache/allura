@@ -19,10 +19,8 @@ import unittest
 import mock
 
 from allura.scripts.scripttask import ScriptTask
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestScriptTask(unittest.TestCase):
 
     def setup_method(self, method):

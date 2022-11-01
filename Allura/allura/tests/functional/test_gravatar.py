@@ -22,10 +22,8 @@ from mock import patch
 
 from allura.tests import TestController
 import allura.lib.gravatar as gravatar
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestGravatar(TestController):
 
     def test_id(self):

@@ -47,12 +47,10 @@ from allura.tasks import repo_tasks
 from allura.tasks import export_tasks
 from allura.tasks import admin_tasks
 from allura.tests import decorators as td
-from alluratest.pytest_helpers import with_nose_compatibility
 from allura.tests.exclude_from_rewrite_hook import raise_compound_exception
 from allura.lib.decorators import event_handler, task
 
 
-@with_nose_compatibility
 class TestRepoTasks(unittest.TestCase):
 
     def setup_method(self, method):
@@ -101,7 +99,6 @@ def _task_that_creates_event(event_name,):
     assert not M.MonQTask.query.get(task_name='allura.tasks.event_tasks.event', args=[event_name])
 
 
-@with_nose_compatibility
 class TestEventTasks(unittest.TestCase):
 
     def setup_method(self, method):
@@ -160,7 +157,6 @@ class TestEventTasks(unittest.TestCase):
             assert ('assert %d' % x) in t.result
 
 
-@with_nose_compatibility
 class TestIndexTasks(unittest.TestCase):
 
     def setup_method(self, method):
@@ -246,7 +242,6 @@ class TestIndexTasks(unittest.TestCase):
         solr.delete.assert_called_once_with(q=solr_query)
 
 
-@with_nose_compatibility
 class TestMailTasks(unittest.TestCase):
 
     def setup_method(self, method):
@@ -543,7 +538,6 @@ class TestMailTasks(unittest.TestCase):
             assert hm.call_count == 0
 
 
-@with_nose_compatibility
 class TestUserNotificationTasks(TestController):
     def setup_method(self, method):
         super().setup_method(method)
@@ -575,7 +569,6 @@ class TestUserNotificationTasks(TestController):
         assert 'auth/subscriptions#notifications' in text
 
 
-@with_nose_compatibility
 class TestNotificationTasks(unittest.TestCase):
 
     def setup_method(self, method):
@@ -611,7 +604,6 @@ class _TestArtifact(M.Artifact):
             text=self.text)
 
 
-@with_nose_compatibility
 class TestExportTasks(unittest.TestCase):
 
     def setup_method(self, method):
@@ -666,7 +658,6 @@ class TestExportTasks(unittest.TestCase):
         assert c.project.bulk_export_status() == 'busy'
 
 
-@with_nose_compatibility
 class TestAdminTasks(unittest.TestCase):
 
     def test_install_app_docstring(self):

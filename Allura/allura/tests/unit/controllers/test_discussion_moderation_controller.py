@@ -23,10 +23,8 @@ from allura.tests.unit.factories import create_post, create_discussion
 from allura import model
 from allura.controllers.discuss import ModerationController
 from allura.tests.unit import patches
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestWhenModerating(WithDatabase):
     patches = [patches.fake_app_patch,
                patches.fake_user_patch,
@@ -74,7 +72,6 @@ class TestWhenModerating(WithDatabase):
         return model.Post.query.get(slug='mypost', deleted=False)
 
 
-@with_nose_compatibility
 class TestIndexWithNoPosts(WithDatabase):
     patches = [patches.fake_app_patch]
 
@@ -84,7 +81,6 @@ class TestIndexWithNoPosts(WithDatabase):
         assert template_variables['posts'].all() == []
 
 
-@with_nose_compatibility
 class TestIndexWithAPostInTheDiscussion(WithDatabase):
     patches = [patches.fake_app_patch]
 

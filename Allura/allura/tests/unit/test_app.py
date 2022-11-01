@@ -22,10 +22,8 @@ from allura import model
 from allura.tests.unit import WithDatabase
 from allura.tests.unit.patches import fake_app_patch
 from allura.tests.unit.factories import create_project, create_app_config
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestApplication(TestCase):
 
     def test_validate_mount_point(self):
@@ -54,7 +52,6 @@ class TestApplication(TestCase):
         self.assertEqual(f('does_not_exist'), '')
 
 
-@with_nose_compatibility
 class TestInstall(WithDatabase):
     patches = [fake_app_patch]
 
@@ -67,7 +64,6 @@ class TestInstall(WithDatabase):
         return model.Discussion.query.find().count()
 
 
-@with_nose_compatibility
 class TestDefaultDiscussion(WithDatabase):
     patches = [fake_app_patch]
 
@@ -88,7 +84,6 @@ class TestDefaultDiscussion(WithDatabase):
         assert self.discussion.shortname == 'my_mounted_app'
 
 
-@with_nose_compatibility
 class TestAppDefaults(WithDatabase):
     patches = [fake_app_patch]
 

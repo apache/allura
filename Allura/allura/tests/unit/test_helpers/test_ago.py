@@ -20,10 +20,8 @@ from datetime import datetime
 from mock import patch
 
 from allura.lib import helpers
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestAgo:
 
     def setup_method(self, method):

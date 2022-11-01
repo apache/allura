@@ -19,10 +19,8 @@ import unittest
 from mock import Mock
 
 from allura.app import SitemapEntry
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestSitemapEntry(unittest.TestCase):
 
     def test_matches_url(self):

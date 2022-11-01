@@ -20,7 +20,6 @@ from mock import Mock
 
 from allura.config.app_cfg import AlluraJinjaRenderer
 from alluratest.controller import setup_basic_test
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
 def strip_space(s):
@@ -33,7 +32,6 @@ class TemplateTest:
         self.jinja2_env = AlluraJinjaRenderer.create(config, g)['jinja'].jinja2_env
 
 
-@with_nose_compatibility
 class TestRelatedArtifacts(TemplateTest):
 
     def _render_related_artifacts(self, artifact):

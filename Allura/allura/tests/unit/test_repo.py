@@ -29,10 +29,8 @@ from allura.model.repository import zipdir, prefix_paths_union
 from allura.model.repo_refresh import (
     _group_commits,
 )
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestTopoSort(unittest.TestCase):
 
     def test_commit_dates_out_of_order(self):
@@ -85,7 +83,6 @@ def blob(name, id):
     return b
 
 
-@with_nose_compatibility
 class TestTree(unittest.TestCase):
 
     @patch('allura.model.repository.Tree.__getitem__')
@@ -103,7 +100,6 @@ class TestTree(unittest.TestCase):
         getitem().__getitem__().__getitem__.assert_called_with('file.txt')
 
 
-@with_nose_compatibility
 class TestBlob(unittest.TestCase):
 
     def test_pypeline_view(self):
@@ -144,7 +140,6 @@ class TestBlob(unittest.TestCase):
         assert blob.has_html_view == True
 
 
-@with_nose_compatibility
 class TestCommit(unittest.TestCase):
 
     def test_activity_extras(self):
@@ -246,7 +241,6 @@ class TestCommit(unittest.TestCase):
         commit.get_tree.assert_called_with(create=True)
 
 
-@with_nose_compatibility
 class TestZipDir(unittest.TestCase):
 
     @patch('allura.model.repository.Popen')
@@ -290,7 +284,6 @@ class TestZipDir(unittest.TestCase):
         self.assertTrue("STDERR: 2" in emsg)
 
 
-@with_nose_compatibility
 class TestPrefixPathsUnion(unittest.TestCase):
 
     def test_disjoint(self):
@@ -309,7 +302,6 @@ class TestPrefixPathsUnion(unittest.TestCase):
         self.assertEqual(prefix_paths_union(a, b), {'a2'})
 
 
-@with_nose_compatibility
 class TestGroupCommits:
 
     def setup_method(self, method):

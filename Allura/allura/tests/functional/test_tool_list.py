@@ -17,10 +17,8 @@
 
 from allura.tests import TestController
 from allura.tests import decorators as td
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestToolListController(TestController):
 
     @td.with_wiki

@@ -19,10 +19,8 @@ from allura.tests import TestController
 from allura.tests import decorators as td
 from allura.model.notification import Mailbox
 from allura import model as M
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestSubscriber(TestController):
 
     @td.with_user_project('test-admin')

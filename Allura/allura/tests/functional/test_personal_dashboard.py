@@ -29,10 +29,8 @@ from allura.tests import TestController
 from allura.tests import decorators as td
 from alluratest.controller import setup_global_objects, setup_unit_test
 from forgetracker.tests.functional.test_root import TrackerTestController
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestPersonalDashboard(TestController):
 
     def test_dashboard(self):
@@ -69,7 +67,6 @@ class TestPersonalDashboard(TestController):
                 assert 'Section f' not in r.text
 
 
-@with_nose_compatibility
 class TestTicketsSection(TrackerTestController):
 
     @td.with_tracker
@@ -85,7 +82,6 @@ class TestTicketsSection(TrackerTestController):
         assert 'foo' in str(ticket_rows)
 
 
-@with_nose_compatibility
 class TestMergeRequestsSection(TestController):
 
     def setup_method(self, method):

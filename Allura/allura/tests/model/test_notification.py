@@ -30,10 +30,8 @@ from allura.model.notification import MailFooter
 from allura.lib import helpers as h
 from allura.tests import decorators as td
 from forgewiki import model as WM
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestNotification(unittest.TestCase):
 
     def setup_method(self, method):
@@ -165,7 +163,6 @@ class TestNotification(unittest.TestCase):
         )
 
 
-@with_nose_compatibility
 class TestPostNotifications(unittest.TestCase):
 
     def setup_method(self, method):
@@ -304,7 +301,6 @@ class TestPostNotifications(unittest.TestCase):
         return M.Notification.post(self.pg, 'metadata')
 
 
-@with_nose_compatibility
 class TestSubscriptionTypes(unittest.TestCase):
 
     def setup_method(self, method):
@@ -478,7 +474,6 @@ class TestSubscriptionTypes(unittest.TestCase):
         assert count == 1
 
 
-@with_nose_compatibility
 class TestSiteNotification(unittest.TestCase):
     def setup_method(self, method):
         self.note = M.SiteNotification(

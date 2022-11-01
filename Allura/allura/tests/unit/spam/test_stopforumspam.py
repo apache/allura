@@ -21,10 +21,8 @@ import mock
 from bson import ObjectId
 
 from allura.lib.spam.stopforumspamfilter import StopForumSpamSpamFilter
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestStopForumSpam:
 
     def setup_method(self, method):

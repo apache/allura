@@ -18,10 +18,8 @@
 from allura import model as M
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestActivityObject_Functional:
     # NOTE not for unit tests, this class sets up all the junk
 

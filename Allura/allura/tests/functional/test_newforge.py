@@ -21,10 +21,8 @@ from six.moves.urllib.parse import quote
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura import model as M
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestNewForgeController(TestController):
 
     @td.with_wiki

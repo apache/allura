@@ -28,7 +28,6 @@ from forgewiki import model as WM
 from allura.lib.security import HIBPClientError, HIBPClient
 from mock import Mock, patch
 from requests.exceptions import Timeout
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
 def _allow(obj, role, perm):
@@ -55,7 +54,6 @@ def test_check_breached_password(r_get):
         HIBPClient.check_breached_password('qwerty')
 
 
-@with_nose_compatibility
 class TestSecurity(TestController):
 
     validate_skip = True

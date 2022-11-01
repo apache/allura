@@ -26,10 +26,8 @@ from allura.tests.unit import patches
 from allura.tests.unit.factories import (create_project,
                                          create_app_config,
                                          create_neighborhood)
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestWhenProjectIsFoundAndAppIsNot(WithDatabase):
 
     def setup_method(self, method):
@@ -44,7 +42,6 @@ class TestWhenProjectIsFoundAndAppIsNot(WithDatabase):
         assert c.app is None, c.app
 
 
-@with_nose_compatibility
 class TestWhenProjectIsFoundInNeighborhood(WithDatabase):
 
     def setup_method(self, method):
@@ -59,7 +56,6 @@ class TestWhenProjectIsFoundInNeighborhood(WithDatabase):
         assert c.app is None
 
 
-@with_nose_compatibility
 class TestWhenAppIsFoundByID(WithDatabase):
     patches = [patches.project_app_loading_patch]
 
@@ -77,7 +73,6 @@ class TestWhenAppIsFoundByID(WithDatabase):
         self.project_app_instance_function.assert_called_with(self.app_config)
 
 
-@with_nose_compatibility
 class TestWhenAppIsFoundByMountPoint(WithDatabase):
     patches = [patches.project_app_loading_patch]
 
@@ -96,7 +91,6 @@ class TestWhenAppIsFoundByMountPoint(WithDatabase):
             'my_mounted_app')
 
 
-@with_nose_compatibility
 class TestWhenProjectIsNotFound(WithDatabase):
 
     def test_that_it_raises_an_exception(self):
@@ -114,7 +108,6 @@ class TestWhenProjectIsNotFound(WithDatabase):
                       neighborhood=None)
 
 
-@with_nose_compatibility
 class TestWhenNeighborhoodIsNotFound(WithDatabase):
 
     def test_that_it_raises_an_exception(self):

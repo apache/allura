@@ -25,10 +25,8 @@ from allura.lib import helpers as h
 from allura.tests import TestController
 from alluratest.controller import setup_trove_categories
 from allura.tests import decorators as td
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestTroveCategory(TestController):
     @mock.patch('allura.model.project.g.post_event')
     def test_events(self, post_event):
@@ -82,7 +80,6 @@ class TestTroveCategory(TestController):
             check_access(username='root', status=200)
 
 
-@with_nose_compatibility
 class TestTroveCategoryController(TestController):
     def create_some_cats(self):
         root_parent = M.TroveCategory(fullname="Root", trove_cat_id=1, trove_parent_id=0)

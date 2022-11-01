@@ -37,7 +37,6 @@ from allura.lib.mail_util import (
     _parse_message_id,
 )
 from allura.lib.exceptions import AddressException
-from alluratest.pytest_helpers import with_nose_compatibility
 from allura.tests import decorators as td
 
 
@@ -46,7 +45,6 @@ config = ConfigProxy(
     return_path='forgemail.return_path')
 
 
-@with_nose_compatibility
 class TestReactor(unittest.TestCase):
 
     def setup_method(self, method):
@@ -211,7 +209,6 @@ Content-Type: text/html; charset="utf-8"
             assert isinstance(part['payload'], str), type(part['payload'])
 
 
-@with_nose_compatibility
 class TestHeader:
 
     def test_bytestring(self):
@@ -233,7 +230,6 @@ class TestHeader:
                      '=?utf-8?b?ItGC0LXRgdC90Y/RgtGB0Y8i?= <dave@b.com>')
 
 
-@with_nose_compatibility
 class TestIsAutoreply:
 
     def setup_method(self, method):
@@ -280,7 +276,6 @@ class TestIsAutoreply:
         assert is_autoreply(self.msg)
 
 
-@with_nose_compatibility
 class TestIdentifySender:
 
     @mock.patch('allura.model.EmailAddress')
@@ -330,7 +325,6 @@ def test_parse_message_id():
     ]
 
 
-@with_nose_compatibility
 class TestMailServer:
 
     def setup_method(self, method):

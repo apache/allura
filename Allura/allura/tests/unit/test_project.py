@@ -23,10 +23,8 @@ from tg import config
 from allura import model as M
 from allura.lib import helpers as h
 from allura.app import SitemapEntry
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestProject(unittest.TestCase):
 
     def test_grouped_navbar_entries(self):

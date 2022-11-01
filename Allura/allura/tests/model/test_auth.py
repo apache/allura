@@ -34,7 +34,6 @@ from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects, setup_functional_test, setup_unit_test
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
 class TestAuth:
@@ -423,7 +422,6 @@ class TestAuth:
         assert details[1].ua == 'TestBrowser/57'
 
 
-@with_nose_compatibility
 class TestAuditLog:
 
     @classmethod

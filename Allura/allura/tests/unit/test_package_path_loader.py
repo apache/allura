@@ -25,10 +25,8 @@ import pytest
 from tg import config
 
 from allura.lib.package_path_loader import PackagePathLoader
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestPackagePathLoader(TestCase):
 
     @mock.patch('pkg_resources.resource_filename')

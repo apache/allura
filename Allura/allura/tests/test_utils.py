@@ -39,11 +39,9 @@ from alluratest.controller import setup_unit_test
 from allura import model as M
 from allura.lib import utils
 from allura.lib import helpers as h
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
 @patch.dict('allura.lib.utils.tg.config', clear=True, foo='bar', baz='true')
-@with_nose_compatibility
 class TestConfigProxy(unittest.TestCase):
 
     def setup_method(self, method):
@@ -64,7 +62,6 @@ class TestConfigProxy(unittest.TestCase):
         self.assertEqual(self.cp.get_bool("fake"), False)
 
 
-@with_nose_compatibility
 class TestChunkedIterator(unittest.TestCase):
 
     def setup_method(self, method):
@@ -96,7 +93,6 @@ class TestChunkedIterator(unittest.TestCase):
         assert chunks[1][0].username == 'sample-user-3'
 
 
-@with_nose_compatibility
 class TestChunkedList(unittest.TestCase):
 
     def test_chunked_list(self):
@@ -107,7 +103,6 @@ class TestChunkedList(unittest.TestCase):
         self.assertEqual([el for sublist in chunks for el in sublist], l)
 
 
-@with_nose_compatibility
 class TestAntispam(unittest.TestCase):
 
     def setup_method(self, method):
@@ -174,7 +169,6 @@ class TestAntispam(unittest.TestCase):
         return encrypted_form
 
 
-@with_nose_compatibility
 class TestTruthyCallable(unittest.TestCase):
 
     def test_everything(self):
@@ -196,7 +190,6 @@ class TestTruthyCallable(unittest.TestCase):
         assert false_predicate == f
 
 
-@with_nose_compatibility
 class TestCaseInsensitiveDict(unittest.TestCase):
 
     def test_everything(self):
@@ -216,7 +209,6 @@ class TestCaseInsensitiveDict(unittest.TestCase):
         assert d == utils.CaseInsensitiveDict(Foo=1, bar=2)
 
 
-@with_nose_compatibility
 class TestLineAnchorCodeHtmlFormatter(unittest.TestCase):
 
     def test_render(self):
@@ -237,7 +229,6 @@ class TestLineAnchorCodeHtmlFormatter(unittest.TestCase):
             assert '<span class="linenos">1</span>' in hl_code
 
 
-@with_nose_compatibility
 class TestIsTextFile(unittest.TestCase):
 
     def test_is_text_file(self):
@@ -248,7 +239,6 @@ class TestIsTextFile(unittest.TestCase):
         assert not utils.is_text_file(open(bin_file, 'rb').read())
 
 
-@with_nose_compatibility
 class TestCodeStats(unittest.TestCase):
 
     def setup_method(self, method):
@@ -273,7 +263,6 @@ class TestCodeStats(unittest.TestCase):
         assert stats['code_size'] == len(blob.text)
 
 
-@with_nose_compatibility
 class TestHTMLSanitizer(unittest.TestCase):
 
     def walker_from_text(self, text):

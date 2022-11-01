@@ -31,10 +31,8 @@ from allura.tests import decorators as td
 from allura.lib import helpers as h
 from allura.lib.decorators import task
 from allura.lib.plugin import LocalAuthenticationProvider
-from alluratest.pytest_helpers import with_nose_compatibility
 
 
-@with_nose_compatibility
 class TestSiteAdmin(TestController):
 
     def test_access(self):
@@ -184,7 +182,6 @@ class TestSiteAdmin(TestController):
         assert json.loads(r.text)['doc'] == 'test_task doc string'
 
 
-@with_nose_compatibility
 class TestSiteAdminNotifications(TestController):
 
     def test_site_notifications_access(self):
@@ -338,7 +335,6 @@ class TestSiteAdminNotifications(TestController):
         assert M.notification.SiteNotification.query.get(_id=bson.ObjectId(note._id)) is None
 
 
-@with_nose_compatibility
 class TestProjectsSearch(TestController):
 
     TEST_HIT = MagicMock(hits=1, docs=[{
@@ -393,7 +389,6 @@ class TestProjectsSearch(TestController):
         assert ths == ['Short name', 'Full name', 'Registered', 'Deleted?', 'url', 'Details']
 
 
-@with_nose_compatibility
 class TestUsersSearch(TestController):
 
     TEST_HIT = MagicMock(hits=1, docs=[{
@@ -449,7 +444,6 @@ class TestUsersSearch(TestController):
                            'Status', 'url', 'Details']
 
 
-@with_nose_compatibility
 class TestUserDetails(TestController):
 
     def test_404(self):
@@ -745,7 +739,6 @@ To update your password on %s, please visit the following URL:
         assert hash in r.text
 
 
-@with_nose_compatibility
 class TestDeleteProjects(TestController):
 
     def confirm_form(self, r):

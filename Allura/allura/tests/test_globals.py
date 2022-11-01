@@ -43,7 +43,6 @@ from allura import model as M
 from allura.lib import helpers as h
 from allura.lib.app_globals import ForgeMarkdown
 from allura.tests import decorators as td
-from alluratest.pytest_helpers import with_nose_compatibility
 
 from forgewiki import model as WM
 from forgeblog import model as BM
@@ -77,7 +76,6 @@ def get_projects_property_in_the_same_order(names, prop):
     return [projects_dict[name] for name in names]
 
 
-@with_nose_compatibility
 class Test():
 
     @classmethod
@@ -787,7 +785,6 @@ class Test():
             assert 'src="/p/test/screenshot/test_file.jpg/thumb"' in r
 
 
-@with_nose_compatibility
 class TestCachedMarkdown(unittest.TestCase):
 
     def setup_method(self, method):
@@ -905,7 +902,6 @@ class TestCachedMarkdown(unittest.TestCase):
         self.assertEqual(required_keys, keys)
 
 
-@with_nose_compatibility
 class TestEmojis(unittest.TestCase):
 
     def test_markdown_emoji_atomic(self):
@@ -941,7 +937,6 @@ class TestEmojis(unittest.TestCase):
         assert 'More emojis \U0001F44D\U0001F42B\U0001F552 wow!' in output
 
 
-@with_nose_compatibility
 class TestUserMentions(unittest.TestCase):
 
     def test_markdown_user_mention_default(self):
@@ -983,7 +978,6 @@ class TestUserMentions(unittest.TestCase):
         assert 'class="user-mention"' in output
 
 
-@with_nose_compatibility
 class TestHandlePaging(unittest.TestCase):
 
     def setup_method(self, method):
@@ -1044,7 +1038,6 @@ class TestHandlePaging(unittest.TestCase):
         self.assertEqual(g.handle_paging(10, 'asdf', 30), (10, 0, 0))
 
 
-@with_nose_compatibility
 class TestIconRender:
 
     def setup_method(self, method):
