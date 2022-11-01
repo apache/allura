@@ -42,7 +42,7 @@ echo "==========================================================================
 echo "Run: cleanup previous runs"
 echo "============================================================================="
 rm -rf ./allura-data
-git clean -f -x  # remove test.log, nosetest.xml etc (don't use -d since it'd remove our venv dir)
+git clean -f -x  # remove test.log, pytest.junit.xml etc (don't use -d since it'd remove our venv dir)
 
 docker-compose down
 
@@ -98,7 +98,7 @@ docker-compose exec -T web bash -c "pyflakes Allura* Forge* scripts | awk -F\: '
 docker-compose exec -T web bash -c "pycodestyle Allura* Forge* scripts > pep8.txt"
 
 # TODO: ALLURA_VALIDATION=all
-docker-compose exec -T -e LANG=en_US.UTF-8 web ./run_tests --with-xunitmp # --with-coverage --cover-erase
+docker-compose exec -T -e LANG=en_US.UTF-8 web ./run_tests --junit-xml=pytest.junit.xml # --with-coverage --cover-erase
 retcode=$?
 
 #find . -name .coverage -maxdepth 2 | while read coveragefile; do pushd `dirname $coveragefile`; coverage xml --include='forge*,allura*'; popd; done;
