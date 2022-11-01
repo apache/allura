@@ -55,6 +55,7 @@ pyflakes
 testfixtures
 WebTest
 pytest
+pytest-xdist
 
 # deployment
 gunicorn

@@ -31,7 +31,6 @@ import six
 CPUS = multiprocessing.cpu_count()
 CONCURRENT_SUITES = (CPUS // 4) or CPUS
 CONCURRENT_TESTS = CPUS // CONCURRENT_SUITES
-PROC_TIMEOUT = 360
 
 ALT_PKG_PATHS = {
     'Allura': 'allura/tests/',
@@ -68,7 +67,7 @@ def run_one(cmd, **popen_kwargs):
     out_remainder, _ = proc.communicate()
     sys.stdout.write(print_ensured(out_remainder))
     sys.stdout.flush()
-    print('finished {}'.format(cmd_to_show))
+    print('finished {}, with returncode: {}'.format(cmd_to_show, proc.returncode))
     sys.stdout.flush()
     return proc
 
@@ -117,17 +116,21 @@ def check_packages(packages):
             yield pkg
 
 
-def run_tests_in_parallel(options, nosetests_args):
+def run_tests_in_parallel(options, runner_args):
+    default_args = [
+        # '-c /dev/null',  # pytest's equivalent of nose's NOSE_IGNORE_CONFIG_FILES='1' is '-c /dev/null/'
+        '--disable-warnings',
+    ]
+
     def get_pkg_path(pkg):
         return ALT_PKG_PATHS.get(pkg, '')
 
     def get_multiproc_args(pkg):
         if options.concurrent_tests == 1:
             return ''
-        return ('--processes={procs_per_suite} --process-timeout={proc_timeout}'.format(
-            procs_per_suite=options.concurrent_tests,
-            proc_timeout=PROC_TIMEOUT)
-            if pkg not in NOT_MULTIPROC_SAFE else '')
+        return '-n {procs_per_suite} --dist loadfile'.format(
+            procs_per_suite=options.concurrent_tests
+        ) if pkg not in NOT_MULTIPROC_SAFE else ''
 
     def get_concurrent_suites():
         if '-n' in sys.argv:
@@ -135,13 +138,12 @@ def run_tests_in_parallel(options, nosetests_args):
         return CPUS
 
     cmds = []
-    env = dict(os.environ,
-               NOSE_IGNORE_CONFIG_FILES='1')
+    env = dict(os.environ)
     for package in check_packages(options.packages):
-        runner = 'nosetests'
+        runner = 'pytest'
         if options.coverage:
-            # This is the recommended way to run coverage + nose  https://coverage.readthedocs.io/en/latest/faq.html
-            runner = 'coverage run $(which nosetests)'
+            # This is the recommended way to run coverage + pytest  https://coverage.readthedocs.io/en/6.5.0/
+            runner = f'coverage run -m {runner}'
             """
             And using config settings in setup.cfg seems to work well with parallel processes
             Otherwise need to run with a complex setup like:
@@ -154,10 +156,10 @@ def run_tests_in_parallel(options, nosetests_args):
             """
 
         multiproc_args = get_multiproc_args(package)
-        cmd = "{runner} {pkg_path} {nosetests_args} {multiproc_args}".format(
+        cmd = "{runner} {pkg_path} {args} {multiproc_args}".format(
             runner=runner,
             pkg_path=get_pkg_path(package),
-            nosetests_args=' '.join(nosetests_args),
+            args=' '.join(default_args + runner_args),
             multiproc_args=multiproc_args,
         )
         if options.coverage:
@@ -184,12 +186,13 @@ def run_tests_in_parallel(options, nosetests_args):
 def parse_args():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog='''All additional arguments are passed along to nosetests (e.g. -v)''')
+        epilog='''All additional arguments are passed along to pytest (e.g. -v)''')
     parser.add_argument('-n', help='Number of test suites to run concurrently in separate '
                                    'processes. Default: # CPUs / 4',
                         dest='concurrent_suites', type=int, default=CONCURRENT_SUITES)
     parser.add_argument('-m', help='Number of tests to run concurrently in separate '
-                                   'processes, per suite. Default: # CPUs / # concurrent suites',
+                                   'processes, per suite. Default: # CPUs / # concurrent suites. '
+                                   '(equivalent to pytest-xdist\'s -n option)',
                         dest='concurrent_tests', type=int, default=CONCURRENT_TESTS)
     parser.add_argument('--coverage', action='store_true',
                         help='Collect code coverage details, and report')

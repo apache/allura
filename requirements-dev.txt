@@ -7,7 +7,7 @@ sphinx-argparse
 sphinx-rtd-theme
 sphinxcontrib-programoutput
 coverage
-nose
-nose-xunitmp
+pytest
+pytest-xdist
 pycodestyle
 pyflakes
