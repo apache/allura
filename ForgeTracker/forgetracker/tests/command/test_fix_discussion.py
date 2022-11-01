@@ -30,7 +30,6 @@ test_config = pkg_resources.resource_filename(
 
 
 def setup_module(self):
-    """Method called by nose before running each test"""
     setup_basic_test()
     setup_global_objects()
 

@@ -1,3 +1,15 @@
+Next Version
+
+Upgrade Instructions
+
+  More to come!
+
+General
+ * [#8445] Switched all tests from nose to pytest
+
+
+
+
 Version 1.14.0  (September 2022)
 
 Upgrade Instructions

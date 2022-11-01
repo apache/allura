@@ -206,16 +206,13 @@ as ``pudb`` are also available.
 
 Testing
 -------
-First, install :code:`nose` (not bundled installed by default, since it is LGPL and deprecated)
-:code:`docker-compose run web pip install nose`
-
 To run all the tests, execute ``./run_tests`` in the repo root. To run tests
 for a single package, for example ``forgetracker``::
 
-  cd ForgeTracker && nosetests
+  cd ForgeTracker && pytest
 
-To learn more about the ``nose`` test runner, consult the `documentation
-<http://nose.readthedocs.org/en/latest/>`_.
+To learn more about the ``pytest`` test runner, consult the `documentation
+<https://docs.pytest.org/en/latest/contents.html>`_.
 
 When writing code for Allura, don't forget that you'll need to also create
 tests that cover behaviour that you've added or changed. You may find this

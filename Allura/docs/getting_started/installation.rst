@@ -174,8 +174,7 @@ Update requirements and reinstall apps:
 You may want to restart at least "taskd" container after that in order for it to
 pick up changes.  Run :code:`docker-compose restart taskd`
 
-Running all tests.  First, install :code:`nose` (not bundled installed by default, since it is LGPL and deprecated)
-:code:`docker-compose run web pip install nose` then:
+Run all tests:
 
 .. code-block:: bash
 
@@ -185,7 +184,7 @@ Running subset of tests:
 
 .. code-block:: bash
 
-    docker-compose run web bash -c 'cd ForgeGit && nosetests forgegit.tests.functional.test_controllers:TestFork'
+    docker-compose run web bash -c 'cd ForgeGit && pytest forgegit/tests/functional/test_controllers.py::TestFork'
 
 Connecting to mongo using a container:
 

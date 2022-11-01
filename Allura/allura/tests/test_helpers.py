@@ -42,7 +42,6 @@ import six
 
 
 def setup_module():
-    """Method called by nose before running each test"""
     setup_basic_test()
 
 

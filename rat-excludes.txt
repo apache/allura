@@ -7,6 +7,7 @@
 **/.pytest_cache/
 **/MANIFEST.in
 **/nosetests.xml
+**/pytest.junit.xml
 **/setup.cfg
 .eslintignore-es5
 .eslintignore-es6

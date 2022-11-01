@@ -44,7 +44,6 @@ class EmptyClass:
 
 
 def setup_module():
-    """Method called by nose before running each test"""
     setup_basic_test()
     setup_global_objects()
     setup_unit_test()

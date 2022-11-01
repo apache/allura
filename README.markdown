@@ -25,7 +25,7 @@
 
 Allura is an open source implementation of a software "forge", a web site that manages source code repositories, bug reports, discussions, mailing lists, wiki pages, blogs and more for any number of individual projects.
 
-Allura is written in Python and leverages a great many existing Python packages (see requirements.txt and friends).  It comes with tests which we run with [nose](https://nose.readthedocs.org/en/latest/).  It is extensible in several ways, most importantly via the notion of "tools" based on `allura.app.Application`; but also with [themes, authentication, and various other pluggable-APIs](https://forge-allura.apache.org/docs/extending.html).
+Allura is written in Python and leverages a great many existing Python packages (see requirements.txt and friends).  It comes with tests which we run with [pytest](https://docs.pytest.org/en/latest/contents.html).  It is extensible in several ways, most importantly via the notion of "tools" based on `allura.app.Application`; but also with [themes, authentication, and various other pluggable-APIs](https://forge-allura.apache.org/docs/extending.html).
 
 Website: <https://allura.apache.org/>
 
