@@ -142,7 +142,7 @@ pytz==2022.6
     #   ming
 qrcode==7.3.1
     # via -r requirements.in
-regex==2022.9.13
+regex==2022.10.31
     # via
     #   regex-as-re-globally
     #   textile
