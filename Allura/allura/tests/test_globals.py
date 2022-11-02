@@ -48,6 +48,21 @@ from forgewiki import model as WM
 from forgeblog import model as BM
 
 
+def setup():
+    setup_basic_test()
+    setup_unit_test()
+    setup_with_tools()
+
+
+def teardown():
+    setup()
+
+
+@td.with_wiki
+def setup_with_tools():
+    setup_global_objects()
+
+
 def squish_spaces(text):
     # \s is whitespace
     # \xa0 is &nbsp; in unicode form
@@ -78,13 +93,8 @@ def get_projects_property_in_the_same_order(names, prop):
 
 class Test():
 
-    @classmethod
-    def setup_class(cls):
-        setup_basic_test()
-        setup_global_objects()
-
     def setup_method(self, method):
-        setup_global_objects()
+        setup()
         p_nbhd = M.Neighborhood.query.get(name='Projects')
         p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
         self.acl_bak = p_test.acl.copy()
@@ -273,7 +283,6 @@ class Test():
         assert '</a><br/><br/><a href=' not in r, r
         assert '</a></li><li><a href=' in r, r
 
-    @td.with_wiki
     def test_macro_include_no_extra_br(self):
         p_nbhd = M.Neighborhood.query.get(name='Projects')
         p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
@@ -304,7 +313,6 @@ class Test():
     <p></p></div>'''
         assert squish_spaces(html) == squish_spaces(expected_html)
 
-    @td.with_wiki
     @td.with_tool('test', 'Wiki', 'wiki2')
     def test_macro_include_permissions(self):
         p_nbhd = M.Neighborhood.query.get(name='Projects')
@@ -386,7 +394,6 @@ class Test():
             </li>
             </ul>''') in r
 
-    @td.with_wiki
     def test_wiki_artifact_links(self):
         text = g.markdown.convert('See [18:13:49]')
         assert 'See <span>[18:13:49]</span>' in text, text
@@ -436,7 +443,6 @@ class Test():
         assert g.markdown.convert(text) == '<pre>%s</pre>' % text
         assert g.markdown_wiki.convert(text) == '<pre>%s</pre>' % text
 
-    @td.with_wiki
     def test_markdown_basics(self):
         with h.push_context('test', 'wiki', neighborhood='Projects'):
             text = g.markdown.convert('# Foo!\n[Home]')
@@ -629,7 +635,6 @@ class Test():
             assert f'<span>[{charSuperLong}]</span>(Home)' in text, text  # current limitation, not a link
             # assert f'href="/p/test/wiki-len/Home/">{charSuperLong}</a>' in text, text  # ideal output
 
-    @td.with_wiki
     def test_macro_include(self):
         r = g.markdown.convert('[[include ref=Home id=foo]]')
         assert '<div id="foo">' in r, r
@@ -721,7 +726,6 @@ class Test():
             proj_title = f'<h2><a href="{p.url()}">{p.name}</a></h2>'
             assert proj_title in r
 
-    @td.with_wiki
     def test_hideawards_macro(self):
         p_nbhd = M.Neighborhood.query.get(name='Projects')
 

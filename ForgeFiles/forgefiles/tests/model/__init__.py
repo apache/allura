@@ -25,7 +25,7 @@ from allura import model as M
 from alluratest.controller import setup_basic_test
 
 
-def setUp():
+def setup_module():
     setup_basic_test()
 
 
