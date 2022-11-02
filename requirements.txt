@@ -34,7 +34,7 @@ datadiff==2.0.0
     # via -r requirements.in
 decorator==5.1.1
     # via -r requirements.in
-docutils==0.18.1
+docutils==0.19
     # via pypeline
 easywidgets==0.4.1
     # via -r requirements.in
