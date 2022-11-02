@@ -16,11 +16,11 @@ bleach[css]==5.0.1
     # via pypeline
 cchardet==2.1.7
     # via -r requirements.in
-certifi==2021.10.8
+certifi==2022.9.24
     # via requests
 cffi==1.15.1
     # via cryptography
-charset-normalizer==2.0.12
+charset-normalizer==2.1.1
     # via requests
 colander==1.8.3
     # via -r requirements.in
@@ -61,7 +61,7 @@ html5lib==1.1
     #   -r requirements.in
     #   pypeline
     #   textile
-idna==3.3
+idna==3.4
     # via requests
 importlib-metadata==4.13.0
     # via
@@ -150,7 +150,7 @@ regex-as-re-globally==0.0.2
     # via -r requirements.in
 repoze-lru==0.7
     # via turbogears2
-requests==2.27.1
+requests==2.28.1
     # via
     #   -r requirements.in
     #   pysolr
@@ -194,7 +194,7 @@ typing-extensions==4.4.0
     # via
     #   gitpython
     #   importlib-metadata
-urllib3==1.26.9
+urllib3==1.26.12
     # via requests
 waitress==2.1.2
     # via webtest
