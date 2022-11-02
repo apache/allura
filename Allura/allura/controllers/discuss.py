@@ -208,7 +208,10 @@ class ThreadController(BaseController, FeedController, metaclass=h.ProxiedAttrMe
         M.session.artifact_orm_session._get().skip_mod_date = True
         M.session.artifact_orm_session._get().skip_last_updated = True
         count = self.thread.query_posts(page=page, limit=int(limit)).count()
-
+        if self.thread.num_replies == 0 or all(p.status != 'ok' for p in self.thread.posts):
+            # return status code 404 but still display the page content
+            request.environ['tg.status_code_redirect'] = True
+            response.status_int = 404
         return dict(discussion=self.thread.discussion,
                     thread=self.thread,
                     page=int(page),

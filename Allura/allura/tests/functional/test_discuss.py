@@ -68,7 +68,7 @@ class TestDiscuss(TestDiscussBase):
 
     def _make_post(self, text):
         thread_link = self._thread_link()
-        thread = self.app.get(thread_link)
+        thread = self.app.get(thread_link, expect_errors=True)
         for f in thread.html.findAll('form'):
             if f.get('action', '').endswith('/post'):
                 break
@@ -80,9 +80,9 @@ class TestDiscuss(TestDiscussBase):
         params[f.find('textarea')['name']] = text
         r = self.app.post(f['action'], params=params,
                           headers={'Referer': str(thread_link)},
+                          status=302,
                           extra_environ=dict(username='root'))
-        r = r.follow()
-        return r
+        return self.app.get(r.response.headers['Location'], expect_errors=True)
 
     @patch('allura.controllers.discuss.g.spam_checker.check')
     @patch('allura.controllers.discuss.g.spam_checker.submit_spam')
@@ -106,7 +106,7 @@ class TestDiscuss(TestDiscussBase):
         r = self.app.post(post_link,
                           params=params,
                           headers={'Referer': str(thread_link)})
-        r = r.follow()
+        r = self.app.get(r.response.headers['Location'], status=404)
         assert 'This is a new post' in r, r
         r = self.app.get(post_link)
         assert str(r).count('This is a new post') == 3
@@ -146,7 +146,7 @@ class TestDiscuss(TestDiscussBase):
 
         # ok initially
         non_admin = 'test-user'
-        self.app.get(thread_url, status=200,
+        self.app.get(thread_url, status=404,
                      extra_environ=dict(username=str(non_admin)))
 
         # set wiki page private
@@ -160,7 +160,7 @@ class TestDiscuss(TestDiscussBase):
             M.DENY_ALL,
         ]
 
-        self.app.get(thread_url, status=200,  # ok
+        self.app.get(thread_url, status=404,
                      extra_environ=dict(username='test-admin'))
         self.app.get(thread_url, status=403,  # forbidden
                      extra_environ=dict(username=str(non_admin)))
@@ -356,7 +356,7 @@ class TestDiscuss(TestDiscussBase):
     def test_post_paging(self):
         thread_link = self._thread_link()
         # just make sure it doesn't 500
-        self.app.get('%s?limit=50&page=0' % thread_link)
+        self.app.get('%s?limit=50&page=0' % thread_link, status=404)
 
     @patch('allura.controllers.discuss.g.director.create_activity')
     def test_edit_post(self, create_activity):
@@ -401,7 +401,7 @@ class TestAttachment(TestDiscussBase):
     def setup_method(self, method):
         super().setup_method(method)
         self.thread_link = self._thread_link()
-        thread = self.app.get(self.thread_link)
+        thread = self.app.get(self.thread_link, status=404)
         for f in thread.html.findAll('form'):
             if f.get('action', '').endswith('/post'):
                 break
@@ -521,10 +521,10 @@ class TestAttachment(TestDiscussBase):
         post.status = 'pending'
         session(post).flush(post)
         # ... make sure attachment is not visible to ordinary user
-        r = self.app.get(self.thread_link, extra_environ=ordinary_user)
+        r = self.app.get(self.thread_link, status=404, extra_environ=ordinary_user)
         assert '<div class="attachment_holder">' not in r, 'Attachment is visible on unmoderated post'
         # ... but visible to moderator
-        r = self.app.get(self.thread_link, extra_environ=moderator)
+        r = self.app.get(self.thread_link, status=404, extra_environ=moderator)
         assert '<div class="attachment_holder">' in r
         # ... and ordinary user can't access it
         self.app.get(alink, status=403, extra_environ=ordinary_user)
