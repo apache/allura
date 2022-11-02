@@ -114,7 +114,7 @@ profanityfilter==2.0.6
     # via -r requirements.in
 pycparser==2.21
     # via cffi
-pyflakes==2.4.0
+pyflakes==2.5.0
     # via -r requirements.in
 pygments==2.13.0
     # via -r requirements.in
