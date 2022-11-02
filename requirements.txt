@@ -28,7 +28,7 @@ crank==0.8.1
     # via turbogears2
 creoleparser==0.7.5
     # via pypeline
-cryptography==37.0.4
+cryptography==38.0.3
     # via -r requirements.in
 datadiff==2.0.0
     # via -r requirements.in
