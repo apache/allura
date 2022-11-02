@@ -67,14 +67,13 @@ importlib-metadata==4.13.0
     # via
     #   -r requirements.in
     #   markdown
-    #   pastedeploy
 inflection==0.5.1
     # via profanityfilter
 iso8601==1.0.2
     # via colander
 jinja2==3.1.2
     # via -r requirements.in
-markdown==3.4.1
+markdown==3.3.7
     # via
     #   -r requirements.in
     #   markdown-checklist
@@ -103,7 +102,7 @@ paste==3.5.1
     #   -r requirements.in
     #   easywidgets
     #   pastescript
-pastedeploy==3.0.1
+pastedeploy==2.1.1
     # via
     #   -r requirements.in
     #   pastescript
