@@ -178,7 +178,7 @@ smmap==5.0.0
     # via gitdb
 soupsieve==2.3.2.post1
     # via beautifulsoup4
-testfixtures==7.0.0
+testfixtures==7.0.2
     # via -r requirements.in
 textile==4.0.2
     # via pypeline
