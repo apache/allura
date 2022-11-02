@@ -69,7 +69,7 @@ importlib-metadata==4.13.0
     #   markdown
 inflection==0.5.1
     # via profanityfilter
-iso8601==1.0.2
+iso8601==1.1.0
     # via colander
 jinja2==3.1.2
     # via -r requirements.in
