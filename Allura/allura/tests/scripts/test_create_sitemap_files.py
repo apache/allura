@@ -45,7 +45,7 @@ class TestCreateSitemapFiles:
             rmtree(tmpdir.path)  # needs to be non-existent for the script
             self.run_script(['-o', tmpdir.path])
 
-            tmpdir.check('sitemap-0.xml', 'sitemap.xml')
+            tmpdir.compare(['sitemap-0.xml', 'sitemap.xml'],recursive=False, files_only=True)
 
             xml_index = ET.parse(os.path.join(tmpdir.path, 'sitemap.xml'))
             ns = {'ns0': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
