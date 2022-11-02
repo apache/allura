@@ -14,14 +14,14 @@ FormEncode
 GitPython
 html5lib
 Jinja2
-Markdown
+Markdown==3.3.7
 markdown-checklist
 MarkupSafe!=2.1.1
 Ming
 oauthlib
 paginate
 Paste
-PasteDeploy
+PasteDeploy<3
 PasteScript
 Pillow
 # profanity filter for feedback
