@@ -546,12 +546,12 @@ class TestForum(TestController):
         params[f.find('textarea')['name']] = 'Post content'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'Test Thread'
-        thread = self.app.post('/discussion/save_new_topic', params=params, expect_errors=True,
+        thread = self.app.post('/discussion/save_new_topic', params=params,
                                extra_environ=dict(username='*anonymous'))
 
         # assert post return 404 but content can still be seen and moderated
         thread_url = thread.response.headers['Location']
-        r = self.app.get(thread.response.headers['Location'], status=404, expect_errors=True,
+        r = self.app.get(thread_url, status=404,
                          extra_environ=dict(username='*anonymous'))
         assert 'Post awaiting moderation' in r
         assert 'name="delete"' not in r
@@ -569,14 +569,14 @@ class TestForum(TestController):
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'anon reply to anon post content'
-        r = self.app.post(str(rep_url), params=params, expect_errors=True, extra_environ=dict(username='*anonymous'))
-        r = self.app.get(thread_url, status=404, expect_errors=True,
+        r = self.app.post(str(rep_url), params=params, extra_environ=dict(username='*anonymous'))
+        r = self.app.get(thread_url, status=404,
                          extra_environ=dict(username='*anonymous'))
         assert 'anon reply to anon post' not in r
         assert_equal(spam_checker.check.call_args[0][0], 'anon reply to anon post content')
 
         # assert moderation controls appear for admin
-        r = self.app.get(thread_url, expect_errors=True, extra_environ=dict(username='test-admin'))
+        r = self.app.get(thread_url, extra_environ=dict(username='test-admin'), status=404)
         assert '<div class="display_post moderate">' in r
         assert '<i class="fa fa-reply"></i>' in r
 
@@ -601,11 +601,19 @@ class TestForum(TestController):
             'approve': 'Approve Marked'})
 
         post = FM.ForumPost.query.get(text='Post content')
+        post2 = FM.ForumPost.query.get(text='anon reply to anon post content')
         assert 'ok' == post.status
+        assert 'pending' == post2.status
 
-        # assert spam posts return a 404
-        r = self.app.get(thread_url, expect_errors=True, status=404)
-        assert '404' in r.status
+        # assert anon can't edit their original post
+        r = self.app.get(thread_url,
+                         extra_environ=dict(username='*anonymous'))
+        assert 'Post content' in r
+        post_container = r.html.find('div', {'id': post.slug})
+
+        btn_edit = post_container.find('a', {'title': 'Edit'})
+        assert not btn_edit
+
 
 
     @td.with_tool('test2', 'Discussion', 'discussion')
