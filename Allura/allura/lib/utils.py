@@ -14,9 +14,10 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+from __future__ import annotations
 
 import base64
-import operator
+from collections.abc import Iterable
 from contextlib import contextmanager
 import time
 import string
@@ -28,6 +29,7 @@ import datetime
 import random
 import mimetypes
 import re
+from typing import Type, TypeVar
 import magic
 from itertools import groupby
 import operator as op
@@ -37,7 +39,6 @@ from six.moves.urllib.parse import urlparse
 import six.moves.urllib.request
 import six.moves.urllib.parse
 import six.moves.urllib.error
-import types
 import socket
 
 import tg
@@ -60,6 +61,10 @@ from ming.utils import LazyProperty
 from ming.odm.odmsession import ODMCursor
 from ming.odm import session
 import six
+
+
+T = TypeVar('T')
+
 
 MARKDOWN_EXTENSIONS = ['.markdown', '.mdown', '.mkdn', '.mkd', '.md']
 
@@ -154,7 +159,8 @@ class CustomWatchedFileHandler(logging.handlers.WatchedFileHandler):
         return super().format(record)
 
 
-def chunked_find(cls, query=None, pagesize=1024, sort_key='_id', sort_dir=1):
+def chunked_find(cls: Type[T], query: dict | None = None, pagesize: int = 1024, sort_key: str | None = '_id',
+                 sort_dir: int = 1) -> Iterable[Iterable[T]]:
     '''
     Execute a mongo query against the specified class, yield some results at
     a time (avoids mongo cursor timeouts if the total result set is very large).
