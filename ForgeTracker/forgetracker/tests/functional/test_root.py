@@ -760,7 +760,7 @@ class TestFunctionalController(TrackerTestController):
         assert sidebar_contains(index_view, '<span>1.0</span>')
         index_view = self.app.get('/bugs/')
         assert sidebar_contains(index_view, '<span>1.0</span>')
-        assert not summary in index_view
+        assert summary not in index_view
 
     def test_render_ticket(self):
         summary = 'test render ticket'
@@ -1579,7 +1579,7 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/bugs/1/', dict(page='1'))
         assert post_content in r
         # no pager if just one page
-        assert not 'Page 1 of 1' in r
+        assert 'Page 1 of 1' not in r
         # add some more posts and check for pager
         for i in range(2):
             r = self.app.post(f['action'], params=params,
@@ -1679,7 +1679,7 @@ class TestFunctionalController(TrackerTestController):
         ticket_rows = response.html.find('table', {'class': 'ticket-list'}).find('tbody')
         assert 'test first ticket' in ticket_rows.text
         assert 'test second ticket' in ticket_rows.text
-        assert not 'test third ticket' in ticket_rows.text
+        assert 'test third ticket' not in ticket_rows.text
         edit_link = response.html.find('a', {'title': 'Bulk Edit'})
         expected_link = "/p/test/bugs/edit/?q=status%3Aopen&limit=25&filter=%7B%7D&page=0"
         assert_equivalent_urls(expected_link, edit_link['href'])
@@ -1687,7 +1687,7 @@ class TestFunctionalController(TrackerTestController):
         ticket_rows = response.html.find('tbody', {'class': 'ticket-list'})
         assert 'test first ticket' in ticket_rows.text
         assert 'test second ticket' in ticket_rows.text
-        assert not 'test third ticket' in ticket_rows.text
+        assert 'test third ticket' not in ticket_rows.text
 
     def test_bulk_edit_after_filtering(self):
         self.new_ticket(summary='test first ticket', status='open')
