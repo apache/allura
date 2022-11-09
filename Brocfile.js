@@ -42,7 +42,7 @@ tree = sourceMapConcat(tree, {
 var react_file = 'public/nf/js/react.' + (production ? 'production.min' : 'development') + '.js';
 var react_dom_file = 'public/nf/js/react-dom.' + (production ? 'production.min' : 'development') + '.js';
 var navbar = funnel('Allura/allura', {
-    include: ['public/nf/js/underscore-min.js',
+    include: ['public/nf/js/underscore-1.13.6.min.js',
               react_file,
               react_dom_file,
               'public/nf/js/create-react-class.min.js',
