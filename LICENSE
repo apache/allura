@@ -260,7 +260,7 @@ For details, see:
     Allura/allura/public/nf/js/react-reorderable.min.js
 
 Underscore, which is available under the MIT license.
-For details, see Allura/allura/public/nf/js/underscore-min.js
+For details, see Allura/allura/public/nf/js/underscore-1.13.6.min.js
 
 Babel's Polyfill, which is available under the MIT license.
 See https://babeljs.io/docs/usage/polyfill/

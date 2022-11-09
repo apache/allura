@@ -61,7 +61,7 @@ Allura/allura/public/nf/js/react-reorderable.min.js
 Allura/allura/public/nf/js/sylvester.js
 Allura/allura/public/nf/js/Sortable.min.js
 Allura/allura/public/nf/js/twemoji.min.js
-Allura/allura/public/nf/js/underscore-min.js
+Allura/allura/public/nf/js/underscore-1.13.6.min.js
 Allura/allura/tests/data/test_mime/text_file.txt
 Allura/docs/make.bat
 Allura/docs/Makefile
