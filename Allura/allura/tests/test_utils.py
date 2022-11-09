@@ -314,7 +314,7 @@ def test_ip_address():
     req.remote_addr = '1.2.3.4'
     req.headers = {}
     assert (utils.ip_address(req) ==
-                 '1.2.3.4')
+            '1.2.3.4')
 
 
 def test_ip_address_header():
@@ -323,7 +323,7 @@ def test_ip_address_header():
     req.headers = {'X_FORWARDED_FOR': '5.6.7.8'}
     with h.push_config(config, **{'ip_address_header': 'X_FORWARDED_FOR'}):
         assert (utils.ip_address(req) ==
-                     '5.6.7.8')
+                '5.6.7.8')
 
 
 def test_ip_address_header_not_set():
@@ -332,7 +332,7 @@ def test_ip_address_header_not_set():
     req.headers = {}
     with h.push_config(config, **{'ip_address_header': 'X_FORWARDED_FOR'}):
         assert (utils.ip_address(req) ==
-                     '1.2.3.4')
+                '1.2.3.4')
 
 
 def test_empty_cursor():
@@ -384,6 +384,7 @@ class FakeAttachment:
     def __init__(self, filename):
         self._id = ObjectId()
         self.filename = filename
+
     def __repr__(self):
         return f'{self._id} {self.filename}'
 
@@ -428,7 +429,7 @@ def test_close_ipv4_addrs():
 def test_urlencode():
     # dict - a simple one so arbitrary ordering doesn't cause problems on py2
     assert (utils.urlencode({'a': 'hello'}) ==
-                 'a=hello')
+            'a=hello')
     # list of pairs - including unicode and bytes
     assert (utils.urlencode([('a', 1), ('b', 'ƒ'), ('c', 'ƒ'.encode())]) ==
-                 'a=1&b=%C6%92&c=%C6%92')
+            'a=1&b=%C6%92&c=%C6%92')

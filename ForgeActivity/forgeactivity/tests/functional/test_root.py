@@ -53,7 +53,7 @@ class TestActivityController(TestController):
     @td.with_user_project('test-user-1')
     def test_anon_read(self):
         r = self.app.get('/u/test-user-1',
-                extra_environ={'username': '*anonymous'}).follow()
+                         extra_environ={'username': '*anonymous'}).follow()
         assert r.html.select('div.profile-section.tools a[href="/u/test-user-1/activity/"]'),\
             'No Activity tool in top nav'
 
@@ -215,15 +215,15 @@ class TestActivityController(TestController):
         assert 1 == len(timeline.findall('item'))
         activity = timeline.find('item')
         assert (activity.find('pubDate').text ==
-                     'Wed, 04 Dec 2013 21:48:19 -0000')
+                'Wed, 04 Dec 2013 21:48:19 -0000')
         assert (activity.find('title').text ==
-                     'Administrator 1 posted a comment on ticket #34')
+                'Administrator 1 posted a comment on ticket #34')
         assert (activity.find('description').text ==
-                     'Just wanted to leave a comment on this...')
+                'Just wanted to leave a comment on this...')
         assert (activity.find('guid').text ==
-                     'http://localhost/p/test/unicode•º/?limit=25#ed7c')
+                'http://localhost/p/test/unicode•º/?limit=25#ed7c')
         assert (activity.find('link').text ==
-                     'http://localhost/p/test/unicode%E2%80%A2%C2%BA/?limit=25#ed7c')
+                'http://localhost/p/test/unicode%E2%80%A2%C2%BA/?limit=25#ed7c')
 
     @td.with_tool('test', 'activity')
     @patch('forgeactivity.main.g.director')
@@ -289,13 +289,13 @@ class TestActivityController(TestController):
         assert 1 == len(timeline.findall('item'))
         activity = timeline.find('item')
         assert (activity.find('pubDate').text ==
-                     'Wed, 04 Dec 2013 21:48:19 -0000')
+                'Wed, 04 Dec 2013 21:48:19 -0000')
         assert (activity.find('title').text ==
-                     'Administrator 1 posted a comment on ticket #34')
+                'Administrator 1 posted a comment on ticket #34')
         assert (activity.find('description').text ==
-                     'Just wanted to leave a comment on this...')
+                'Just wanted to leave a comment on this...')
         assert (activity.find('link').text ==
-                     'http://localhost/p/test/tickets/34/?limit=25#ed7c')
+                'http://localhost/p/test/tickets/34/?limit=25#ed7c')
 
     @td.with_tool('test', 'activity')
     @patch('forgeactivity.main.g.director')

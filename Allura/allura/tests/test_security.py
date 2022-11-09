@@ -100,24 +100,24 @@ class TestSecurity(TestController):
         assert all_allowed(wiki, dev_role) == {
             'read', 'create', 'edit', 'unmoderated_post', 'post', 'moderate', 'delete'}
         assert (all_allowed(wiki, member_role) ==
-                     {'read', 'create', 'edit', 'unmoderated_post', 'post'})
+                {'read', 'create', 'edit', 'unmoderated_post', 'post'})
         assert (all_allowed(wiki, auth_role) ==
-                     {'read', 'post', 'unmoderated_post'})
+                {'read', 'post', 'unmoderated_post'})
         assert all_allowed(wiki, anon_role) == {'read'}
         assert (all_allowed(wiki, test_user) ==
-                     {'read', 'post', 'unmoderated_post'})
+                {'read', 'post', 'unmoderated_post'})
 
         _add_to_group(test_user, member_role)
 
         assert (all_allowed(wiki, test_user) ==
-                     {'read', 'create', 'edit', 'unmoderated_post', 'post'})
+                {'read', 'create', 'edit', 'unmoderated_post', 'post'})
 
         _deny(wiki, auth_role, 'unmoderated_post')
 
         assert (all_allowed(wiki, member_role) ==
-                     {'read', 'create', 'edit', 'post'})
+                {'read', 'create', 'edit', 'post'})
         assert (all_allowed(wiki, test_user) ==
-                     {'read', 'create', 'edit', 'post'})
+                {'read', 'create', 'edit', 'post'})
 
     @td.with_wiki
     def test_deny_vs_allow(self):
@@ -140,7 +140,7 @@ class TestSecurity(TestController):
         assert has_access(page, 'post', test_user)()
         assert has_access(page, 'unmoderated_post', test_user)()
         assert (all_allowed(page, test_user) ==
-                     {'read', 'post', 'unmoderated_post'})
+                {'read', 'post', 'unmoderated_post'})
 
         _deny(page, auth_role, 'read')
 
@@ -156,7 +156,7 @@ class TestSecurity(TestController):
         assert has_access(wiki, 'post', test_user)()
         assert has_access(wiki, 'unmoderated_post', test_user)()
         assert (all_allowed(wiki, test_user) ==
-                     {'read', 'post', 'unmoderated_post'})
+                {'read', 'post', 'unmoderated_post'})
 
         _deny(wiki, anon_role, 'read')
         _allow(wiki, auth_role, 'read')

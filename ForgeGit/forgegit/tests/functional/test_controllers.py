@@ -231,7 +231,7 @@ class TestRootController(_TestCase):
             assert title == 'test Git changes'
             description = channel.find('description').text
             assert (description ==
-                         'Recent changes to Git repository in test project')
+                    'Recent changes to Git repository in test project')
             link = channel.find('link').text
             assert link == 'http://localhost/p/test/src-git/'
             earliest_commit = channel.findall('item')[-1]
@@ -288,25 +288,25 @@ class TestRootController(_TestCase):
         resp = self.app.get(url)
         assert 'Привіт!\nWhich means Hello!' in resp.text
         assert (six.ensure_text(resp.headers.get('Content-Disposition')) ==
-                     'attachment;filename="%D0%BF%D1%80%D0%B8%D0%B2%D1%96%D1%82.txt"')
+                'attachment;filename="%D0%BF%D1%80%D0%B8%D0%B2%D1%96%D1%82.txt"')
 
         url = ci + 'tree/' + h.urlquote('with space.txt') + '?format=raw'
         resp = self.app.get(url)
         assert 'with space' in resp.text
         assert (six.ensure_text(resp.headers.get('Content-Disposition')) ==
-                     'attachment;filename="with%20space.txt"')
+                'attachment;filename="with%20space.txt"')
 
         url = ci + 'tree/' + h.urlquote('with%2Furlquote-literal.txt') + '?format=raw'
         resp = self.app.get(url)
         assert '%2F means /' in resp.body.decode('utf-8')
         assert (resp.headers.get('Content-Disposition') ==
-                     'attachment;filename="with%252Furlquote-literal.txt"')
+                'attachment;filename="with%252Furlquote-literal.txt"')
 
         url = ci + 'tree/' + h.urlquote('with"&:specials.txt') + '?format=raw'
         resp = self.app.get(url)
         assert '"&: encodes as %22%26%3A' in resp.body.decode('utf-8')
         assert (resp.headers.get('Content-Disposition') ==
-                     'attachment;filename="with%22%26%3Aspecials.txt"')
+                'attachment;filename="with%22%26%3Aspecials.txt"')
 
     def test_file_too_large(self):
         ci = self._get_ci()
@@ -340,7 +340,7 @@ class TestRootController(_TestCase):
                     <span class="gu">@@ -1 +1,2 @@</span><span class="w"></span>
                     <span class="w"> </span>Привіт!<span class="w"></span>
                     <span class="gi">+Which means Hello!</span><span class="w"></span>''') in
-                  diffhtml)
+                diffhtml)
 
         resp = self.app.get(h.urlquote(ci + 'tree/привіт.txt') + '?diff=407950e8fba4dbc108ffbce0128ed1085c52cfd7&diformat=sidebyside')
         diffhtml = str(resp.html.select_one('.diffbrowser'))
@@ -366,7 +366,7 @@ class TestRootController(_TestCase):
                     <td class="lineno">2</td>
                     <td class="diff-add"><pre>Which means Hello!
                     </pre></td>''') in
-                  diffhtml)
+                diffhtml)
 
     def test_diff_view_mode(self):
         ci = self._get_ci()
@@ -533,7 +533,7 @@ class TestRootController(_TestCase):
         r.form['merge_disabled'].checked = True
         r = r.form.submit()
         assert (json.loads(self.webflash(r))['message'] ==
-                     "External checkout URL successfully changed. One-click merge disabled.")
+                "External checkout URL successfully changed. One-click merge disabled.")
         # for some reason c.app.config.options has old values still
         app_config = M.AppConfig.query.get(_id=c.app.config._id)
         assert app_config.options['external_checkout_url'] == 'http://foo.bar/baz'
@@ -752,7 +752,7 @@ class TestFork(_TestCase):
             assert rev_links[0].get('href') == '/p/test2/code/ci/%s/' % c_id
             assert rev_links[0].getText() == '[%s]' % c_id[:6]
             assert (browse_links[0].get('href') ==
-                         '/p/test2/code/ci/%s/tree' % c_id)
+                    '/p/test2/code/ci/%s/tree' % c_id)
             assert browse_links[0].getText().strip() == 'Tree'
 
         r = self.app.get('/p/test/src-git/merge-requests/1/commits_html', status=200)
@@ -807,7 +807,7 @@ class TestFork(_TestCase):
         assert 'Merge Request #%s:  (rejected)' % mr_num in r, r
 
     def test_merge_request_default_branches(self):
-        _select_val = lambda r, n: r.html.find('select', {'name': n}).find(selected=True).string
+        def _select_val(r, n): return r.html.find('select', {'name': n}).find(selected=True).string
         r = self.app.get('/p/test2/code/request_merge')
         assert _select_val(r, 'source_branch') == 'master'
         assert _select_val(r, 'target_branch') == 'master'
@@ -1041,8 +1041,8 @@ class TestGitRename(TestController):
         # the diff portion of the output
         resp_no_ws = re.sub(r'\s+', '', str(resp))
         assert ('<a href="/p/test/src-git/ci/fbb0644603bb6ecee3ebb62efe8c86efc9b84ee6/tree/f.txt" rel="nofollow">f.txt</a>'
-                  'to<a href="/p/test/src-git/ci/b120505a61225e6c14bee3e5b5862db81628c35c/tree/f2.txt" rel="nofollow">f2.txt</a>'
-                  .replace(' ', '') in resp_no_ws)
+                'to<a href="/p/test/src-git/ci/b120505a61225e6c14bee3e5b5862db81628c35c/tree/f2.txt" rel="nofollow">f2.txt</a>'
+                .replace(' ', '') in resp_no_ws)
         assert '<span class="empty-diff">File was renamed.</span>' in resp
 
     def test_directory_changed_type(self):
@@ -1051,10 +1051,10 @@ class TestGitRename(TestController):
 
         resp_no_ws = re.sub(r'\s+', '', str(resp))
         assert ('<a href="/p/test/src-git/ci/7b1c9ef214eb0ef8c06bada0966dd941f442beec/tree/b_dir" rel="nofollow">b_dir</a>'
-                  '</h6>'
-                  '<div id="diff-3" class="inline-diff-body">'
-                  '<span class="empty-diff">Symlink.</span>'
-                  .replace(' ', '') in resp_no_ws)
+                '</h6>'
+                '<div id="diff-3" class="inline-diff-body">'
+                '<span class="empty-diff">Symlink.</span>'
+                .replace(' ', '') in resp_no_ws)
 
     def test_symlink_in_tree(self):
         # change a_dir to a file; b_dir to a symlink
@@ -1152,9 +1152,9 @@ class TestIncludeMacro(_TestCase):
     def test_include_file_cant_find_file(self):
         expected = "[[include can't find file %s in revision %s]]"
         assert (macro.include_file('src-git', 'a.txt') ==
-                     expected % ('a.txt', '1e146e67985dcd71c74de79613719bef7bddca4a'))
+                expected % ('a.txt', '1e146e67985dcd71c74de79613719bef7bddca4a'))
         assert (macro.include_file('src-git', 'a.txt', '6a45885ae7347f1cac5103b0050cc1be6a1496c8') ==
-                     expected % ('a.txt', '6a45885ae7347f1cac5103b0050cc1be6a1496c8'))
+                expected % ('a.txt', '6a45885ae7347f1cac5103b0050cc1be6a1496c8'))
 
     @patch('allura.model.repo.Blob.has_pypeline_view', new_callable=PropertyMock)
     @patch('allura.model.repo.Blob.has_html_view', new_callable=PropertyMock)

@@ -49,8 +49,8 @@ class TestGitHubWikiImporter(TestCase):
     @patch('forgeimporters.github.wiki.GitHubProjectExtractor')
     def test_import_tool_happy_path(self, ghpe, g, tlorms, M):
         with patch('forgeimporters.github.wiki.GitHubWikiImporter.import_pages'),\
-             patch('forgeimporters.github.wiki.GitHubWikiImporter.has_wiki_repo', return_value=True),\
-             patch('forgeimporters.github.wiki.c'):
+                patch('forgeimporters.github.wiki.GitHubWikiImporter.has_wiki_repo', return_value=True),\
+                patch('forgeimporters.github.wiki.c'):
             ghpe.return_value.has_wiki.return_value = True
             p = self._make_project(gh_proj_name='myproject')
             u = Mock(name='c.user')
@@ -179,7 +179,7 @@ class TestGitHubWikiImporter(TestCase):
         importer._with_history(self.commit2)
         assert upsert.call_args_list == [call('Home')]
         assert (render.call_args_list ==
-                     [call('Home.rst', '# test message')])
+                [call('Home.rst', '# test message')])
 
     @skipIf(module_not_available('html2text'), 'html2text required')
     @patch('forgeimporters.github.wiki.WM.Page.upsert')
@@ -237,9 +237,9 @@ class TestGitHubWikiImporter(TestCase):
         assert f('[[Page-With-Spaces]]') == '[Page With Spaces]'
         assert f('[[Page / 1]]') == '[Page   1]'
         assert (f('[[Title|Page With Spaces]]') ==
-                     '[Title](Page With Spaces)')
+                '[Title](Page With Spaces)')
         assert (f('[[Title|Page-With-Spaces]]') ==
-                     '[Title](Page With Spaces)')
+                '[Title](Page With Spaces)')
         assert f('[[go here|Page / 1]]') == '[go here](Page   1)'
 
     def test_convert_gollum_page_links_escaped(self):
@@ -250,9 +250,9 @@ class TestGitHubWikiImporter(TestCase):
         assert f("'[[Page-With-Spaces]]") == '[[Page-With-Spaces]]'
         assert f("'[[Page / 1]]") == '[[Page / 1]]'
         assert (f("'[[Title|Page With Spaces]]") ==
-                     '[[Title|Page With Spaces]]')
+                '[[Title|Page With Spaces]]')
         assert (f("'[[Title|Page-With-Spaces]]") ==
-                     '[[Title|Page-With-Spaces]]')
+                '[[Title|Page-With-Spaces]]')
         assert f("'[[go here|Page / 1]]") == '[[go here|Page / 1]]'
 
     def test_convert_gollum_external_links(self):
@@ -260,14 +260,14 @@ class TestGitHubWikiImporter(TestCase):
         assert f('[[http://domain.net]]') == '<http://domain.net>'
         assert f('[[https://domain.net]]') == '<https://domain.net>'
         assert (f('[[Site|http://domain.net]]') ==
-                     '[Site](http://domain.net)')
+                '[Site](http://domain.net)')
 
     def test_convert_gollum_external_links_escaped(self):
         f = GitHubWikiImporter().convert_gollum_tags
         assert f("'[[http://domain.net]]") == '[[http://domain.net]]'
         assert f("'[[https://domain.net]]") == '[[https://domain.net]]'
         assert (f("'[[Site|http://domain.net]]") ==
-                     '[[Site|http://domain.net]]')
+                '[[Site|http://domain.net]]')
 
     def test_convert_gollum_toc(self):
         f = GitHubWikiImporter().convert_gollum_tags
@@ -516,7 +516,7 @@ some text and **[Tips n\u2019 Tricks]**
         f = importer.convert_markup
         source = '*[[this checklist|Troubleshooting]]*'
         assert (f(source, 't.textile').strip() ==
-                     '**[this checklist](Troubleshooting)**')
+                '**[this checklist](Troubleshooting)**')
 
     @without_module('html2text')
     def test_convert_textile_special_tag_without_html2text(self):

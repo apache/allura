@@ -237,7 +237,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
     def test_log(self):
         entries = list(self.repo.log(id_only=False, limit=25))
         assert (entries[len(entries)-6:] ==  # only 6, so this test doesn't have to change when commits added
-                     [
+                [
             {'parents': [5],
              'refs': [],
              'committed': {
@@ -250,7 +250,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                  'date': datetime(2013, 11, 8, 13, 38, 11, 152821),
                  'name': 'coldmind',
                  'email': ''
-             }, 'size': None},
+            }, 'size': None},
             {'parents': [4],
              'refs': [],
              'committed': {
@@ -405,8 +405,8 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
     def test_diff_copy(self):
         entry = self.repo.commit(next(self.repo.log(5, id_only=True, limit=1)))
         assert dict(entry.diffs) == dict(
-                copied=[{'new': '/b', 'old': '/a', 'ratio': 1}],  renamed=[],
-                changed=[], removed=[], added=[], total=1)
+            copied=[{'new': '/b', 'old': '/a', 'ratio': 1}],  renamed=[],
+            changed=[], removed=[], added=[], total=1)
 
     def test_commit(self):
         entry = self.repo.commit(1)
@@ -430,16 +430,16 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
     def test_tarball(self):
         tmpdir = tg.config['scm.repos.tarball.root']
         assert (self.repo.tarball_path ==
-                     os.path.join(tmpdir, 'svn/t/te/test/testsvn'))
+                os.path.join(tmpdir, 'svn/t/te/test/testsvn'))
         assert (self.repo.tarball_url('1') ==
-                     'file:///svn/t/te/test/testsvn/test-src-r1.zip')
+                'file:///svn/t/te/test/testsvn/test-src-r1.zip')
         self.repo.tarball('1')
         assert os.path.isfile(
             os.path.join(tmpdir, "svn/t/te/test/testsvn/test-src-r1.zip"))
         tarball_zip = ZipFile(
             os.path.join(tmpdir, 'svn/t/te/test/testsvn/test-src-r1.zip'), 'r')
         assert (tarball_zip.namelist() ==
-                     ['test-src-r1/', 'test-src-r1/README'])
+                ['test-src-r1/', 'test-src-r1/README'])
         shutil.rmtree(self.repo.tarball_path.encode('utf-8'),
                       ignore_errors=True)
 
@@ -768,12 +768,12 @@ class TestRepo(_TestWithRepo):
 
     def test_scm_host_url(self):
         assert (self.repo.clone_url('rw', 'nobody') ==
-                     'svn+ssh://nobody@localhost:8022/scm-repo/p/test/test1/')
+                'svn+ssh://nobody@localhost:8022/scm-repo/p/test/test1/')
         assert (self.repo.clone_url('https', 'nobody') ==
-                     'https://nobody@localhost:8022/scm-repo/p/test/test1/')
+                'https://nobody@localhost:8022/scm-repo/p/test/test1/')
         with h.push_config(self.repo.app.config.options, external_checkout_url='https://$username@foo.com/'):
             assert (self.repo.clone_url('https', 'user') ==
-                         'https://user@foo.com/')
+                    'https://user@foo.com/')
 
     def test_guess_type(self):
         assert self.repo.guess_type('foo.txt') == ('text/plain', None)
@@ -810,7 +810,7 @@ class TestRepo(_TestWithRepo):
                     email=committer_email),
                 _id=oid)).m.insert()
         self.repo._impl.refresh_commit_info = refresh_commit_info
-        _id = lambda oid: getattr(oid, '_id', str(oid))
+        def _id(oid): return getattr(oid, '_id', str(oid))
         self.repo.shorthand_for_commit = lambda oid: '[' + _id(oid) + ']'
         self.repo.url_for_commit = lambda oid: '/ci/' + _id(oid) + '/'
         self.repo.refresh()
@@ -943,7 +943,7 @@ class TestCommit(_TestWithRepo):
             'total': 5,
         }
         assert (self.ci.diffs.added ==
-                     ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'])
+                ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'])
         assert (self.ci.diffs.copied
                 == self.ci.diffs.changed
                 == self.ci.diffs.removed
@@ -1050,7 +1050,7 @@ class TestRename(unittest.TestCase):
         result = self.repo._impl._check_changed_path(
             changed_path, '/test/path2/file.txt')
         assert {'path': '/test/path2/file.txt',
-                     'copyfrom_path': '/test/path/file.txt'} == result
+                'copyfrom_path': '/test/path/file.txt'} == result
 
 
 class TestDirectRepoAccess:

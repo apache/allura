@@ -54,27 +54,27 @@ class TestProjectHome(TestController):
         for m in r.json['menu']:
             if m['mount_point'] == 'sub1':
                 assert (m['admin_options'] ==
-                             [{'className': None,
-                               'text': 'Subproject Admin',
-                               'href': '/p/test/sub1/admin',
-                               }])
+                        [{'className': None,
+                          'text': 'Subproject Admin',
+                          'href': '/p/test/sub1/admin',
+                          }])
                 break
         else:
             raise AssertionError('Did not find sub1 subproject in menu results: {}'.format(r.json['menu']))
         for m in r.json['menu']:
             if m['mount_point'] == 'wiki':
                 assert {'className': 'admin_modal',
-                           'text': 'Set Home',
-                           'href': '/p/test/admin/wiki/home',
-                           } in m['admin_options']
+                        'text': 'Set Home',
+                        'href': '/p/test/admin/wiki/home',
+                        } in m['admin_options']
                 assert {'className': None,
-                           'text': 'Permissions',
-                           'href': '/p/test/admin/wiki/permissions',
-                           } in m['admin_options']
+                        'text': 'Permissions',
+                        'href': '/p/test/admin/wiki/permissions',
+                        } in m['admin_options']
                 assert {'className': 'admin_modal',
-                           'text': 'Delete Everything',
-                           'href': '/p/test/admin/wiki/delete',
-                           } in m['admin_options']
+                        'text': 'Delete Everything',
+                        'href': '/p/test/admin/wiki/delete',
+                        } in m['admin_options']
                 break
         else:
             raise AssertionError('Did not find wiki in menu results: {}'.format(r.json['menu']))
@@ -92,12 +92,12 @@ class TestProjectHome(TestController):
         wiki_group = menu[-2]
         wikis = wiki_group.pop('children')
         assert {'url': '/p/test/_list/wiki', 'name': 'Wiki \u25be', 'mount_point': None,
-                      'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False} == wiki_group
+                'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False} == wiki_group
         assert len(wikis) == 2
         assert {'url': '/p/test/wiki/', 'name': 'Wiki', 'mount_point': 'wiki',
-                   'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False} in wikis
+                'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False} in wikis
         assert {'url': '/p/test/wiki2/', 'name': 'wiki2', 'mount_point': 'wiki2',
-                   'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False} in wikis
+                'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False} in wikis
 
     def test_sitemap_limit_per_tool(self):
         """Test that sitemap is limited to max of 10 items per tool type."""
@@ -127,7 +127,7 @@ class TestProjectHome(TestController):
         wiki_menu = [m for m in menu if m['tool_name'] == 'wiki'][0]
         assert len(wiki_menu['children']) == 10
         assert {'url': '/p/test/_list/wiki', 'name': 'More...', 'mount_point': None,
-                   'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False} in wiki_menu['children']
+                'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False} in wiki_menu['children']
 
     @td.with_wiki
     def test_neighborhood_home(self):

@@ -280,7 +280,7 @@ class TestThemeProvider:
         app_icon = ThemeProvider().app_icon_url('testapp', 24)
         other = app_g.theme_href.return_value
         assert app_icon == other
-            
+
         app_g.theme_href.assert_called_with('images/testapp_24.png')
 
     @patch('allura.lib.plugin.g')
@@ -690,7 +690,7 @@ class TestLocalAuthenticationProvider:
         user = M.User(username='asfdasdf')
 
         assert (self.provider.login_details_from_auditlog(M.AuditLog(message='')) ==
-                     None)
+                None)
 
         detail = self.provider.login_details_from_auditlog(M.AuditLog(message='IP Address: 1.2.3.4\nFoo', user=user))
         assert detail.user_id == user._id
@@ -702,16 +702,16 @@ class TestLocalAuthenticationProvider:
         assert detail.ua is None
 
         assert (self.provider.login_details_from_auditlog(M.AuditLog(
-                        message='blah blah IP Address: 1.2.3.4\nFoo', user=user)) ==
-                     None)
+            message='blah blah IP Address: 1.2.3.4\nFoo', user=user)) ==
+            None)
 
         detail = self.provider.login_details_from_auditlog(M.AuditLog(
-                        message='User-Agent: Mozilla/Firefox\nFoo', user=user))
+            message='User-Agent: Mozilla/Firefox\nFoo', user=user))
         assert detail.ip is None
         assert detail.ua == 'Mozilla/Firefox'
 
         detail = self.provider.login_details_from_auditlog(M.AuditLog(
-                        message='IP Address: 1.2.3.4\nUser-Agent: Mozilla/Firefox\nFoo', user=user))
+            message='IP Address: 1.2.3.4\nUser-Agent: Mozilla/Firefox\nFoo', user=user))
         assert detail.ip == '1.2.3.4'
         assert detail.ua == 'Mozilla/Firefox'
 

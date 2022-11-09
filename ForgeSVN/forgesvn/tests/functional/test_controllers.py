@@ -115,7 +115,7 @@ class TestRootController(SVNTestController):
             assert title == 'test SVN changes'
             description = channel.find('description').text
             assert (description ==
-                         'Recent changes to SVN repository in test project')
+                    'Recent changes to SVN repository in test project')
             link = channel.find('link').text
             assert link == 'http://localhost/p/test/src/'
             earliest_commit = channel.findall('item')[-1]
@@ -144,7 +144,7 @@ class TestRootController(SVNTestController):
         file_url = resp.html.find("a", string="/ЗРЯЧИЙ_ТА_ПОБАЧИТЬ")['href']
         resp = self.app.get(file_url)
         assert ('This is readme' in  # same content as the README file actually
-                  resp.html.select_one('.codebrowser').text)
+                resp.html.select_one('.codebrowser').text)
 
         resp = self.app.get('/src/7/')
         print('file links on /src/7/ are:\n\t{}'.format(
@@ -152,22 +152,22 @@ class TestRootController(SVNTestController):
         file_url = resp.html.find("a", string="/with%2Furlquote-literal.txt")['href']
         file_resp = self.app.get(file_url)
         assert ('%2F means /' in
-                  file_resp.html.select_one('.codebrowser').text)
+                file_resp.html.select_one('.codebrowser').text)
 
         file_url = resp.html.find("a", string='/with-percent%.txt')['href']
         file_resp = self.app.get(file_url)
         assert ('%%%' in
-                  file_resp.html.select_one('.codebrowser').text)
+                file_resp.html.select_one('.codebrowser').text)
 
         file_url = resp.html.find("a", string="/with space.txt")['href']
         file_resp = self.app.get(file_url)
         assert ('spaces' in
-                  file_resp.html.select_one('.codebrowser').text)
+                file_resp.html.select_one('.codebrowser').text)
 
         file_url = resp.html.find("a", string='/with"&:specials.txt')['href']
         file_resp = self.app.get(file_url)
         assert ('"&: encodes as %22%26%3A' in
-                  file_resp.html.select_one('.codebrowser').text)
+                file_resp.html.select_one('.codebrowser').text)
 
     def test_tree(self):
         resp = self.app.get('/src/1/tree/')
@@ -324,7 +324,7 @@ class TestImportController(SVNTestController):
         r = self.app.post('/p/test/admin/empty/importer/do_import',
                           {'checkout_url': 'http://10.0.0.0/trac/url'})
         assert 'Invalid URL' in r
-        
+
         r = self.app.post('/p/test/admin/empty/importer/do_import',
                           {'checkout_url': 'http://fake.svn/'})
         assert 'That is not a valid URL' not in r

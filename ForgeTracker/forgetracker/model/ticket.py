@@ -301,16 +301,16 @@ class Globals(MappedClass):
             fromaddr=str(c.user.email_address_header()),
             reply_to=str(c.user.email_address_header()),
             subject='[{}:{}] Mass ticket moving by {}'.format(c.project.shortname,
-                                                          self.app_config.options.mount_point,
-                                                          c.user.display_name))
+                                                              self.app_config.options.mount_point,
+                                                              c.user.display_name))
         tmpl = g.jinja2_env.get_template(
             'forgetracker:data/mass_move_report.html')
 
         tmpl_context = {
             'original_tracker': '{}:{}'.format(c.project.shortname,
-                                           self.app_config.options.mount_point),
+                                               self.app_config.options.mount_point),
             'destination_tracker': '{}:{}'.format(tracker.project.shortname,
-                                              tracker.options.mount_point),
+                                                  tracker.options.mount_point),
             'tickets': [],
         }
         for user in users:
@@ -345,9 +345,9 @@ class Globals(MappedClass):
                 mail_tasks.sendmail.post(**mail)
 
         moved_from = '{}/{}'.format(c.project.shortname,
-                                self.app_config.options.mount_point)
+                                    self.app_config.options.mount_point)
         moved_to = '{}/{}'.format(tracker.project.shortname,
-                              tracker.options.mount_point)
+                                  tracker.options.mount_point)
         text = f'Tickets moved from {moved_from} to {moved_to}'
         Notification.post_user(c.user, None, 'flash', text=text)
 
@@ -466,8 +466,8 @@ class Globals(MappedClass):
             fromaddr=str(c.user._id),
             reply_to=tg_config['forgemail.return_path'],
             subject='[{}:{}] Mass edit changes by {}'.format(c.project.shortname,
-                                                         self.app_config.options.mount_point,
-                                                         c.user.display_name),
+                                                             self.app_config.options.mount_point,
+                                                             c.user.display_name),
         )
         tmpl = g.jinja2_env.get_template('forgetracker:data/mass_report.html')
         head = []
@@ -514,7 +514,7 @@ class Globals(MappedClass):
         self.invalidate_bin_counts()
         ThreadLocalORMSession.flush_all()
         app = '{}/{}'.format(c.project.shortname,
-                         self.app_config.options.mount_point)
+                             self.app_config.options.mount_point)
         count = len(tickets)
         text = 'Updated {} ticket{} in {}'.format(
             count, 's' if count != 1 else '', app)

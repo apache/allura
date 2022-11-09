@@ -265,17 +265,17 @@ def test_render_any_markup_plain():
 
 def test_render_any_markup_formatting():
     assert (str(h.render_any_markup('README.md', '### foo\n'
-                                          '    <script>alert(1)</script> bar')) ==
-                  '<div class="markdown_content"><h3 id="foo">foo</h3>\n'
-                  '<div class="codehilite"><pre><span></span><code><span class="nt">'
-                  '&lt;script&gt;</span>alert(1)<span class="nt">'
-                  '&lt;/script&gt;</span> bar\n</code></pre></div>\n</div>')
+                                    '    <script>alert(1)</script> bar')) ==
+            '<div class="markdown_content"><h3 id="foo">foo</h3>\n'
+            '<div class="codehilite"><pre><span></span><code><span class="nt">'
+            '&lt;script&gt;</span>alert(1)<span class="nt">'
+            '&lt;/script&gt;</span> bar\n</code></pre></div>\n</div>')
 
 
 def test_render_any_markdown_encoding():
     # send encoded content in, make sure it converts it to actual unicode object which Markdown lib needs
     assert (h.render_any_markup('README.md', 'Müller'.encode()) ==
-                  '<div class="markdown_content"><p>Müller</p></div>')
+            '<div class="markdown_content"><p>Müller</p></div>')
 
 
 class AuditLogMock(Mock):
@@ -342,16 +342,16 @@ def test_datetimeformat():
 
 def test_nl2br_jinja_filter():
     assert (h.nl2br_jinja_filter('foo<script>alert(1)</script>\nbar\nbaz') ==
-                  Markup('foo&lt;script&gt;alert(1)&lt;/script&gt;<br>\nbar<br>\nbaz'))
+            Markup('foo&lt;script&gt;alert(1)&lt;/script&gt;<br>\nbar<br>\nbaz'))
 
 
 def test_split_select_field_options():
     assert (h.split_select_field_options('"test message" test2') ==
-                  ['test message', 'test2'])
+            ['test message', 'test2'])
     assert (h.split_select_field_options('"test message test2') ==
-                  ['test', 'message', 'test2'])
+            ['test', 'message', 'test2'])
     assert (h.split_select_field_options('abc ƒå∂ ººº') ==
-                  ['abc', 'ƒå∂', 'ººº'])
+            ['abc', 'ƒå∂', 'ººº'])
 
 
 def test_notifications_disabled():
@@ -575,9 +575,9 @@ class TestIterEntryPoints(TestCase):
             self._make_ep('myapp', BestApp)]
 
         self.assertRaisesRegex(ImportError,
-                                r'Ambiguous \[allura\] entry points detected. '
-                                'Multiple entry points with name "myapp".',
-                                list, h.iter_entry_points('allura'))
+                               r'Ambiguous \[allura\] entry points detected. '
+                               'Multiple entry points with name "myapp".',
+                               list, h.iter_entry_points('allura'))
 
 
 def test_get_user_status():
@@ -596,11 +596,11 @@ def test_get_user_status():
 
 def test_convert_bools():
     assert (h.convert_bools({'foo': 'bar', 'baz': 'false', 'abc': 0, 'def': 1, 'ghi': True}) ==
-                  {'foo': 'bar', 'baz': False, 'abc': 0, 'def': 1, 'ghi': True})
+            {'foo': 'bar', 'baz': False, 'abc': 0, 'def': 1, 'ghi': True})
     assert (h.convert_bools({'foo': 'true', 'baz': ' TRUE '}) ==
-                  {'foo': True, 'baz': True})
+            {'foo': True, 'baz': True})
     assert (h.convert_bools({'foo': 'true', 'baz': ' TRUE '}, prefix='ba') ==
-                  {'foo': 'true', 'baz': True})
+            {'foo': 'true', 'baz': True})
 
 
 def test_base64uri_img():
@@ -684,6 +684,6 @@ def test_querystring():
     req = Request.blank('/p/test/foobar?page=1&limit=10&count=100', remote_addr='127.0.0.1',
                         base_url='https://mysite.com/p/test/foobar')
     assert (h.querystring(req, dict(page=2, limit=5)) ==
-                  'https://mysite.com/p/test/foobar/p/test/foobar?page=2&limit=5&count=100')
+            'https://mysite.com/p/test/foobar/p/test/foobar?page=2&limit=5&count=100')
     assert (h.querystring(req, dict(page=5, limit=2, count=None)) ==
-                  'https://mysite.com/p/test/foobar/p/test/foobar?page=5&limit=2')
+            'https://mysite.com/p/test/foobar/p/test/foobar?page=5&limit=2')

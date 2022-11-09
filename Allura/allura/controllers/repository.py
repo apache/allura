@@ -104,7 +104,7 @@ class RepoRootController(BaseController, FeedController):
                 links.append(dict(
                     repo_url=f.url(),
                     repo='{} / {}'.format(repo_path_parts[1],
-                                      repo_path_parts[-1]),
+                                          repo_path_parts[-1]),
                 ))
         return dict(links=links)
 
@@ -130,7 +130,7 @@ class RepoRootController(BaseController, FeedController):
         from_project = c.project
         to_project = M.Project.query.get(_id=ObjectId(project_id))
         mount_label = mount_label or '{} - {}'.format(c.project.name,
-                                                  c.app.config.options.mount_label)
+                                                      c.app.config.options.mount_label)
         mount_point = (mount_point or from_project.shortname)
         if request.method != 'POST' or not mount_point:
             return dict(from_repo=from_repo,
@@ -361,19 +361,19 @@ class RepoRestController(RepoRootController, AppRestControllerMixin):
                 }
                 for commit in revisions
             ]}
+
     @expose('json:')
     def commit_status(self, rev=None, **kwargs):
         if not g.commit_statuses_enabled:
             return {'status': 'disabled', 'message': 'check your config file'}
-        params = {x : kwargs.get(x, '').strip() for x in
-                                                   ['state', 'target_url', 'description', 'context']}
+        params = {x: kwargs.get(x, '').strip() for x in
+                  ['state', 'target_url', 'description', 'context']}
         params['commit_id'] = rev
         status = M.CommitStatus.upsert(**params)
         response = {'status': 'error'}
         if status:
             response['status'] = 'success'
         return response
-
 
 
 class MergeRequestsController:
@@ -949,7 +949,7 @@ class FileBrowser(BaseController):
         if not self._blob.has_html_view:
             diff = "Cannot display: file marked as a binary type."
             return dict(a=a, b=b, diff=diff)
-            
+
         if max(a.size, b.size) > asint(tg.config.get('scm.view.max_diff_bytes', 2000000)):
             # have to check the original file size, not diff size, because difflib._mdiff inside HtmlSideBySideDiff
             # can take an extremely long time on large files (and its even a generator)
@@ -967,7 +967,7 @@ class FileBrowser(BaseController):
         else:
             web_session['diformat'] = fmt
             web_session.save()
-        
+
         if fmt == 'sidebyside':
             hd = HtmlSideBySideDiff()
             diff = hd.make_table(la, lb, adesc, bdesc)
@@ -998,5 +998,6 @@ def topo_sort(children, parents, dates, head_ids):
                     break
             else:
                 to_visit.append(p)
+
 
 on_import()

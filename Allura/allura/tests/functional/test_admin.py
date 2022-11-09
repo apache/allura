@@ -453,7 +453,7 @@ class TestProjectAdmin(TestController):
         assert screenshots[0].filename == 'admin_24.png'
         # reverse order
         params = {str(ss._id): str(len(screenshots) - 1 - i)
-                      for i, ss in enumerate(screenshots)}
+                  for i, ss in enumerate(screenshots)}
         self.app.post('/admin/sort_screenshots', params)
         assert project.get_screenshots()[0].filename == 'admin_32.png'
 
@@ -979,7 +979,7 @@ class TestExport(TestController):
         r = self.app.get('/admin/export',
                          extra_environ={'username': '*anonymous'}).follow()
         assert (r.request.url ==
-                      'http://localhost/auth/?return_to=%2Fadmin%2Fexport')
+                'http://localhost/auth/?return_to=%2Fadmin%2Fexport')
         self.app.get('/admin/export',
                      extra_environ={'username': 'test-user'},
                      status=403)
@@ -1017,7 +1017,7 @@ class TestExport(TestController):
             exportable_mount_points = [
                 t.options.mount_point for t in exportable_tools]
             assert (exportable_mount_points ==
-                          ['admin', 'search', 'wiki', 'wiki2'])
+                    ['admin', 'search', 'wiki', 'wiki2'])
 
     def test_tools_not_selected(self):
         r = self.app.post('/admin/export')
@@ -1055,7 +1055,7 @@ class TestExport(TestController):
     def test_bulk_export_path_for_user_project(self):
         project = M.Project.query.get(shortname='u/test-user')
         assert (project.bulk_export_path(tg.config['bulk_export_path']) ==
-                      '/tmp/bulk_export/u/test-user')
+                '/tmp/bulk_export/u/test-user')
 
     @td.with_user_project('test-user')
     def test_bulk_export_filename_for_user_project(self):
@@ -1177,7 +1177,7 @@ class TestRestInstallTool(TestRestApiBase):
         r = self.api_post('/rest/p/test/admin/install_tool/', **data)
         assert r.json['success'] is False
         assert (r.json['info'] ==
-                      'Incorrect tool name, or limit is reached.')
+                'Incorrect tool name, or limit is reached.')
 
     def test_bad_mount(self):
         r = self.api_get('/rest/p/test/')
@@ -1192,7 +1192,7 @@ class TestRestInstallTool(TestRestApiBase):
         r = self.api_post('/rest/p/test/admin/install_tool/', **data)
         assert r.json['success'] is False
         assert (r.json['info'] ==
-                      'Mount point "tickets_mount1" is invalid')
+                'Mount point "tickets_mount1" is invalid')
 
     def test_install_tool_ok(self):
         r = self.api_get('/rest/p/test/')
@@ -1207,12 +1207,12 @@ class TestRestInstallTool(TestRestApiBase):
         r = self.api_post('/rest/p/test/admin/install_tool/', **data)
         assert r.json['success'] is True
         assert (r.json['info'] ==
-                      'Tool %s with mount_point %s and mount_label %s was created.'
-                      % ('tickets', 'ticketsmount1', 'tickets_label1'))
+                'Tool %s with mount_point %s and mount_label %s was created.'
+                % ('tickets', 'ticketsmount1', 'tickets_label1'))
 
         project = M.Project.query.get(shortname='test')
         assert (project.ordered_mounts()
-                      [-1]['ac'].options.mount_point == 'ticketsmount1')
+                [-1]['ac'].options.mount_point == 'ticketsmount1')
         audit_log = M.AuditLog.query.find(
             {'project_id': project._id}).sort('_id', -1).first()
         assert audit_log.message == 'install tool ticketsmount1'
@@ -1256,7 +1256,7 @@ class TestRestInstallTool(TestRestApiBase):
             r = self.api_post('/rest/p/test/admin/install_tool/', **data)
             assert r.json['success'] is False
             assert (r.json['info'] ==
-                          'Incorrect tool name, or limit is reached.')
+                    'Incorrect tool name, or limit is reached.')
 
     def test_unauthorized(self):
         r = self.api_get('/rest/p/test/')
@@ -1285,7 +1285,7 @@ class TestRestInstallTool(TestRestApiBase):
                     labels.append(mount['sub'].name)
             return labels
         assert (get_labels() ==
-                      ['Admin', 'Search', 'Activity', 'A Subproject'])
+                ['Admin', 'Search', 'Activity', 'A Subproject'])
 
         data = [
             {
@@ -1316,8 +1316,8 @@ class TestRestInstallTool(TestRestApiBase):
             r = self.api_post('/rest/p/test/admin/install_tool/', **datum)
             assert r.json['success'] is True
             assert (r.json['info'] ==
-                          'Tool %s with mount_point %s and mount_label %s was created.'
-                          % (datum['tool'], datum['mount_point'], datum['mount_label']))
+                    'Tool %s with mount_point %s and mount_label %s was created.'
+                    % (datum['tool'], datum['mount_point'], datum['mount_label']))
 
         assert (
             get_labels() == ['t1', 'Admin', 'Search', 'Activity', 'A Subproject', 'ta', 'tb', 'tc'])

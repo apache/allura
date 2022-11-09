@@ -159,8 +159,8 @@ class Test():
         ThreadLocalORMSession.flush_all()
 
         with h.push_config(c,
-                        project=p_nbhd.neighborhood_project,
-                        user=M.User.by_username('test-admin')):
+                           project=p_nbhd.neighborhood_project,
+                           user=M.User.by_username('test-admin')):
             r = g.markdown_wiki.convert('[[projects]]')
             assert 'alt="Test Project Logo"' in r, r
             assert 'alt="A Subproject Logo"' in r, r
@@ -243,23 +243,23 @@ class Test():
         ThreadLocalORMSession.flush_all()
         r = g.markdown_wiki.convert('[[members limit=2]]').replace('\t', '').replace('\n', '')
         assert (r ==
-                    '<div class="markdown_content"><h6>Project Members:</h6>'
-                    '<ul class="md-users-list">'
-                    '<li><a href="/u/test-admin/">Test Admin</a> (admin)</li>'
-                    '<li><a href="/u/test-user/">Test User</a></li>'
-                    '<li class="md-users-list-more"><a href="/p/test/_members">All Members</a></li>'
-                    '</ul>'
-                    '</div>')
+                '<div class="markdown_content"><h6>Project Members:</h6>'
+                '<ul class="md-users-list">'
+                '<li><a href="/u/test-admin/">Test Admin</a> (admin)</li>'
+                '<li><a href="/u/test-user/">Test User</a></li>'
+                '<li class="md-users-list-more"><a href="/p/test/_members">All Members</a></li>'
+                '</ul>'
+                '</div>')
 
     def test_macro_members_escaping(self):
         user = M.User.by_username('test-admin')
         user.display_name = 'Test Admin <script>'
         r = g.markdown_wiki.convert('[[members]]')
         assert (r.replace('\n', '').replace('\t', '') ==
-                    '<div class="markdown_content"><h6>Project Members:</h6>'
-                    '<ul class="md-users-list">'
-                    '<li><a href="/u/test-admin/">Test Admin &lt;script&gt;</a> (admin)</li>'
-                    '</ul></div>')
+                '<div class="markdown_content"><h6>Project Members:</h6>'
+                '<ul class="md-users-list">'
+                '<li><a href="/u/test-admin/">Test Admin &lt;script&gt;</a> (admin)</li>'
+                '</ul></div>')
 
     def test_macro_project_admins(self):
         user = M.User.by_username('test-admin')
@@ -267,10 +267,10 @@ class Test():
         with h.push_context('test', neighborhood='Projects'):
             r = g.markdown_wiki.convert('[[project_admins]]')
         assert (r.replace('\n', '') ==
-                    '<div class="markdown_content"><h6>Project Admins:</h6>'
-                    '<ul class="md-users-list">'
-                    '    <li><a href="/u/test-admin/">Test \xc5dmin &lt;script&gt;</a></li>'
-                    '</ul></div>')
+                '<div class="markdown_content"><h6>Project Admins:</h6>'
+                '<ul class="md-users-list">'
+                '    <li><a href="/u/test-admin/">Test \xc5dmin &lt;script&gt;</a></li>'
+                '</ul></div>')
 
     def test_macro_project_admins_one_br(self):
         p_nbhd = M.Neighborhood.query.get(name='Projects')
@@ -371,7 +371,7 @@ class Test():
         oembed_fetch.side_effect = OEmbedError('Invalid mime-type in response...')
         r = g.markdown_wiki.convert('[[embed url=http://www.youtube.com/watch?v=6YbBmqUnoQM]]')
         assert (r == '<div class="markdown_content"><p>Could not embed: '
-                        'http://www.youtube.com/watch?v=6YbBmqUnoQM</p></div>')
+                'http://www.youtube.com/watch?v=6YbBmqUnoQM</p></div>')
 
     def test_macro_embed_notsupported(self):
         r = g.markdown_wiki.convert('[[embed url=http://vimeo.com/46163090]]')
@@ -447,12 +447,12 @@ class Test():
         with h.push_context('test', 'wiki', neighborhood='Projects'):
             text = g.markdown.convert('# Foo!\n[Home]')
             assert (text ==
-                        '<div class="markdown_content"><h1 id="foo">Foo!</h1>\n'
-                        '<p><a class="alink" href="/p/test/wiki/Home/">[Home]</a></p></div>')
+                    '<div class="markdown_content"><h1 id="foo">Foo!</h1>\n'
+                    '<p><a class="alink" href="/p/test/wiki/Home/">[Home]</a></p></div>')
             text = g.markdown.convert('# Foo!\n[Rooted]')
             assert (text ==
-                        '<div class="markdown_content"><h1 id="foo">Foo!</h1>\n'
-                        '<p><span>[Rooted]</span></p></div>')
+                    '<div class="markdown_content"><h1 id="foo">Foo!</h1>\n'
+                    '<p><span>[Rooted]</span></p></div>')
 
         assert (
             g.markdown.convert('Multi\nLine') ==
@@ -554,7 +554,7 @@ class Test():
                 g.markdown.convert('literal `http://domain.net` literal'))
         assert ('<pre><span></span><code>preformatted http://domain.net\n</code></pre>' in
                 g.markdown.convert('    :::text\n'
-                                    '    preformatted http://domain.net'))
+                                   '    preformatted http://domain.net'))
 
     def test_markdown_autolink_with_escape(self):
         # \_ is unnecessary but valid markdown escaping and should be considered as a regular underscore
@@ -577,14 +577,14 @@ class Test():
     def test_markdown_invalid_script_in_link(self):
         r = g.markdown.convert('[xss](http://"><a onmouseover=prompt(document.domain)>xss</a>)')
         assert ('<div class="markdown_content"><p><a class="" '
-                    '''href='http://"&gt;&lt;a%20onmouseover=prompt(document.domain)&gt;xss&lt;/a&gt;' '''
-                    'rel="nofollow">xss</a></p></div>' == r)
+                '''href='http://"&gt;&lt;a%20onmouseover=prompt(document.domain)&gt;xss&lt;/a&gt;' '''
+                'rel="nofollow">xss</a></p></div>' == r)
 
     def test_markdown_invalid_script_in_link2(self):
         r = g.markdown.convert('[xss](http://"><img src=x onerror=alert(document.cookie)>)')
         assert ('<div class="markdown_content"><p><a class="" '
-                    '''href='http://"&gt;&lt;img%20src=x%20onerror=alert(document.cookie)&gt;' '''
-                    'rel="nofollow">xss</a></p></div>' == r)
+                '''href='http://"&gt;&lt;img%20src=x%20onerror=alert(document.cookie)&gt;' '''
+                'rel="nofollow">xss</a></p></div>' == r)
 
     def test_markdown_extremely_slow(self):
         r = g.markdown.convert('''bonjour, voila ce que j'obtient en voulant ajouter un utilisateur a un groupe de sécurite, que ce soit sur un groupe pre-existant, ou sur un groupe crée.
@@ -686,8 +686,8 @@ class Test():
 
         p_nbhd = M.Neighborhood.query.get(name='Projects')
         with h.push_config(c,
-                        project=p_nbhd.neighborhood_project,
-                        user=M.User.by_username('test-admin')):
+                           project=p_nbhd.neighborhood_project,
+                           user=M.User.by_username('test-admin')):
             r = g.markdown_wiki.convert(
                 '[[projects category="%s"]]' % random_trove.fullpath)
             project_names = get_project_names(r)
@@ -698,8 +698,8 @@ class Test():
 
         p_nbhd = M.Neighborhood.query.get(name='Projects')
         with h.push_config(c,
-                        project=p_nbhd.neighborhood_project,
-                        user=M.User.anonymous()):
+                           project=p_nbhd.neighborhood_project,
+                           user=M.User.anonymous()):
             # test columns
             r = g.markdown_wiki.convert('[[projects display_mode=list columns=2]]')
             assert two_column_style in r

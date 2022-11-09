@@ -178,8 +178,10 @@ def querystring(request, url_params):
     url = url_parts._replace(query=urlencode(params)).geturl()
     return url
 
+
 def ceil(number):
     return math.ceil(number)
+
 
 def strip_bad_unicode(s):
     """
@@ -251,6 +253,7 @@ def really_unicode(s):
         # default case.  Also lets Markup() instances be preserved
         return s
     # Try to guess the encoding
+
     def encodings():
         yield None
         yield 'utf-8'
@@ -656,6 +659,7 @@ class fixed_attrs_proxy(proxy):
     provided during object construction, returns it's value. Otherwise proxies
     to obj.
     """
+
     def __init__(self, obj, **kw):
         self._obj = obj
         for k, v in kw.items():
@@ -695,7 +699,7 @@ def config_with_prefix(d, prefix):
     '''
     plen = len(prefix)
     return {k[plen:]: v for k, v in d.items()
-                if k.startswith(prefix)}
+            if k.startswith(prefix)}
 
 
 def paging_sanitizer(limit, page, total_count=sys.maxsize, zero_based_pages=True):
@@ -781,11 +785,13 @@ def render_any_markup(name, txt, code_mode=False, linenumbers_style=TABLE):
                 txt = '<pre>%s</pre>' % txt
     return Markup(txt)
 
+
 @pass_context
 def subrender_jinja_filter(context, value):
     _template = context.eval_ctx.environment.from_string(value)
     result = _template.render(**context)
     return result
+
 
 def nl2br_jinja_filter(value):
     result = '<br>\n'.join(escape(line) for line in value.split('\n'))
@@ -1267,8 +1273,8 @@ def slugify(name, allow_periods=False):
     """
     RE_NON_ALPHA_ETC = re.compile(r'[^.\w]+' if allow_periods else r'[^\w]+')
     slug = RE_NON_ALPHA_ETC.sub('-',  # replace non ". alphanum_" sequences into single -
-        unicodedata.normalize('NFKD', name).encode('ascii', 'ignore').decode().replace("'", '')  # asciify & strip apostophes.   https://stackoverflow.com/a/53261200
-    ).strip('-')  # leading - or trailing - gets removed
+                                unicodedata.normalize('NFKD', name).encode('ascii', 'ignore').decode().replace("'", '')  # asciify & strip apostophes.   https://stackoverflow.com/a/53261200
+                                ).strip('-')  # leading - or trailing - gets removed
     return slug, slug.lower()
 
 
@@ -1323,7 +1329,7 @@ def username_project_url(user_or_username):
     return f'{url}profile/'
 
 
-def pluralize_tool_name(tool_name:string, count:int):
+def pluralize_tool_name(tool_name: string, count: int):
     pluralize_tools = ['Wiki', 'Discussion', 'Blog']
     if tool_name is not None and tool_name in pluralize_tools:
         return f"{tool_name}{'s'[:count^1]}"

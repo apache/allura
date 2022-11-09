@@ -42,7 +42,7 @@ def main():
         if not sub.artifact_index_id:
             log.info('No artifact_index_id on %s', sub)
             continue
-        ticket = TM.Ticket.query.get(_id = ObjectId(sub.artifact_index_id.split('#')[1]))
+        ticket = TM.Ticket.query.get(_id=ObjectId(sub.artifact_index_id.split('#')[1]))
         if not ticket:
             log.info('Could not find ticket for %s', sub)
             continue
@@ -60,12 +60,12 @@ def main():
         if not sub.artifact_index_id:
             log.info('No artifact_index_id on %s', sub)
             continue
-        merge_request = M.MergeRequest.query.get(_id = ObjectId(sub.artifact_index_id.split('#')[1]))
+        merge_request = M.MergeRequest.query.get(_id=ObjectId(sub.artifact_index_id.split('#')[1]))
         if not merge_request:
             log.info('Could not find merge request for %s', sub)
             continue
         new_title = 'Merge Request #%d: %s' % (merge_request.request_number, merge_request.summary)
-        log.info('"%s" --> "%s"', sub.artifact_title , new_title)
+        log.info('"%s" --> "%s"', sub.artifact_title, new_title)
         if task != 'diff':
             sub.artifact_title = new_title
         session(sub).flush(sub)

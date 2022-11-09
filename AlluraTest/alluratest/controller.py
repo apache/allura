@@ -108,6 +108,8 @@ def setup_basic_test(config=None, app_name=DFL_APP_NAME):
 
     # remove unnecessary bootstrap tasks, e.g. search indexing
     M.MonQTask.query.remove({'state': 'ready'})
+
+
 setup_basic_test.__test__ = False  # sometimes __test__ above isn't sufficient
 
 
@@ -119,6 +121,8 @@ def setup_functional_test(config=None, app_name=DFL_APP_NAME, current_pkg=None):
     wsgiapp = loadapp(f'config:{config}#{app_name}',
                       relative_to=conf_dir)
     return wsgiapp
+
+
 # sometimes __test__ above isn't sufficient
 setup_functional_test.__test__ = False
 
@@ -145,6 +149,8 @@ def setup_unit_test():
 
     c.model_cache = None
     ThreadLocalORMSession.close_all()
+
+
 setup_unit_test.__test__ = False  # sometimes __test__ above isn't sufficient
 
 
@@ -157,8 +163,8 @@ def setup_global_objects():
 def setup_trove_categories():
     create_trove_categories = CreateTroveCategoriesCommand('create_trove_categories')
     with mock.patch.object(M.project.TroveCategoryMapperExtension, 'after_insert'),\
-         mock.patch.object(M.project.TroveCategoryMapperExtension, 'after_update'),\
-         mock.patch.object(M.project.TroveCategoryMapperExtension, 'after_delete'):
+            mock.patch.object(M.project.TroveCategoryMapperExtension, 'after_update'),\
+            mock.patch.object(M.project.TroveCategoryMapperExtension, 'after_delete'):
         create_trove_categories.run([''])
 
 
@@ -299,5 +305,5 @@ def oauth1_webtest(url: str, oauth_kwargs: dict, method='GET') -> tuple[str, dic
 def request2webtest(req: requests.PreparedRequest) -> tuple[str, dict, dict]:
     url = req.url
     params = {}
-    headers = {k: v.decode() for k,v in req.headers.items()}
+    headers = {k: v.decode() for k, v in req.headers.items()}
     return url, params, headers

@@ -119,7 +119,7 @@ class ForgeForm(ew.SimpleForm):
         display = field.display(**ctx)
         if ctx['errors'] and field.show_errors and not ignore_errors:
             display = "{}<div class='error'>{}</div>".format(display,
-                                                         ctx['errors'])
+                                                             ctx['errors'])
         return Markup(display)
 
 
@@ -498,9 +498,9 @@ class AddInactivePeriodForm(ForgeForm):
     def to_python(self, kw, state):
         d = super().to_python(kw, state)
         if d['startdate'] > d['enddate']:
-                raise formencode.Invalid(
-                    'Invalid period: start date greater than end date.',
-                    kw, state)
+            raise formencode.Invalid(
+                'Invalid period: start date greater than end date.',
+                kw, state)
         return d
 
 
@@ -557,9 +557,9 @@ class AddTimeSlotForm(ForgeForm):
         d = super().to_python(kw, state)
         if (d['starttime']['h'], d['starttime']['m']) > \
            (d['endtime']['h'], d['endtime']['m']):
-                raise formencode.Invalid(
-                    'Invalid period: start time greater than end time.',
-                    kw, state)
+            raise formencode.Invalid(
+                'Invalid period: start time greater than end time.',
+                kw, state)
         return d
 
 
@@ -618,7 +618,7 @@ class RemoveTroveCategoryForm(ForgeForm):
                         href="/categories/%s" % cat.trove_cat_id),
                     ew.HTMLField(
                         text=cat.shortname,
-                        attrs={'disabled':True, 'value':cat.shortname}),
+                        attrs={'disabled': True, 'value': cat.shortname}),
                     ew.SubmitButton(
                         show_errors=False,
                         attrs={'value': 'Remove'})],
@@ -874,7 +874,7 @@ class NeighborhoodOverviewForm(ForgeForm):
 
             if ctx['errors'] and field.show_errors and not ignore_errors:
                 display = "{}<div class='error'>{}</div>".format(display,
-                                                             ctx['errors'])
+                                                                 ctx['errors'])
 
             return Markup(display)
         else:

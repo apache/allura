@@ -360,8 +360,8 @@ class TestFunctionalController(TrackerTestController):
 
         r = self.app.get('/bugs/bin_counts')
         assert r.json == {"bin_counts": [{"count": 2, "label": "Changes"},
-                                             {"count": 0, "label": "Closed Tickets"},
-                                             {"count": 2, "label": "Open Tickets"}]}
+                                         {"count": 0, "label": "Closed Tickets"},
+                                         {"count": 2, "label": "Open Tickets"}]}
 
         """
         forgetracker.model.ticket.Globals.bin_count doesn't do a permission check like corresponding milestone_count
@@ -1982,7 +1982,7 @@ class TestFunctionalController(TrackerTestController):
         filtered_changes = c.app.globals.filtered_by_subscription(changes)
         filtered_users = [uid for uid, data in filtered_changes.items()]
         assert (sorted(filtered_users) ==
-                     sorted(u._id for u in users[:-1] + [admin]))
+                sorted(u._id for u in users[:-1] + [admin]))
         ticket_ids = [t._id for t in tickets]
         assert filtered_changes[users[0]._id] == set(ticket_ids[0:1])
         assert filtered_changes[users[1]._id] == set(ticket_ids[:-1])
@@ -2484,12 +2484,12 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/rest/p/test/bugs/1/')
         r = json.loads(r.text)
         assert (r['ticket']['discussion_thread_url'] ==
-                     'http://localhost/rest%s' % discussion_url)
+                'http://localhost/rest%s' % discussion_url)
         slug = r['ticket']['discussion_thread']['posts'][0]['slug']
         assert (r['ticket']['discussion_thread']['posts'][0]['attachments'][0]['url'] ==
-                     f'http://localhost{discussion_url}{slug}/attachment/test.txt')
+                f'http://localhost{discussion_url}{slug}/attachment/test.txt')
         assert (r['ticket']['discussion_thread']['posts'][0]['attachments'][0]['bytes'] ==
-                     11)
+                11)
 
         file_name = 'test_root.py'
         file_data = open(__file__, 'rb').read()
@@ -2500,7 +2500,7 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/rest/p/test/bugs/1/')
         r = json.loads(r.text)
         assert (r['ticket']['attachments'][0]['url'] ==
-                     'http://localhost/p/test/bugs/1/attachment/test_root.py')
+                'http://localhost/p/test/bugs/1/attachment/test_root.py')
 
     def test_html_escaping(self):
         with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
@@ -2512,7 +2512,7 @@ class TestFunctionalController(TrackerTestController):
             email = M.MonQTask.query.find(
                 dict(task_name='allura.tasks.mail_tasks.sendmail')).first()
             assert (email.kwargs.subject ==
-                         '[test:bugs] #1 test <h2> ticket')
+                    '[test:bugs] #1 test <h2> ticket')
             text = email.kwargs.text
             assert '** [bugs:#1] test &lt;h2&gt; ticket**' in text
             mail_tasks.sendmail(
@@ -2529,8 +2529,8 @@ class TestFunctionalController(TrackerTestController):
             assert 'Subject: [test:bugs] #1 test <h2> ticket' in body
             # check html, need tags escaped
             assert ('<p><strong> <a class="alink" href="http://localhost/p/test/bugs/1/">[bugs:#1]</a>'
-                      ' test &lt;h2&gt; ticket</strong></p>' in
-                      body)
+                    ' test &lt;h2&gt; ticket</strong></p>' in
+                    body)
             # check plaintext (ok to have "html" tags)
             assert '** [bugs:#1] test <h2> ticket**' in body
 
@@ -2896,7 +2896,7 @@ class TestCustomUserField(TrackerTestController):
         ticket_view = self.new_ticket(summary='test custom fields', **kw).follow()
         # summary header shows 'nobody'
         assert (squish_spaces(ticket_view.html.findAll('label', 'simple', text='Code Review:')[0].parent.text) ==
-                     ' Code Review: nobody ')
+                ' Code Review: nobody ')
         # form input is blank
         select = ticket_view.html.find('select',
                                        dict(name='ticket_form.custom_fields._code_review'))
@@ -2911,7 +2911,7 @@ class TestCustomUserField(TrackerTestController):
         ticket_view = self.new_ticket(summary='test custom fields', **kw).follow()
         # summary header shows 'Test Admin'
         assert (squish_spaces(ticket_view.html.findAll('label', 'simple', text='Code Review:')[0].parent.text) ==
-                     ' Code Review: Test Admin ')
+                ' Code Review: Test Admin ')
         # form input is blank
         select = ticket_view.html.find('select',
                                        dict(name='ticket_form.custom_fields._code_review'))
@@ -3106,7 +3106,7 @@ class TestBulkMove(TrackerTestController):
         assert len(emails) == 3
         for email in emails:
             assert (email.kwargs.subject ==
-                         '[test:bugs] Mass ticket moving by Test Admin')
+                    '[test:bugs] Mass ticket moving by Test Admin')
         first_user_email = M.MonQTask.query.find({
             'task_name': 'allura.tasks.mail_tasks.sendmail',
             'kwargs.destinations': str(first_user._id)
@@ -3143,7 +3143,7 @@ class TestBulkMove(TrackerTestController):
         notification_id = mbox.queue[-1]
         notification = M.Notification.query.get(_id=notification_id)
         assert (notification.text ==
-                     'Tickets moved from test/bugs to test2/bugs2')
+                'Tickets moved from test/bugs to test2/bugs2')
 
     @td.with_tool('test2', 'Tickets', 'bugs2')
     def test_monitoring_email(self):
@@ -3169,7 +3169,7 @@ class TestBulkMove(TrackerTestController):
         assert len(emails) == 2
         for email in emails:
             assert (email.kwargs.subject ==
-                         '[test:bugs] Mass ticket moving by Test Admin')
+                    '[test:bugs] Mass ticket moving by Test Admin')
         admin_email = M.MonQTask.query.find({
             'task_name': 'allura.tasks.mail_tasks.sendmail',
             'kwargs.destinations': str(M.User.by_username('test-admin')._id)
@@ -3182,18 +3182,18 @@ class TestBulkMove(TrackerTestController):
         assert len(monitoring_email) == 1
         admin_email_text = admin_email[0].kwargs.text
         assert ('test:bugs:#1 --> test2:bugs2:#1 A New Hope' in
-                  admin_email_text)
+                admin_email_text)
         assert ('test:bugs:#2 --> test2:bugs2:#2 The Empire Strikes Back' in
-                  admin_email_text)
+                admin_email_text)
         assert ('test:bugs:#3 --> test2:bugs2:#3 Return Of The Jedi' in
-                  admin_email_text)
+                admin_email_text)
         monitoring_email_text = monitoring_email[0].kwargs.text
         assert ('test:bugs:#1 --> test2:bugs2:#1 A New Hope' in
-                  monitoring_email_text)
+                monitoring_email_text)
         assert ('test:bugs:#2 --> test2:bugs2:#2 The Empire Strikes Back' in
-                  monitoring_email_text)
+                monitoring_email_text)
         assert ('test:bugs:#3 --> test2:bugs2:#3 Return Of The Jedi' in
-                  monitoring_email_text)
+                monitoring_email_text)
 
     @td.with_tool('test2', 'Tickets', 'bugs2')
     def test_monitoring_email_public_only(self):
@@ -3226,7 +3226,7 @@ class TestBulkMove(TrackerTestController):
         assert len(emails) == 2
         for email in emails:
             assert (email.kwargs.subject ==
-                         '[test:bugs] Mass ticket moving by Test Admin')
+                    '[test:bugs] Mass ticket moving by Test Admin')
         admin = M.User.by_username('test-admin')
         admin_email = M.MonQTask.query.find({
             'task_name': 'allura.tasks.mail_tasks.sendmail',
@@ -3273,7 +3273,7 @@ class TestBulkMove(TrackerTestController):
         assert len(emails) == 1  # only admin email sent
         for email in emails:
             assert (email.kwargs.subject ==
-                         '[test:bugs] Mass ticket moving by Test Admin')
+                    '[test:bugs] Mass ticket moving by Test Admin')
         admin = M.User.by_username('test-admin')
         admin_email = M.MonQTask.query.find({
             'task_name': 'allura.tasks.mail_tasks.sendmail',
@@ -3350,7 +3350,7 @@ class TestNotificationEmailGrouping(TrackerTestController):
         assert email.kwargs.message_id == ticket.url() + reply._id
         assert email.kwargs.in_reply_to == top_level_comment_msg_id
         assert (email.kwargs.references ==
-                     [ticket.message_id(), top_level_comment_msg_id])
+                [ticket.message_id(), top_level_comment_msg_id])
 
 
 def test_status_passthru():
