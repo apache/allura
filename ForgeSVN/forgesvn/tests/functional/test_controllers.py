@@ -269,7 +269,7 @@ class TestRootController(SVNTestController):
         assert form.find('input', attrs=dict(name='path')).get('value') == '/tags/tag-1.0'
 
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/tags/tag-1.0')
-        assert r.json['status'] == None
+        assert r.json['status'] is None
         r = self.app.post('/p/test/svn-tags/19/tarball',
                           dict(path='/tags/tag-1.0')).follow()
         assert 'Generating snapshot...' in r
@@ -278,7 +278,7 @@ class TestRootController(SVNTestController):
         assert r.json['status'] == 'complete'
 
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/trunk')
-        assert r.json['status'] == None
+        assert r.json['status'] is None
         r = self.app.post('/p/test/svn-tags/19/tarball',
                           dict(path='/trunk/')).follow()
         assert 'Generating snapshot...' in r
@@ -287,7 +287,7 @@ class TestRootController(SVNTestController):
         assert r.json['status'] == 'complete'
 
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/branches/aaa/')
-        assert r.json['status'] == None
+        assert r.json['status'] is None
 
         # this is is the same as trunk snapshot, so it's ready already
         r = self.app.get('/p/test/svn-tags/19/tarball_status')

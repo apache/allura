@@ -64,7 +64,7 @@ class TestApp:
         c.app.handle_message('6789', msg)
         # no new message
         post = M.Post.query.get(_id=message_id)
-        assert post == None
+        assert post is None
 
     @td.with_tracker
     def test_uninstall(self):

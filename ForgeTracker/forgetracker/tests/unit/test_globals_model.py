@@ -132,7 +132,7 @@ class TestGlobalsModel(TrackerTestWithModel):
             forgetracker.model.Ticket, 'bar', rows=0, short_timeout=False, fq=['-deleted_b:true'])
         assert gbl._bin_counts_data == [{'summary': 'foo', 'hits': 5}]
         assert gbl._bin_counts_expire == now + timedelta(minutes=60)
-        assert gbl._bin_counts_invalidated == None
+        assert gbl._bin_counts_invalidated is None
 
     def test_append_new_labels(self):
         gbl = Globals()

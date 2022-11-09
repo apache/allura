@@ -94,12 +94,12 @@ class TestWikiApi(TestRestApiBase):
         with h.push_config(tg.config, **{'forgewiki.rate_limits': '{}'}):
             r = self.api_post('/rest/p/test/wiki/page1/', status=200, **data)
             p = Page.query.get(title='page1')
-            assert p != None
+            assert p is not None
         # Set rate limit to 1 in first hour of project
         with h.push_config(tg.config, **{'forgewiki.rate_limits': '{"3600": 1}'}):
             r = self.api_post('/rest/p/test/wiki/page2/', status=429, **data)
             p = Page.query.get(title='page2')
-            assert p == None
+            assert p is None
 
     # http://blog.watchfire.com/wfblog/2011/10/json-based-xss-exploitation.html
     def test_json_encoding_security(self):
@@ -139,12 +139,12 @@ class TestWikiHasAccess(TestRestApiBase):
             '/rest/p/test/wiki/has_access?user=babadook&perm=read',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
         r = self.api_get(
             '/rest/p/test/wiki/has_access?user=test-user&perm=jump',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
 
     def test_has_access_not_admin(self):
         """
@@ -161,9 +161,9 @@ class TestWikiHasAccess(TestRestApiBase):
             '/rest/p/test/wiki/has_access?user=test-admin&perm=create',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == True
+        assert r.json['result'] is True
         r = self.api_get(
             '/rest/p/test/wiki/has_access?user=test-user&perm=create',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False

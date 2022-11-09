@@ -225,12 +225,12 @@ class TestRestHome(TestRestApiBase):
             '/rest/p/has_access?user=babadook&perm=read',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
         r = self.api_get(
             '/rest/p/has_access?user=test-admin&perm=jump',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
 
     def test_neighborhood_has_access_not_admin(self):
         """
@@ -247,12 +247,12 @@ class TestRestHome(TestRestApiBase):
             '/rest/p/has_access?user=root&perm=update',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == True
+        assert r.json['result'] is True
         r = self.api_get(
             '/rest/p/has_access?user=test-user&perm=update',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
 
     def test_neighborhood(self):
         self.api_get('/rest/p/', status=404)
@@ -279,12 +279,12 @@ class TestRestHome(TestRestApiBase):
             '/rest/p/test/has_access?user=babadook&perm=read',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
         r = self.api_get(
             '/rest/p/test/has_access?user=test-admin&perm=jump',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
 
     def test_project_has_access_not_admin(self):
         """
@@ -301,19 +301,19 @@ class TestRestHome(TestRestApiBase):
             '/rest/p/test/has_access?user=test-admin&perm=update',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == True
+        assert r.json['result'] is True
         r = self.api_get(
             '/rest/p/test/has_access?user=test-user&perm=update',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
 
     def test_subproject_has_access(self):
         r = self.api_get(
             '/rest/p/test/sub1/has_access?user=test-admin&perm=update',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == True
+        assert r.json['result'] is True
 
     def test_unicode(self):
         self.app.post(

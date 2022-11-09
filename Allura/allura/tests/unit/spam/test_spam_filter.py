@@ -88,7 +88,7 @@ class TestSpamFilterFunctional:
 
         results = SpamCheckResult.query.find().all()
         assert len(results) == 1
-        assert results[0].result == True
+        assert results[0].result is True
         assert results[0].user.username == 'test-user'
 
 

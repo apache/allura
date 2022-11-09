@@ -514,8 +514,8 @@ class TestUserDetails(TestController):
 
     def test_disable_user(self):
         # user was not pending
-        assert M.User.by_username('test-user-3').disabled == False
-        assert M.User.by_username('test-user-3').pending == False
+        assert M.User.by_username('test-user-3').disabled is False
+        assert M.User.by_username('test-user-3').pending is False
         r = self.app.get('/nf/admin/user/test-user-3')
         form = r.forms[0]
         assert form['username'].value == 'test-user-3'
@@ -525,16 +525,16 @@ class TestUserDetails(TestController):
             r = form.submit()
             assert M.AuditLog.query.find().count() == 1
         assert 'User disabled' in self.webflash(r)
-        assert M.User.by_username('test-user-3').disabled == True
-        assert M.User.by_username('test-user-3').pending == False
+        assert M.User.by_username('test-user-3').disabled is True
+        assert M.User.by_username('test-user-3').pending is False
 
         # user was pending
         user = M.User.by_username('test-user-3')
         user.disabled = False
         user.pending = True
         ThreadLocalORMSession.flush_all()
-        assert M.User.by_username('test-user-3').disabled == False
-        assert M.User.by_username('test-user-3').pending == True
+        assert M.User.by_username('test-user-3').disabled is False
+        assert M.User.by_username('test-user-3').pending is True
         r = self.app.get('/nf/admin/user/test-user-3')
         form = r.forms[0]
         assert form['username'].value == 'test-user-3'
@@ -544,16 +544,16 @@ class TestUserDetails(TestController):
             r = form.submit()
             assert M.AuditLog.query.find().count() == 1
         assert 'User disabled' in self.webflash(r)
-        assert M.User.by_username('test-user-3').disabled == True
-        assert M.User.by_username('test-user-3').pending == True
+        assert M.User.by_username('test-user-3').disabled is True
+        assert M.User.by_username('test-user-3').pending is True
 
     def test_enable_user(self):
         # user was not pending
         user = M.User.by_username('test-user-3')
         user.disabled = True
         ThreadLocalORMSession.flush_all()
-        assert M.User.by_username('test-user-3').disabled == True
-        assert M.User.by_username('test-user-3').pending == False
+        assert M.User.by_username('test-user-3').disabled is True
+        assert M.User.by_username('test-user-3').pending is False
         r = self.app.get('/nf/admin/user/test-user-3')
         form = r.forms[0]
         assert form['username'].value == 'test-user-3'
@@ -563,16 +563,16 @@ class TestUserDetails(TestController):
             r = form.submit()
             assert M.AuditLog.query.find().count() == 1
         assert 'User enabled' in self.webflash(r)
-        assert M.User.by_username('test-user-3').disabled == False
-        assert M.User.by_username('test-user-3').pending == False
+        assert M.User.by_username('test-user-3').disabled is False
+        assert M.User.by_username('test-user-3').pending is False
 
         # user was pending
         user = M.User.by_username('test-user-3')
         user.disabled = False
         user.pending = True
         ThreadLocalORMSession.flush_all()
-        assert M.User.by_username('test-user-3').disabled == False
-        assert M.User.by_username('test-user-3').pending == True
+        assert M.User.by_username('test-user-3').disabled is False
+        assert M.User.by_username('test-user-3').pending is True
         r = self.app.get('/nf/admin/user/test-user-3')
         form = r.forms[0]
         assert form['username'].value == 'test-user-3'
@@ -582,16 +582,16 @@ class TestUserDetails(TestController):
             r = form.submit()
             assert M.AuditLog.query.find().count() == 1
         assert 'User enabled' in self.webflash(r)
-        assert M.User.by_username('test-user-3').disabled == False
-        assert M.User.by_username('test-user-3').pending == False
+        assert M.User.by_username('test-user-3').disabled is False
+        assert M.User.by_username('test-user-3').pending is False
 
         # user was pending and disabled
         user = M.User.by_username('test-user-3')
         user.disabled = True
         user.pending = True
         ThreadLocalORMSession.flush_all()
-        assert M.User.by_username('test-user-3').disabled == True
-        assert M.User.by_username('test-user-3').pending == True
+        assert M.User.by_username('test-user-3').disabled is True
+        assert M.User.by_username('test-user-3').pending is True
         r = self.app.get('/nf/admin/user/test-user-3')
         form = r.forms[0]
         assert form['username'].value == 'test-user-3'
@@ -601,16 +601,16 @@ class TestUserDetails(TestController):
             r = form.submit()
             assert M.AuditLog.query.find().count() == 1
         assert 'User enabled' in self.webflash(r)
-        assert M.User.by_username('test-user-3').disabled == False
-        assert M.User.by_username('test-user-3').pending == False
+        assert M.User.by_username('test-user-3').disabled is False
+        assert M.User.by_username('test-user-3').pending is False
 
     def test_set_pending(self):
         # user was disabled
         user = M.User.by_username('test-user-3')
         user.disabled = True
         ThreadLocalORMSession.flush_all()
-        assert M.User.by_username('test-user-3').disabled == True
-        assert M.User.by_username('test-user-3').pending == False
+        assert M.User.by_username('test-user-3').disabled is True
+        assert M.User.by_username('test-user-3').pending is False
         r = self.app.get('/nf/admin/user/test-user-3')
         form = r.forms[0]
         assert form['username'].value == 'test-user-3'
@@ -620,16 +620,16 @@ class TestUserDetails(TestController):
             r = form.submit()
             assert M.AuditLog.query.find().count() == 1
         assert 'Set user status to pending' in self.webflash(r)
-        assert M.User.by_username('test-user-3').disabled == False
-        assert M.User.by_username('test-user-3').pending == True
+        assert M.User.by_username('test-user-3').disabled is False
+        assert M.User.by_username('test-user-3').pending is True
 
         # user was enabled
         user = M.User.by_username('test-user-3')
         user.pending = False
         user.disabled = False
         ThreadLocalORMSession.flush_all()
-        assert M.User.by_username('test-user-3').disabled == False
-        assert M.User.by_username('test-user-3').pending == False
+        assert M.User.by_username('test-user-3').disabled is False
+        assert M.User.by_username('test-user-3').pending is False
         r = self.app.get('/nf/admin/user/test-user-3')
         form = r.forms[0]
         assert form['username'].value == 'test-user-3'
@@ -639,8 +639,8 @@ class TestUserDetails(TestController):
             r = form.submit()
             assert M.AuditLog.query.find().count() == 1
         assert 'Set user status to pending' in self.webflash(r)
-        assert M.User.by_username('test-user-3').disabled == False
-        assert M.User.by_username('test-user-3').pending == True
+        assert M.User.by_username('test-user-3').disabled is False
+        assert M.User.by_username('test-user-3').pending is True
 
     def test_emails(self):
         # add test@example.com
@@ -654,7 +654,7 @@ class TestUserDetails(TestController):
         r = self.app.get('/nf/admin/user/test-user')
         assert 'test@example.com' in r
         em = M.EmailAddress.get(email='test@example.com')
-        assert em.confirmed == True
+        assert em.confirmed is True
         user = M.User.query.get(username='test-user')
         assert user.get_pref('email_address') == 'test@example.com'
 
@@ -669,7 +669,7 @@ class TestUserDetails(TestController):
         r = self.app.get('/nf/admin/user/test-user')
         assert 'test2@example.com' in r
         em = M.EmailAddress.get(email='test2@example.com')
-        assert em.confirmed == True
+        assert em.confirmed is True
         user = M.User.query.get(username='test-user')
         assert user.get_pref('email_address') == 'test@example.com'
 

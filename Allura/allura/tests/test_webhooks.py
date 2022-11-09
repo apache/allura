@@ -593,16 +593,16 @@ class TestRepoPushWebhookSender(TestWebhookBase):
 
         sender = RepoPushWebhookSender()
         # default
-        assert sender.enforce_limit(self.git) == True
+        assert sender.enforce_limit(self.git) is True
         add_webhooks('one', 3)
-        assert sender.enforce_limit(self.git) == False
+        assert sender.enforce_limit(self.git) is False
 
         # config
         limit = json.dumps({'git': 5})
         with h.push_config(config, **{'webhook.repo_push.max_hooks': limit}):
-            assert sender.enforce_limit(self.git) == True
+            assert sender.enforce_limit(self.git) is True
             add_webhooks('two', 3)
-            assert sender.enforce_limit(self.git) == False
+            assert sender.enforce_limit(self.git) is False
 
     def test_before(self):
         sender = RepoPushWebhookSender()
@@ -630,24 +630,24 @@ class TestModels(TestWebhookBase):
 
     def test_webhook_enforce_limit(self):
         self.wh.last_sent = None
-        assert self.wh.enforce_limit() == True
+        assert self.wh.enforce_limit() is True
         # default value
         self.wh.last_sent = dt.datetime.utcnow() - dt.timedelta(seconds=31)
-        assert self.wh.enforce_limit() == True
+        assert self.wh.enforce_limit() is True
         self.wh.last_sent = dt.datetime.utcnow() - dt.timedelta(seconds=15)
-        assert self.wh.enforce_limit() == False
+        assert self.wh.enforce_limit() is False
         # value from config
         with h.push_config(config, **{'webhook.repo_push.limit': 100}):
             self.wh.last_sent = dt.datetime.utcnow() - dt.timedelta(seconds=101)
-            assert self.wh.enforce_limit() == True
+            assert self.wh.enforce_limit() is True
             self.wh.last_sent = dt.datetime.utcnow() - dt.timedelta(seconds=35)
-            assert self.wh.enforce_limit() == False
+            assert self.wh.enforce_limit() is False
 
     @patch('allura.model.webhook.dt', autospec=True)
     def test_update_limit(self, dt_mock):
         _now = dt.datetime(2015, 2, 2, 13, 39)
         dt_mock.datetime.utcnow.return_value = _now
-        assert self.wh.last_sent == None
+        assert self.wh.last_sent is None
         self.wh.update_limit()
         session(self.wh).expunge(self.wh)
         assert M.Webhook.query.get(_id=self.wh._id).last_sent == _now
@@ -884,7 +884,7 @@ class TestWebhookRestController(TestRestApiBase):
             r = self.api_delete(url, status=200)
         assert r.json == {'result': 'ok'}
         assert M.Webhook.query.find().count() == 2
-        assert M.Webhook.query.get(_id=webhook._id) == None
+        assert M.Webhook.query.get(_id=webhook._id) is None
 
     def test_permissions(self):
         self.api_get(self.url, user='test-user', status=403)

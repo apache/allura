@@ -993,8 +993,8 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
             assert r.json == expected
             rid = r.session.get('phone_verification.request_id')
             hash = r.session.get('phone_verification.number_hash')
-            assert rid == None
-            assert hash == None
+            assert rid is None
+            assert hash is None
 
     @patch.object(g, 'phone_service', autospec=True)
     def test_verify_phone(self, phone_service):
@@ -1057,7 +1057,7 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
 
             user = M.User.by_username('test-admin')
             hash = user.get_tool_data('phone_verification', 'number_hash')
-            assert hash == None
+            assert hash is None
 
     @patch.object(g, 'phone_service', autospec=True)
     def test_check_phone_verification_ok(self, phone_service):
@@ -1104,7 +1104,7 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
                 extra_environ=dict(username='test-user'),
                 antispam=True)
             overlay = r.html.find('div', {'id': 'phone_verification_overlay'})
-            assert overlay != None
+            assert overlay is not None
             header = overlay.find('h2')
             iframe = overlay.find('iframe')
             assert header.getText() == 'Phone Verification Required'

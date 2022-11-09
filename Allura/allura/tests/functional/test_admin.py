@@ -1161,7 +1161,7 @@ class TestRestInstallTool(TestRestApiBase):
             'tool': 'tickets'
         }
         r = self.api_post('/rest/p/test/admin/install_tool/', **data)
-        assert r.json['success'] == False
+        assert r.json['success'] is False
         assert r.json['info'] == 'All arguments required.'
 
     def test_invalid_tool(self):
@@ -1175,7 +1175,7 @@ class TestRestInstallTool(TestRestApiBase):
             'mount_label': 'tickets_label1'
         }
         r = self.api_post('/rest/p/test/admin/install_tool/', **data)
-        assert r.json['success'] == False
+        assert r.json['success'] is False
         assert (r.json['info'] ==
                       'Incorrect tool name, or limit is reached.')
 
@@ -1190,7 +1190,7 @@ class TestRestInstallTool(TestRestApiBase):
             'mount_label': 'tickets_label1'
         }
         r = self.api_post('/rest/p/test/admin/install_tool/', **data)
-        assert r.json['success'] == False
+        assert r.json['success'] is False
         assert (r.json['info'] ==
                       'Mount point "tickets_mount1" is invalid')
 
@@ -1205,7 +1205,7 @@ class TestRestInstallTool(TestRestApiBase):
             'mount_label': 'tickets_label1'
         }
         r = self.api_post('/rest/p/test/admin/install_tool/', **data)
-        assert r.json['success'] == True
+        assert r.json['success'] is True
         assert (r.json['info'] ==
                       'Tool %s with mount_point %s and mount_label %s was created.'
                       % ('tickets', 'ticketsmount1', 'tickets_label1'))
@@ -1233,7 +1233,7 @@ class TestRestInstallTool(TestRestApiBase):
             with h.push_config(c, user=M.User.query.get()):
                 project.install_app('wiki', mount_point=data['mount_point'])
             r = self.api_post('/rest/p/test/admin/install_tool/', **data)
-            assert r.json['success'] == False
+            assert r.json['success'] is False
             assert r.json['info'] == 'Mount point already exists.'
 
     def test_tool_installation_limit(self):
@@ -1249,12 +1249,12 @@ class TestRestInstallTool(TestRestApiBase):
                 'mount_label': 'wiki_label'
             }
             r = self.api_post('/rest/p/test/admin/install_tool/', **data)
-            assert r.json['success'] == True
+            assert r.json['success'] is True
 
             data['mount_point'] = 'wikimount1'
             data['mount_label'] = 'wiki_label1'
             r = self.api_post('/rest/p/test/admin/install_tool/', **data)
-            assert r.json['success'] == False
+            assert r.json['success'] is False
             assert (r.json['info'] ==
                           'Incorrect tool name, or limit is reached.')
 
@@ -1314,7 +1314,7 @@ class TestRestInstallTool(TestRestApiBase):
         ]
         for datum in data:
             r = self.api_post('/rest/p/test/admin/install_tool/', **datum)
-            assert r.json['success'] == True
+            assert r.json['success'] is True
             assert (r.json['info'] ==
                           'Tool %s with mount_point %s and mount_label %s was created.'
                           % (datum['tool'], datum['mount_point'], datum['mount_label']))

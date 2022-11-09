@@ -900,7 +900,7 @@ class TestRootController(TestController):
                 dict(text='Some text', title='page1')).follow()
             assert 'Some text' in r
             p = model.Page.query.get(title='page1')
-            assert p != None
+            assert p is not None
         # Set rate limit to 1 in first hour of project
         with h.push_config(config, **{'forgewiki.rate_limits': '{"3600": 1}'}):
             r = self.app.post(
@@ -914,7 +914,7 @@ class TestRootController(TestController):
                 wf['message'] ==
                 'Page create/edit rate limit exceeded. Please try again later.')
             p = model.Page.query.get(title='page2')
-            assert p == None
+            assert p is None
 
     def test_rate_limit_by_user(self):
         # also test that multiple edits to a page counts as one page towards the limit
@@ -960,7 +960,7 @@ class TestRootController(TestController):
             env = {'username': str(username)}
             r = self.app.get('/p/test/wiki/Home/', extra_environ=env)
             menu = r.html.find('div', {'id': 'sidebar-admin-menu'})
-            assert menu == None
+            assert menu is None
         assert_invisible_for('*anonymous')
         assert_invisible_for('test-user')
 

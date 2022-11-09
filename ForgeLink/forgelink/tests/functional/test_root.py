@@ -94,7 +94,7 @@ class TestConfigOptions(TestController):
         assert flash['status'] == 'error'
         assert flash['message'] == 'ToolError: url: That is not a valid URL'
         app = self.project.app_instance('link-google')
-        assert app == None
+        assert app is None
 
     @td.with_link
     def test_sets_url_on_config(self):

@@ -286,7 +286,7 @@ class TestThemeProvider:
     @patch('allura.lib.plugin.g')
     def test_app_icon_str_invalid(self, g):
         g.entry_points = {'tool': {'testapp': Mock()}}
-        assert ThemeProvider().app_icon_url('invalid', 24) == None
+        assert ThemeProvider().app_icon_url('invalid', 24) is None
 
     @patch('allura.app.g')
     def test_app_icon_app(self, g):
@@ -676,7 +676,7 @@ class TestLocalAuthenticationProvider:
         with audits('Account enabled', user=True, actor='test-admin'):
             self.provider.enable_user(user)
             ThreadLocalORMSession.flush_all()
-        assert user.disabled == False
+        assert user.disabled is False
 
     def test_disable_user(self):
         user = Mock(disabled=False, __ming__=Mock(), is_anonymous=lambda: False, _id=ObjectId())
@@ -684,7 +684,7 @@ class TestLocalAuthenticationProvider:
         with audits('Account disabled', user=True, actor='test-admin'):
             self.provider.disable_user(user)
             ThreadLocalORMSession.flush_all()
-        assert user.disabled == True
+        assert user.disabled is True
 
     def test_login_details_from_auditlog(self):
         user = M.User(username='asfdasdf')
@@ -695,11 +695,11 @@ class TestLocalAuthenticationProvider:
         detail = self.provider.login_details_from_auditlog(M.AuditLog(message='IP Address: 1.2.3.4\nFoo', user=user))
         assert detail.user_id == user._id
         assert detail.ip == '1.2.3.4'
-        assert detail.ua == None
+        assert detail.ua is None
 
         detail = self.provider.login_details_from_auditlog(M.AuditLog(message='Foo\nIP Address: 1.2.3.4\nFoo', user=user))
         assert detail.ip == '1.2.3.4'
-        assert detail.ua == None
+        assert detail.ua is None
 
         assert (self.provider.login_details_from_auditlog(M.AuditLog(
                         message='blah blah IP Address: 1.2.3.4\nFoo', user=user)) ==
@@ -707,7 +707,7 @@ class TestLocalAuthenticationProvider:
 
         detail = self.provider.login_details_from_auditlog(M.AuditLog(
                         message='User-Agent: Mozilla/Firefox\nFoo', user=user))
-        assert detail.ip == None
+        assert detail.ip is None
         assert detail.ua == 'Mozilla/Firefox'
 
         detail = self.provider.login_details_from_auditlog(M.AuditLog(
@@ -719,8 +719,8 @@ class TestLocalAuthenticationProvider:
         user = M.User(username='foobarbaz')
         detail = self.provider.get_login_detail(Request.blank('/'), user)
         assert detail.user_id == user._id
-        assert detail.ip == None
-        assert detail.ua == None
+        assert detail.ip is None
+        assert detail.ua is None
 
         detail = self.provider.get_login_detail(Request.blank('/',
                                                               headers={'User-Agent': 'mybrowser'},

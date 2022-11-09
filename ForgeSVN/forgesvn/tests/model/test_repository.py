@@ -94,8 +94,8 @@ class TestNewRepo(unittest.TestCase):
         assert self.rev.tree['a']['b']['c'].ls() == []
         self.assertRaises(KeyError, lambda: self.rev.tree['a']['b']['d'])
 
-        assert self.rev.authored_user == None
-        assert self.rev.committed_user == None
+        assert self.rev.authored_user is None
+        assert self.rev.committed_user is None
         assert (
             sorted(self.rev.webhook_info.keys()) ==
             sorted(['id', 'url', 'timestamp', 'message', 'author',

@@ -59,7 +59,7 @@ class TestWhenModerating(WithDatabase):
 
     def test_that_it_can_be_deleted(self):
         self.moderate_post(delete=True)
-        assert self.get_post() == None
+        assert self.get_post() is None
 
     def moderate_post(self, **kwargs):
         with patch('allura.controllers.discuss.flash'):

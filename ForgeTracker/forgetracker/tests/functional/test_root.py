@@ -296,7 +296,7 @@ class TestFunctionalController(TrackerTestController):
         ticket_view = self.new_ticket(summary=summary).follow()
         assert summary in ticket_view
         opts = self.subscription_options(ticket_view)
-        assert opts['subscribed'] == False
+        assert opts['subscribed'] is False
 
     def test_ticket_get_markdown(self):
         self.new_ticket(summary='my ticket', description='my description')
@@ -406,7 +406,7 @@ class TestFunctionalController(TrackerTestController):
         assert form['ticket_form.assigned_to'].value == 'test-user'
         assert form['ticket_form._milestone'].value == '2.0'
         assert form['ticket_form.status'].value == 'pending'
-        assert form['ticket_form.private'].checked == True
+        assert form['ticket_form.private'].checked is True
 
     def test_mass_edit(self):
         self.new_ticket(summary='First Ticket').follow()
@@ -515,8 +515,8 @@ class TestFunctionalController(TrackerTestController):
             'summary': 'First Custom'}).first()
         ticket2 = tm.Ticket.query.find({
             'summary': 'Second Custom'}).first()
-        assert ticket1.custom_fields._major == False
-        assert ticket2.custom_fields._major == False
+        assert ticket1.custom_fields._major is False
+        assert ticket2.custom_fields._major is False
 
         self.app.post('/p/test/bugs/update_tickets', {
             '__search': '',
@@ -533,8 +533,8 @@ class TestFunctionalController(TrackerTestController):
         assert '<li><strong>Major</strong>: False --&gt; True</li>' in r
         ticket1 = tm.Ticket.query.find({'summary': 'First Custom'}).first()
         ticket2 = tm.Ticket.query.find({'summary': 'Second Custom'}).first()
-        assert ticket1.custom_fields._major == True
-        assert ticket2.custom_fields._major == True
+        assert ticket1.custom_fields._major is True
+        assert ticket2.custom_fields._major is True
 
         self.app.post('/p/test/bugs/update_tickets', {
             '__search': '',
@@ -545,7 +545,7 @@ class TestFunctionalController(TrackerTestController):
         M.MonQTask.run_ready()
         ticket2 = tm.Ticket.query.find({
             'summary': 'Second Custom'}).first()
-        assert ticket2.custom_fields._major == False
+        assert ticket2.custom_fields._major is False
         self.app.post('/p/test/bugs/update_tickets', {
             '__search': '',
             '__ticket_ids': (
@@ -557,8 +557,8 @@ class TestFunctionalController(TrackerTestController):
         M.MonQTask.run_ready()
         ticket1 = tm.Ticket.query.find({'summary': 'First Custom'}).first()
         ticket2 = tm.Ticket.query.find({'summary': 'Second Custom'}).first()
-        assert ticket1.custom_fields._major == True
-        assert ticket2.custom_fields._major == False
+        assert ticket1.custom_fields._major is True
+        assert ticket2.custom_fields._major is False
 
     def test_mass_edit_select_options_split(self):
         params = dict(
@@ -604,8 +604,8 @@ class TestFunctionalController(TrackerTestController):
         assert '<li><strong>Private</strong>: No --&gt; Yes</li>' not in r
         ticket1 = tm.Ticket.query.find({'summary': 'First'}).first()
         ticket2 = tm.Ticket.query.find({'summary': 'Second'}).first()
-        assert ticket1.private == False
-        assert ticket2.private == False
+        assert ticket1.private is False
+        assert ticket2.private is False
 
         self.app.post('/p/test/bugs/update_tickets', {
             '__search': '',
@@ -621,8 +621,8 @@ class TestFunctionalController(TrackerTestController):
         assert '<li><strong>Private</strong>: No --&gt; Yes</li>' in r
         ticket1 = tm.Ticket.query.find({'summary': 'First'}).first()
         ticket2 = tm.Ticket.query.find({'summary': 'Second'}).first()
-        assert ticket1.private == True
-        assert ticket2.private == True
+        assert ticket1.private is True
+        assert ticket2.private is True
 
         ticket2.private = False
         self.app.post('/p/test/bugs/update_tickets', {
@@ -635,8 +635,8 @@ class TestFunctionalController(TrackerTestController):
         M.MonQTask.run_ready()
         ticket1 = tm.Ticket.query.find({'summary': 'First'}).first()
         ticket2 = tm.Ticket.query.find({'summary': 'Second'}).first()
-        assert ticket1.private == True
-        assert ticket2.private == False
+        assert ticket1.private is True
+        assert ticket2.private is False
 
     def test_private_ticket(self):
         ticket_view = self.new_ticket(summary='Public Ticket').follow()
@@ -2568,7 +2568,7 @@ class TestFunctionalController(TrackerTestController):
             r = self.app.post('/bugs/save_ticket', post_data).follow()
             assert summary in r
             t = tm.Ticket.query.get(summary=summary)
-            assert t != None
+            assert t is not None
         # Set rate limit to 1 in first hour of project
         with h.push_config(config, **{'forgetracker.rate_limits': '{"3600": 1}'}):
             summary = 'Ticket with limit'
@@ -2583,7 +2583,7 @@ class TestFunctionalController(TrackerTestController):
                 'Ticket creation rate limit exceeded. Please try again later.')
             assert summary not in r.follow()
             t = tm.Ticket.query.get(summary=summary)
-            assert t == None
+            assert t is None
 
     def test_user_missing(self):
         # add test-user to project so it can be assigned the ticket
@@ -3307,7 +3307,7 @@ class TestNotificationEmailGrouping(TrackerTestController):
         email = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).first()
         ticket = tm.Ticket.query.get(ticket_num=1)
         assert email.kwargs.message_id == ticket.message_id()
-        assert email.kwargs.in_reply_to == None
+        assert email.kwargs.in_reply_to is None
         assert email.kwargs.references == []
 
     def test_comments(self):

@@ -107,8 +107,8 @@ class TestNewGit(unittest.TestCase):
                 '/p/test/src-git/ci/'
                 '1e146e67985dcd71c74de79613719bef7bddca4a/')
 
-        assert self.rev.authored_user == None
-        assert self.rev.committed_user == None
+        assert self.rev.authored_user is None
+        assert self.rev.committed_user is None
         user = M.User.upsert('rick')
         email = user.claim_address('rcopeland@geek.net')
         email.confirmed = True
@@ -558,10 +558,10 @@ By Dave Brondsema''' in text_body
 
         os.remove(
             os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip"))
-        assert self.repo.get_tarball_status('HEAD') == None
+        assert self.repo.get_tarball_status('HEAD') is None
 
     def test_tarball_status_task(self):
-        assert self.repo.get_tarball_status('HEAD') == None
+        assert self.repo.get_tarball_status('HEAD') is None
 
         # create tarball task in MonQTask and check get_tarball_status
         tarball.post('HEAD', '')
@@ -583,7 +583,7 @@ By Dave Brondsema''' in text_body
         # when state is complete, but file don't exists, then status is None
         task.state = 'complete'
         task.query.session.flush_all()
-        assert self.repo.get_tarball_status('HEAD') == None
+        assert self.repo.get_tarball_status('HEAD') is None
 
     def test_is_empty(self):
         assert not self.repo.is_empty()
@@ -715,7 +715,7 @@ By Dave Brondsema''' in text_body
         git = mock.Mock()
         git.merge_tree.return_value = 'clean merge'
         self.repo._impl._git.git = git
-        assert self.repo.can_merge(mr) == True
+        assert self.repo.can_merge(mr) is True
         git.fetch.assert_called_once_with('downstream-url', 'source-branch')
         git.merge_base.assert_called_once_with('cid', 'target-branch')
         git.merge_tree.assert_called_once_with(
@@ -723,7 +723,7 @@ By Dave Brondsema''' in text_body
             'target-branch',
             'cid')
         git.merge_tree.return_value = '+<<<<<<<'
-        assert self.repo.can_merge(mr) == False
+        assert self.repo.can_merge(mr) is False
 
     @mock.patch('forgegit.model.git_repo.tempfile', autospec=True)
     @mock.patch('forgegit.model.git_repo.git', autospec=True)

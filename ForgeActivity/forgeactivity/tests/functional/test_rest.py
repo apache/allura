@@ -41,12 +41,12 @@ class TestActivityHasAccessAPI(TestRestApiBase):
             '/rest/p/test/activity/has_access?user=babadook&perm=read',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
         r = self.api_get(
             '/rest/p/test/activity/has_access?user=test-user&perm=jump',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
 
     def test_has_access_not_admin(self):
         """
@@ -63,12 +63,12 @@ class TestActivityHasAccessAPI(TestRestApiBase):
             '/rest/p/test/activity/has_access?user=test-admin&perm=admin',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == True
+        assert r.json['result'] is True
         r = self.api_get(
             '/rest/p/test/activity/has_access?user=test-user&perm=admin',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
 
 
     def test_user_api(self):

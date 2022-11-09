@@ -339,7 +339,7 @@ def test_empty_cursor():
     """EmptyCursors conforms to specification of Ming's ODMCursor"""
     cursor = utils.EmptyCursor()
     assert cursor.count() == 0
-    assert cursor.first() == None
+    assert cursor.first() is None
     assert cursor.all() == []
     assert cursor.limit(10) == cursor
     assert cursor.skip(10) == cursor

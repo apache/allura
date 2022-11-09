@@ -61,7 +61,7 @@ class TestGitHubOAuth(TestController):
         oauth.return_value = oauth_instance
 
         user = M.User.by_username('test-admin')
-        assert user.get_tool_data('GitHubProjectImport', 'token') == None
+        assert user.get_tool_data('GitHubProjectImport', 'token') is None
         r = self.app.get('/p/import_project/github/')
         assert r.status_int == 302
         assert r.location == redirect

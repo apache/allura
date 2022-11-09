@@ -115,11 +115,11 @@ class TestLdapAuthenticationProvider:
         ldap.dn.escape_dn_chars = lambda x: x
         self.provider._encode_password = Mock(return_value=b'new-password-hash')
 
-        assert M.User.query.get(username=user_doc['username']) == None
+        assert M.User.query.get(username=user_doc['username']) is None
         with h.push_config(config, **{'auth.ldap.autoregister': 'false'}):
             self.provider.register_user(user_doc)
         ThreadLocalORMSession.flush_all()
-        assert M.User.query.get(username=user_doc['username']) != None
+        assert M.User.query.get(username=user_doc['username']) is not None
 
         dn = 'uid=%s,ou=people,dc=localdomain' % user_doc['username']
         ldap.initialize.assert_called_once_with('ldaps://localhost/')

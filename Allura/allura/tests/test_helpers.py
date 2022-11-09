@@ -310,18 +310,18 @@ def test_get_tool_packages():
 
 
 def test_get_first():
-    assert h.get_first({}, 'title') == None
-    assert h.get_first({'title': None}, 'title') == None
+    assert h.get_first({}, 'title') is None
+    assert h.get_first({'title': None}, 'title') is None
     assert h.get_first({'title': 'Value'}, 'title') == 'Value'
     assert h.get_first({'title': ['Value']}, 'title') == 'Value'
-    assert h.get_first({'title': []}, 'title') == None
+    assert h.get_first({'title': []}, 'title') is None
     assert h.get_first({'title': ['Value']}, 'title') == 'Value'
 
 
 @patch('allura.lib.search.c')
 def test_inject_user(context):
     user = Mock(username='user01')
-    assert inject_user(None, user) == None
+    assert inject_user(None, user) is None
     assert inject_user('', user) == ''
     assert inject_user('query', user) == 'query'
     result = inject_user('reported_by_s:$USER OR assigned_to_s:$USER', user)
@@ -357,8 +357,8 @@ def test_split_select_field_options():
 def test_notifications_disabled():
     project = Mock(notifications_disabled=False)
     with h.notifications_disabled(project):
-        assert project.notifications_disabled == True
-    assert project.notifications_disabled == False
+        assert project.notifications_disabled is True
+    assert project.notifications_disabled is False
 
 
 @skipIf(module_not_available('html2text'), 'html2text required')
@@ -664,7 +664,7 @@ class TestRateLimit(TestCase):
 
 
 def test_hide_private_info():
-    assert h.hide_private_info(None) == None
+    assert h.hide_private_info(None) is None
     assert h.hide_private_info('') == ''
     assert h.hide_private_info('foo bar baz@bing.com') == 'foo bar baz@...'
     assert h.hide_private_info('some <1@2.com>\nor asdf+asdf.f@g.f.x') == 'some <1@...>\nor asdf+asdf.f@...'

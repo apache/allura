@@ -535,7 +535,7 @@ some text and **[Tips n\u2019 Tricks]**
     def test_has_wiki_repo(self, repo, rmtree, mkdtemp):
         mkdtemp.return_value = 'fake path'
         i = GitHubWikiImporter()
-        assert i.has_wiki_repo('fake url') == True
+        assert i.has_wiki_repo('fake url') is True
         repo.clone_from.assert_called_once_with(
             'fake url', to_path='fake path', bare=True)
         rmtree.assert_called_once_with('fake path')
@@ -543,7 +543,7 @@ some text and **[Tips n\u2019 Tricks]**
         def raise_error(*args, **kw):
             raise git.GitCommandError('bam', 'bam', 'bam')
         repo.clone_from.side_effect = raise_error
-        assert i.has_wiki_repo('fake url') == False
+        assert i.has_wiki_repo('fake url') is False
 
 
 class TestGitHubWikiImportController(TestController, TestCase):

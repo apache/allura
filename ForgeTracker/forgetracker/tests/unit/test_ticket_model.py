@@ -294,7 +294,7 @@ class TestTicketModel(TrackerTestWithModel):
             ticket.assigned_to_id = User.by_username('test-user-0')._id
 
         t = ticket.move(app2.config)
-        assert t.assigned_to_id == None
+        assert t.assigned_to_id is None
         assert t.custom_fields['_user_field'] == 'test-user'
         assert t.custom_fields['_user_field_2'] == ''
         post = Post.query.find(
@@ -359,4 +359,4 @@ class TestTicketModel(TrackerTestWithModel):
         assert idx['summary_t'] == 'ticket2'
         assert idx['labels_t'] == 'mylabel other'
         assert idx['reported_by_s'] == 'test-user'
-        assert idx['assigned_to_s'] == None  # must exist at least
+        assert idx['assigned_to_s'] is None  # must exist at least

@@ -707,13 +707,13 @@ class TestMergeRequest:
 
     def test_get_can_merge_cache(self):
         key = self.mr.can_merge_cache_key()
-        assert self.mr.get_can_merge_cache() == None
+        assert self.mr.get_can_merge_cache() is None
         self.mr.can_merge_cache[key] = True
-        assert self.mr.get_can_merge_cache() == True
+        assert self.mr.get_can_merge_cache() is True
 
         self.mr.can_merge_cache_key = lambda: '123-123'
         self.mr.can_merge_cache['123-123'] = False
-        assert self.mr.get_can_merge_cache() == False
+        assert self.mr.get_can_merge_cache() is False
 
     def test_set_can_merge_cache(self):
         key = self.mr.can_merge_cache_key()
@@ -727,7 +727,7 @@ class TestMergeRequest:
 
     def test_can_merge_merged(self):
         self.mr.status = 'merged'
-        assert self.mr.can_merge() == True
+        assert self.mr.can_merge() is True
 
     @mock.patch('allura.tasks.repo_tasks.can_merge', autospec=True)
     def test_can_merge_cached(self, can_merge_task):
@@ -737,22 +737,22 @@ class TestMergeRequest:
 
         self.mr.set_can_merge_cache(False)
         self.mr = self._reload_mr_from_db(self.mr)
-        assert self.mr.can_merge() == False
+        assert self.mr.can_merge() is False
 
         self.mr.set_can_merge_cache(True)
         self.mr = self._reload_mr_from_db(self.mr)
-        assert self.mr.can_merge() == True
+        assert self.mr.can_merge() is True
         assert can_merge_task.post.call_count == 0
 
     @mock.patch('allura.tasks.repo_tasks.can_merge', autospec=True)
     def test_can_merge_not_cached(self, can_merge_task):
-        assert self.mr.can_merge() == None
+        assert self.mr.can_merge() is None
         can_merge_task.post.assert_called_once_with(self.mr._id)
 
     @mock.patch('allura.tasks.repo_tasks.can_merge', autospec=True)
     def test_can_merge_disabled(self, can_merge_task):
         self.mr.merge_allowed.return_value = False
-        assert self.mr.can_merge() == None
+        assert self.mr.can_merge() is None
         assert can_merge_task.post.call_count == 0
 
     @mock.patch('allura.tasks.repo_tasks.merge', autospec=True)
@@ -764,11 +764,11 @@ class TestMergeRequest:
         merge_task.reset_mock()
         self.mr.merge_task_status = lambda: 'ready'
         self.mr.merge()
-        assert merge_task.post.called == False
+        assert merge_task.post.called is False
 
     def test_merge_task_status(self):
         from allura.tasks import repo_tasks
-        assert self.mr.merge_task_status() == None
+        assert self.mr.merge_task_status() is None
         repo_tasks.merge.post(self.mr._id)
         assert self.mr.merge_task_status() == 'ready'
         M.MonQTask.run_ready()
@@ -776,7 +776,7 @@ class TestMergeRequest:
 
     def test_can_merge_task_status(self):
         from allura.tasks import repo_tasks
-        assert self.mr.can_merge_task_status() == None
+        assert self.mr.can_merge_task_status() is None
         repo_tasks.can_merge.post(self.mr._id)
         assert self.mr.can_merge_task_status() == 'ready'
         with mock.patch('allura.model.repository.MergeRequest.set_can_merge_cache'):

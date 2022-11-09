@@ -80,7 +80,7 @@ class TestRootRestController(TestDiscussionApiBase):
         assert forums[1]['num_topics'] == 0
         assert (
             forums[1]['url'] == 'http://localhost/rest/p/test/discussion/h%C3%A9llo/')
-        assert forums[1]['last_post'] == None
+        assert forums[1]['last_post'] is None
 
     def test_forum(self):
         forum = self.api_get('/rest/p/test/discussion/general/')
@@ -255,12 +255,12 @@ class TestRootRestController(TestDiscussionApiBase):
             '/rest/p/test/discussion/has_access?user=babadook&perm=read',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
         r = self.api_get(
             '/rest/p/test/discussion/has_access?user=test-user&perm=jump',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
 
     def test_has_access_not_admin(self):
         """
@@ -277,9 +277,9 @@ class TestRootRestController(TestDiscussionApiBase):
             '/rest/p/test/discussion/has_access?user=test-admin&perm=post',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == True
+        assert r.json['result'] is True
         r = self.api_get(
             '/rest/p/test/discussion/has_access?user=*anonymous&perm=admin',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False

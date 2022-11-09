@@ -63,7 +63,7 @@ class TestApp:
 
     def test_config_option_without_validator(self):
         opt = app.ConfigOption('test1', str, None)
-        assert opt.validate(None) == None
+        assert opt.validate(None) is None
         assert opt.validate('') == ''
         assert opt.validate('val') == 'val'
 

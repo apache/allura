@@ -244,9 +244,9 @@ class TestAuth(TestController):
 
     def test_track_login(self):
         user = M.User.by_username('test-user')
-        assert user.last_access['login_date'] == None
-        assert user.last_access['login_ip'] == None
-        assert user.last_access['login_ua'] == None
+        assert user.last_access['login_date'] is None
+        assert user.last_access['login_ip'] is None
+        assert user.last_access['login_ua'] is None
 
         self.app.get('/').follow()  # establish session
         self.app.post('/auth/do_login',
@@ -260,7 +260,7 @@ class TestAuth(TestController):
                       antispam=True,
                       )
         user = M.User.by_username('test-user')
-        assert user.last_access['login_date'] != None
+        assert user.last_access['login_date'] is not None
         assert user.last_access['login_ip'] == '127.0.0.1'
         assert user.last_access['login_ua'] == 'browser'
 
@@ -275,7 +275,7 @@ class TestAuth(TestController):
             _session_id=self.app.cookies['_session_id'],
         ), antispam=True)
         assert r.session['username'] == username
-        assert r.session['login_expires'] == True
+        assert r.session['login_expires'] is True
 
         for header, contents in r.headerlist:
             if header == 'Set-cookie':
@@ -287,7 +287,7 @@ class TestAuth(TestController):
             _session_id=self.app.cookies['_session_id'],
         ), antispam=True)
         assert r.session['username'] == username
-        assert r.session['login_expires'] != True
+        assert r.session['login_expires'] is not True
 
         for header, contents in r.headerlist:
             if header == 'Set-cookie':
@@ -724,7 +724,7 @@ class TestAuth(TestController):
         assert 'test-admin@users.localhost' not in r
         # preferred address has not changed if email is not verified
         user = M.User.query.get(username='test-admin')
-        assert user.get_pref('email_address') == None
+        assert user.get_pref('email_address') is None
 
         with td.audits('Display Name changed Test Admin => Admin', user=True):
             r = self.app.post('/auth/preferences/update',
@@ -2168,7 +2168,7 @@ class TestDisableAccount(TestController):
                                                        '_session_id': self.app.cookies['_session_id'], })
         assert 'Invalid password' in r
         user = M.User.by_username('test-admin')
-        assert user.disabled == False
+        assert user.disabled is False
 
     def test_disable(self):
         self.app.get('/').follow()  # establish session
@@ -2180,7 +2180,7 @@ class TestDisableAccount(TestController):
         assert flash['status'] == 'ok'
         assert flash['message'] == 'Your account was successfully disabled!'
         user = M.User.by_username('test-admin')
-        assert user.disabled == True
+        assert user.disabled is True
 
 
 class TestPasswordExpire(TestController):
@@ -2584,7 +2584,7 @@ class TestTwoFactor(TestController):
         # confirm first, no change
         assert 'Password Confirmation' in r
         user = M.User.query.get(username='test-admin')
-        assert user.get_pref('multifactor') == True
+        assert user.get_pref('multifactor') is True
 
         # confirm submit, everything goes off
         r.form['password'] = 'foo'
@@ -2592,8 +2592,8 @@ class TestTwoFactor(TestController):
             r = r.form.submit()
             assert 'Multifactor authentication has now been disabled.' == json.loads(self.webflash(r))['message'], self.webflash(r)
         user = M.User.query.get(username='test-admin')
-        assert user.get_pref('multifactor') == False
-        assert TotpService().get().get_secret_key(user) == None
+        assert user.get_pref('multifactor') is False
+        assert TotpService().get().get_secret_key(user) is None
         assert RecoveryCodeService().get().get_codes(user) == []
 
         # email confirmation

@@ -127,7 +127,7 @@ class TestSearchIndexable(unittest.TestCase):
 
     def test_solarize_empty_index(self):
         self.obj.index = lambda: None
-        assert self.obj.solarize() == None
+        assert self.obj.solarize() is None
 
     def test_solarize_doc_without_text(self):
         self.obj.index = lambda: dict()

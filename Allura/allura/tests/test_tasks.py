@@ -66,7 +66,7 @@ class TestRepoTasks(unittest.TestCase):
         repo_tasks.clone(None, None, fake_source_url)
         assert post_event.call_args[0][0] == 'repo_clone_task_failed'
         assert post_event.call_args[0][1] == fake_source_url
-        assert post_event.call_args[0][2] == None
+        assert post_event.call_args[0][2] is None
         # ignore args[3] which is a traceback string
 
     @mock.patch('allura.tasks.repo_tasks.session', autospec=True)
@@ -653,7 +653,7 @@ class TestExportTasks(unittest.TestCase):
         assert 'Sample instructions for test' in text
 
     def test_bulk_export_status(self):
-        assert c.project.bulk_export_status() == None
+        assert c.project.bulk_export_status() is None
         export_tasks.bulk_export.post(['wiki'])
         assert c.project.bulk_export_status() == 'busy'
 

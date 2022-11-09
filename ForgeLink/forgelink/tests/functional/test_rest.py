@@ -33,7 +33,7 @@ class TestLinkApi(TestRestApiBase):
 
     def test_rest_link(self):
         r = self.api_get('/rest/p/test/link')
-        assert r.json['url'] == None
+        assert r.json['url'] is None
 
         r = self.api_post('/rest/p/test/link',
                           url='http://google.com')
@@ -98,12 +98,12 @@ class TestLinkHasAccess(TestRestApiBase):
             '/rest/p/test/link/has_access?user=babadook&perm=read',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
         r = self.api_get(
             '/rest/p/test/link/has_access?user=test-user&perm=jump',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
 
     def test_has_access_not_admin(self):
         """
@@ -120,9 +120,9 @@ class TestLinkHasAccess(TestRestApiBase):
             '/rest/p/test/link/has_access?user=test-admin&perm=configure',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == True
+        assert r.json['result'] is True
         r = self.api_get(
             '/rest/p/test/link/has_access?user=test-user&perm=configure',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False

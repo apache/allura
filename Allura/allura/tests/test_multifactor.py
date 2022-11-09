@@ -56,8 +56,8 @@ class TestGoogleAuthenticatorFile:
         gaf = GoogleAuthenticatorFile.load(self.sample)
         assert gaf.key == b'\xf8\x97\xbb/\xfd\xf2%\x01S\xa7\x8dZ\x07\x0c\\\xe4'
         assert gaf.options['RATE_LIMIT'] == '3 30'
-        assert gaf.options['DISALLOW_REUSE'] == None
-        assert gaf.options['TOTP_AUTH'] == None
+        assert gaf.options['DISALLOW_REUSE'] is None
+        assert gaf.options['TOTP_AUTH'] is None
         assert gaf.recovery_codes == [
             '43504045',
             '16951331',
@@ -274,7 +274,7 @@ class TestAnyRecoveryCodeServiceImplementation:
         ]
         recovery.replace_codes(user, codes)
         result = recovery.verify_and_remove_code(user, '12345')
-        assert result == True
+        assert result is True
         assert recovery.get_codes(user) == ['67890']
 
     def test_rate_limiting(self):

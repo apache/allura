@@ -73,7 +73,7 @@ class TestFiles(TestController):
         data1 = {'folder_id': str(folder_object._id), 'remarks': 'Publishing new Version'}
         self.app.post('/p/test/files/publish_folder', data1)
         resp = self.app.get('/files/')
-        assert folder_object.published == True
+        assert folder_object.published is True
 
     def test_link_file(self):
         file_object = upload_file(self)

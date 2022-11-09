@@ -101,7 +101,7 @@ class TestProjectModel:
             for v in [None, '', 'bad@email']:
                 with td.raises(ToolError):
                     c.project.install_app('Tickets', 'test-tickets', **{name: v})
-                assert c.project.app_instance('test-tickets') == None
+                assert c.project.app_instance('test-tickets') is None
             c.project.install_app('Tickets', 'test-tickets', **{name: 'e@e.com'})
             app = c.project.app_instance('test-tickets')
             assert app.config.options[name] == 'e@e.com'

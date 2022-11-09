@@ -291,12 +291,12 @@ class TestUserProfileHasAccessAPI(TestRestApiBase):
             '/rest/u/test-admin/profile/has_access?user=babadook&perm=read',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
         r = self.api_get(
             '/rest/u/test-admin/profile/has_access?user=test-user&perm=jump',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
 
     @td.with_user_project('test-admin')
     def test_has_access_not_admin(self):
@@ -315,9 +315,9 @@ class TestUserProfileHasAccessAPI(TestRestApiBase):
             '/rest/u/test-admin/profile/has_access?user=test-admin&perm=admin',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == True
+        assert r.json['result'] is True
         r = self.api_get(
             '/rest/u/test-admin/profile/has_access?user=test-user&perm=admin',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False

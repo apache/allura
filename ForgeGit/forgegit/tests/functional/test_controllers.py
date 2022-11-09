@@ -432,7 +432,7 @@ class TestRootController(_TestCase):
         r = self.app.get(ci + 'tree/',
                          extra_environ={'username': str(user.username)})
         opts = self.subscription_options(r)
-        assert opts['subscribed'] == False
+        assert opts['subscribed'] is False
 
         # subscribe
         r = self.app.post(str(ci + 'tree/subscribe'),
@@ -444,7 +444,7 @@ class TestRootController(_TestCase):
         r = self.app.get(ci + 'tree/',
                          extra_environ={'username': str(user.username)})
         opts = self.subscription_options(r)
-        assert opts['subscribed'] == True
+        assert opts['subscribed'] is True
 
         # unsubscribe
         r = self.app.post(str(ci + 'tree/subscribe'),
@@ -456,7 +456,7 @@ class TestRootController(_TestCase):
         r = self.app.get(ci + 'tree/',
                          extra_environ={'username': str(user.username)})
         opts = self.subscription_options(r)
-        assert opts['subscribed'] == False
+        assert opts['subscribed'] is False
 
     def test_timezone(self):
         ci = self._get_ci()
@@ -537,7 +537,7 @@ class TestRootController(_TestCase):
         # for some reason c.app.config.options has old values still
         app_config = M.AppConfig.query.get(_id=c.app.config._id)
         assert app_config.options['external_checkout_url'] == 'http://foo.bar/baz'
-        assert app_config.options['merge_disabled'] == True
+        assert app_config.options['merge_disabled'] is True
 
     def test_refresh(self):
         r = self.app.get('/p/test/src-git/refresh')
@@ -587,12 +587,12 @@ class TestHasAccessAPI(TestRestApiBase):
             '/rest/p/test/src-git/has_access?user=babadook&perm=read',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
         r = self.api_get(
             '/rest/p/test/src-git/has_access?user=test-user&perm=jump',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
 
     def test_has_access_not_admin(self):
         """
@@ -609,12 +609,12 @@ class TestHasAccessAPI(TestRestApiBase):
             '/rest/p/test/src-git/has_access?user=test-admin&perm=create',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == True
+        assert r.json['result'] is True
         r = self.api_get(
             '/rest/p/test/src-git/has_access?user=test-user&perm=create',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
 
 
 class TestFork(_TestCase):
@@ -1124,13 +1124,13 @@ class TestIncludeMacro(_TestCase):
         setup_global_objects()
 
     def test_parse_repo(self):
-        assert macro.parse_repo('app') == None
-        assert macro.parse_repo('proj:app') == None
-        assert macro.parse_repo('nbhd:test:src-git') == None
-        assert macro.parse_repo('a:b:c:d:e:f') == None
-        assert macro.parse_repo('src-git') != None
-        assert macro.parse_repo('test:src-git') != None
-        assert macro.parse_repo('p:test:src-git') != None
+        assert macro.parse_repo('app') is None
+        assert macro.parse_repo('proj:app') is None
+        assert macro.parse_repo('nbhd:test:src-git') is None
+        assert macro.parse_repo('a:b:c:d:e:f') is None
+        assert macro.parse_repo('src-git') is not None
+        assert macro.parse_repo('test:src-git') is not None
+        assert macro.parse_repo('p:test:src-git') is not None
 
     def test_include_file_no_repo(self):
         expected = '[[include repo %s (not found)]]'

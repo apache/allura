@@ -88,13 +88,13 @@ class TestRestNewTicket(TestTrackerApiBase):
             summary = 'Second ticket'
             self.create_ticket(summary=summary)
             t = TM.Ticket.query.get(summary=summary)
-            assert t != None
+            assert t is not None
         # Set rate limit to 1 in first hour of project
         with h.push_config(config, **{'forgetracker.rate_limits': '{"3600": 1}'}):
             summary = 'Third ticket'
             self.create_ticket(summary=summary, status=429)
             t = TM.Ticket.query.get(summary=summary)
-            assert t == None
+            assert t is None
 
 
 class TestRestUpdateTicket(TestTrackerApiBase):
@@ -252,12 +252,12 @@ class TestRestHasAccess(TestTrackerApiBase):
             '/rest/p/test/bugs/has_access?user=babadook&perm=read',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
         r = self.api_get(
             '/rest/p/test/bugs/has_access?user=test-user&perm=jump',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
 
     def test_has_access_not_admin(self):
         """
@@ -274,9 +274,9 @@ class TestRestHasAccess(TestTrackerApiBase):
             '/rest/p/test/bugs/has_access?user=test-admin&perm=delete',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == True
+        assert r.json['result'] is True
         r = self.api_get(
             '/rest/p/test/bugs/has_access?user=test-user&perm=delete',
             user='root')
         assert r.status_int == 200
-        assert r.json['result'] == False
+        assert r.json['result'] is False
