@@ -597,6 +597,7 @@ class TestNeighborhood(TestController):
         neighborhood = M.Neighborhood.query.get(name='Projects')
         neighborhood.features['private_projects'] = False
         r = self.app.get('/p/add_project', extra_environ=dict(username='root'))
+        assert 'canonical' in r
         assert 'private_project' not in r
 
         r = self.app.post(

@@ -16,7 +16,12 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% from 'allura:templates/jinja_master/lib.html' import canonical_tag %}
 {% extends g.theme.master %}
+
+{% block head %}
+    {{ canonical_tag() }}
+{% endblock %}
 
 {% if hasattr(c.app, 'repo') %}
     {% set repo = c.app.repo %}
