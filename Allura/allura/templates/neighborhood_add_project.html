@@ -16,8 +16,13 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% from 'allura:templates/jinja_master/lib.html' import canonical_tag %}
 {% set hide_left_bar = True %}
 {% extends g.theme.master %}
+
+{% block head %}
+    {{ canonical_tag() }}
+{% endblock %}
 
 {% block title %}{{neighborhood.name}} / Create a Project{% endblock %}
 
