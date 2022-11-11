@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import io
 from unittest import TestCase, skipIf
 from os import path
 from datetime import datetime, timedelta
@@ -487,7 +488,7 @@ class TestUrlOpen(TestCase):
         from six.moves.urllib.error import HTTPError
 
         def side_effect(url, timeout=None):
-            raise HTTPError('url', 408, 'timeout', None, None)
+            raise HTTPError('url', 408, 'timeout', None, io.BytesIO())
 
         urlopen.side_effect = side_effect
         self.assertRaises(HTTPError, h.urlopen, 'myurl')
@@ -498,7 +499,7 @@ class TestUrlOpen(TestCase):
         from six.moves.urllib.error import HTTPError
 
         def side_effect(url, timeout=None):
-            raise HTTPError('url', 404, 'timeout', None, None)
+            raise HTTPError('url', 404, 'timeout', None, io.BytesIO())
 
         urlopen.side_effect = side_effect
         self.assertRaises(HTTPError, h.urlopen, 'myurl')
