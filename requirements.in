@@ -47,7 +47,6 @@ WebHelpers2
 WebOb
 werkzeug
 wrapt
-importlib-metadata<5.0
 # testing
 mock
 pyflakes
