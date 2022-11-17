@@ -468,43 +468,56 @@ class ContentSecurityPolicyMiddleware:
     def __call__(self, environ, start_response):
         req = Request(environ)
         resp = req.get_response(self.app)
-        rules = resp.headers.getall('Content-Security-Policy')
-        report_rules = resp.headers.getall('Content-Security-Policy-Report-Only')
-        report_mode =  asbool(self.config.get('csp.report_mode',False))
-        report_enforce_mode = asbool(self.config.get('csp.report_enforce_mode',False))
+        rules = set(resp.headers.getall('Content-Security-Policy'))
+        report_rules = set(resp.headers.getall('Content-Security-Policy-Report-Only'))
         report_uri = self.config.get('csp.report_uri', None)
         report_uri_enforce = self.config.get('csp.report_uri_enforce', None)
         
         if rules:
             resp.headers.pop('Content-Security-Policy')
+
         if report_rules:
            resp.headers.pop('Content-Security-Policy-Report-Only')
 
-        if report_mode and report_uri:
-            report_rules.append(f'report-uri {report_uri}')
 
         if self.config['base_url'].startswith('https'):
-            rules.append('upgrade-insecure-requests')
+            rules.add('upgrade-insecure-requests')
 
-        if report_enforce_mode and report_uri_enforce:
-            rules.append(f'report-uri {report_uri_enforce}')
 
         if self.config.get('csp.frame_sources'):
-            if report_mode:
-                report_rules.append(f"frame-src {self.config['csp.frame_sources']}")
+            if asbool(self.config.get('csp.frame_sources_enforce',False)):
+                rules.add(f"frame-src {self.config['csp.frame_sources']}")
             else:
-                rules.append(f"frame-src {self.config['csp.frame_sources']}")
+                report_rules.add(f"frame-src {self.config['csp.frame_sources']}")
 
         if self.config.get('csp.form_action_urls'):
-            if report_mode:
-                report_rules.append(f"form-action {self.config['csp.form_action_urls']}")
+            if asbool(self.config.get('csp.form_actions_enforce',False)):
+                rules.add(f"form-action {self.config['csp.form_action_urls']}")
             else:
-                rules.append(f"form-action {self.config['csp.form_action_urls']}")
+                report_rules.add(f"form-action {self.config['csp.form_action_urls']}")
 
-        rules.append("object-src 'none'")
-        rules.append("frame-ancestors 'self'")
+        if self.config.get('csp.script_src'):
+            script_srcs = self.config['csp.script_src']
+            """ 
+            Sometimes you might have the need to build custom values from inside a controller and pass it
+            to the middleware. In this case we pass a custom list of domains from google that can't be built
+            directly in here.
+            """
+            if environ.get('csp_script_domains',''):
+                script_srcs = f"{script_srcs} {' '.join(environ['csp_script_domains'])}"
+
+            if asbool(self.config.get('csp.script_src_enforce',False)):
+                rules.add(f"script-src {script_srcs} {self.config.get('csp.script_src.extras','')}")
+            else:
+                report_rules.add(f"script-src {script_srcs} {self.config.get('csp.script_src.extras','')}")
+
+
+        rules.add("object-src 'none'")
+        rules.add("frame-ancestors 'self'")
         if rules:
+            rules.add(f'report-uri {report_uri_enforce}')
             resp.headers.add('Content-Security-Policy', '; '.join(rules))
         if report_rules:
+            report_rules.add(f'report-uri {report_uri}')
             resp.headers.add('Content-Security-Policy-Report-Only', '; '.join(report_rules))
         return resp(environ, start_response)
