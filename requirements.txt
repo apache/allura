@@ -94,7 +94,7 @@ markupsafe==2.1.0
     #   jinja2
     #   turbogears2
     #   webhelpers2
-ming==0.12.1
+ming==0.12.2
     # via -r requirements.in
 mock==4.0.3
     # via -r requirements.in
