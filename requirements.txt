@@ -40,7 +40,7 @@ easywidgets==0.4.1
     # via -r requirements.in
 emoji==2.2.0
     # via -r requirements.in
-exceptiongroup==1.0.1
+exceptiongroup==1.0.4
     # via pytest
 execnet==1.9.0
     # via pytest-xdist
