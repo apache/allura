@@ -503,10 +503,10 @@ class ContentSecurityPolicyMiddleware:
             to the middleware. In this case we pass a custom list of domains from google that can't be built
             directly in here.
             """
-            if environ.get('google_domains',''):
-                script_srcs = f"{script_srcs} {' '.join(environ['google_domains'])}"
+            if environ.get('csp_script_domains',''):
+                script_srcs = f"{script_srcs} {' '.join(environ['csp_script_domains'])}"
 
-            if asbool(self.config.get('csp.script_scr_enforce',False)):
+            if asbool(self.config.get('csp.script_src_enforce',False)):
                 rules.add(f"script-src {script_srcs} {self.config.get('csp.script_src.extras','')}")
             else:
                 report_rules.add(f"script-src {script_srcs} {self.config.get('csp.script_src.extras','')}")

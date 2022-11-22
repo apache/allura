@@ -186,28 +186,36 @@ class TestRootController(TestController):
         r = self.app.get('/error/document')
         r.mustcontain("We're sorry but we weren't able to process")
 
+    @mock.patch.dict(tg.config, {'csp.frame_sources_enforce': True, \
+                                 'csp.report_uri_enforce': 'https://example.com/r/d/csp/enforce', \
+                                 'csp.form_actions_enforce': True,
+                                 'csp.script_src_enforce': True})
     def test_headers(self):
         resp = self.app.get('/p')
-        assert resp.headers.getall('Content-Security-Policy')[0] == '; '.join(["frame-src 'self' www.youtube-nocookie.com",
-                                                                  "form-action 'self'",
-                                                                  "object-src 'none'",
-                                                                  "frame-ancestors 'self'"])
+        expected_headers = "form-action 'self'; frame-src 'self' www.youtube-nocookie.com; object-src 'none';"
+        expected_headers += "frame-ancestors 'self'; report-uri https://example.com/r/d/csp/enforce; script-src 'self;"
+        csp_headers = resp.headers.getall('Content-Security-Policy')[0]
+        assert all([h.strip() in csp_headers for h in expected_headers.split(';')])
 
+    @mock.patch.dict(tg.config, {'csp.frame_sources_enforce': True,
+                                 'csp.report_uri_enforce': 'https://example.com/r/d/csp/enforce'})
     def test_headers_config(self):
         resp = self.app.get('/p')
-        assert "frame-src 'self' www.youtube-nocookie.com;" in resp.headers.getall('Content-Security-Policy')[0]
+        assert "frame-src 'self' www.youtube-nocookie.com" in resp.headers.getall('Content-Security-Policy')[0]
 
-    @mock.patch.dict(tg.config, {'csp.report_mode': True, 'csp.report_uri': 'https://example.com/r/d/csp/reportOnly'})
+    @mock.patch.dict(tg.config, {'csp.report_uri': 'https://example.com/r/d/csp/reportOnly'})
     def test_headers_report(self):
         resp = self.app.get('/p/wiki/Home/')
-        assert resp.headers.getall('Content-Security-Policy-Report-Only')[0] == '; '.join([
-            "report-uri https://example.com/r/d/csp/reportOnly",
-            "frame-src 'self' www.youtube-nocookie.com",
-            "form-action 'self'",
-        ])
+        expected_headers = "report-uri https://example.com/r/d/csp/reportOnly;"
+        expected_headers += "frame-src 'self' www.youtube-nocookie.com; script-src 'self' ;"
+        expected_headers += "form-action 'self'"
 
-    @mock.patch.dict(tg.config, {'csp.report_uri_enforce': 'https://example.com/r/d/csp/enforce', 'csp.report_enforce_mode': True})
-    def test_headers_report_enforce(self):
+        csp_headers = resp.headers.getall('Content-Security-Policy-Report-Only')[0]
+        assert all([h.strip() in csp_headers for h in expected_headers.split(';')])
+
+
+    @mock.patch.dict(tg.config, {'csp.report_uri_enforce': 'https://example.com/r/d/csp/enforce', 'csp.frame_sources_enforce': True})
+    def test_headers_frame_sources_enforce(self):
         resp = self.app.get('/p/wiki/Home/')
         assert "report-uri https://example.com/r/d/csp/enforce; frame-src 'self' www.youtube-nocookie.com;" \
                in resp.headers.getall('Content-Security-Policy')[0]
