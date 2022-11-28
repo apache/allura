@@ -217,9 +217,14 @@ class TestRootController(TestController):
     @mock.patch.dict(tg.config, {'csp.report_uri_enforce': 'https://example.com/r/d/csp/enforce', 'csp.frame_sources_enforce': True})
     def test_headers_frame_sources_enforce(self):
         resp = self.app.get('/p/wiki/Home/')
-        assert "report-uri https://example.com/r/d/csp/enforce; frame-src 'self' www.youtube-nocookie.com;" \
-               in resp.headers.getall('Content-Security-Policy')[0]
-
+        expected_headers = "report-uri https://example.com/r/d/csp/enforce;"
+        expected_headers += "frame-src 'self' www.youtube-nocookie.com;"
+        expected_headers += "object-src 'none'"
+        expected_report_headers = "script-src 'self' ;  form-action 'self'; report-uri None"
+        csp_headers = resp.headers.getall('Content-Security-Policy')[0]
+        csp_report_headers = resp.headers.getall('Content-Security-Policy-Report-Only')[0]
+        assert all([h.strip() in csp_headers for h in expected_headers.split(';')])
+        assert all([h.strip() in csp_report_headers for h in expected_report_headers.split(';')])
 
 class TestRootWithSSLPattern(TestController):
     def setup_method(self, method):
