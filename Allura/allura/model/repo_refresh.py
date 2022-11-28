@@ -93,7 +93,7 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False, commits_
                 g.statsUpdater.newCommit(new, repo.app_config.project, user)
             actor = user or TransientActor(
                     activity_name=new.committed.name or new.committed.email)
-            g.director.create_activity(actor, 'committed', new,
+            g.director.create_activity(actor, 'committed', new, target=repo.app,
                                        related_nodes=[repo.app_config.project],
                                        tags=['commit', repo.tool.lower()])
 

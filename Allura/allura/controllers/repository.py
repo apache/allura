@@ -219,7 +219,7 @@ class RepoRootController(BaseController, FeedController):
             )
             session(t).flush()
             allura.tasks.notification_tasks.send_usermentions_notification.post(mr.index_id(), kw['description'])
-            g.director.create_activity(c.user, 'created', mr,
+            g.director.create_activity(c.user, 'created', mr, target=mr.app,
                                        related_nodes=[c.project], tags=['merge-request'])
             redirect(mr.url())
 
