@@ -160,7 +160,7 @@ def merge(merge_request_id):
     mr.app.repo.merge(mr)
     mr.add_meta_post(changes={'Status': [mr.status, 'merged']})
     mr.status = 'merged'
-    g.director.create_activity(c.user, 'merged', mr, target=mr.app.repo,
+    g.director.create_activity(c.user, 'merged', mr, target=mr.app,
                                related_nodes=[c.project], tags=['merge-request'])
     session(mr).flush(mr)
 

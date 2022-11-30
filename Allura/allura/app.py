@@ -49,6 +49,7 @@ from allura import model as M
 from allura.tasks import index_tasks
 import six
 from io import BytesIO
+from allura.model.timeline import ActivityObject
 
 log = logging.getLogger(__name__)
 
@@ -218,7 +219,7 @@ class SitemapEntry:
         )
 
 
-class Application:
+class Application(ActivityObject):
 
     """
     The base Allura pluggable application
@@ -819,7 +820,18 @@ class Application:
 
         """
         return None
+    @property
+    def activity_name(self):
+        label = f'{self.project.shortname}/{self.config.options.mount_label}'
+        return label
 
+    @property
+    def activity_url(self):
+        return self.url
+
+    @property
+    def activity_extras(self):
+        return {'allura_id': self.config._id}
 
 class AdminControllerMixin:
     """Provides common functionality admin controllers need"""
