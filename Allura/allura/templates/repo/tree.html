@@ -19,6 +19,10 @@
 {% extends 'allura:templates/repo/repo_master.html' %}
 {% do g.register_forge_css('css/forge/hilite.css') %}
 
+{% block head %}
+    {{ canonical_tag(ignore_page=True) }}
+{% endblock %}
+
 {% block title %}
   {{c.project.name}} / {{c.app.config.options.mount_label}}
     / {{commit.shorthand_id()}} {{path}}

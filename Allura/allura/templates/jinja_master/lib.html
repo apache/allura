@@ -883,8 +883,10 @@ This page is based on some examples from Greg Schueler, <a href="mailto:greg@var
     {%- do g.register_forge_js('js/prop-types.min.js', location=location) %}
 {%- endmacro %}
 
-{% macro canonical_tag(page=None) %}
+{% macro canonical_tag(page=None, ignore_page=False) %}
     {% if not page and not 'page=' in request.query_string  %}
+        <link rel="canonical" href="{{ request.path_url }}" />
+    {% elif not page and ignore_page %}
         <link rel="canonical" href="{{ request.path_url }}" />
     {% else %}
         {#  in case is inherithed from a child template and has no access to a page value #}
