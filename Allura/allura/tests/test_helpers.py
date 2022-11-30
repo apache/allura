@@ -305,8 +305,8 @@ def test_log_if_changed():
 
 
 def test_get_tool_packages():
-    assert h.get_tool_packages('tickets') == ['forgetracker']
-    assert h.get_tool_packages('Tickets') == ['forgetracker']
+    assert 'forgetracker' in h.get_tool_packages('tickets')
+    assert 'forgetracker' in h.get_tool_packages('Tickets')
     assert h.get_tool_packages('wrong_tool') == []
 
 
