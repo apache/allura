@@ -686,11 +686,12 @@ class TestMergeRequest:
             app_config=mock.Mock(_id=ObjectId()),
             downstream={'commit_id': '12345'},
             request_number=1,
+
         )
         self._set_mr_mock_attrs(self.mr)
 
     def _set_mr_mock_attrs(self, mr):
-        mr.app = mock.Mock(forkable=True, url='/mock-app-url/')
+        mr.app = mock.Mock(forkable=True, url='/mock-app-url/', activity_name='code merge', activity_url='/fake/url', activity_extras={}, node_id=None)
         mr.app.repo.commit.return_value = mock.Mock(_id='09876')
         mr.merge_allowed = mock.Mock(return_value=True)
         mr.discussion_thread = mock.Mock()

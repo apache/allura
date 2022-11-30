@@ -831,7 +831,7 @@ class Application(ActivityObject):
 
     @property
     def activity_extras(self):
-        return {'allura_id': self.config._id}
+        return {}
 
 class AdminControllerMixin:
     """Provides common functionality admin controllers need"""
