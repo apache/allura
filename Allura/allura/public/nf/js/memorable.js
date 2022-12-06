@@ -238,14 +238,12 @@ Memorable.inputFactory = function(obj) {
     }
 };
 
-Memorable.items = [];
 
 /**
  * Convenience method to find any classes decorated with `.memorable` and create a related Input object for it
  * @param selector - use to override the selector used to find all fields to be remembered
  */
 Memorable.initialize = function(selector){
-    Memorable.forget();
     var s = selector || '.memorable';
     $(s).each(function(){
         Memorable.add(this);
@@ -280,5 +278,7 @@ Memorable.add = function(obj){
 };
 
 
-// Initialize
+// Initialize.  Some items must be immediately, not wait until domready, because other Memorable.add usage could happen before our dom-ready initialize fires
+Memorable.items = [];
+Memorable.forget();
 $(function(){Memorable.initialize();});
