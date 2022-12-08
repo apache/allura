@@ -18,7 +18,7 @@ bleach[css]==5.0.1
     # via pypeline
 cchardet==2.1.7
     # via -r requirements.in
-certifi==2022.9.24
+certifi==2022.12.7
     # via requests
 cffi==1.15.1
     # via cryptography
