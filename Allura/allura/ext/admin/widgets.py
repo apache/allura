@@ -224,6 +224,12 @@ class MetadataAdmin(ff.AdminForm):
             field_type="text", label='Twitter Handle')
         facebook_page = ew.InputField(field_type="text", label='Facebook page',
                                       validator=fev.URL(add_http=True))
+        instagram_page = ew.InputField(
+            field_type="text", label='Instagram page', validator=fev.URL(add_http=True))
+        fediverse_address = ew.InputField(field_type="text", label="Mastodon address",
+                                          validator=V.FediverseAddressValidator)
+
+
 
 
 class AuditLog(ew_core.Widget):

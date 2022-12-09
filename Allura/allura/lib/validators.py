@@ -487,3 +487,22 @@ class IconValidator(fev.FancyValidator):
                 value, state)
 
         return value
+
+class FediverseAddressValidator(fev.FancyValidator):
+    REGEX = r'^@[a-zA-Z_]*@[a-zA-Z_]*\.{1}[A-Za-z]{0,10}$'
+
+    def to_python(self, value, state):
+        match = re.match(FediverseAddressValidator.REGEX, value)
+        if not match:
+            raise fe.Invalid('Address format must be @your username@your server', value, state)
+
+        return value.lower()
+
+class InstagramValidator(fev.FancyValidator):
+    REGEX = r'^[a-zA-Z0-9_.]+'
+    def to_python(self, value, state):
+        match = re.match(InstagramValidator.REGEX, value)
+        if not match:
+            raise fe.Invalid("Username is not valid", value, state)
+
+        return value

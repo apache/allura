@@ -97,6 +97,14 @@
             {{ widget.display_label(widget.fields.facebook_page) }}
             {{widget.display_field(widget.fields.facebook_page) }}
             </div>
+            <div class="field">
+            {{ widget.display_label(widget.fields.instagram_page) }}
+            {{ widget.display_field(widget.fields.instagram_page) }}
+            </div>
+            <div class="field">
+            {{ widget.display_label(widget.fields.fediverse_address) }}
+            {{ widget.display_field(widget.fields.fediverse_address) }}
+            </div>
         </div>
 
         {% if c.project.neighborhood.features['google_analytics'] %}
