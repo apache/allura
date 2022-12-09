@@ -1134,6 +1134,19 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
     def facebook_page(self):
         return self.social_account('Facebook').accounturl
 
+    @property
+    def fediverse_address(self):
+        return self.social_account('Fediverse').accounturl
+
+    @classmethod
+    def fediverse_parse_address(cls, username):
+        pieces = username.split('@')
+        return f'https://{pieces[-1]}/@{pieces[1]}'
+
+    @property
+    def instagram_page(self):
+        return self.social_account('Instagram').accounturl
+
     def social_account(self, socialnetwork):
         try:
             account = next(

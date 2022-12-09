@@ -33,7 +33,11 @@
 {% block content %}
     <dl>
     {% for contact in user.get_pref('socialnetworks') %}
+        {% if contact.socialnetwork == 'Mastodon' %}
+        <dt>{{ contact.socialnetwork }}</dt><dd><a href="{{ h.parse_fediverse_address(contact.accounturl) }}" rel="me nofollow">{{ contact.accounturl }}</a></dd>
+        {% else %}
         <dt>{{ contact.socialnetwork }}</dt><dd>{{ contact.accounturl|urlize(nofollow=True) }}</dd>
+        {% endif %}
     {% else %}
         <dd class="empty">No social networks entered.</dd>
     {% endfor %}

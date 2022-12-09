@@ -24,7 +24,7 @@ from tg import tmpl_context as c
 from . import helpers as h
 from datetime import datetime
 import six
-from urllib.parse import urlparse
+from urllib.parse import urlsplit
 from ipaddress import ip_address
 import socket
 
@@ -52,7 +52,7 @@ class URLIsPrivate(URL):
 
     def _to_python(self, value, state):
         value = super(URLIsPrivate, self)._to_python(value, state)
-        url_components = urlparse(value)
+        url_components = urlsplit(value)
         try:
             host_ip = socket.gethostbyname(url_components.netloc)
         except socket.gaierror:
@@ -487,3 +487,34 @@ class IconValidator(fev.FancyValidator):
                 value, state)
 
         return value
+
+FEDIVERSE_REGEX = r'^@[a-zA-Z_]*@[a-zA-Z_]*\.{1}[A-Za-z]{0,10}$'
+
+class FediverseAddressValidator(fev.FancyValidator):
+
+
+    def _to_python(self, value, state):
+        match = re.match(FEDIVERSE_REGEX , value)
+        if not match:
+            raise fe.Invalid('Address format must be @your username@your server', value, state)
+
+        return value.lower()
+
+
+
+class SocialDomainValidator(fev.FancyValidator):
+    def __init__(self, domain='', **kw):
+        self.domain = domain
+        self.domains = kw.get('domains')
+
+    def _to_python(self, value, state):
+        if value.startswith('@') and not re.match(FEDIVERSE_REGEX , value):
+            value = f'https://twitter.com/{value.replace("@","")}'
+        url = urlsplit(value)
+        if not re.match(FEDIVERSE_REGEX , value):
+            if self.domain and not self.domain == url.netloc.replace('www.',''):
+                raise fe.Invalid('Invalid domain for this field', value, state)
+            if self.domains and not any(domain == url.netloc.replace('www.','') for domain in self.domains):
+                raise fe.Invalid('Invalid domain for this field', value, state)
+        return value
+

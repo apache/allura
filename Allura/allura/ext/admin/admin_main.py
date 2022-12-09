@@ -319,6 +319,8 @@ class ProjectAdminController(BaseController):
                support_page_url='',
                twitter_handle='',
                facebook_page='',
+               fediverse_address='',
+               instagram_page='',
                removal='',
                moved_to_url='',
                tracking_id='',
@@ -385,6 +387,15 @@ class ProjectAdminController(BaseController):
                 M.AuditLog.log(
                     'change project facebook page to %s', facebook_page)
                 c.project.set_social_account('Facebook', facebook_page)
+        old_fediverse = c.project.social_account('Fediverse')
+        if not old_fediverse or fediverse_address != old_fediverse.accounturl:
+            M.AuditLog.log('change project fediverse username to %s',
+                           fediverse_address)
+            c.project.set_social_account('Fediverse', fediverse_address)
+        old_instagram = c.project.social_account('Instagram')
+        if not old_instagram or instagram_page != old_instagram:
+            M.AuditLog.log('change project instagram page to %s', instagram_page)
+            c.project.set_social_account('Instagram', instagram_page)
         if support_page_url != c.project.support_page_url:
             M.AuditLog.log('change project support page url to %s',
                            support_page_url)

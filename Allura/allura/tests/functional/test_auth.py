@@ -1172,6 +1172,7 @@ class TestAuthRest(TestRestApiBase):
 
 
 class TestPreferences(TestController):
+
     @td.with_user_project('test-admin')
     def test_personal_data(self):
         from pytz import country_names
@@ -1179,7 +1180,6 @@ class TestPreferences(TestController):
         setsex, setbirthdate, setcountry, setcity, settimezone = \
             ('Male', '19/08/1988', 'IT', 'Milan', 'Europe/Rome')
         self.app.get('/auth/user_info/')
-
         # Check if personal data is properly set
         r = self.app.post('/auth/user_info/change_personal_data',
                           params=dict(
@@ -1232,6 +1232,40 @@ class TestPreferences(TestController):
         assert user.birthdate is None
 
     @td.with_user_project('test-admin')
+    def test_contacts_not_allowed(self):
+        self.app.get('/auth/user_info/')
+        socialnetwork = 'Facebook'
+        accounturl = 'http://www.faceboookk.com/test'
+        self.app.post('/auth/user_info/contacts/add_social_network',
+                      params=dict(socialnetwork=socialnetwork,
+                                  accounturl=accounturl,
+                                  _session_id=self.app.cookies['_session_id'],
+                                  ))
+        user = M.User.query.get(username='test-admin')
+        assert len(user.socialnetworks) == 0
+
+        socialnetwork = 'Instagram'
+        accounturl = 'http://www.insta.com/test'
+        self.app.post('/auth/user_info/contacts/add_social_network',
+                      params=dict(socialnetwork=socialnetwork,
+                                  accounturl=accounturl,
+                                  _session_id=self.app.cookies['_session_id'],
+                                  ))
+        user = M.User.query.get(username='test-admin')
+        assert len(user.socialnetworks) == 0
+
+        socialnetwork = 'Mastodon'
+        accounturl = '@username@server'
+        self.app.post('/auth/user_info/contacts/add_social_network',
+                      params=dict(socialnetwork=socialnetwork,
+                                  accounturl=accounturl,
+                                  _session_id=self.app.cookies['_session_id'],
+                                  ))
+        user = M.User.query.get(username='test-admin')
+        assert len(user.socialnetworks) == 0
+
+
+    @td.with_user_project('test-admin')
     def test_contacts(self):
         # Add skype account
         testvalue = 'testaccount'
@@ -1256,7 +1290,7 @@ class TestPreferences(TestController):
 
         # Add second social network account
         socialnetwork2 = 'Twitter'
-        accounturl2 = 'http://twitter.com/test'
+        accounturl2 = 'https://twitter.com/test'
         self.app.post('/auth/user_info/contacts/add_social_network',
                       params=dict(socialnetwork=socialnetwork2,
                                   accounturl='@test',
@@ -1264,8 +1298,19 @@ class TestPreferences(TestController):
                                   ))
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 2
-        assert {'socialnetwork': socialnetwork, 'accounturl': accounturl} in user.socialnetworks
-        assert {'socialnetwork': socialnetwork2, 'accounturl': accounturl2} in user.socialnetworks
+        expected = [{'socialnetwork': socialnetwork, 'accounturl': accounturl},
+                    {'socialnetwork': socialnetwork2, 'accounturl': accounturl2}]
+        assert all([social in expected for social in user.socialnetworks])
+
+        socialnetwork3 = 'Mastodon'
+        accounturl3 = '@username@server.social'
+        self.app.post('/auth/user_info/contacts/add_social_network',
+                      params=dict(socialnetwork=socialnetwork3,
+                                  accounturl=accounturl3,
+                                  _session_id=self.app.cookies['_session_id'],
+                                  ))
+        user = M.User.query.get(username='test-admin')
+        assert len(user.socialnetworks) == 3
 
         # Remove first social network account
         self.app.post('/auth/user_info/contacts/remove_social_network',
@@ -1274,8 +1319,10 @@ class TestPreferences(TestController):
                                   _session_id=self.app.cookies['_session_id'],
                                   ))
         user = M.User.query.get(username='test-admin')
-        assert len(user.socialnetworks) == 1
-        assert {'socialnetwork': socialnetwork2, 'accounturl': accounturl2} in user.socialnetworks
+        assert len(user.socialnetworks) == 2
+        expected = [{'socialnetwork': socialnetwork2, 'accounturl': accounturl2},
+               {'socialnetwork': socialnetwork3, 'accounturl': accounturl3}]
+        assert  all([social in expected for social in user.socialnetworks])
 
         # Add empty social network account
         self.app.post('/auth/user_info/contacts/add_social_network',
@@ -1283,8 +1330,10 @@ class TestPreferences(TestController):
                                   _session_id=self.app.cookies['_session_id'],
                                   ))
         user = M.User.query.get(username='test-admin')
-        assert len(user.socialnetworks) == 1
-        assert {'socialnetwork': socialnetwork2, 'accounturl': accounturl2} in user.socialnetworks
+        assert len(user.socialnetworks) == 2
+        expected = [{'socialnetwork': socialnetwork2, 'accounturl': accounturl2},
+               {'socialnetwork': socialnetwork3, 'accounturl': accounturl3}]
+        assert all([social in expected for social in user.socialnetworks])
 
         # Add invalid social network account
         self.app.post('/auth/user_info/contacts/add_social_network',
@@ -1292,8 +1341,10 @@ class TestPreferences(TestController):
                                   _session_id=self.app.cookies['_session_id'],
                                   ))
         user = M.User.query.get(username='test-admin')
-        assert len(user.socialnetworks) == 1
-        assert {'socialnetwork': socialnetwork2, 'accounturl': accounturl2} in user.socialnetworks
+        assert len(user.socialnetworks) == 2
+        expected = [{'socialnetwork': socialnetwork2, 'accounturl': accounturl2},
+               {'socialnetwork': socialnetwork3, 'accounturl': accounturl3}]
+        assert all([social in expected for social in user.socialnetworks])
 
         # Add telephone number
         telnumber = '+3902123456'

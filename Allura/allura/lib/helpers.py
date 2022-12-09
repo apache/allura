@@ -1334,3 +1334,7 @@ def pluralize_tool_name(tool_name: string, count: int):
     if tool_name is not None and tool_name in pluralize_tools:
         return f"{tool_name}{'s'[:count^1]}"
     return tool_name
+
+def parse_fediverse_address(username: str):
+    pieces = username.split('@')
+    return f'https://{pieces[-1]}/@{pieces[1]}'
