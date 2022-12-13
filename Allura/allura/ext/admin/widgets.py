@@ -14,7 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
+import tg
 from tg import tmpl_context as c
 
 import ew as ew_core
@@ -28,6 +28,7 @@ from allura.lib.widgets import forms as ff
 from allura.lib.widgets import form_fields as ffw
 
 from bson import ObjectId
+from paste.deploy.converters import aslist
 
 
 class CardField(ew._Jinja2Widget):
@@ -163,7 +164,9 @@ class MetadataAdmin(ff.AdminForm):
     defaults = dict(
         ff.AdminForm.defaults,
         enctype='multipart/form-data')
-
+    allowed_social_domains = aslist(tg.config.get('allowed_social_domains',
+                                                  ['facebook', 'instagram', 'linkedin', 'twitter']),
+                                    ',')
     class fields(ew_core.NameList):
         name = ew.InputField(field_type='text',
                              label='Name',
@@ -223,9 +226,10 @@ class MetadataAdmin(ff.AdminForm):
         twitter_handle = ew.InputField(
             field_type="text", label='Twitter Handle')
         facebook_page = ew.InputField(field_type="text", label='Facebook page',
-                                      validator=fev.URL(add_http=True))
+                                      validator=formencode.All(fev.URL(add_http=True), V.SocialDomainValidator('facebook.com')) )
         instagram_page = ew.InputField(
-            field_type="text", label='Instagram page', validator=fev.URL(add_http=True))
+            field_type="text", label='Instagram page',
+            validator=formencode.All(fev.URL(add_http=True), V.SocialDomainValidator('instagram.com')))
         fediverse_address = ew.InputField(field_type="text", label="Mastodon address",
                                           validator=V.FediverseAddressValidator)
 
