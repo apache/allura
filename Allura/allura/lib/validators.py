@@ -508,6 +508,8 @@ class SocialDomainValidator(fev.FancyValidator):
         self.domains = kw.get('domains')
 
     def _to_python(self, value, state):
+        if value.startswith('@') and not re.match(FEDIVERSE_REGEX , value):
+            value = f'https://twitter.com/{value.replace("@","")}'
         url = urlsplit(value)
         if not re.match(FEDIVERSE_REGEX , value):
             if self.domain and not self.domain == url.netloc.replace('www.',''):

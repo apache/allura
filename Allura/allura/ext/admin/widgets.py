@@ -224,7 +224,7 @@ class MetadataAdmin(ff.AdminForm):
             field_type="text", label="Google Analytics ID",
             attrs=(dict(placeholder='UA-123456-0', pattern='UA-[0-9]+-[0-9]+')))
         twitter_handle = ew.InputField(
-            field_type="text", label='Twitter Handle')
+            field_type="text", label='Twitter Handle', validator=V.SocialDomainValidator('twitter.com'))
         facebook_page = ew.InputField(field_type="text", label='Facebook page',
                                       validator=formencode.All(fev.URL(add_http=True), V.SocialDomainValidator('facebook.com')) )
         instagram_page = ew.InputField(
