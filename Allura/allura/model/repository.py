@@ -33,9 +33,10 @@ from threading import Thread
 from six.moves.queue import Queue
 from itertools import chain, islice
 import typing
+from collections.abc import Iterable
 
 import tg
-from paste.deploy.converters import asint, asbool
+from paste.deploy.converters import asint, asbool, aslist
 from tg import tmpl_context as c
 from tg import app_globals as g
 import pymongo
@@ -778,15 +779,21 @@ class Repository(Artifact, ActivityObject):
         self.status = status
         session(self).flush(self)
 
-    def get_default_branch(self, default_branch_name):
-        branch_name = getattr(self, 'default_branch_name', None) or default_branch_name
+    def get_default_branch(self, common_defaults: str | Iterable[str]) -> str:
+        common_defaults = aslist(common_defaults)
+        branch_name = getattr(self, 'default_branch_name', None)
         branches = []
         if not self.is_empty():
             branches = [b.name for b in self.get_branches()]
 
+        if not branches:
+            return branch_name or common_defaults[0]
+
         if branches and branch_name not in branches:
-            if default_branch_name in branches:
-                branch_name = default_branch_name
+            for comm_default in common_defaults:
+                if comm_default in branches:
+                    branch_name = comm_default
+                    break
             else:
                 branch_name = branches[0]
             self.set_default_branch(branch_name)
