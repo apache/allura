@@ -72,7 +72,7 @@
 
     {% block head %}
     {% endblock %}
-    {% if g.production_mode %}{{ g.analytics.display() }}{% endif %}
+    {{ g.analytics.display() }}
     {% block head_bottom -%}
     {% endblock %}
 </head>
