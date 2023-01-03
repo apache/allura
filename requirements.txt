@@ -30,7 +30,7 @@ crank==0.8.1
     # via turbogears2
 creoleparser==0.7.5
     # via pypeline
-cryptography==38.0.3
+cryptography==39.0.0
     # via -r requirements.in
 decorator==5.1.1
     # via -r requirements.in
@@ -56,7 +56,7 @@ genshi==0.7.7
     # via creoleparser
 gitdb==4.0.9
     # via gitpython
-gitpython==3.1.29
+gitpython==3.1.30
     # via -r requirements.in
 gunicorn==20.1.0
     # via -r requirements.in
