@@ -488,7 +488,7 @@ class IconValidator(fev.FancyValidator):
 
         return value
 
-FEDIVERSE_REGEX = r'^@[a-zA-Z_]*@[a-zA-Z_]*\.{1}[A-Za-z]{0,10}$'
+FEDIVERSE_REGEX = r'^@[a-zA-Z_]*@[a-zA-Z_.]*$'
 
 class FediverseAddressValidator(fev.FancyValidator):
 
@@ -508,9 +508,21 @@ class SocialDomainValidator(fev.FancyValidator):
         self.domains = kw.get('domains')
 
     def _to_python(self, value, state):
-        if value.startswith('@') and not re.match(FEDIVERSE_REGEX , value):
-            value = f'https://twitter.com/{value.replace("@","")}'
         url = urlsplit(value)
+        state_values = state.full_dict
+        if value.startswith('@') and not re.match(FEDIVERSE_REGEX , value):
+            if state_values.get('socialnetwork','') == 'Twitter' or state_values.get('twitter_handle',''):
+                value = f'https://twitter.com/{value.replace("@","")}'
+            elif state_values.get('socialnetwork','') == 'Instagram' or state_values.get('instagram_page',''):
+                value = f'https://instagram.com/{value.replace("@", "")}'
+            url = urlsplit(value)
+        if (state_values.get('socialnetwork','') == 'Mastodon' and state_values.get('accounturl','').startswith('http'))\
+                or state_values.get('fediverse_address','').startswith('http'):
+            fediverse_url = f'{url.path.replace("/", "")}@{url.netloc}'
+            if re.match(FEDIVERSE_REGEX, fediverse_url):
+                return fediverse_url
+        if value.startswith('@') and re.match(FEDIVERSE_REGEX, value) and state_values.get('socialnetwork','') != 'Mastodon':
+            raise fe.Invalid('Invalid domain for this field', value, state)
         if not re.match(FEDIVERSE_REGEX , value):
             if self.domain and not self.domain == url.netloc.replace('www.',''):
                 raise fe.Invalid('Invalid domain for this field', value, state)

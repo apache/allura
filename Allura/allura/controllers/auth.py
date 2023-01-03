@@ -1054,7 +1054,7 @@ class UserContactsController(BaseController):
         require_authenticated()
 
         if kw['socialnetwork'] == 'Twitter' and not kw['accounturl'].startswith('http'):
-            kw['accounturl'] = 'http://twitter.com/%s' % kw['accounturl'].replace('@', '')
+            kw['accounturl'] = f"http://twitter.com/{kw['accounturl'].replace('@', '')}"
 
         c.user.add_multivalue_pref('socialnetworks',
                                    {'socialnetwork': kw['socialnetwork'], 'accounturl': kw['accounturl']})

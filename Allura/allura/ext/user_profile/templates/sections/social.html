@@ -34,7 +34,7 @@
     <dl>
     {% for contact in user.get_pref('socialnetworks') %}
         {% if contact.socialnetwork == 'Mastodon' %}
-        <dt>{{ contact.socialnetwork }}</dt><dd><a href="{{ h.parse_fediverse_address(contact.accounturl) }}" rel="me nofollow">{{ contact.accounturl }}</a></dd>
+        <dt>{{ contact.socialnetwork }}</dt><dd><a href="{{ h.parse_fediverse_address(contact.accounturl) }}" rel="me nofollow" target="_blank">{{ contact.accounturl }}</a></dd>
         {% else %}
         <dt>{{ contact.socialnetwork }}</dt><dd>{{ contact.accounturl|urlize(nofollow=True) }}</dd>
         {% endif %}

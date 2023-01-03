@@ -956,6 +956,46 @@ class TestProjectAdmin(TestController):
         r = self.app.get('/admin/invitations')
         r.mustcontain('Neighborhood Invitation(s) for test')
 
+    def test_social_networks(self):
+        #Invalid Twitter
+        resp = self.app.post('/admin/update', params={'twitter_handle':'https://twit.com/tests'})
+        assert resp.status_int == 200
+        resp = self.app.post('/admin/update', params={'twitter_handle': 'https://google.com'})
+        assert resp.status_int == 200
+        #invalid Facebook
+        resp = self.app.post('/admin/update', params={'facebook_page': 'https://facebok.com'})
+        assert resp.status_int == 200
+        resp = self.app.post('/admin/update', params={'facebook_page': 'https://spam.com'})
+        assert resp.status_int == 200
+        errors = resp.html.findAll('div', attrs={'class': 'error'})
+        assert errors[0].text == 'Invalid domain for this field'
+        #invalid instagram
+        resp = self.app.post('/admin/update', params={'instagram_page': 'https://instagrams.com'})
+        assert resp.status_int == 200
+        #invalid fediverse
+        resp = self.app.post('/admin/update', params={'fediverse_address': '@test12@indieweb.social'})
+        assert resp.status_int == 200
+
+        #valid Twitter
+        resp = self.app.post('/admin/update', params={'twitter_handle': 'https://twitter.com/sourceforge'})
+        assert resp.status_int == 302
+        resp = self.app.post('/admin/update', params={'twitter_handle': '@sourceforge'})
+        assert resp.status_int == 302
+        #valid Facebook
+        resp = self.app.post('/admin/update', params={'facebook_page': 'https://www.facebook.com/sourceforgenet/'})
+        assert resp.status_int == 302
+        #valid instagram
+        resp = self.app.post('/admin/update', params={'instagram_page': 'https://instagram.com/test'})
+        assert resp.status_int == 302
+        resp = self.app.post('/admin/update', params={'instagram_page': '@test'})
+        assert resp.status_int == 302
+        # valid fediverse
+        resp = self.app.post('/admin/update', params={'fediverse_address': '@test@indieweb.social'})
+        assert resp.status_int == 302
+        resp = self.app.post('/admin/update', params={'fediverse_address': 'https://indieweb.social/@test'})
+        assert resp.status_int == 302
+
+
 
 class TestExport(TestController):
 

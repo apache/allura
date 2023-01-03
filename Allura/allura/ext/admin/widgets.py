@@ -164,10 +164,11 @@ class MetadataAdmin(ff.AdminForm):
     defaults = dict(
         ff.AdminForm.defaults,
         enctype='multipart/form-data')
-    allowed_social_domains = aslist(tg.config.get('allowed_social_domains',
-                                                  ['facebook', 'instagram', 'linkedin', 'twitter']),
-                                    ',')
+
     class fields(ew_core.NameList):
+        allowed_social_domains = aslist(tg.config.get('allowed_social_domains',
+                                                      ['facebook', 'instagram', 'linkedin', 'twitter']),
+                                        ',')
         name = ew.InputField(field_type='text',
                              label='Name',
                              validator=formencode.All(
@@ -224,14 +225,17 @@ class MetadataAdmin(ff.AdminForm):
             field_type="text", label="Google Analytics ID",
             attrs=(dict(placeholder='UA-123456-0', pattern='UA-[0-9]+-[0-9]+')))
         twitter_handle = ew.InputField(
-            field_type="text", label='Twitter Handle', validator=V.SocialDomainValidator('twitter.com'))
+            field_type="text", label='Twitter Handle', validator=formencode.All(fev.URL(add_http=True, if_empty=''),
+                                                                                V.SocialDomainValidator('twitter.com')))
         facebook_page = ew.InputField(field_type="text", label='Facebook page',
-                                      validator=formencode.All(fev.URL(add_http=True), V.SocialDomainValidator('facebook.com')) )
+                                      validator=formencode.All(fev.URL(add_http=True),
+                                                               V.SocialDomainValidator('facebook.com')) )
         instagram_page = ew.InputField(
             field_type="text", label='Instagram page',
             validator=formencode.All(fev.URL(add_http=True), V.SocialDomainValidator('instagram.com')))
+
         fediverse_address = ew.InputField(field_type="text", label="Mastodon address",
-                                          validator=V.FediverseAddressValidator)
+                                          validator=V.SocialDomainValidator(domains=allowed_social_domains))
 
 
 
