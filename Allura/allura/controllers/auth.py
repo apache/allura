@@ -24,6 +24,7 @@ import warnings
 from six.moves.urllib.parse import urlparse, urljoin
 
 import bson
+import formencode as fe
 import tg
 from tg import expose, flash, redirect, validate, config, session
 from tg.decorators import with_trailing_slash, without_trailing_slash
@@ -41,6 +42,7 @@ from allura import model as M
 from allura.lib.security import require_authenticated, has_access, is_site_admin
 from allura.lib import helpers as h
 from allura.lib import plugin
+from allura.lib import validators as V
 from allura.lib.decorators import require_post, reconfirm_auth
 from allura.lib.exceptions import InvalidRecoveryCode, MultifactorRateLimitError
 from allura.lib.repository import RepositoryApp
@@ -1053,8 +1055,21 @@ class UserContactsController(BaseController):
     def add_social_network(self, **kw):
         require_authenticated()
 
-        if kw['socialnetwork'] == 'Twitter' and not kw['accounturl'].startswith('http'):
-            kw['accounturl'] = 'http://twitter.com/%s' % kw['accounturl'].replace('@', '')
+        validator_map = {
+            'Twitter': V.TwitterValidator(),
+            'Instagram': V.InstagramValidator(),
+            'Facebook': V.FacebookValidator(),
+            'Mastodon': V.FediverseValidator(),
+            'Linkedin': V.LinkedinValidator(),
+        }
+
+        try:
+            Validator = validator_map.get(kw['socialnetwork'])
+            kw['accounturl'] = Validator().to_python(kw['accounturl'])
+        except fe.Invalid as e:
+            # c.form_errors['accounturl'] = e.msg
+            flash(e.msg, 'error')
+            redirect('.')
 
         c.user.add_multivalue_pref('socialnetworks',
                                    {'socialnetwork': kw['socialnetwork'], 'accounturl': kw['accounturl']})
