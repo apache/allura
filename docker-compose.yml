@@ -33,7 +33,7 @@ services:
       - solr
 
   taskd:
-    image: allura_web
+    image: allura-web
     working_dir: /allura/Allura
     environment: *env
     command: paster taskd docker-dev.ini
@@ -60,7 +60,7 @@ services:
     command: mongod --storageEngine wiredTiger
 
   outmail:
-    image: allura_web
+    image: allura-web
     environment: *env
     volumes_from:
       - web
@@ -69,7 +69,7 @@ services:
       - "8826"
 
   inmail:
-    image: allura_web
+    image: allura-web
     working_dir: /allura/Allura
     environment: *env
     volumes: *volumes

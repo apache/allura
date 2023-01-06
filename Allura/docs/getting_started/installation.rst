@@ -34,7 +34,7 @@ First run
 
 `Download the latest release <http://www.apache.org/dyn/closer.cgi/allura/>`_ of Allura, or `clone from git <https://forge-allura.apache.org/p/allura/git/ci/master/tree/>`_ for the bleeding edge.
 
-Install `Docker <http://docs.docker.com/installation/>`_ and `Docker Compose <https://docs.docker.com/compose/install/>`_.
+Install `Docker <http://docs.docker.com/installation/>`_ and the latest version of `Docker Compose <https://docs.docker.com/compose/install/>`_.
 On Linux, you may need to `create a docker group <https://docs.docker.com/engine/install/linux-postinstall/>`_.
 
 .. note::
@@ -95,6 +95,12 @@ Start containers in the background:
 
 You're up and running!  Visit localhost:8080 (or whatever IP address you're running Docker on).  Then
 see our :ref:`post-setup-instructions` and read more below about the Docker environment for Allura.
+
+.. note::
+   
+   Older versions of Docker compose might not recognize image names that contain hyphens throwing the following error :code:`Error response from daemon: pull access denied for allura-web, repository does not exist or may require 'docker login': denied: requested access to the resource is denied`
+
+   You will need to either upgrade to the lastest version of Docker compose or edit and replace the images names hyphens with underscores in `docker-compose.yml` and `docker-compose-prod.yml`.
 
 
 Containers

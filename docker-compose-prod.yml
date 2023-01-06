@@ -55,7 +55,7 @@ services:
     restart: always
 
   taskd:
-    image: allura_web
+    image: allura-web
     working_dir: /allura/Allura
     environment: *env
     command: paster taskd /allura-data/production.ini
@@ -68,7 +68,7 @@ services:
   # This is a single-purpose container that does not auto-restart, good for running commands like:
   # docker-compose run --rm oneoff paster ensure_index /allura-data/production.ini
   oneoff:
-    image: allura_web
+    image: allura-web
     working_dir: /allura/Allura
     environment: *env
     volumes: *volumes
@@ -95,7 +95,7 @@ services:
     restart: always
 
   inmail:
-    image: allura_web
+    image: allura-web
     working_dir: /allura/Allura
     environment: *env
     volumes: *volumes
