@@ -972,7 +972,7 @@ class TestProjectAdmin(TestController):
         resp = self.app.post('/admin/update', params={'instagram_page': 'https://instagrams.com'})
         assert resp.status_int == 200
         #invalid fediverse
-        resp = self.app.post('/admin/update', params={'fediverse_address': '@test12@indieweb.social'})
+        resp = self.app.post('/admin/update', params={'fediverse_address': '@test12@indieweb'})
         assert resp.status_int == 200
 
         #valid Twitter
