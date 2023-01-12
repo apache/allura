@@ -14,7 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
+import html
 import logging
 import six.moves.html_parser
 import re
@@ -126,7 +126,7 @@ def create_multipart_msg(text, metalink=None):
                         plain_text,
                         flags=re.DOTALL,  # match newlines too
                         )
-    plain_text = six.moves.html_parser.HTMLParser().unescape(plain_text)  # put literal HTML tags back into plaintext
+    plain_text = html.unescape(plain_text)  # put literal HTML tags back into plaintext
     plain_msg = mail_util.encode_email_part(plain_text, 'plain')
 
     html_text = g.forge_markdown(email=True).convert(text)
