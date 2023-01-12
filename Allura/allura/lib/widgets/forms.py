@@ -436,9 +436,6 @@ class AddSocialNetworkForm(ForgeForm):
         socialnetworks = aslist(tg.config.get('socialnetworks',
                                               ['Facebook', 'Linkedin', 'Twitter',]),
                                 ',')
-        allowed_social_domains = aslist(tg.config.get('allowed_social_domains',
-                                              ['facebook.com', 'instagram.com', 'linkedin.com', 'twitter.com']),
-                                ',')
 
         return [
             ew.SingleSelectField(
@@ -450,9 +447,8 @@ class AddSocialNetworkForm(ForgeForm):
             ew.TextField(
                 name='accounturl',
                 label='Account url',
-                validator=formencode.All(
-                    V.UnicodeString(not_empty=True), V.SocialDomainValidator(domains=allowed_social_domains)
-                ))
+                validator=V.UnicodeString(not_empty=True),
+            )
         ]
 
 

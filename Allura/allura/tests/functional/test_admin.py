@@ -967,8 +967,7 @@ class TestProjectAdmin(TestController):
         assert resp.status_int == 200
         resp = self.app.post('/admin/update', params={'facebook_page': 'https://spam.com'})
         assert resp.status_int == 200
-        errors = resp.html.findAll('div', attrs={'class': 'error'})
-        assert errors[0].text == 'Invalid domain for this field'
+        assert 'Invalid Facebook address' in resp
         #invalid instagram
         resp = self.app.post('/admin/update', params={'instagram_page': 'https://instagrams.com'})
         assert resp.status_int == 200

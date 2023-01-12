@@ -166,9 +166,6 @@ class MetadataAdmin(ff.AdminForm):
         enctype='multipart/form-data')
 
     class fields(ew_core.NameList):
-        allowed_social_domains = aslist(tg.config.get('allowed_social_domains',
-                                                      ['facebook.com', 'instagram.com', 'linkedin.com', 'twitter.com']),
-                                        ',')
         name = ew.InputField(field_type='text',
                              label='Name',
                              validator=formencode.All(
@@ -226,18 +223,13 @@ class MetadataAdmin(ff.AdminForm):
             attrs=(dict(placeholder='UA-123456-0', pattern='UA-[0-9]+-[0-9]+')))
         twitter_handle = ew.InputField(
             field_type="text", label='Twitter Handle',
-            validator=formencode.All(fev.URL(add_http=True, if_empty=''),
-                                     V.SocialDomainValidator(domains=allowed_social_domains),
-                                     V.TwitterValidator))
+            validator=V.TwitterValidator)
 
         facebook_page = ew.InputField(field_type="text", label='Facebook page',
-                                      validator=formencode.All(fev.URL(add_http=True),
-                                                               V.SocialDomainValidator(domains=allowed_social_domains),
-                                                               V.FacebookValidator) )
+                                      validator=V.FacebookValidator)
         instagram_page = ew.InputField(
             field_type="text", label='Instagram page',
-            validator=formencode.All(fev.URL(add_http=True), V.SocialDomainValidator(domains=allowed_social_domains),
-                                     V.InstagramValidator))
+            validator=V.InstagramValidator)
 
         fediverse_address = ew.InputField(field_type="text", label="Mastodon address",
                                           validator=V.FediverseValidator)
