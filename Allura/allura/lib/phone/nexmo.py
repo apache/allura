@@ -17,7 +17,7 @@
 
 import logging
 from six.moves.urllib.parse import urljoin
-import cgi
+import html
 import json
 
 import requests
@@ -59,7 +59,7 @@ class NexmoPhoneService(PhoneService):
         if str(code) == '3' and msg.endswith(' number'):
             msg = markupsafe.Markup(
                 '{}{}{}'.format(
-                    cgi.escape(msg),  # escape it just in case Nexmo sent some HTML we don't want through
+                    html.escape(msg),  # escape it just in case Nexmo sent some HTML we don't want through
                     '<br>Make sure you include the country code (see examples above)',
                     '. For US numbers, you must include <code>1-</code> before the area code.' if len(number) == 10 else '',
                 ))

@@ -21,7 +21,7 @@ import re
 """The application's Globals object"""
 
 import logging
-import cgi
+import html
 import hashlib
 import json
 import datetime
@@ -81,7 +81,7 @@ class ForgeMarkdown(markdown.Markdown):
             # if text is too big, markdown can take a long time to process it,
             # so we return it as a plain text
             log.info('Text is too big. Skipping markdown processing')
-            escaped = cgi.escape(h.really_unicode(source))
+            escaped = html.escape(h.really_unicode(source))
             return Markup('<pre>%s</pre>' % escaped)
         try:
             return super().convert(source)
@@ -89,7 +89,7 @@ class ForgeMarkdown(markdown.Markdown):
             log.info('Invalid markdown: %s  Upwards trace is %s', source,
                      ''.join(traceback.format_stack()), exc_info=True)
             escaped = h.really_unicode(source)
-            escaped = cgi.escape(escaped)
+            escaped = html.escape(escaped)
             return Markup("""<p><strong>ERROR!</strong> The markdown supplied could not be parsed correctly.
             Did you forget to surround a code snippet with "~~~~"?</p><pre>%s</pre>""" % escaped)
 
@@ -455,7 +455,7 @@ class Globals:
         if lexer is None or len(text) >= asint(config.get('scm.view.max_syntax_highlight_bytes', 500000)):
             # no highlighting, but we should escape, encode, and wrap it in
             # a <pre>
-            text = cgi.escape(text)
+            text = html.escape(text)
             return Markup('<pre>' + text + '</pre>')
         else:
             return Markup(pygments.highlight(text, lexer, formatter))
