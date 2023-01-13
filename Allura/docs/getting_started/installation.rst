@@ -65,6 +65,10 @@ Build/fetch all required images:
 
     docker-compose build
 
+.. note::
+
+   You can override the python version by adding :code:`--build-arg PY_VERSION=3.8` for example.
+
 Python and JS package setup (and first containers started):
 
 .. code-block:: bash

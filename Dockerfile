@@ -17,8 +17,10 @@
 
 FROM ubuntu:18.04
 
+ARG PY_VERSION=3.7
+
 # Ubunutu 18.04's latest python is 3.6 (and Ubuntu 20.04's is 3.8)
-# In order to get python3.7, we must add the deadsnakes apt repo, and install 3.7 specifically
+# In order to get a different python, we must add the deadsnakes apt repo, and install a specific version
 RUN apt-get update \
     && apt-get install software-properties-common -y --no-install-recommends \
     && add-apt-repository ppa:deadsnakes/ppa -y \
@@ -29,9 +31,9 @@ RUN apt-get upgrade -y git
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         git-core \
-        python3.7 \
-        python3.7-venv \
-        python3.7-dev \
+        python$PY_VERSION \
+        python$PY_VERSION-venv \
+        python$PY_VERSION-dev \
         gcc \
         libmagic1 \
         libssl-dev \
@@ -48,6 +50,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         make \
         sudo \
     && rm -rf /var/lib/apt/lists/*
+
+# save env var, so init-docker-dev.sh can use it
+ENV PYTHON_EXE=python$PY_VERSION
 
 # up-to-date version of node & npm
 RUN curl --silent --location https://deb.nodesource.com/setup_10.x | sudo bash - && \
