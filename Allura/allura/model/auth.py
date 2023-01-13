@@ -810,7 +810,12 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             self, None, new_password)
 
     @classmethod
+    @memoize
     def anonymous(cls):
+        return cls.anonymous_uncached()
+
+    @classmethod
+    def anonymous_uncached(cls):
         anon = cls(
             _id=None,
             username='*anonymous',

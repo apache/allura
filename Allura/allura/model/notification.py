@@ -519,9 +519,12 @@ class Mailbox(MappedClass):
     @classmethod
     def subscribed(
             cls, user_id=None, project_id=None, app_config_id=None,
-            artifact=None, topic=None):
+            artifact=None, topic=None) -> bool:
         if user_id is None:
-            user_id = c.user._id
+            if c.user.is_anonymous():
+                return False
+            else:
+                user_id = c.user._id
         if project_id is None:
             project_id = c.project._id
         if app_config_id is None:

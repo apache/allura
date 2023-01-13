@@ -246,10 +246,12 @@ class Artifact(MappedClass, SearchIndexable):
             artifact_index_id=self.index_id())
 
     @memoize  # since its called many times from edit_post.html within threaded comments
-    def subscribed(self, user=None, include_parents=True):
+    def subscribed(self, user=None, include_parents=True) -> bool:
         from allura.model import Mailbox
         if user is None:
             user = c.user
+        if user.is_anonymous():
+            return False
         user_proj_app_q = dict(user_id=user._id,
                                project_id=self.app_config.project_id,
                                app_config_id=self.app_config._id)
