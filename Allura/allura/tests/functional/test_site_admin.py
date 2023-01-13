@@ -128,17 +128,17 @@ class TestSiteAdmin(TestController):
         assert 'math.ceil' in r, r
 
     def test_task_view(self):
-        import re
-        task = M.MonQTask.post(re.search, ('pattern', 'string'), {'flags': re.I})
+        import math
+        task = M.MonQTask.post(math.isclose, (99, 100), {'abs_tol': 1.1})
         url = '/nf/admin/task_manager/view/%s' % task._id
         r = self.app.get(
             url, extra_environ=dict(username='*anonymous'), status=302)
         r = self.app.get(url)
-        assert 'regex.regex.search' in r, r
-        assert '<td>pattern</td>' in r, r
-        assert '<td>string</td>' in r, r
-        assert '<th class="second-column-headers side-header">flags</th>' in r, r
-        assert f'<td>{re.I}</td>' in r, r
+        assert 'math.isclose' in r, r
+        assert '<td>99</td>' in r, r
+        assert '<td>100</td>' in r, r
+        assert '<th class="second-column-headers side-header">abs_tol</th>' in r, r
+        assert '<td>1.1</td>' in r, r
         assert 'ready' in r, r
 
         # test resubmit too
