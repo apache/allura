@@ -69,7 +69,7 @@ Python and JS package setup (and first containers started):
 
 .. code-block:: bash
 
-    docker-compose run web scripts/init-docker-dev.sh
+    docker-compose run --rm web scripts/init-docker-dev.sh
 
 Restart SOLR container, so it will see changes from the command above and create index:
 
@@ -81,11 +81,11 @@ Initialize database with test data:
 
 .. code-block:: bash
 
-    docker-compose run taskd paster setup-app docker-dev.ini
+    docker-compose run --rm taskd paster setup-app docker-dev.ini
 
 .. note::
 
-   If you want to skip test data creation you can instead run: :code:`docker-compose run -e ALLURA_TEST_DATA=False taskd paster setup-app docker-dev.ini`
+   If you want to skip test data creation you can instead run: :code:`docker-compose run --rm -e ALLURA_TEST_DATA=False taskd paster setup-app docker-dev.ini`
 
 Start containers in the background:
 
@@ -174,8 +174,8 @@ Update requirements and reinstall apps:
 
 .. code-block:: bash
 
-    docker-compose run web pip install -r requirements.txt
-    docker-compose run web ./rebuild-all.bash
+    docker-compose run --rm web pip install -r requirements.txt
+    docker-compose run --rm web ./rebuild-all.bash
 
 You may want to restart at least "taskd" container after that in order for it to
 pick up changes.  Run :code:`docker-compose restart taskd`
@@ -184,19 +184,19 @@ Run all tests:
 
 .. code-block:: bash
 
-    docker-compose run web ./run_tests
+    docker-compose run --rm web ./run_tests
 
 Running subset of tests:
 
 .. code-block:: bash
 
-    docker-compose run web bash -c 'cd ForgeGit && pytest forgegit/tests/functional/test_controllers.py::TestFork'
+    docker-compose run --rm web bash -c 'cd ForgeGit && pytest forgegit/tests/functional/test_controllers.py::TestFork'
 
 Connecting to mongo using a container:
 
 .. code-block:: bash
 
-    docker-compose run mongo mongo --host mongo
+    docker-compose run --rm mongo mongo --host mongo
 
 
 .. _post-setup-instructions:

@@ -114,7 +114,7 @@ Scripts are in the :file:`scripts/` directory and run slightly differently, via 
 
 To run these when using docker, prefix with :code:`docker-compose run taskd` and use :file:`docker-dev.ini` like::
 
-    docker-compose run taskd paster create-neighborhood docker-dev.ini myneighborhood myuser ...
+    docker-compose run --rm taskd paster create-neighborhood docker-dev.ini myneighborhood myuser ...
 
 Or with the docker *production* setup::
 

@@ -56,7 +56,7 @@ echo
 echo "============================================================================="
 echo "Setup: venv, pip, pysvn, ./rebuild-all.sh, npm, etc."
 echo "============================================================================="
-docker-compose run web scripts/init-docker-dev.sh
+docker-compose run --rm web scripts/init-docker-dev.sh
 
 echo
 echo "============================================================================="
