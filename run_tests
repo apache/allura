@@ -54,13 +54,14 @@ def run_one(cmd, **popen_kwargs):
     all_popen_kwargs = dict(shell=True, stderr=subprocess.STDOUT,
                             stdout=subprocess.PIPE,
                             bufsize=1,  # 1 == line-buffered
+                            text=True,
                             close_fds='posix' in sys.builtin_module_names)
     all_popen_kwargs.update(popen_kwargs)
     proc = subprocess.Popen(cmd, **all_popen_kwargs)
     while proc.poll() is None:
         line = proc.stdout.readline()
         sys.stdout.write(print_ensured(line))
-        if b'No data to combine' in line:
+        if 'No data to combine' in line:
             sys.stdout.write('^^ error from "coverage combine" command.  Make sure your package has a setup.cfg with coverage settings like other packages\n')
         sys.stdout.flush()
     # wait for completion and get remainder of output
