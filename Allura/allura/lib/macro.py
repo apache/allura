@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-import cgi
+import html
 import random
 import logging
 import traceback
@@ -105,7 +105,7 @@ class parse:
             log.warn('macro error.  Upwards stack is %s',
                      ''.join(traceback.format_stack()),
                      exc_info=True)
-            msg = cgi.escape(f'[[{s}]] ({repr(ex)})')
+            msg = html.escape(f'[[{s}]] ({repr(ex)})')
             return '\n<div class="error"><pre><code>%s</code></pre></div>' % msg
 
     def _lookup_macro(self, s):

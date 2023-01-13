@@ -38,7 +38,7 @@ import shlex
 import socket
 from functools import partial
 from io import BytesIO
-import cgi
+import html
 
 import emoji
 import tg
@@ -567,7 +567,7 @@ def diff_text(t1, t2, differ=None):
     result = []
 
     def escape_list(words_list):
-        return [cgi.escape(words) for words in words_list]
+        return [html.escape(words) for words in words_list]
 
     for tag, i1, i2, j1, j2 in differ.get_opcodes():
         if tag in ('delete', 'replace'):
