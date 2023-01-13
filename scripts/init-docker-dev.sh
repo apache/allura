@@ -40,16 +40,16 @@ cp /allura/Allura/allura/public/nf/favicon.ico /allura-data/www-misc/favicon.ico
 rm -rf /allura-data/virtualenv
 if [ ! -e /allura-data/virtualenv ]; then
     echo -e "Creating virtualenv\n"
-    python3.7 -m venv /allura-data/virtualenv
+    PYTHON_EXE="${PYTHON_EXE:-python3.7}"  # should always be set from Dockerfile, but set default value just in case
+    $PYTHON_EXE -m venv /allura-data/virtualenv
     /allura-data/virtualenv/bin/pip install -U pip
     /allura-data/virtualenv/bin/pip install -U wheel
     curl https://raw.githubusercontent.com/reviewboard/pysvn-installer/master/install.py | /allura-data/virtualenv/bin/python
     echo # just a new line
 fi
-source /allura-data/virtualenv/bin/activate
 
 echo -e "Installing python packages\n"
-pip install -q -r requirements.txt
+/allura-data/virtualenv/bin/pip install -q -r requirements.txt
 
 /allura/rebuild-all.bash
 echo
