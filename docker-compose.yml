@@ -19,6 +19,7 @@ version: "2.1"
 services:
   web:
     build: .
+    image: allura-web  # default in Compose 2+, makes work in Compose 1.x
     environment: &env
       # PATH=/allura-data/virtualenv/bin:$PATH doesn't work; see https://github.com/docker/compose/issues/650
       - PATH=/allura-data/virtualenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
