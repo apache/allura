@@ -112,5 +112,13 @@
 {% block extra_js %}
   <script type="text/javascript" src="{{g.forge_static('js/site_admin_new_projects.js')}}"></script>
   <script type="text/javascript" src="{{g.forge_static('js/jquery.tablesorter.js')}}"></script>
-  <script type="text/JavaScript">$(document).ready(function() {$("#new_projects").tablesorter({headers: {0: {sorter: false}}});} );</script>
+  <script type="text/JavaScript">$(document).ready(function() {
+      $(function(){
+		$('#new_projects').tablesorter({
+			usNumberFormat : false,
+			sortReset      : true,
+			sortRestart    : true
+		});
+	});
+  } );</script>
 {% endblock %}
