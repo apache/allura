@@ -38,6 +38,10 @@ class MockPatchTestCase:
 
 class WithDatabase(MockPatchTestCase):
 
+    @classmethod
+    def setup_class(cls):
+        setup_basic_test()
+
     def setup_method(self, method):
         super().setup_method(method)
         clear_all_database_tables()
