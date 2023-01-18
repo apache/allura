@@ -3587,6 +3587,9 @@ ul.dropdown ul li:first-child a {
   list-style: none;
   margin: 0;
 }
+.profile-section.projects #widget-message{
+  padding: 10px;
+}
 .profile-section.projects ul li {
   clear: both;
   border-top: 1px solid #e5e5e5;
