@@ -80,6 +80,7 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
 
 {% if not custom_tracking_js %}
 {%- macro custom_tracking_js(accounts, user, project) %}
+<script type="text/javascript">
     {# This should be overridden in your custom theme (e.g., sftheme) to implement custom tracking code. #}
     var _gaq = _gaq || [];
 
@@ -107,6 +108,7 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
         ga.src = ('https:' === document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
         var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
     })();
+</script>
 {%- endmacro %}
 {% endif %}
 

@@ -20,6 +20,4 @@
     {% import g.theme.jinja_macros as theme_macros with context %}
 {% endif %}
 
-<script type="text/javascript">
-    {{theme_macros.custom_tracking_js(accounts|default, c.user|default, c.project|default)}}
-</script>
+{{theme_macros.custom_tracking_js(accounts|default, c.user|default, c.project|default)}}
