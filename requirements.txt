@@ -119,7 +119,7 @@ pastedeploy==2.1.1
     #   pastescript
 pastescript==3.3.0
     # via -r requirements.in
-pillow==9.3.0
+pillow==9.4.0
     # via -r requirements.in
 pluggy==1.0.0
     # via pytest
