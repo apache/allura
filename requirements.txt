@@ -87,13 +87,14 @@ markdown==3.3.7
     #   pypeline
 markdown-checklist==0.4.4
     # via -r requirements.in
-markupsafe==2.1.0
+markupsafe==2.1.2
     # via
     #   -r requirements.in
     #   easywidgets
     #   jinja2
     #   turbogears2
     #   webhelpers2
+    #   werkzeug
 ming==0.12.2
     # via -r requirements.in
 mock==4.0.3
@@ -242,7 +243,7 @@ webob==1.7.4
     #   webtest
 webtest==3.0.0
     # via -r requirements.in
-werkzeug==2.1.2
+werkzeug==2.2.2
     # via -r requirements.in
 wrapt==1.14.1
     # via -r requirements.in
