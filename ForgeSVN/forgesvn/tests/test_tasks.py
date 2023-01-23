@@ -55,7 +55,7 @@ class TestRepoTasks(unittest.TestCase):
         with mock.patch.object(c.app.repo, 'init') as f:
             repo_tasks.init()
             M.main_orm_session.flush()
-            assert f.called_with()
+            f.assert_called_with()
             assert ns == M.Notification.query.find().count()
 
     def test_clone(self):

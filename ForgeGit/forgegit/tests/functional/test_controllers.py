@@ -334,12 +334,20 @@ class TestRootController(_TestCase):
         ci = self._get_ci(repo='/p/test/weird-chars/')
         resp = self.app.get(h.urlquote(ci + 'tree/привіт.txt') + '?diff=407950e8fba4dbc108ffbce0128ed1085c52cfd7')
         diffhtml = str(resp.html.select_one('.diffbrowser'))
+        print("HTML", diffhtml)
+        print("=============================")
+        print(textwrap.dedent('''\
+                    <span class="gd">--- a/привіт.txt</span>
+                    <span class="gi">+++ b/привіт.txt</span>
+                    <span class="gu">@@ -1 +1,2 @@</span>
+                    <span class="w"> </span>Привіт!
+                    <span class="gi">+Which means Hello!</span>'''))
         assert (textwrap.dedent('''\
-                    <span class="gd">--- a/привіт.txt</span><span class="w"></span>
-                    <span class="gi">+++ b/привіт.txt</span><span class="w"></span>
-                    <span class="gu">@@ -1 +1,2 @@</span><span class="w"></span>
-                    <span class="w"> </span>Привіт!<span class="w"></span>
-                    <span class="gi">+Which means Hello!</span><span class="w"></span>''') in
+                    <span class="gd">--- a/привіт.txt</span>
+                    <span class="gi">+++ b/привіт.txt</span>
+                    <span class="gu">@@ -1 +1,2 @@</span>
+                    <span class="w"> </span>Привіт!
+                    <span class="gi">+Which means Hello!</span>''') in
                 diffhtml)
 
         resp = self.app.get(h.urlquote(ci + 'tree/привіт.txt') + '?diff=407950e8fba4dbc108ffbce0128ed1085c52cfd7&diformat=sidebyside')
@@ -903,11 +911,11 @@ class TestFork(_TestCase):
 </li>
 </ul>
 <p>Diff:</p>
-<div class="codehilite"><pre><span></span><code><span class="gd">--- old</span><span class="w"></span>
-<span class="gi">+++ new</span><span class="w"></span>
-<span class="gu">@@ -1 +1 @@</span><span class="w"></span>
-<span class="gd">-description</span><span class="w"></span>
-<span class="gi">+changed description</span><span class="w"></span>
+<div class="codehilite"><pre><span></span><code><span class="gd">--- old</span>
+<span class="gi">+++ new</span>
+<span class="gu">@@ -1 +1 @@</span>
+<span class="gd">-description</span>
+<span class="gi">+changed description</span>
 </code></pre></div>
 </div>
 """.strip()
