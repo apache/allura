@@ -753,7 +753,7 @@ class TestRepo(_TestWithRepo):
         self.repo.init_as_clone('srcpath', 'srcname', 'srcurl')
         assert self.repo.upstream_repo.name == 'srcname'
         assert self.repo.upstream_repo.url == 'srcurl'
-        assert self.repo._impl.clone_from.called_with('srcpath')
+        self.repo._impl.clone_from.assert_called_with('srcpath')
         post_event.assert_called_once_with('repo_cloned', 'srcurl', 'srcpath')
 
     def test_latest(self):
