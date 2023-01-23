@@ -117,7 +117,7 @@ def create_multipart_msg(text, metalink=None):
     def replace_html(matchobj):
         text_within_div = matchobj.group(1)
         text_within_div = text_within_div.replace('</p>', '\n')
-        text_within_div = markupsafe._striptags_re.sub('', text_within_div)
+        text_within_div = markupsafe._strip_tags_re.sub('', text_within_div)
         return text_within_div
 
     plain_text = text
