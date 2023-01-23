@@ -58,7 +58,6 @@ Allura/allura/public/nf/js/react-dom.development.js
 Allura/allura/public/nf/js/react-dom.production.min.js
 Allura/allura/public/nf/js/react-drag.min.js
 Allura/allura/public/nf/js/react-reorderable.min.js
-Allura/allura/public/nf/js/sylvester.js
 Allura/allura/public/nf/js/Sortable.min.js
 Allura/allura/public/nf/js/twemoji.min.js
 Allura/allura/public/nf/js/underscore-1.13.6.min.js
