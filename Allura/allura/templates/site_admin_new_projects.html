@@ -98,12 +98,16 @@
         background-position: center left;
         padding-left: 20px;
     }
-    th.headerSortUp {
+    th.tablesorter-headerDesc{
         background-image: url("{{g.forge_static('images/asc.gif')}}");
+        background-repeat: no-repeat;
+        background-position: 100% 50%;
         background-color: #6bb3fd;
     }
-    th.headerSortDown {
+    th.tablesorter-headerAsc{
         background-image: url("{{g.forge_static('images/desc.gif')}}");
+        background-repeat: no-repeat;
+        background-position: 100% 50%;
         background-color: #6bb3fd;
     }
 </style>
@@ -116,8 +120,8 @@
       $(function(){
 		$('#new_projects').tablesorter({
 			usNumberFormat : false,
-			sortReset      : true,
-			sortRestart    : true
+			sortReset      : false,
+			sortRestart    : false
 		});
 	});
   } );</script>
