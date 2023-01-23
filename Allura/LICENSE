@@ -237,9 +237,6 @@ under the MIT license.  For details, see the individual files:
 Blueprint, which is available under the MIT license.
 For details, see allura/public/nf/css/blueprint/
 
-Sylvester, which is available under the MIT license.
-For details, see allura/public/nf/js/sylvester.js
-
 React.js, which is available under the MIT license.
 For details, see:
     allura/public/nf/js/react.development.js
