@@ -50,8 +50,8 @@ class URL(fev.URL):
 
 class URLIsPrivate(URL):
 
-    def _to_python(self, value, state):
-        value = super(URLIsPrivate, self)._to_python(value, state)
+    def _convert_to_python(self, value, state):
+        value = super(URLIsPrivate, self)._convert_to_python(value, state)
         url_components = urlsplit(value)
         try:
             host_ip = socket.gethostbyname(url_components.netloc)
@@ -107,7 +107,7 @@ class Ming(fev.FancyValidator):
         self.cls = cls
         super().__init__(**kw)
 
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         result = self.cls.query.get(_id=value)
         if result is None:
             try:
@@ -125,7 +125,7 @@ class Ming(fev.FancyValidator):
 
 class UniqueOAuthApplicationName(UnicodeString):
 
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         from allura import model as M
         app = M.OAuthConsumerToken.query.get(name=value, user_id=c.user._id)
         if app is not None:
@@ -149,7 +149,7 @@ class NullValidator(fev.Validator):
 class MaxBytesValidator(fev.FancyValidator):
     max = 255
 
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         value_bytes = h.really_unicode(value or '').encode('utf-8')
         if len(value_bytes) > self.max:
             raise fe.Invalid("Please enter a value less than %s bytes long." %
@@ -168,7 +168,7 @@ class MountPointValidator(UnicodeString):
         self.app_class = app_class
         self.reserved_mount_points = reserved_mount_points
 
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         mount_point, App = value, self.app_class
         if not App.relaxed_mount_points:
             mount_point = mount_point.lower()
@@ -196,7 +196,7 @@ class MountPointValidator(UnicodeString):
 
 class TaskValidator(fev.FancyValidator):
 
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         try:
             mod, func = value.rsplit('.', 1)
         except ValueError:
@@ -220,7 +220,7 @@ class TaskValidator(fev.FancyValidator):
 
 class UserValidator(fev.FancyValidator):
 
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         from allura import model as M
         user = M.User.by_username(value)
         if not user:
@@ -230,7 +230,7 @@ class UserValidator(fev.FancyValidator):
 
 class AnonymousValidator(fev.FancyValidator):
 
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         from allura.model import User
         if value:
             if c.user == User.anonymous():
@@ -241,7 +241,7 @@ class AnonymousValidator(fev.FancyValidator):
 
 class PathValidator(fev.FancyValidator):
 
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         from allura import model as M
 
         parts = value.strip('/').split('/')
@@ -282,7 +282,7 @@ class JsonValidator(fev.FancyValidator):
 
     """Validates a string as JSON and returns the original string"""
 
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         try:
             json.loads(value)
         except ValueError as e:
@@ -297,7 +297,7 @@ class JsonConverter(fev.FancyValidator):
     Must be an object, not a simple literal
     """
 
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         try:
             obj = json.loads(value)
         except ValueError as e:
@@ -313,7 +313,7 @@ class JsonFile(fev.FieldStorageUploadConverter):
 
     """
 
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         return JsonConverter.to_python(value.value)
 
 
@@ -330,8 +330,8 @@ class UserMapJsonFile(JsonFile):
     def __init__(self, as_string=False):
         self.as_string = as_string
 
-    def _to_python(self, value, state):
-        value = super(self.__class__, self)._to_python(value, state)
+    def _convert_to_python(self, value, state):
+        value = super(self.__class__, self)._convert_to_python(value, state)
         try:
             for k, v in value.items():
                 if not(isinstance(k, str) and isinstance(v, str)):
@@ -361,7 +361,7 @@ class CreateSiteNotificationSchema(fe.Schema):
 
 class DateValidator(fev.FancyValidator):
 
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         value = convertDate(value)
         if not value:
             raise fe.Invalid(
@@ -372,7 +372,7 @@ class DateValidator(fev.FancyValidator):
 
 class TimeValidator(fev.FancyValidator):
 
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         value = convertTime(value)
         if not value:
             raise fe.Invalid(
@@ -388,7 +388,7 @@ class OneOfValidator(fev.FancyValidator):
         self.not_empty = not_empty
         super().__init__()
 
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         if not value.strip():
             if self.not_empty:
                 raise fe.Invalid("This field can't be empty.", value, state)
@@ -413,7 +413,7 @@ class MapValidator(fev.FancyValidator):
         self.not_empty = not_empty
         super().__init__()
 
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         if not value.strip():
             if self.not_empty:
                 raise fe.Invalid("This field can't be empty.", value, state)
@@ -438,7 +438,7 @@ class YouTubeConverter(fev.FancyValidator):
              r'(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))' +
              r'((\w|-){11})(?:\S+)?$')
 
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         match = re.match(YouTubeConverter.REGEX, value)
         if match:
             video_id = match.group(1)
@@ -477,7 +477,7 @@ def convertTime(timestring):
 class IconValidator(fev.FancyValidator):
     regex = '(jpg|jpeg|gif|png|bmp)$'
 
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         p = re.compile(self.regex, flags=re.I)
         result = p.search(value.filename)
 
@@ -491,7 +491,7 @@ class IconValidator(fev.FancyValidator):
 FEDIVERSE_REGEX = r'^@[\w-]+@[\w-]+(\.[\w-]+)+$'
 
 class LinkedinValidator(fev.FancyValidator):
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         if value.startswith('@') and not re.match(FEDIVERSE_REGEX, value):
             value = f'https://linkedin.com/in/{value.replace("@", "")}/'
         elif 'linkedin.com' not in value:
@@ -500,7 +500,7 @@ class LinkedinValidator(fev.FancyValidator):
 
 
 class TwitterValidator(fev.FancyValidator):
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         if value.startswith('@') and not re.match(FEDIVERSE_REGEX, value):
             value = f'https://twitter.com/{value.replace("@", "")}'
         elif 'twitter.com' not in value:
@@ -509,7 +509,7 @@ class TwitterValidator(fev.FancyValidator):
 
 
 class InstagramValidator(fev.FancyValidator):
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         if value.startswith('@') and not re.match(FEDIVERSE_REGEX, value):
             value = f'https://instagram.com/{value.replace("@", "")}'
         elif 'instagram.com' not in value:
@@ -518,7 +518,7 @@ class InstagramValidator(fev.FancyValidator):
 
 
 class FacebookValidator(fev.FancyValidator):
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         if value.startswith('@') and not re.match(FEDIVERSE_REGEX, value):
             value = f'https://facebook.com/{value.replace("@", "")}'
         elif 'facebook.com' not in value:
@@ -527,7 +527,7 @@ class FacebookValidator(fev.FancyValidator):
 
 
 class FediverseValidator(fev.FancyValidator):
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         if value.startswith('http'):
             url = urlsplit(value)
             value = f'{url.path.replace("/", "")}@{url.netloc}'

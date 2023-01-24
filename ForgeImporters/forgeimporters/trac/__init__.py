@@ -27,8 +27,8 @@ class TracURLValidator(validators.URLIsPrivate):
         'unavailable': 'This project is unavailable for import'
     }
 
-    def _to_python(self, value, state=None):
-        value = super()._to_python(value, state)
+    def _convert_to_python(self, value, state=None):
+        value = super()._convert_to_python(value, state)
         # remove extraneous /wiki/[PageName] from the end of the URL
         url_parts = value.split('/')
         try:

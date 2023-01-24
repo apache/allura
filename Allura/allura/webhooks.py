@@ -54,7 +54,7 @@ class WebhookValidator(fev.FancyValidator):
         self.sender = sender
         super().__init__(**kw)
 
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         wh = None
         if isinstance(value, M.Webhook):
             wh = value

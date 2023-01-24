@@ -33,7 +33,7 @@ class NullValidator(fev.FancyValidator):
     perform_validation = True
     accept_iterator = True
 
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         return value
 
     def _from_python(self, value, state):

@@ -39,7 +39,7 @@ log = logging.getLogger(__name__)
 
 class GitHubURLValidator(fev.FancyValidator):
     regex = r'https?:\/\/github\.com'
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         valid_url = urlparse(value.strip())
         if not bool(valid_url.scheme):
             raise fev.Invalid('Invalid URL', value, state)
@@ -55,7 +55,7 @@ class GitHubProjectNameValidator(fev.FancyValidator):
         'unavailable': 'This is not a valid Github project that can be used for import',
     }
 
-    def _to_python(self, value, state=None):
+    def _convert_to_python(self, value, state=None):
         user_name = state.full_dict.get('user_name', '')
         user_name = state.full_dict.get('gh_user_name', user_name).strip()
         project_name = value.strip()

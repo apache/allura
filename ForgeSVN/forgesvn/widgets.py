@@ -40,8 +40,8 @@ class ValidateSvnUrl(validators.URLIsPrivate):
         $
     ''', re.I | re.VERBOSE)
 
-    def _to_python(self, value, state):
-        value = super()._to_python(value, state)
+    def _convert_to_python(self, value, state):
+        value = super()._convert_to_python(value, state)
         if 'plugins.svn.wordpress.org' in value:
             raise fev.Invalid("That SVN repo is to large to import from.", value, state)
         return value
