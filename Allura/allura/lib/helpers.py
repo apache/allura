@@ -524,7 +524,7 @@ def ago_string(s):
 
 class DateTimeConverter(FancyValidator):
 
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         try:
             return parse(value)
         except (ValueError, TypeError):

@@ -88,7 +88,7 @@ class AddForumShort(AddForum):
 
 class UniqueForumShortnameValidator(fev.FancyValidator):
 
-    def _to_python(self, value, state):
+    def _convert_to_python(self, value, state):
         forums = DM.Forum.query.find(
             dict(app_config_id=ObjectId(state.full_dict['app_id']))).all()
         value = h.really_unicode(value.lower() or '')
