@@ -20,7 +20,7 @@ from datetime import timedelta
 import collections
 
 from tg import tmpl_context as c, app_globals as g
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 import mock
 import bson
 
@@ -43,14 +43,14 @@ class TestNotification(unittest.TestCase):
         setup_global_objects()
         _clear_subscriptions()
         _clear_notifications()
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
         M.notification.MAILBOX_QUIESCENT = None  # disable message combining
 
     def test_subscribe_unsubscribe(self):
         M.Mailbox.subscribe(type='direct')
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
         subscriptions = M.Mailbox.query.find(dict(
             project_id=c.project._id,
             app_config_id=c.app.config._id,
@@ -59,8 +59,8 @@ class TestNotification(unittest.TestCase):
         assert subscriptions[0].type == 'direct'
         assert M.Mailbox.query.find().count() == 1
         M.Mailbox.unsubscribe()
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
         subscriptions = M.Mailbox.query.find(dict(
             project_id=c.project._id,
             app_config_id=c.app.config._id,
@@ -104,8 +104,8 @@ class TestNotification(unittest.TestCase):
         wiki = c.project.app_instance('wiki')
         page = WM.Page.query.get(app_config_id=wiki.config._id)
         page.parent_security_context().acl = []
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
         notification = M.Notification(
             _id='_id',
             ref=page.ref,
@@ -175,16 +175,16 @@ class TestPostNotifications(unittest.TestCase):
         g.set_app('wiki')
         _clear_subscriptions()
         _clear_notifications()
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
         self.pg = WM.Page.query.get(app_config_id=c.app.config._id)
         M.notification.MAILBOX_QUIESCENT = None  # disable message combining
         while M.MonQTask.run_ready('setup'):
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
 
     def test_post_notification(self):
         self._post_notification()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.list()
         t = M.MonQTask.get()
         assert t.args[1] == [self.pg.index_id()]
@@ -192,8 +192,8 @@ class TestPostNotifications(unittest.TestCase):
     def test_post_user_notification(self):
         u = M.User.query.get(username='test-admin')
         M.Notification.post_user(u, self.pg, 'metadata')
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
         flash_msgs = list(h.pop_user_notifications(u))
         assert len(flash_msgs) == 1, flash_msgs
         msg = flash_msgs[0]
@@ -206,7 +206,7 @@ class TestPostNotifications(unittest.TestCase):
         self._subscribe()
         self._post_notification()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert M.Mailbox.query.find().count() == 1
         mbox = M.Mailbox.query.get()
         assert len(mbox.queue) == 1
@@ -217,7 +217,7 @@ class TestPostNotifications(unittest.TestCase):
         user2 = M.User.query.get(username='test-user-2')
         self._subscribe(user=user2)
         self._post_notification()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         assert (M.Notification.query.get()
                      ['from_address'] == '"Test Admin" <test-admin@users.localhost>')
@@ -270,11 +270,11 @@ class TestPostNotifications(unittest.TestCase):
         try:
             # this will create a notification task
             self._post_notification()
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
             # running the notification task will create a mail task if the
             # permission check passes...
             M.MonQTask.run_ready()
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
             # ...but in this case it doesn't create a mail task since we
             # forced the perm check to fail
             assert M.MonQTask.get() is None
@@ -294,8 +294,8 @@ class TestPostNotifications(unittest.TestCase):
 
     def _subscribe(self, **kw):
         self.pg.subscribe(type='direct', **kw)
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
     def _post_notification(self):
         return M.Notification.post(self.pg, 'metadata')
@@ -313,8 +313,8 @@ class TestSubscriptionTypes(unittest.TestCase):
         g.set_app('wiki')
         _clear_subscriptions()
         _clear_notifications()
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
         self.pg = WM.Page.query.get(app_config_id=c.app.config._id)
         M.notification.MAILBOX_QUIESCENT = None  # disable message combining
 
@@ -322,8 +322,8 @@ class TestSubscriptionTypes(unittest.TestCase):
         self._subscribe()
         self._post_notification(text='A')
         self._post_notification(text='B')
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
         M.Mailbox.fire_ready()
 
     def test_digest_sub(self):
@@ -355,10 +355,10 @@ class TestSubscriptionTypes(unittest.TestCase):
         thd = M.Thread.query.get(ref_id=self.pg.index_id())
         thd.post('This is a very cool message')
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.Mailbox.fire_ready()
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
         msg = M.MonQTask.query.get(
             task_name='allura.tasks.mail_tasks.sendmail',
             state='ready')
@@ -369,13 +369,13 @@ class TestSubscriptionTypes(unittest.TestCase):
 
     def _clear_subscriptions(self):
         M.Mailbox.query.remove({})
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
     def _subscribe(self, type='direct', topic=None):
         self.pg.subscribe(type=type, topic=topic)
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
     def _post_notification(self, text=None):
         return M.Notification.post(self.pg, 'metadata', text=text)
@@ -435,14 +435,14 @@ class TestSubscriptionTypes(unittest.TestCase):
         notification = M.Notification()
         notification.ref_id = thd.index_id()
         user.disabled = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         notification.send_direct(user._id)
         count = M.MonQTask.query.find(dict(
             task_name='allura.tasks.mail_tasks.sendmail',
             state='ready')).count()
         assert count == 0
         user.disabled = False
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         notification.send_direct(user._id)
         count = M.MonQTask.query.find(dict(
             task_name='allura.tasks.mail_tasks.sendmail',
@@ -457,7 +457,7 @@ class TestSubscriptionTypes(unittest.TestCase):
         ref.artifact = thd
         user = M.User.by_username('test-admin')
         user.disabled = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.Notification.send_digest(
             user._id, 'test@mail.com', 'subject', [notification])
         count = M.MonQTask.query.find(dict(
@@ -465,7 +465,7 @@ class TestSubscriptionTypes(unittest.TestCase):
             state='ready')).count()
         assert count == 0
         user.disabled = False
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.Notification.send_digest(
             user._id, 'test@mail.com', 'subject', [notification])
         count = M.MonQTask.query.find(dict(

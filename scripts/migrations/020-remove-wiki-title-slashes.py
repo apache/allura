@@ -19,7 +19,7 @@ import logging
 
 from tg import tmpl_context as c
 
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 
 from forgewiki import model as WM
 
@@ -33,7 +33,7 @@ def main():
     for page in pages:
         page.title = page.title.replace('/', '-')
         print('Updated: %s' % page.title)
-    ThreadLocalORMSession.flush_all()
+    ThreadLocalODMSession.flush_all()
 
 if __name__ == '__main__':
     main()

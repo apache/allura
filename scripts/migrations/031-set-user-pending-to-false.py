@@ -17,7 +17,7 @@
 
 import logging
 
-from ming.odm import ThreadLocalORMSession, state
+from ming.odm import ThreadLocalODMSession, state
 
 from allura.lib import utils
 from allura import model as M
@@ -33,7 +33,7 @@ def main():
             # Ming doesn't mark document for update, since pending is False
             # by default, even if field is missing from mongo
             state(user).status = state(user).dirty
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
 
 if __name__ == '__main__':
     main()

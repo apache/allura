@@ -15,7 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 from allura import model as M
 
 
@@ -23,8 +23,8 @@ def main():
     u = M.User.query.get(username='*anonymous')
     u.display_name = 'Anonymous'
 
-    ThreadLocalORMSession.flush_all()
-    ThreadLocalORMSession.close_all()
+    ThreadLocalODMSession.flush_all()
+    ThreadLocalODMSession.close_all()
 
 if __name__ == '__main__':
     main()

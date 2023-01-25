@@ -21,7 +21,7 @@ from ...github import tasks
 
 
 @mock.patch.object(tasks, 'GitHubProjectExtractor')
-@mock.patch.object(tasks, 'ThreadLocalORMSession')
+@mock.patch.object(tasks, 'ThreadLocalODMSession')
 @mock.patch.object(tasks, 'c')
 @mock.patch.object(tasks, 'g', mock.MagicMock())
 def test_import_project_info(c, session, ghpe):

@@ -16,7 +16,7 @@
 #       under the License.
 
 from mock import Mock, patch
-from ming.orm import ThreadLocalORMSession, session
+from ming.odm import ThreadLocalODMSession, session
 
 from allura.tests.unit import WithDatabase
 from allura.tests.unit.factories import create_post, create_discussion
@@ -66,7 +66,7 @@ class TestWhenModerating(WithDatabase):
             self.controller.save_moderation(
                 post=[dict(checked=True, _id=self.get_post()._id)],
                 **kwargs)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
     def get_post(self):
         return model.Post.query.get(slug='mypost', deleted=False)

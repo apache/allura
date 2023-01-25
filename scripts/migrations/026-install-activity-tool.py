@@ -17,7 +17,7 @@
 
 import logging
 
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 
 from allura.lib import utils
 from allura import model as M
@@ -30,8 +30,8 @@ def main():
         for p in chunk:
             p.install_app('activity')
 
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
 if __name__ == '__main__':
     main()

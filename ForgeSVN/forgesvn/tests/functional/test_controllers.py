@@ -23,7 +23,7 @@ from unittest import skipUnless
 import tg
 import pkg_resources
 from tg import tmpl_context as c
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 from mock import patch
 
 from allura import model as M
@@ -49,8 +49,8 @@ class SVNTestController(TestController):
         c.app.repo.refresh()
         if os.path.isdir(c.app.repo.tarball_path):
             shutil.rmtree(c.app.repo.tarball_path.encode('utf-8'))
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
     @with_svn
     @with_tool('test', 'SVN', 'svn-tags', 'SVN with tags')
@@ -76,8 +76,8 @@ class TestRootController(SVNTestController):
         assert resp.html.find('div', dict(id='repo_status')) is None
         h.set_context('test', 'src', neighborhood='Projects')
         c.app.repo.status = 'analyzing'
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
         # repo status displayed if not 'ready'
         resp = self.app.get('/src/').follow()
         div = resp.html.find('div', dict(id='repo_status'))
@@ -232,7 +232,7 @@ class TestRootController(SVNTestController):
         r = self.app.get('/src/3/tarball')
         assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         r = self.app.get('/src/3/tarball_status')
         assert '{"status": "complete"}' in r
         r = self.app.get('/src/3/tarball')
@@ -247,7 +247,7 @@ class TestRootController(SVNTestController):
         r = self.app.get('/src/6/tarball')
         assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         r = self.app.get('/src/6/tarball_status')
         assert '{"status": "complete"}' in r
         r = self.app.get('/src/6/tarball')
@@ -360,12 +360,12 @@ class SVNTestRenames(TestController):
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'testsvn'
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
         h.set_context('test', 'src', neighborhood='Projects')
         c.app.repo.refresh()
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
         h.set_context('test', 'src', neighborhood='Projects')
 
     def test_log(self):

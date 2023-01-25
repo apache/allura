@@ -28,7 +28,7 @@ from six.moves.urllib.parse import urlencode
 from bson import ObjectId
 import re
 
-from ming.orm.ormsession import ThreadLocalORMSession, session
+from ming.odm.odmsession import ThreadLocalODMSession, session
 from tg import config, expose
 from mock import patch, Mock
 import mock
@@ -58,7 +58,7 @@ class TestAuth(TestController):
         email = M.User.query.get(username='test-admin').email_addresses[0]
         r = self.app.post('/auth/send_verification_link', params=dict(a=email,
                                                                       _session_id=self.app.cookies['_session_id']))
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         r = self.app.get('/auth/verify_addr', params=dict(a='foo'))
         assert json.loads(self.webflash(r))['status'] == 'error', self.webflash(r)
         ea = M.EmailAddress.find({'email': email}).first()
@@ -338,7 +338,7 @@ class TestAuth(TestController):
         user.claim_address(email_address)
         email = M.EmailAddress.find(dict(email=email_address)).first()
         email.confirmed = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         # Claiming the same email address by test-admin
         # the email should be added to the email_addresses list but notifications should not be sent
@@ -381,7 +381,7 @@ class TestAuth(TestController):
         user.claim_address(email_address)
         email = M.EmailAddress.find(dict(email=email_address)).first()
         email.confirmed = False
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         # Claiming the same email address by test-admin
         # the email should be added to the email_addresses list but notifications should not be sent
 
@@ -455,7 +455,7 @@ class TestAuth(TestController):
         email = M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user1._id)).first()
         email.confirmed = False
 
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         r = self.app.post('/auth/send_verification_link',
                           params=dict(a=email_address, _session_id=self.app.cookies['_session_id']),
@@ -480,7 +480,7 @@ class TestAuth(TestController):
         user.claim_address(email_address)
         email = M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user._id)).first()
         email.confirmed = False
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         self.app.post('/auth/send_verification_link',
                       params=dict(a=email_address,
@@ -491,7 +491,7 @@ class TestAuth(TestController):
         user1.claim_address(email_address)
         email1 = M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user1._id)).first()
         email1.confirmed = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         # Verify first email with the verification link
         r = self.app.get('/auth/verify_addr', params=dict(a=email.nonce),
                          extra_environ=dict(username='test-user'))
@@ -511,7 +511,7 @@ class TestAuth(TestController):
         user.claim_address(email_address)
         email = M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user._id)).first()
         email.confirmed = False
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         self.app.post('/auth/send_verification_link',
                       params=dict(a=email_address,
@@ -1623,7 +1623,7 @@ class TestPasswordReset(TestController):
         email = M.EmailAddress.find(
             {'claimed_by_user_id': user._id}).first()
         email.confirmed = False
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         self.app.get('/').follow()  # establish session
         self.app.post('/auth/password_recovery_hash', {'email': email.email,
                                                        '_session_id': self.app.cookies['_session_id'],
@@ -1640,7 +1640,7 @@ class TestPasswordReset(TestController):
         email = M.EmailAddress.find(
             {'claimed_by_user_id': user._id}).first()
         user.disabled = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         self.app.get('/').follow()  # establish session
         self.app.post('/auth/password_recovery_hash', {'email': email.email,
                                                        '_session_id': self.app.cookies['_session_id'],
@@ -1658,7 +1658,7 @@ class TestPasswordReset(TestController):
 
         email = M.EmailAddress.find({'email': self.test_primary_email}).first()
         email.confirmed = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         with h.push_config(config, **{'auth.allow_non_primary_email_password_reset': 'false'}):
             self.app.post('/auth/password_recovery_hash', {'email': self.test_primary_email,
@@ -1679,7 +1679,7 @@ class TestPasswordReset(TestController):
         user.set_pref('email_address', self.test_primary_email)
         email = M.EmailAddress.find({'email': self.test_primary_email}).first()
         email.confirmed = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         with h.push_config(config, **{'auth.allow_non_primary_email_password_reset': 'true'}):
             self.app.post('/auth/password_recovery_hash', {'email': email1.email,
                                                            '_session_id': self.app.cookies['_session_id'],
@@ -1696,7 +1696,7 @@ class TestPasswordReset(TestController):
         user = M.User.query.get(username='test-admin')
         email = M.EmailAddress.find({'claimed_by_user_id': user._id}).first()
         email.confirmed = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         old_pw_hash = user.password
 
         # request a reset
@@ -1772,7 +1772,7 @@ To update your password on %s, please visit the following URL:
         email = M.EmailAddress.find(
             {'claimed_by_user_id': user._id}).first()
         email.confirmed = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         self.app.get('/').follow()  # establish session
         r = self.app.post('/auth/password_recovery_hash', {'email': email.email,
                                                            '_session_id': self.app.cookies['_session_id'],
@@ -1817,7 +1817,7 @@ To update your password on %s, please visit the following URL:
         user = M.User.query.get(username='test-admin')
         email = M.EmailAddress.find({'claimed_by_user_id': user._id}).first()
         email.confirmed = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         # request a reset
         r = self.app.post('/auth/password_recovery_hash', {'email': email.email,
@@ -1906,7 +1906,7 @@ class TestOAuth(TestController):
             user_id=user._id,
             description='ctok_desc',
         )
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         oauth_params = dict(
             client_key='api_key_api_key_12345',
             client_secret='test-client-secret',
@@ -1969,7 +1969,7 @@ class TestOAuth(TestController):
             callback='oob',
             user_id=user._id,
         )
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         r = self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok_12345'})
         assert 'ctok_desc' in r.text
         assert 'api_key_reqtok_12345' in r.text
@@ -1991,7 +1991,7 @@ class TestOAuth(TestController):
             callback='oob',
             user_id=user._id,
         )
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         self.app.post('/rest/oauth/do_authorize',
                       params={'no': '1', 'oauth_token': 'api_key_reqtok_12345'})
         assert M.OAuthRequestToken.query.get(api_key='api_key_reqtok_12345') is None
@@ -2009,7 +2009,7 @@ class TestOAuth(TestController):
             callback='oob',
             user_id=user._id,
         )
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key_reqtok_12345'})
         assert r.html.find(text=re.compile('^PIN: ')) is not None
 
@@ -2026,7 +2026,7 @@ class TestOAuth(TestController):
             callback='http://my.domain.com/callback',
             user_id=user._id,
         )
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key_reqtok_12345'})
         assert r.location.startswith('http://my.domain.com/callback?oauth_token=api_key_reqtok_12345&oauth_verifier=')
 
@@ -2043,7 +2043,7 @@ class TestOAuth(TestController):
             callback='http://my.domain.com/callback?myparam=foo',
             user_id=user._id,
         )
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key_reqtok_12345'})
         assert r.location.startswith('http://my.domain.com/callback?myparam=foo&oauth_token=api_key_reqtok_12345&oauth_verifier=')
 
@@ -2066,7 +2066,7 @@ class TestOAuthRequestToken(TestController):
             secret_key='test-client-secret',
             user_id=user._id,
         )
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         r = self.app.post(*oauth1_webtest('/rest/oauth/request_token', self.oauth_params, method='POST'))
         r.mustcontain('oauth_token=')
         r.mustcontain('oauth_token_secret=')
@@ -2091,7 +2091,7 @@ class TestOAuthRequestToken(TestController):
             user_id=user._id,
             secret_key='test-client-secret--INVALID',
         )
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         self.app.post(*oauth1_webtest('/rest/oauth/request_token', self.oauth_params, method='POST'),
                       status=401)
 
@@ -2120,7 +2120,7 @@ class TestOAuthAccessToken(TestController):
             user_id=user._id,
             description='ctok_desc',
         )
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         self.app.get(*oauth1_webtest('/rest/oauth/access_token', self.oauth_params), status=401)
 
     def test_access_token_bad_pin(self):
@@ -2137,7 +2137,7 @@ class TestOAuthAccessToken(TestController):
             user_id=user._id,
             validation_pin='good_verifier_123456',
         )
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         oauth_params = self.oauth_params.copy()
         oauth_params['verifier'] = 'bad_verifier_1234567'
         self.app.get(*oauth1_webtest('/rest/oauth/access_token', oauth_params),
@@ -2159,7 +2159,7 @@ class TestOAuthAccessToken(TestController):
             validation_pin='good_verifier_123456',
             secret_key='test-token-secret--INVALID',
         )
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         self.app.get(*oauth1_webtest('/rest/oauth/access_token', self.oauth_params), status=401)
 
     def test_access_token_ok(self, signature_type='auth_header'):
@@ -2178,7 +2178,7 @@ class TestOAuthAccessToken(TestController):
             user_id=user._id,
             validation_pin='good_verifier_123456',
         )
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         oauth_params = dict(self.oauth_params, signature_type=signature_type)
         r = self.app.get(*oauth1_webtest('/rest/oauth/access_token', self.oauth_params))

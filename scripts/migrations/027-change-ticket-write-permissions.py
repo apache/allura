@@ -16,7 +16,7 @@
 #       under the License.
 
 import logging
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 
 from allura import model as M
 
@@ -47,7 +47,7 @@ def main():
                     add(a.acl, M.ACE.allow(role_id, 'create'))
                     add(a.acl, M.ACE.allow(role_id, 'update'))
 
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
 if __name__ == '__main__':
     main()

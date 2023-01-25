@@ -24,8 +24,8 @@ from paste.deploy.converters import asbool
 from tg import tmpl_context as c, app_globals as g
 from pymongo.errors import DuplicateKeyError, InvalidDocument, OperationFailure
 
-from ming.orm import mapper, session, Mapper
-from ming.orm.declarative import MappedClass
+from ming.odm import mapper, session, Mapper
+from ming.odm.declarative import MappedClass
 
 from allura.tasks.index_tasks import add_artifacts
 from allura.lib.exceptions import CompoundError

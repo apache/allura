@@ -18,7 +18,7 @@
 from tg import tmpl_context as c
 from tg import app_globals as g
 
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 
 from allura.lib.decorators import task
 
@@ -34,5 +34,5 @@ def import_project_info(project_name):
         extractor = GitHubProjectExtractor(project_name, user=c.user)
         c.project.summary = extractor.get_summary()
         c.project.external_homepage = extractor.get_homepage()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         g.post_event('project_updated')

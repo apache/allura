@@ -25,7 +25,7 @@ from tg import tmpl_context as c
 from cgi import FieldStorage
 
 from alluratest.controller import setup_basic_test
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 
 from allura import model as M
 from allura.tests import decorators as td
@@ -70,7 +70,7 @@ class TestApp:
     def test_uninstall(self):
         t = TM.Ticket.new()
         t.summary = 'new ticket'
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert TM.Ticket.query.get(summary='new ticket')
         # c.app.uninstall(c.project) errors out, but works ok in test_uninstall for repo tools.  So instead:
         c.project.uninstall_app('bugs')
@@ -110,13 +110,13 @@ class TestBulkExport(TrackerTestController):
         self.new_ticket(summary='bar', _milestone='2.0')
         self.ticket = TM.Ticket.query.find(dict(summary='foo')).first()
         self.post = self.ticket.discussion_thread.add_post(text='silly comment')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         test_file1 = FieldStorage()
         test_file1.name = 'file_info'
         test_file1.filename = 'test_file'
         test_file1.file = BytesIO(b'test file1\n')
         self.post.add_attachment(test_file1)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
     def test_bulk_export(self):
         # Clear out some context vars, to properly simulate how this is run from the export task

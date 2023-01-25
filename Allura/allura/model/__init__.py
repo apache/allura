@@ -46,7 +46,7 @@ from .session import ArtifactSessionExtension
 from . import repository
 from . import repo_refresh
 
-from ming.orm import Mapper
+from ming.odm import Mapper
 Mapper.compile_all()
 
 __all__ = [

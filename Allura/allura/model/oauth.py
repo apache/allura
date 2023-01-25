@@ -25,8 +25,8 @@ from paste.deploy.converters import aslist
 from tg import config
 import pymongo
 from ming import schema as S
-from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty, session
-from ming.orm.declarative import MappedClass
+from ming.odm import FieldProperty, RelationProperty, ForeignIdProperty, session
+from ming.odm.declarative import MappedClass
 from bson import ObjectId
 
 from allura.lib import helpers as h

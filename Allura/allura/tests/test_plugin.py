@@ -22,7 +22,7 @@ import tg
 from tg import tmpl_context as c
 from webob import Request, exc
 from bson import ObjectId
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 from mock import Mock, MagicMock, patch
 import pytest
 
@@ -84,7 +84,7 @@ class TestProjectRegistrationProviderParseProjectFromUrl:
 
     def setup_method(self, method):
         setup_basic_test()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.close_all()
         setup_global_objects()
         self.provider = ProjectRegistrationProvider()
         self.parse = self.provider.project_from_url
@@ -113,7 +113,7 @@ class TestProjectRegistrationProviderParseProjectFromUrl:
     def test_only_shortname_multiple_projects_matched(self):
         adobe_n = M.Neighborhood.query.get(url_prefix='/adobe/')
         M.Project(shortname='test', neighborhood_id=adobe_n._id)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert (None, 'Too many matches for project: 2') == self.parse('test')
 
     def test_only_shortname_ok(self):
@@ -621,7 +621,7 @@ class TestLocalAuthenticationProvider:
 
     def setup_method(self, method):
         setup_basic_test()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.close_all()
         setup_global_objects()
         self.provider = plugin.LocalAuthenticationProvider(Request.blank('/'))
 
@@ -675,7 +675,7 @@ class TestLocalAuthenticationProvider:
         c.user = Mock(username='test-admin')
         with audits('Account enabled', user=True, actor='test-admin'):
             self.provider.enable_user(user)
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
         assert user.disabled is False
 
     def test_disable_user(self):
@@ -683,7 +683,7 @@ class TestLocalAuthenticationProvider:
         c.user = Mock(username='test-admin')
         with audits('Account disabled', user=True, actor='test-admin'):
             self.provider.disable_user(user)
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
         assert user.disabled is True
 
     def test_login_details_from_auditlog(self):

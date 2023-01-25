@@ -24,8 +24,8 @@ from datetime import datetime
 from tg import tmpl_context as c
 from mock import patch
 import pytest
-from ming.orm.ormsession import ThreadLocalORMSession
-from ming.orm import Mapper
+from ming.odm.odmsession import ThreadLocalODMSession
+from ming.odm import Mapper
 from bson import ObjectId
 from webob import Request
 
@@ -62,7 +62,7 @@ class TestArtifact:
         self.setup_with_tools()
 
     def teardown_class(cls):
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.close_all()
 
     @td.with_wiki
     def setup_with_tools(self):
@@ -83,14 +83,14 @@ class TestArtifact:
         assert pg.app_config == c.app.config
         u = M.User.query.get(username='test-user')
         pr = M.ProjectRole.by_user(u, upsert=True)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         REGISTRY.register(allura.credentials, allura.lib.security.Credentials())
         assert not security.has_access(pg, 'delete')(user=u)
         pg.acl.append(M.ACE.allow(pr._id, 'delete'))
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert security.has_access(pg, 'delete')(user=u)
         pg.acl.pop()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert not security.has_access(pg, 'delete')(user=u)
 
     def test_artifact_index(self):
@@ -115,9 +115,9 @@ class TestArtifact:
             link=pg.shorthand_id()))
         assert q_shortlink.count() == 0
 
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert q_shortlink.count() == 1
 
         assert M.Shortlink.lookup('[TestPage2]')
@@ -150,10 +150,10 @@ class TestArtifact:
         pg = WM.Page(title='TestPage3')
         with patch('allura.model.artifact.request', Request.blank('/', remote_addr='1.1.1.1')):
             pg.commit()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         pg.text = 'Here is some text'
         pg.commit()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         ss = pg.get_version(1)
         assert ss.author.logged_ip == '1.1.1.1'
         assert ss.index()['is_history_b']
@@ -168,7 +168,7 @@ class TestArtifact:
         pytest.raises(IndexError, pg.get_version, 42)
         pg.revert(1)
         pg.commit()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert ss.text != pg.text
         assert pg.history().count() == 3
 
@@ -184,7 +184,7 @@ class TestArtifact:
         c.project.last_updated = datetime(2014, 1, 1)
         _datetime.utcnow.return_value = datetime(2014, 1, 2)
         WM.Page(title='TestPage1')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert c.project.last_updated == datetime(2014, 1, 2)
 
     @patch('allura.model.artifact.datetime')
@@ -194,7 +194,7 @@ class TestArtifact:
         try:
             M.artifact_orm_session._get().skip_last_updated = True
             WM.Page(title='TestPage1')
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
             assert c.project.last_updated == datetime(2014, 1, 1)
         finally:
             M.artifact_orm_session._get().skip_last_updated = False
@@ -239,7 +239,7 @@ class TestArtifact:
         s = M.Snapshot(author={'username': 'johnsmith',
                                'display_name': 'John Doe',
                                'logged_ip': '1.2.3.4'})
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert len(M.Snapshot.from_username('johndoe')) == 1
 
     def test_feed_clear_user_data(self):
@@ -266,7 +266,7 @@ class TestArtifact:
         M.Feed(author_name='John Smith',
                author_link='/u/johnsmith/',
                title='Something')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert len(M.Feed.from_username('johndoe')) == 1
 
     def test_subscribed(self):

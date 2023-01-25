@@ -18,7 +18,7 @@
 
 import datetime
 
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 from tg import tmpl_context as c
 
 from alluratest.controller import TestController
@@ -90,7 +90,7 @@ class TestFeeds(TestController):
         d = self._blog_date()
         self._post(title='two', text='[blog:%s/one]' % d)
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         r = self.app.get('/blog/%s/one/' % d)
         assert 'Related' in r
         assert 'Blog: %s/two' % d in r
@@ -138,7 +138,7 @@ class TestFeeds(TestController):
         with h.push_config(c, user=M.User.query.get(username='test-admin')), \
              h.push_context(blog_post.project._id, app_config_id=blog_post.app_config_id):
             blog_post.discussion_thread.add_post(text='You are a good blogger, I am a boring commentor.')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         resp = self.app.get(h.urlquote("/blog/" + self._blog_date() + "/my-pôst/feed.rss"))
         assert 'boring comment' in resp

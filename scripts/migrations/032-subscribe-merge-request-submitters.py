@@ -17,7 +17,7 @@
 
 import logging
 
-from ming.odm import ThreadLocalORMSession, state
+from ming.odm import ThreadLocalODMSession, state
 
 from allura.lib import utils
 from allura import model as M
@@ -31,7 +31,7 @@ def main():
             try:
                 print(f'Processing {mr.url()}')
                 mr.subscribe(user=mr.creator)
-                ThreadLocalORMSession.flush_all()
+                ThreadLocalODMSession.flush_all()
             except Exception:
                 log.exception('Error on %s', mr)
 

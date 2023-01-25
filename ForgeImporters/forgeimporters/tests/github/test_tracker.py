@@ -37,7 +37,7 @@ class TestTrackerImporter(TestCase):
 
     @mock.patch.object(tracker, 'g')
     @mock.patch.object(tracker, 'c')
-    @mock.patch.object(tracker, 'ThreadLocalORMSession')
+    @mock.patch.object(tracker, 'ThreadLocalODMSession')
     @mock.patch.object(tracker, 'session')
     @mock.patch.object(tracker, 'M')
     @mock.patch.object(tracker, 'TM')

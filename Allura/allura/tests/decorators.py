@@ -21,7 +21,7 @@ from functools import wraps
 import contextlib
 from six.moves.urllib.parse import parse_qs
 
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 from tg import tmpl_context as c
 from mock import patch
 import tg
@@ -42,8 +42,8 @@ def with_user_project(username):
             p = M.Project.query.get(shortname=shortname, neighborhood_id=n._id)
             if not p:
                 n.register_project(shortname, user=user, user_project=True)
-                ThreadLocalORMSession.flush_all()
-                ThreadLocalORMSession.close_all()
+                ThreadLocalODMSession.flush_all()
+                ThreadLocalODMSession.close_all()
             return func(*args, **kw)
         return wrapped
     return _with_user_project
@@ -76,8 +76,8 @@ def with_tool(project_shortname, ep_name, mount_point=None, mount_label=None,
                 with smtp_mock:
                     while M.MonQTask.run_ready('setup'):
                         pass
-                ThreadLocalORMSession.flush_all()
-                ThreadLocalORMSession.close_all()
+                ThreadLocalODMSession.flush_all()
+                ThreadLocalODMSession.close_all()
             elif mount_point:
                 c.app = p.app_instance(mount_point)
             return func(*args, **kw)

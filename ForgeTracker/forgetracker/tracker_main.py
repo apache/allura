@@ -37,7 +37,7 @@ import feedgenerator as FG
 
 from ming import schema
 from ming.odm import session
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 from ming.utils import LazyProperty
 
 # Pyforge-specific imports
@@ -1037,7 +1037,7 @@ class RootController(BaseController, FeedController):
         tasks.move_tickets.post(ticket_ids, destination_tracker_id)
 
         c.app.globals.invalidate_bin_counts()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         count = len(tickets)
         flash('Move scheduled ({} ticket{})'.format(
             count, 's' if count != 1 else ''), 'ok')

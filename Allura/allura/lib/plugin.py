@@ -49,8 +49,8 @@ from paste.deploy.converters import asbool, asint
 from formencode import validators as fev
 
 from ming.utils import LazyProperty
-from ming.orm import state
-from ming.orm import ThreadLocalORMSession, session, Mapper
+from ming.odm import state
+from ming.odm import ThreadLocalODMSession, session, Mapper
 
 from allura.lib import helpers as h
 from allura.lib import security
@@ -960,7 +960,7 @@ class ProjectRegistrationProvider:
                     ('Wiki', 'wiki', 'Wiki'),
                     ('admin', 'admin', 'Admin')])
         except Exception:
-            ThreadLocalORMSession.close_all()
+            ThreadLocalODMSession.close_all()
             log.exception('Error registering project %s' % p)
             raise
         if allow_register:
@@ -1137,7 +1137,7 @@ class ProjectRegistrationProvider:
         # named roles for this project + user
         g.credentials.clear_user(user._id, p._id)
         with h.push_config(c, project=p, user=user):
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
             # have to add user to context, since this may occur inside auth code
             # for user-project reg, and c.user isn't set yet
             if not omit_event:

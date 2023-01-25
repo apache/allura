@@ -30,8 +30,8 @@ from paste.deploy.converters import asbool
 import ming
 from ming.utils import LazyProperty
 from ming import schema as S
-from ming.orm import session, FieldProperty
-from ming.orm.declarative import MappedClass
+from ming.odm import session, FieldProperty
+from ming.odm.declarative import MappedClass
 
 from allura.lib.helpers import log_output, null_contextmanager
 from .session import task_orm_session

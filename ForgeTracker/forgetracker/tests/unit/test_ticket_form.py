@@ -15,7 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 
 from tg import tmpl_context as c
 
@@ -29,7 +29,7 @@ class TestTicketForm(TrackerTestWithModel):
         g = c.app.globals
         g.open_status_names = 'open'
         g.closed_status_names = 'closed'
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert self.options_for_field('status')() == ['open', 'closed']
 
     def options_for_field(self, field_name):

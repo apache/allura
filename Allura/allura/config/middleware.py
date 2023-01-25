@@ -38,7 +38,7 @@ import activitystream
 import ew
 import formencode
 import ming
-from ming.orm.middleware import MingMiddleware
+from ming.odm.middleware import MingMiddleware
 
 # Must apply patches before other Allura imports to ensure all the patches are effective.
 # This file gets imported from paste/deploy/loadwsgi.py pretty early in the app execution

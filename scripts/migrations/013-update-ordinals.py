@@ -19,8 +19,8 @@ import sys
 import logging
 
 from tg import tmpl_context as c
-from ming.orm import session
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm import session
+from ming.odm.odmsession import ThreadLocalODMSession
 
 from allura import model as M
 from allura.lib import utils
@@ -60,14 +60,14 @@ def main():
                             mount['ac'].options['ordinal'] = i
                         elif 'sub' in mount:
                             mount['sub'].ordinal = i
-                    ThreadLocalORMSession.flush_all()
+                    ThreadLocalODMSession.flush_all()
 
             num_projects_examined += 1
             session(project).clear()
 
         log.info('%s projects examined.' % num_projects_examined)
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
 if __name__ == '__main__':
     main()

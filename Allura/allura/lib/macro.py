@@ -260,7 +260,7 @@ def get_projects_for_macro(
             # 2. Choose a random sample of those _ids
             # 3. Do an ORM query to fetch the objects with those _ids
             # 4. Shuffle the results
-            from ming.orm import mapper
+            from ming.odm import mapper
             m = mapper(M.Project)
             collection = M.main_doc_session.db[m.collection.m.collection_name]
             docs = list(collection.find(q, {'_id': 1}))

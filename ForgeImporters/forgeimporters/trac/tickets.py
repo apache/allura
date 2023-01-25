@@ -18,7 +18,7 @@
 import json
 import re
 
-from ming.orm import session
+from ming.odm import session
 from tg import tmpl_context as c
 from tg import app_globals as g
 from tg import (

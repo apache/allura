@@ -19,7 +19,7 @@ import pkg_resources
 import mock
 import tg
 
-from ming.orm import ThreadLocalORMSession, ThreadLocalODMSession
+from ming.odm import ThreadLocalODMSession, ThreadLocalODMSession
 from tg import tmpl_context as c
 
 from allura import model as M
@@ -102,8 +102,8 @@ class TestMergeRequestsSection(TestController):
         c.app.repo.name = 'testgit.git'
         self.repo = c.app.repo
         self.repo.refresh()
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
     @property
     def merge_request(self):

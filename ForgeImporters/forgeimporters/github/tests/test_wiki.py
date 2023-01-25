@@ -17,7 +17,7 @@
 
 from unittest import TestCase, skipIf
 from mock import Mock, patch, call
-from ming.odm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 import git
 
 from allura import model as M
@@ -44,7 +44,7 @@ class TestGitHubWikiImporter(TestCase):
         return project
 
     @patch('forgeimporters.github.wiki.M')
-    @patch('forgeimporters.github.wiki.ThreadLocalORMSession')
+    @patch('forgeimporters.github.wiki.ThreadLocalODMSession')
     @patch('forgeimporters.github.wiki.g')
     @patch('forgeimporters.github.wiki.GitHubProjectExtractor')
     def test_import_tool_happy_path(self, ghpe, g, tlorms, M):
@@ -611,7 +611,7 @@ class TestGitHubWikiImportController(TestController, TestCase):
         requests.head.return_value.status_code = 200
         p = M.Project.query.get(shortname=test_project_with_wiki)
         p.set_tool_data('GitHubWikiImporter', pending=1)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         params = dict(
             gh_user_name='spooky',
             gh_project_name='mulder',

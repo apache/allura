@@ -20,7 +20,7 @@ import json
 import dateutil.parser
 from tg import tmpl_context as c
 from tg import app_globals as g
-from ming.orm import session, ThreadLocalORMSession
+from ming.odm import session, ThreadLocalODMSession
 
 from tg import (
     expose,
@@ -113,7 +113,7 @@ class ForgeTrackerImporter(AlluraImporter):
                                       'closed_status_names'],
                                   **tracker_json['tracker_config']['options']
                                   )
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         try:
             M.session.artifact_orm_session._get().skip_mod_date = True
             for ticket_json in tracker_json['tickets']:
@@ -170,7 +170,7 @@ class ForgeTrackerImporter(AlluraImporter):
             )
             g.post_event('project_updated')
             app.globals.invalidate_bin_counts()
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
             return app
         except Exception:
             h.make_app_admin_only(app)

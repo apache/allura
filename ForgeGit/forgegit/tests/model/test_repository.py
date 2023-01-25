@@ -28,7 +28,7 @@ import mock
 from tg import tmpl_context as c, app_globals as g
 import tg
 from ming.base import Object
-from ming.orm import ThreadLocalORMSession, session
+from ming.odm import ThreadLocalODMSession, session
 from testfixtures import TempDirectory
 
 from alluratest.controller import setup_basic_test, setup_global_objects
@@ -62,8 +62,8 @@ class TestNewGit(unittest.TestCase):
         self.repo = c.app.repo
         self.repo.refresh()
         self.rev = self.repo.commit('master')
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
     def test_commit(self):
         assert self.rev.primary() is self.rev
@@ -92,14 +92,14 @@ class TestNewGit(unittest.TestCase):
             'tree/')
         self.rev.tree.by_name['README']
         assert self.rev.tree.is_blob('README') is True
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.close_all()
         c.app = None
         converted = g.markdown.convert('[1e146e]')
         assert '1e146e' in converted, converted
         h.set_context('test', 'wiki', neighborhood='Projects')
         pg = WM.Page(
             title='Test Page', text='This is a commit reference: [1e146e]')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
         for ci in pg.related_artifacts():
             assert ci.shorthand_id() == '[1e146e]', ci.shorthand_id()
@@ -138,8 +138,8 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         c.app.repo.name = 'testgit.git'
         self.repo = c.app.repo
         self.repo.refresh()
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
     @property
     def merge_request(self):
@@ -388,7 +388,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
     def test_notification_email(self):
         send_notifications(
             self.repo, ['1e146e67985dcd71c74de79613719bef7bddca4a', ])
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         n = M.Notification.query.find({'subject': '[test:src-git] New commit [1e146e] by Rick Copeland'}).first()
         assert n
@@ -398,7 +398,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         send_notifications(self.repo, ['df30427c488aeab84b2352bdf88a3b19223f9d7a',
                                        '1e146e67985dcd71c74de79613719bef7bddca4a',
                                        ])
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         n = M.Notification.query.find(
             dict(subject='[test:src-git] 2 new commits to Git')).first()
         assert n
@@ -410,7 +410,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
                                        '1e146e67985dcd71c74de79613719bef7bddca4a',
                                        '5c47243c8e424136fd5cdd18cd94d34c66d1955c',
                                        ])
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         n = M.Notification.query.find(
             dict(subject='[test:src-git] 3 new commits to Git')).first()
         assert n
@@ -425,7 +425,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
                                        'df30427c488aeab84b2352bdf88a3b19223f9d7a',
                                        '1e146e67985dcd71c74de79613719bef7bddca4a',
                                        ])
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         n = M.Notification.query.find(
             dict(subject='[test:src-git] 4 new commits to Git')).first()
         assert n
@@ -439,7 +439,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'weird-chars.git'
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         c.app.repo.refresh()
 
     def test_notification_html_and_plaintext(self):
@@ -597,7 +597,7 @@ By Dave Brondsema''' in text_body
             repo2.init()
             assert repo2.is_empty()
             repo2.refresh()
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
             assert repo2.is_empty()
 
     def test_default_branch_set(self):
@@ -795,8 +795,8 @@ By Dave Brondsema''' in text_body
             tool='git',
             status='creating')
         repo.refresh()
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
         # spaces and unicode filenames
         diffs = repo.paged_diffs('407950e8fba4dbc108ffbce0128ed1085c52cfd7')
@@ -899,8 +899,8 @@ By Dave Brondsema''' in text_body
             tool='git',
             status='creating')
         repo.refresh()
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
         diffs = repo.paged_diffs('346c52c1dddc729e2c2711f809336401f0ff925e')  # Test copy
         expected = {
@@ -1047,8 +1047,8 @@ class TestGitCommit(unittest.TestCase):
         self.repo = c.app.repo
         self.repo.refresh()
         self.rev = self.repo.commit('HEAD')
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
     def test_url(self):
         assert self.rev.url().endswith('ca4a/')
@@ -1123,8 +1123,8 @@ class TestGitHtmlView(unittest.TestCase):
         self.repo = c.app.repo
         self.repo.refresh()
         self.rev = self.repo.commit('HEAD')
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
     def test_html_view(self):
         b = self.rev.tree.get_blob_by_path('README')
@@ -1154,8 +1154,8 @@ class TestGitRename(unittest.TestCase):
         self.repo = c.app.repo
         self.repo.refresh()
         self.rev = self.repo.commit('HEAD')
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
     def test_renamed_file(self):
         # There was a file f.txt, then it was renamed to f2.txt.

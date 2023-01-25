@@ -19,7 +19,7 @@ from datetime import datetime
 from unittest import TestCase
 
 import mock
-from ming.odm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 import webtest
 
 from allura.tests import TestController
@@ -45,7 +45,7 @@ class TestTrackerImporter(TestCase):
     @mock.patch.object(tracker.h, 'make_app_admin_only')
     @mock.patch.object(tracker, 'g')
     @mock.patch.object(tracker, 'c')
-    @mock.patch.object(tracker, 'ThreadLocalORMSession')
+    @mock.patch.object(tracker, 'ThreadLocalODMSession')
     @mock.patch.object(tracker, 'session')
     @mock.patch.object(tracker, 'M')
     @mock.patch.object(tracker, 'TM')
@@ -221,10 +221,10 @@ class TestTrackerImporter(TestCase):
             mock.call(['f3', 'f4']),
         ])
 
-    @mock.patch.object(tracker, 'ThreadLocalORMSession')
+    @mock.patch.object(tracker, 'ThreadLocalODMSession')
     @mock.patch.object(tracker, 'M')
     @mock.patch.object(tracker, 'h')
-    def test_import_tool_failure(self, h, M, ThreadLocalORMSession):
+    def test_import_tool_failure(self, h, M, ThreadLocalODMSession):
         M.session.artifact_orm_session._get.side_effect = ValueError
         project = mock.Mock()
         user = mock.Mock()
@@ -375,7 +375,7 @@ class TestForgeTrackerImportController(TestController, TestCase):
     def test_create_limit(self, import_tool, sui):
         project = M.Project.query.get(shortname='test')
         project.set_tool_data('ForgeTrackerImporter', pending=1)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         params = {
             'tickets_json': webtest.Upload('tickets.json', b'{"key": "val"}'),
             'mount_label': 'mylabel',

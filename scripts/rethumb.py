@@ -20,7 +20,7 @@ import sys
 import PIL
 from tg import tmpl_context as c
 
-from ming.orm import ThreadLocalORMSession, state, Mapper
+from ming.odm import ThreadLocalODMSession, state, Mapper
 
 from allura.command import base
 from allura.lib.helpers import iter_entry_points
@@ -137,7 +137,7 @@ class RethumbCommand(base.Command):
                     'There were %d thumbs before --force operation started, but %d recreated',
                     existing_thumbs, self.created_thumbs)
 
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
 
 if __name__ == '__main__':

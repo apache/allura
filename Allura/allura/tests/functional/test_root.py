@@ -31,7 +31,7 @@ from unittest import skipIf
 
 from tg import tmpl_context as c
 from alluratest.tools import module_not_available
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 import mock
 import tg
 
@@ -81,7 +81,7 @@ class TestRootController(TestController):
     def test_sidebar_escaping(self):
         # use this as a convenient way to get something in the sidebar
         M.ProjectCategory(name='test-xss', label='<script>alert(1)</script>')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         response = self.app.get('/neighborhood')
         # inject it into the sidebar data

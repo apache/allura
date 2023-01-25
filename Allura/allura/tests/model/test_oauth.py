@@ -16,7 +16,7 @@
 #       under the License.
 
 
-from ming.odm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 
 from allura import model as M
 from alluratest.controller import setup_basic_test, setup_global_objects
@@ -26,7 +26,7 @@ class TestOAuthModel:
 
     def setup_method(self):
         setup_basic_test()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.close_all()
         setup_global_objects()
 
     def test_upsert(self):

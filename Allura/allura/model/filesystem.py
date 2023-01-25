@@ -25,8 +25,8 @@ import PIL
 from gridfs import GridFS
 
 from ming import schema
-from ming.orm import session, FieldProperty
-from ming.orm.declarative import MappedClass
+from ming.odm import session, FieldProperty
+from ming.odm.declarative import MappedClass
 
 from .session import project_orm_session
 from allura.lib import utils

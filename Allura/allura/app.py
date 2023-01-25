@@ -35,7 +35,7 @@ from formencode import validators as V
 from webob import exc
 from formencode import validators as fev
 
-from ming.orm import session
+from ming.odm import session
 from ming.utils import LazyProperty
 import ew.jinja2_ew as ew
 

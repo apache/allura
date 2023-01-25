@@ -20,7 +20,7 @@ import logging
 from tg import tmpl_context as c, app_globals as g
 from tg import expose, redirect, config
 from itertools import islice
-from ming.orm import session
+from ming.odm import session
 
 from allura.model.timeline import perm_check, get_activity_object
 from allura.controllers import BaseController

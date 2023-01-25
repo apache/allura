@@ -21,7 +21,7 @@ from datetime import timedelta
 from itertools import islice
 
 from bson import ObjectId
-from ming.orm import session
+from ming.odm import session
 from tg import tmpl_context as c, app_globals as g
 from tg import request, response
 from tg import expose, validate, config

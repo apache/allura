@@ -17,7 +17,7 @@
 
 import pprint
 
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
@@ -25,15 +25,15 @@ from allura import model as M
 
 def setup_module():
     setup_basic_test()
-    ThreadLocalORMSession.close_all()
+    ThreadLocalODMSession.close_all()
     setup_global_objects()
     M.MonQTask.query.remove({})
 
 
 def test_basic_task():
     task = M.MonQTask.post(pprint.pformat, ([5, 6],))
-    ThreadLocalORMSession.flush_all()
-    ThreadLocalORMSession.close_all()
+    ThreadLocalODMSession.flush_all()
+    ThreadLocalODMSession.close_all()
     task = M.MonQTask.get()
     assert task
     task()

@@ -20,7 +20,7 @@ from dateutil.parser import parse
 
 from tg import tmpl_context as c
 from tg import app_globals as g
-from ming.orm import session, ThreadLocalORMSession
+from ming.odm import session, ThreadLocalODMSession
 
 from tg import (
     expose,
@@ -100,7 +100,7 @@ class ForgeDiscussionImporter(AlluraImporter):
         mount_label = mount_label or 'Discussion'
 
         app = project.install_app('discussion', mount_point, mount_label, import_id={'source': self.source})
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         with h.push_config(c, app=app):
 
@@ -150,7 +150,7 @@ class ForgeDiscussionImporter(AlluraImporter):
                 )
 
                 g.post_event('project_updated')
-                ThreadLocalORMSession.flush_all()
+                ThreadLocalODMSession.flush_all()
                 return app
             except Exception:
                 h.make_app_admin_only(app)

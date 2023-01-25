@@ -23,7 +23,7 @@ import logging
 
 import tg
 import PIL
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 from tg import expose
 from tg import tmpl_context as c, app_globals as g
 import mock
@@ -578,7 +578,7 @@ class TestProjectAdmin(TestController):
         p = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
         assert p.labels == ['foo', 'bar', 'baz']
         assert form['labels'].value == 'foo,bar,baz'
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.close_all()
         form['labels'].value = 'asdf'
         with audits('updated labels'):
             r = form.submit()

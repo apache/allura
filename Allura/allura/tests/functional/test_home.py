@@ -20,7 +20,7 @@ import re
 import os
 
 from tg import tmpl_context as c
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 
 import allura
 from allura.tests import TestController
@@ -139,7 +139,7 @@ class TestProjectHome(TestController):
     def test_user_subproject_home_not_profile(self):
         u_proj = M.Project.query.get(shortname='u/test-admin')
         u_proj.new_subproject('sub1')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         r = self.app.get('/u/test-admin/sub1/')
         assert r.location.endswith('admin/'), r.location
@@ -171,7 +171,7 @@ class TestProjectHome(TestController):
     def test_user_search_for_disabled_user(self):
         user = M.User.by_username('test-admin')
         user.disabled = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         r = self.app.get('/p/test/user_search?term=test', status=200)
         j = json.loads(r.text)
         assert j == {'users': []}
@@ -203,7 +203,7 @@ class TestProjectHome(TestController):
         test_project.add_user(M.User.by_username('test-user-3'), ['Member'])
         test_project.add_user(M.User.by_username('test-user-3'), ['Developer'])
         test_project.add_user(M.User.by_username('test-user-4'), ['Admin'])
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         r = self.app.get('/p/test/_members/')
 
         assert '<td>Test Admin</td>' in r

@@ -18,7 +18,7 @@
 import unittest
 
 from tg import tmpl_context as c
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
@@ -35,8 +35,8 @@ class TestSVNApp(unittest.TestCase):
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src', neighborhood='Projects')
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
     def test_admin_menu(self):
         assert len(c.app.admin_menu()) == 7

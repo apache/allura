@@ -19,7 +19,7 @@ import re
 import sys
 import logging
 
-from ming.orm import session
+from ming.odm import session
 from mock import patch, Mock
 
 from . import base

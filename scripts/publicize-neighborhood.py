@@ -18,7 +18,7 @@
 import logging
 import sys
 
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 from tg import tmpl_context as c, app_globals as g
 
 from allura import model as M
@@ -55,7 +55,7 @@ def main(options):
                     log.info('Making public: "%s"' % p.shortname)
                     p.acl.append(M.ACE.allow(role_anon._id, 'read'))
                     with h.push_config(c, project=p, user=nbhd_admin):
-                        ThreadLocalORMSession.flush_all()
+                        ThreadLocalODMSession.flush_all()
                         g.post_event('project_updated')
                 private_count += 1
             else:

@@ -18,7 +18,7 @@
 import typing
 
 from tg import tmpl_context as c
-from ming.orm import FieldProperty
+from ming.odm import FieldProperty
 from ming import schema as S
 
 from allura.lib import helpers as h

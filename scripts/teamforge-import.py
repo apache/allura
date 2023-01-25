@@ -36,7 +36,7 @@ import string
 
 import sqlalchemy
 from suds.client import Client
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 from ming.base import Object
 
 from allura import model as M
@@ -348,7 +348,7 @@ def create_project(pid, nbhd):
         c.user = user
         pr = M.ProjectRole.by_user(user, project=project, upsert=True)
         pr.roles = [role_admin._id]
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
     role_developer = M.ProjectRole.by_name('Developer', project)
     for member in data.members:
         # FIXME: skip non-active users
@@ -359,7 +359,7 @@ def create_project(pid, nbhd):
         user = get_user(member.userName)
         pr = M.ProjectRole.by_user(user, project=project, upsert=True)
         pr.roles = [role_developer._id]
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
     project.labels = [cat.path.split('projects/categorization.root.')[1]
                       for cat in data.categories]
     icon_file = 'emsignia-MOBILITY-red.png'
@@ -372,7 +372,7 @@ def create_project(pid, nbhd):
             icon_file, fp, content_type=utils.guess_mime_type(icon_file),
             square=True, thumbnail_size=(48, 48),
             thumbnail_meta=dict(project_id=project._id, category='icon'))
-    ThreadLocalORMSession.flush_all()
+    ThreadLocalODMSession.flush_all()
 
     dirs = os.listdir(os.path.join(options.output_dir, pid))
 
@@ -388,7 +388,7 @@ def create_project(pid, nbhd):
         import_news(project, pid, frs_mapping, shortname, nbhd)
 
     project.notifications_disabled = False
-    ThreadLocalORMSession.flush_all()
+    ThreadLocalODMSession.flush_all()
     return project
 
 
@@ -466,7 +466,7 @@ def import_wiki(project, pid, nbhd):
                 upload_attachments(p, pid, beginning)
                 if not p.history().first():
                     p.commit()
-    ThreadLocalORMSession.flush_all()
+    ThreadLocalODMSession.flush_all()
 
 
 def import_discussion(project, pid, frs_mapping, sf_project_shortname, nbhd):
@@ -488,7 +488,7 @@ def import_discussion(project, pid, frs_mapping, sf_project_shortname, nbhd):
         M.ACE.allow(role_developer, 'moderate'),
         M.ACE.allow(role_admin, 'configure'),
         M.ACE.allow(role_admin, 'admin')]
-    ThreadLocalORMSession.flush_all()
+    ThreadLocalODMSession.flush_all()
     DM.Forum.query.remove(
         dict(app_config_id=discuss_app.config._id, shortname='general'))
     forums = os.listdir(os.path.join(options.output_dir, pid, 'forum'))
@@ -577,7 +577,7 @@ def import_discussion(project, pid, frs_mapping, sf_project_shortname, nbhd):
                                 oldest_post = p
                             if newest_post is None or newest_post.timestamp < create_date:
                                 newest_post = p
-                            ThreadLocalORMSession.flush_all()
+                            ThreadLocalODMSession.flush_all()
                     to.num_replies = to_num_replies
                     to.first_post_id = oldest_post._id
                     to.last_post_date = newest_post.timestamp
@@ -585,7 +585,7 @@ def import_discussion(project, pid, frs_mapping, sf_project_shortname, nbhd):
                     fo_num_posts += to_num_replies
             fo.num_topics = fo_num_topics
             fo.num_posts = fo_num_posts
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
 
 
 def import_news(project, pid, frs_mapping, sf_project_shortname, nbhd):
@@ -617,7 +617,7 @@ def import_news(project, pid, frs_mapping, sf_project_shortname, nbhd):
                     p.make_slug()
                 if not p.history().first():
                     p.commit()
-                    ThreadLocalORMSession.flush_all()
+                    ThreadLocalODMSession.flush_all()
                     M.Thread.new(discussion_id=p.app_config.discussion_id,
                                  ref_id=p.index_id(),
                                  subject='%s discussion' % p.title)
@@ -626,7 +626,7 @@ def import_news(project, pid, frs_mapping, sf_project_shortname, nbhd):
                     id=user._id,
                     username=user.username,
                     display_name=user.get_pref('display_name'))
-                ThreadLocalORMSession.flush_all()
+                ThreadLocalODMSession.flush_all()
 
 
 def check_unsupported_tools(project):

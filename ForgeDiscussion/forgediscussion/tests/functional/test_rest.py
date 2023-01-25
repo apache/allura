@@ -20,7 +20,7 @@ from allura.tests import decorators as td
 from allura import model as M
 from alluratest.controller import TestRestApiBase
 from forgediscussion.model import ForumThread
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 
 
 class TestDiscussionApiBase(TestRestApiBase):
@@ -201,7 +201,7 @@ class TestRootRestController(TestDiscussionApiBase):
         last_post = thread.last_post
         last_post.status = 'pending'
         last_post.commit()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         resp = self.app.get(url)
         posts = resp.json['topic']['posts']
         assert len(posts) == 1

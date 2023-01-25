@@ -17,7 +17,7 @@
 
 from tg import tmpl_context as c
 import tg
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 from webob import Request
 
 from allura.websetup import bootstrap
@@ -45,9 +45,9 @@ class TrackerTestWithModel:
         project_reg.register_neighborhood_project(neighborhood, [c.user])
         c.project = neighborhood.register_project('test', c.user)
         c.project.install_app('Tickets', 'bugs')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         h.set_context('test', 'bugs', neighborhood='Projects')
         tg.request_local.context.request = Request.blank('/')
 
     def teardown_method(self, method):
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.close_all()

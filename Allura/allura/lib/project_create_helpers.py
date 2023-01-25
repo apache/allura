@@ -35,7 +35,7 @@ from six.moves.urllib.parse import urlparse
 from allura.lib.helpers import slugify
 from allura.model import Neighborhood
 from ming.base import Object
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 from tg import tmpl_context as c, app_globals as g
 
 from allura import model as M
@@ -320,7 +320,7 @@ def create_project_with_attrs(p, nbhd, update=False, ensure_tools=False):
 
     project.notifications_disabled = False
     with h.push_config(c, project=project, user=p.admin):
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         if creating:
             g.post_event('project_created')
         else:

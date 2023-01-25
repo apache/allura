@@ -28,8 +28,8 @@ from tg import tmpl_context as c, app_globals as g
 import tg
 
 from ming import schema
-from ming.orm.base import session
-from ming.orm.property import (FieldProperty, RelationProperty,
+from ming.odm.base import session
+from ming.odm.property import (FieldProperty, RelationProperty,
                                ForeignIdProperty)
 from ming.utils import LazyProperty
 from bson import ObjectId

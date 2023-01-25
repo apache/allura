@@ -24,9 +24,9 @@ import pymongo
 from tg import tmpl_context as c, app_globals as g
 from tg import request
 from ming import schema as S
-from ming.orm import state, session
-from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
-from ming.orm.declarative import MappedClass
+from ming.odm import state, session
+from ming.odm import FieldProperty, ForeignIdProperty, RelationProperty
+from ming.odm.declarative import MappedClass
 from ming.utils import LazyProperty
 import feedgenerator as FG
 

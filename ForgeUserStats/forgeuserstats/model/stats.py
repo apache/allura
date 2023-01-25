@@ -15,11 +15,11 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from ming.orm import FieldProperty
+from ming.odm import FieldProperty
 from ming import schema as S
 from datetime import datetime, timedelta
 import typing
-from ming.orm import Mapper
+from ming.odm import Mapper
 from tg import request
 
 from allura.lib import plugin

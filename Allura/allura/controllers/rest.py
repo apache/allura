@@ -29,7 +29,7 @@ from tg import expose, flash, redirect, config
 from tg import tmpl_context as c, app_globals as g
 from tg import request, response
 import colander
-from ming.orm import session
+from ming.odm import session
 
 from allura import model as M
 from allura.controllers.auth import AuthRestController

@@ -27,7 +27,7 @@ from tg import tmpl_context as c
 from alluratest.tools import module_not_available
 from webob import Request
 from webob.exc import HTTPUnauthorized
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 from markupsafe import Markup
 import pytest
 
@@ -138,7 +138,7 @@ def test_make_app_admin_only():
     dev = M.User.query.get(username='test-user')
     admin = M.User.query.get(username='test-admin')
     c.project.add_user(dev, ['Developer'])
-    ThreadLocalORMSession.flush_all()
+    ThreadLocalODMSession.flush_all()
     Credentials.get().clear()
     assert has_access(c.app, 'read', user=anon)()
     assert has_access(c.app, 'read', user=dev)()
@@ -150,7 +150,7 @@ def test_make_app_admin_only():
     assert c.app.is_visible_to(dev)
     assert c.app.is_visible_to(admin)
     h.make_app_admin_only(c.app)
-    ThreadLocalORMSession.flush_all()
+    ThreadLocalODMSession.flush_all()
     Credentials.get().clear()
     assert not has_access(c.app, 'read', user=anon)()
     assert not has_access(c.app, 'read', user=dev)()

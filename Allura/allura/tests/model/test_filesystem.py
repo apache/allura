@@ -21,7 +21,7 @@ from io import BytesIO
 
 import ming
 from tg import tmpl_context as c
-from ming.orm import session, Mapper
+from ming.odm import session, Mapper
 from mock import patch
 from webob import Request, Response
 

@@ -22,7 +22,7 @@ from io import BytesIO
 
 # Non-stdlib imports
 from tg import tmpl_context as c
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 
 # Pyforge-specific imports
 from allura import model as M
@@ -180,7 +180,7 @@ class ImportSupport:
                              'name': value,
                              'old_name': value}
                 field['milestones'].append(milestone)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
     def custom(self, ticket, field, value, ticket_status):
         field = '_' + field
@@ -189,7 +189,7 @@ class ImportSupport:
                 'Custom field %s is not defined, defining as string', field)
             c.app.globals.custom_fields.append(
                 dict(name=field, label=field[1:].capitalize(), type='string'))
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
         if 'custom_fields' not in ticket:
             ticket['custom_fields'] = {}
         self.check_custom_field(field, value, ticket_status)
@@ -234,7 +234,7 @@ class ImportSupport:
         else:
             if c.app.globals.last_ticket_num < ticket_num:
                 c.app.globals.last_ticket_num = ticket_num
-                ThreadLocalORMSession.flush_all()
+                ThreadLocalODMSession.flush_all()
 
         ticket = TM.Ticket(
             app_config_id=c.app.config._id,
@@ -301,7 +301,7 @@ class ImportSupport:
             M.User.register(dict(username=allura_username,
                                  display_name=username), False)
             self.options['user_map'][username] = allura_username
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         log.info('Created %d user placeholders', len(usernames))
 
     def validate_user_mapping(self):

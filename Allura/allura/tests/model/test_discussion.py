@@ -27,7 +27,7 @@ from tg import tmpl_context as c
 import mock
 from mock import patch
 
-from ming.orm import session, ThreadLocalORMSession
+from ming.odm import session, ThreadLocalODMSession
 from webob import exc
 
 from allura import model as M
@@ -43,23 +43,23 @@ class TestDiscussion:
         controller.setup_method(None)
         controller.app.get('/wiki/Home/')
         setup_global_objects()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.close_all()
         h.set_context('test', 'wiki', neighborhood='Projects')
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
     @classmethod
     def teardown_class(cls):
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.close_all()
 
     def test_discussion_methods(self):
         d = M.Discussion(shortname='test', name='test')
         assert d.thread_class() == M.Thread
         assert d.post_class() == M.Post
         assert d.attachment_class() == M.DiscussionAttachment
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         d.update_stats()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert d.last_post is None
         assert d.url().endswith('wiki/_discuss/')
         assert d.index()['name_s'] == 'test'
@@ -67,8 +67,8 @@ class TestDiscussion:
         jsn = d.__json__()
         assert jsn['name'] == d.name
         d.delete()
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
     def test_thread_methods(self):
         d = M.Discussion(shortname='test', name='test')
@@ -80,8 +80,8 @@ class TestDiscussion:
         p1 = t.post('This is another post')
         time.sleep(0.25)
         t.post('This is a reply', parent_id=p0._id)
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
         d = M.Discussion.query.get(shortname='test')
         t = d.threads[0]
         assert d.last_post is not None
@@ -102,11 +102,11 @@ class TestDiscussion:
         assert '_id' in jsn
         assert len(jsn['posts']) == 3
         (p.approve() for p in (p0, p1))
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert t.num_replies == 3
         t.spam()
         assert t.num_replies == 0
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert len(t.find_posts()) == 0
         t.delete()
 
@@ -116,7 +116,7 @@ class TestDiscussion:
             d = M.Discussion(shortname='test', name='test')
             t1 = M.Thread.new(discussion_id=d._id, subject='Test Thread One')
             t2 = M.Thread.new(discussion_id=d._id, subject='Test Thread Two')
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
             session(t1).expunge(t1)
             session(t2).expunge(t2)
             t1_2 = M.Thread.query.get(_id=t1._id)
@@ -150,7 +150,7 @@ class TestDiscussion:
         assert jsn["thread_id"] == t._id
 
         (p.approve() for p in (p, p2))
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert t.num_replies == 2
         p.spam()
         assert t.num_replies == 1
@@ -173,7 +173,7 @@ class TestDiscussion:
         d_att = p.attach('foo3.text', BytesIO(b'Hello, discussion!'),
                          discussion_id=d._id)
 
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert p_att.post == p
         assert p_att.thread == t
         assert p_att.discussion == d
@@ -189,7 +189,7 @@ class TestDiscussion:
         fs.type = 'text/plain'
         fs.file = BytesIO(b'this is the content of the fake file\n')
         p = t.post(text='test message', forum=None, subject='', file_info=fs)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         n = M.Notification.query.get(
             subject='[test:wiki] Test comment notification')
         url = h.absurl(f'{p.url()}attachment/{fs.filename}')
@@ -213,7 +213,7 @@ class TestDiscussion:
         t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
         test_post = t.post('test post')
         test_post.add_multiple_attachments([test_file1, test_file2])
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert len(test_post.attachments) == 2
         attaches = test_post.attachments
         assert 'test1.txt' in [attaches[0].filename, attaches[1].filename]
@@ -229,7 +229,7 @@ class TestDiscussion:
         t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
         test_post = t.post('test post')
         test_post.add_attachment(test_file)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert len(test_post.attachments) == 1
         attach = test_post.attachments[0]
         assert attach.filename == 'test.txt', attach.filename
@@ -249,7 +249,7 @@ class TestDiscussion:
         fs2.type = 'text/plain'
         fs2.file = BytesIO(b'this is the content of the fake file\n')
         p = t.post(text='test message', forum=None, subject='', file_info=[fs1, fs2])
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         n = M.Notification.query.get(
             subject='[test:wiki] Test comment notification')
         base_url = h.absurl(f'{p.url()}attachment/')
@@ -269,9 +269,9 @@ class TestDiscussion:
                  post_id=p._id)
         M.ArtifactReference.from_artifact(d)
         rid = d.index_id()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         d.delete()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert M.ArtifactReference.query.find(dict(_id=rid)).count() == 0
 
     def test_thread_delete(self):
@@ -282,7 +282,7 @@ class TestDiscussion:
                  discussion_id=d._id,
                  thread_id=t._id,
                  post_id=p._id)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         t.delete()
 
     def test_post_delete(self):
@@ -293,7 +293,7 @@ class TestDiscussion:
                  discussion_id=d._id,
                  thread_id=t._id,
                  post_id=p._id)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         p.delete()
 
     def test_post_undo(self):
@@ -302,7 +302,7 @@ class TestDiscussion:
         p = t.post('This is a post')
         t.post('This is a post2')
         t.post('This is a post3')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert t.num_replies == 3
         p.spam()
         assert t.num_replies == 2
@@ -476,7 +476,7 @@ class TestDiscussion:
         M.Post(discussion_id=d._id, thread_id=t._id, status='spam')
         M.Post(discussion_id=d._id, thread_id=t._id, status='ok')
         M.Post(discussion_id=d._id, thread_id=t._id, status='pending')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert t.post_count == 2
 
     @mock.patch('allura.controllers.discuss.g.spam_checker')
@@ -484,7 +484,7 @@ class TestDiscussion:
         d = M.Discussion(shortname='test', name='test')
         t = M.Thread(discussion_id=d._id, subject='Test Thread', num_replies=2)
         M.Post(discussion_id=d._id, thread_id=t._id, status='ok')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         p1 = M.Post(discussion_id=d._id, thread_id=t._id, status='spam')
         p1.spam()
         assert t.num_replies == 1
@@ -494,10 +494,10 @@ class TestDiscussion:
         t = M.Thread(discussion_id=d._id, subject='Test Thread')
         p = M.Post(discussion_id=d._id, thread_id=t._id, status='ok')
         t.delete()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         # re-query, so relationships get reloaded
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.close_all()
         p = M.Post.query.get(_id=p._id)
 
         # just make sure this doesn't fail

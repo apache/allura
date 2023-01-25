@@ -45,7 +45,7 @@ import logging
 from allura import model as M
 from allura.lib.utils import chunked_find
 from allura.model import main_orm_session
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 
 
 log = logging.getLogger(__name__)
@@ -104,7 +104,7 @@ def update_project(options, user, project, replace_users=None):
             if len(replace_user_perm.roles) == 0:
                 # user has no roles in this project any more, so don't leave a useless doc around
                 replace_user_perm.delete()
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
     if replace_users and not found_any_replace_users:
         log.info('Not adding %s since no replace-users found on %s', user.username, project.url())
         return
@@ -118,7 +118,7 @@ def update_project(options, user, project, replace_users=None):
         log.info('Would add %s as %s of %s', user.username, options.group, project.url())
     else:
         user_roles.append(project_role._id)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
 
 def parse_options():

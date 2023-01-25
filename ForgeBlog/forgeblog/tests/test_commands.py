@@ -21,7 +21,7 @@ import pkg_resources
 import mock
 import feedparser
 
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from alluratest.tools import module_not_available
@@ -111,7 +111,7 @@ def test_pull_rss_feeds(parsefeed):
                  'mount_label': 'Blog'})
     new_external_feeds = ['http://example.com/news/feed/']
     BM.Globals(app_config_id=tmp_app._id, external_feeds=new_external_feeds)
-    ThreadLocalORMSession.flush_all()
+    ThreadLocalODMSession.flush_all()
 
     from forgeblog.command import rssfeeds  # importing this sets html2text.BODY_WIDTH to a value this test expects
     cmd = rssfeeds.RssFeedsCommand('pull-rss-feeds')

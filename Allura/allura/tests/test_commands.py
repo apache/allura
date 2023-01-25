@@ -21,7 +21,7 @@ import datetime
 from testfixtures import OutputCapture
 
 from ming.base import Object
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 from mock import Mock, call, patch
 import pytest
 import pymongo
@@ -168,14 +168,14 @@ def test_update_neighborhood():
     cmd = create_neighborhood.UpdateNeighborhoodCommand('update-neighborhood')
     cmd.run([test_config, 'Projects', 'True'])
     # make sure the app_configs get freshly queried
-    ThreadLocalORMSession.close_all()
+    ThreadLocalODMSession.close_all()
     nb = M.Neighborhood.query.get(name='Projects')
     assert nb.has_home_tool is True
 
     cmd = create_neighborhood.UpdateNeighborhoodCommand('update-neighborhood')
     cmd.run([test_config, 'Projects', 'False'])
     # make sure the app_configs get freshly queried
-    ThreadLocalORMSession.close_all()
+    ThreadLocalODMSession.close_all()
     nb = M.Neighborhood.query.get(name='Projects')
     assert nb.has_home_tool is False
 

@@ -30,7 +30,7 @@ from tg import tmpl_context as c, app_globals as g
 from tg import request
 from formencode import validators
 from webob import exc
-from ming.orm import session
+from ming.odm import session
 
 # Pyforge-specific imports
 from allura import model as M

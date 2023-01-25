@@ -19,8 +19,8 @@ from datetime import datetime
 import typing
 
 from ming import schema as S
-from ming.orm import FieldProperty, Mapper
-from ming.orm.declarative import MappedClass
+from ming.odm import FieldProperty, Mapper
+from ming.odm.declarative import MappedClass
 
 from allura import model as M
 from allura.model.types import MarkdownCache

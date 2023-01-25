@@ -36,8 +36,8 @@ import tg
 from tg.wsgiapp import RequestLocals
 from webob import Response, Request
 import ew
-from ming.orm import ThreadLocalORMSession
-import ming.orm
+from ming.odm import ThreadLocalODMSession
+import ming.odm
 import pkg_resources
 import requests
 import requests_oauthlib
@@ -148,7 +148,7 @@ def setup_unit_test():
     tg.request_local.context._push_object(tgl)
 
     c.model_cache = None
-    ThreadLocalORMSession.close_all()
+    ThreadLocalODMSession.close_all()
 
 
 setup_unit_test.__test__ = False  # sometimes __test__ above isn't sufficient
@@ -245,9 +245,9 @@ class TestRestApiBase(TestController):
                 request_token_id=request_token._id,
                 user_id=user._id,
                 is_bearer=True)
-            ming.orm.session(consumer_token).flush()
-            ming.orm.session(request_token).flush()
-            ming.orm.session(token).flush()
+            ming.odm.session(consumer_token).flush()
+            ming.odm.session(request_token).flush()
+            ming.odm.session(token).flush()
             self._token_cache[username] = token
 
         return self._token_cache[username]

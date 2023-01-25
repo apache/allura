@@ -17,7 +17,7 @@
 
 from unittest import TestCase
 from mock import patch
-from ming.odm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 
 from allura.tests import TestController
 from allura.tests.decorators import with_tool
@@ -73,7 +73,7 @@ class TestGitHubTrackerImportController(TestController, TestCase):
         requests.head.return_value.status_code = 200
         p = M.Project.query.get(shortname=test_project_with_tracker)
         p.set_tool_data('GitHubTrackerImporter', pending=1)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         params = dict(
             gh_user_name='spooky',
             gh_project_name='mulder',

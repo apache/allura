@@ -17,7 +17,7 @@
 
 from bson import ObjectId
 from bson.errors import InvalidId
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 from tg import tmpl_context as c
 
 from allura.command import base
@@ -102,4 +102,4 @@ class FixDiscussion(base.Command):
                     for post in ticket.discussion_thread.posts:
                         post.discussion_id = tracker.discussion_id
 
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()

@@ -54,13 +54,13 @@ def clone(cloned_from_path, cloned_from_name, cloned_from_url):
 @task
 def reclone(*args, **kwargs):
     from allura import model as M
-    from ming.orm import ThreadLocalORMSession
+    from ming.odm import ThreadLocalODMSession
     repo = c.app.repo
     if repo is not None:
         shutil.rmtree(repo.full_fs_path, ignore_errors=True)
     M.MergeRequest.query.remove(dict(
         app_config_id=c.app.config._id))
-    ThreadLocalORMSession.flush_all()
+    ThreadLocalODMSession.flush_all()
     clone(*args, **kwargs)
 
 
@@ -99,8 +99,8 @@ def uninstall(**kwargs):
     M.MergeRequest.query.remove(dict(
         app_config_id=c.app.config._id))
     super(RepositoryApp, c.app).uninstall(c.project)
-    from ming.orm import ThreadLocalORMSession
-    ThreadLocalORMSession.flush_all()
+    from ming.odm import ThreadLocalODMSession
+    ThreadLocalODMSession.flush_all()
 
 
 @task

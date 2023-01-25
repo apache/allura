@@ -24,7 +24,7 @@ from tg import expose, flash, url, config, request, redirect
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg import tmpl_context as c, app_globals as g
 from ming.odm import session
-from ming.orm import session
+from ming.odm import session
 
 # profanityfilter package
 from profanityfilter import ProfanityFilter

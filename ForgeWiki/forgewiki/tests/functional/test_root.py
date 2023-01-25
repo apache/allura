@@ -21,7 +21,7 @@ import allura
 import json
 
 import PIL
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 from mock import patch
 from tg import config
 
@@ -601,10 +601,10 @@ class TestRootController(TestController):
         a.text = '\n[TEST]\n'
         b = model.Page.query.find(dict(title='TEST')).first()
         b.text = '\n[bbb]\n'
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
         response = self.app.get('/wiki/TEST/')
         assert 'Related' in response

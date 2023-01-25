@@ -26,7 +26,7 @@ import pkg_resources
 from alluratest.tools import assert_regexp_matches
 from tg import tmpl_context as c
 import tg
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 from mock import patch, PropertyMock
 
 from alluratest.controller import setup_global_objects
@@ -53,14 +53,14 @@ class _TestCase(TestController):
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'testgit.git'
-        ThreadLocalORMSession.flush_all()
-        # ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        # ThreadLocalODMSession.close_all()
         h.set_context('test', 'src-git', neighborhood='Projects')
         c.app.repo.refresh()
         if os.path.isdir(c.app.repo.tarball_path):
             shutil.rmtree(c.app.repo.tarball_path)
-        ThreadLocalORMSession.flush_all()
-        # ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        # ThreadLocalODMSession.close_all()
 
     @with_tool('test', 'Git', 'testgit-index', 'Git', type='git')
     def setup_testgit_index_repo(self):
@@ -69,10 +69,10 @@ class _TestCase(TestController):
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'testgit_index.git'
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         h.set_context('test', 'testgit-index', neighborhood='Projects')
         c.app.repo.refresh()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
 
 class TestUIController(TestController):
@@ -90,8 +90,8 @@ class TestUIController(TestController):
         self.repo = c.app.repo
         self.repo.refresh()
         self.rev = self.repo.commit('HEAD')
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
     def test_repo_loading(self):
         resp = self.app.get('/src-git/').follow().follow()
@@ -118,7 +118,7 @@ class TestRootController(_TestCase):
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'weird-chars.git'
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         c.app.repo.refresh()
 
     def test_status(self):
@@ -132,8 +132,8 @@ class TestRootController(_TestCase):
         assert resp.html.find('div', dict(id='repo_status')) is None
         h.set_context('test', 'src-git', neighborhood='Projects')
         c.app.repo.status = 'analyzing'
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
         # repo status displayed if not 'ready'
         resp = self.app.get('/src-git/').follow().follow()
         div = resp.html.find('div', dict(id='repo_status'))
@@ -494,7 +494,7 @@ class TestRootController(_TestCase):
         r = self.app.get('/p/test/src-git/ci/master/tarball')
         assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         r = self.app.get(ci + 'tarball_status')
         assert '{"status": "complete"}' in r
         r = self.app.get('/p/test/src-git/ci/master/tarball_status')
@@ -749,7 +749,7 @@ class TestFork(_TestCase):
         # run task to compute the commits list
         task = M.MonQTask.query.get(task_name='allura.tasks.repo_tasks.determine_mr_commits', state='ready')
         task()
-        ThreadLocalORMSession.close_all()  # close ming connections so that new data gets loaded later
+        ThreadLocalODMSession.close_all()  # close ming connections so that new data gets loaded later
 
         def assert_commit_details(r):
             assert 'Improve documentation' in r.text
@@ -785,7 +785,7 @@ class TestFork(_TestCase):
         self._request_merge()
         h.set_context('test2', 'code', neighborhood='Projects')
         c.app.repo.delete()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         r = self.app.get('/p/test/src-git/merge-requests/')
         assert '<i>(deleted)</i>' in r
@@ -823,7 +823,7 @@ class TestFork(_TestCase):
         assert _select_val(r, 'source_branch') == 'zz'
         assert _select_val(r, 'target_branch') == 'master'
         GM.Repository.query.get(_id=c.app.repo._id).default_branch_name = 'zz'
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         r = self.app.get('/p/test2/code/request_merge')
         assert _select_val(r, 'source_branch') == 'master'
         assert _select_val(r, 'target_branch') == 'zz'
@@ -836,7 +836,7 @@ class TestFork(_TestCase):
             r = r.follow()  # get merge request page; creates bg task for determining commits
             task = M.MonQTask.query.get(task_name='allura.tasks.repo_tasks.determine_mr_commits', state='ready')
             task()
-            ThreadLocalORMSession.close_all()  # close ming connections so that new data gets loaded later
+            ThreadLocalODMSession.close_all()  # close ming connections so that new data gets loaded later
             r = self.app.get(r.request.url)  # refresh, data should be there now
             return r
 
@@ -986,10 +986,10 @@ class TestDiff(TestController):
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'testmime.git'
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         h.set_context('test', 'src-git', neighborhood='Projects')
         c.app.repo.refresh()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
     def test_diff(self):
         r = self.app.get('/src-git/ci/d961abbbf10341ee18a668c975842c35cfc0bef2/tree/1.png'
@@ -1015,10 +1015,10 @@ class TestGitRename(TestController):
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'testrename.git'
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         h.set_context('test', 'src-git', neighborhood='Projects')
         c.app.repo.refresh()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
     def test_log(self):
         # commit after the rename
@@ -1083,10 +1083,10 @@ class TestGitBranch(TestController):
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'test_branch.git'
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         h.set_context('test', 'src-git', neighborhood='Projects')
         c.app.repo.refresh()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
     def test_exotic_default_branch(self):
         r = self.app.get('/src-git/').follow().follow()

@@ -26,7 +26,7 @@ from tg import tmpl_context as c, app_globals as g, request as r
 from webob import Request
 from mock import patch, Mock
 
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 from ming.odm import session
 
 from allura import model as M
@@ -45,11 +45,11 @@ class TestAuth:
     def test_email_address(self):
         addr = M.EmailAddress(email='test_admin@domain.net',
                               claimed_by_user_id=c.user._id)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert addr.claimed_by_user() == c.user
         addr2 = M.EmailAddress.create('test@domain.net')
         addr3 = M.EmailAddress.create('test_admin@domain.net')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         # Duplicate emails are allowed, until the email is confirmed
         assert addr3 is not addr
@@ -66,7 +66,7 @@ class TestAuth:
     def selftest_email_address_lookup_helpers():
         addr = M.EmailAddress.create('TEST@DOMAIN.NET')
         nobody = M.EmailAddress.create('nobody@example.com')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert addr.email == 'TEST@domain.net'
 
         assert M.EmailAddress.get(email='TEST@DOMAIN.NET') == addr
@@ -122,12 +122,12 @@ class TestAuth:
         # delete one of the projects and make sure it won't appear in my_projects()
         p = M.Project.query.get(shortname='test2')
         p.deleted = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert ({p.shortname for p in c.user.my_projects()} ==
                 {'test', 'u/test-admin', 'adobe-1', '--init--'})
         u = M.User.register(dict(
             username='nosetest-user'))
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert u.reg_date
         assert u.private_project().shortname == 'u/nosetest-user'
         roles = g.credentials.user_roles(
@@ -143,7 +143,7 @@ class TestAuth:
 
     def test_user_project_creates_on_demand(self):
         u = M.User.register(dict(username='foobar123'), make_project=False)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert not M.Project.query.get(shortname='u/foobar123')
         assert u.private_project()
         assert M.Project.query.get(shortname='u/foobar123')
@@ -152,22 +152,22 @@ class TestAuth:
         u = M.User.register(dict(username='foobar123'), make_project=True)
         p = M.Project.query.get(shortname='u/foobar123')
         p.deleted = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert not M.Project.query.get(shortname='u/foobar123', deleted=False)
         assert u.private_project()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert M.Project.query.get(shortname='u/foobar123', deleted=False)
 
     def test_user_project_does_not_create_on_demand_for_disabled_user(self):
         u = M.User.register(
             dict(username='foobar123', disabled=True), make_project=False)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert not u.private_project()
         assert not M.Project.query.get(shortname='u/foobar123')
 
     def test_user_project_does_not_create_on_demand_for_anonymous_user(self):
         u = M.User.anonymous()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert not u.private_project()
         assert not M.Project.query.get(shortname='u/anonymous')
         assert not M.Project.query.get(shortname='u/*anonymous')
@@ -182,19 +182,19 @@ class TestAuth:
                                claimed_by_user_id=u2._id)
         # both users are disabled
         u1.disabled, u2.disabled = True, True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert M.User.by_email_address('abc123@abc.me') is None
         assert log.warn.call_count == 0
 
         # only u2 is active
         u1.disabled, u2.disabled = True, False
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert M.User.by_email_address('abc123@abc.me') == u2
         assert log.warn.call_count == 0
 
         # both are active
         u1.disabled, u2.disabled = False, False
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert M.User.by_email_address('abc123@abc.me') in [u1, u2]
         assert log.warn.call_count == 1
 
@@ -202,7 +202,7 @@ class TestAuth:
         # nobody@example.com as before
         nobody = M.EmailAddress(email='nobody@example.com', confirmed=True,
                                 claimed_by_user_id=u1._id)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert M.User.by_email_address('nobody@example.com') == u1
         assert M.User.by_email_address('invalid') is None
 
@@ -229,7 +229,7 @@ class TestAuth:
     def test_project_role(self):
         role = M.ProjectRole(project_id=c.project._id, name='test_role')
         M.ProjectRole.by_user(c.user, upsert=True).roles.append(role._id)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         roles = g.credentials.user_roles(
             c.user._id, project_id=c.project.root_project._id)
         roles_ids = [r['_id'] for r in roles]
@@ -260,7 +260,7 @@ class TestAuth:
         addr = M.EmailAddress(email='test_admin@domain.net',
                               claimed_by_user_id=c.user._id)
         c.user.disabled = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert addr.claimed_by_user() is None
 
     @td.with_user_project('test-admin')
@@ -276,7 +276,7 @@ class TestAuth:
         user_role = M.ProjectRole.by_user(c.user, project=project, upsert=True)
         user_role.roles.remove(admin_role._id)
         user_role.roles.append(developer_role._id)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         g.credentials.clear()
         assert ({p.shortname for p in c.user.my_projects()} ==
                 {'test', 'test2', 'u/test-admin', 'adobe-1', '--init--'})
@@ -294,7 +294,7 @@ class TestAuth:
         M.ProjectRole(
             user_id=c.user._id,
             project_id=sub1._id)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         project_names = [p.shortname for p in c.user.my_projects()]
         assert 'test/sub1' not in project_names
         assert 'test' in project_names
@@ -409,7 +409,7 @@ class TestAuth:
         with h.push_config(r, user_agent='TestBrowser/57'):
             # this should match too
             h.auditlog_user('Set up multifactor TOTP')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         auth_provider = plugin.AuthenticationProvider.get(None)
         c.user.backfill_login_details(auth_provider)
