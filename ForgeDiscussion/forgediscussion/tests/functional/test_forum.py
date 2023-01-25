@@ -27,7 +27,7 @@ import pkg_resources
 import pymongo
 import webtest
 
-from ming.odm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 from tg import tmpl_context as c
 from tg import config
 
@@ -623,7 +623,7 @@ class TestForum(TestController):
         c.user = M.User.query.get(username="test-user")
         role = M.ProjectRole(project_id=c.project._id, name='TestRole')
         M.ProjectRole.by_user(c.user, upsert=True).roles.append(role._id)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         t = M.Thread()
         p = M.Post(thread=t)
         assert 'TestRole' in [r.name for r in c.project.named_roles]

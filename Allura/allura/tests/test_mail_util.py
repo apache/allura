@@ -21,7 +21,7 @@ from six.moves.email_mime_text import MIMEText
 
 import mock
 import pytest
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 from tg import config as tg_config
 
 from alluratest.controller import setup_basic_test, setup_global_objects
@@ -50,8 +50,8 @@ class TestReactor(unittest.TestCase):
     def setup_method(self, method):
         setup_basic_test()
         setup_global_objects()
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
     def test_parse_address_bad_domain(self):
         with pytest.raises(AddressException):

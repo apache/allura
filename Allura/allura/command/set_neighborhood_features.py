@@ -22,7 +22,7 @@ from allura.command import base
 from bson import ObjectId
 from allura import model as M
 from allura.lib import exceptions
-from ming.orm import session
+from ming.odm import session
 
 # Example usage:
 # paster set-neighborhood-features development.ini

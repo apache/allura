@@ -28,7 +28,7 @@ from .controllers.userstats import ForgeUserStatsController
 
 from forgeuserstats import version
 
-from ming.orm import session
+from ming.odm import session
 
 log = logging.getLogger(__name__)
 

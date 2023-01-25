@@ -23,9 +23,9 @@ from tg import config
 from paste.deploy.converters import asbool
 
 from ming import schema as S
-from ming.orm import Mapper
-from ming.orm import FieldProperty
-from ming.orm.declarative import MappedClass
+from ming.odm import Mapper
+from ming.odm import FieldProperty
+from ming.odm.declarative import MappedClass
 from datetime import timedelta
 import difflib
 

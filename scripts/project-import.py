@@ -19,7 +19,7 @@ import json
 import logging
 import sys
 
-from ming.orm import session
+from ming.odm import session
 import colander
 
 from allura import model as M

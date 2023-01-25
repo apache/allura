@@ -22,7 +22,7 @@ from cgi import FieldStorage
 from io import BytesIO
 
 from tg import tmpl_context as c
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -42,7 +42,7 @@ class TestApp:
             title='Test title',
             text='test post',
         )
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert BM.BlogPost.query.get(title='Test title')
         # c.app.uninstall(c.project) errors out, but works ok in test_uninstall for repo tools.  So instead:
         c.project.uninstall_app('blog')
@@ -126,14 +126,14 @@ class TestBulkExport:
                 labels=['the firstlabel', 'the second label'],
                 delete=None
             )
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
             test_file1 = FieldStorage()
             test_file1.name = 'file_info'
             test_file1.filename = 'test_file'
             test_file1.file = BytesIO(b'test file1\n')
             p = post.discussion_thread.add_post(text='test comment')
             p.add_multiple_attachments(test_file1)
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
         f = tempfile.TemporaryFile('w+')
         temp_dir = tempfile.mkdtemp()
         blog.bulk_export(f, temp_dir, True)

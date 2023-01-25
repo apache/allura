@@ -37,10 +37,10 @@ import markupsafe
 
 from ming import schema
 from ming.utils import LazyProperty
-from ming.orm import Mapper, session
-from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
-from ming.orm.declarative import MappedClass
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm import Mapper, session
+from ming.odm import FieldProperty, ForeignIdProperty, RelationProperty
+from ming.odm.declarative import MappedClass
+from ming.odm.odmsession import ThreadLocalODMSession
 
 from tg import config as tg_config
 
@@ -512,7 +512,7 @@ class Globals(MappedClass):
                 mail_tasks.sendmail.post(**mail)
 
         self.invalidate_bin_counts()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         app = '{}/{}'.format(c.project.shortname,
                              self.app_config.options.mount_point)
         count = len(tickets)
@@ -1037,7 +1037,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             self.add_multiple_attachments(attachment)
             # flush the session to make attachments available in the
             # notification email
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
         subscribe = ticket_form.pop('subscribe', False)
         self.commit(subscribe=subscribe)
 

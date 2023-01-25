@@ -20,7 +20,7 @@ import mock
 
 from dateutil.parser import parse
 
-from ming.odm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 import webtest
 
 from allura.tests import TestController
@@ -45,7 +45,7 @@ class TestDiscussionImporter(TestCase):
     @mock.patch.object(discussion, 'M')
     @mock.patch.object(discussion, 'session')
     @mock.patch.object(discussion, 'h')
-    @mock.patch.object(discussion, 'ThreadLocalORMSession')
+    @mock.patch.object(discussion, 'ThreadLocalODMSession')
     def test_import_tool_with_general_discussion(self, tlos, h, session, m, g, c):
         """ This test creates a general discussion forum with one thread and one post from admin """
 
@@ -134,7 +134,7 @@ class TestDiscussionImporter(TestCase):
     @mock.patch.object(discussion, 'M')
     @mock.patch.object(discussion, 'session')
     @mock.patch.object(discussion, 'h')
-    @mock.patch.object(discussion, 'ThreadLocalORMSession')
+    @mock.patch.object(discussion, 'ThreadLocalODMSession')
     def test_import_tool_unicode(self, tlos, h, session, m, g, c):
         """ This method tests if the import tool method supports unicode characters """
 
@@ -234,7 +234,7 @@ class TestDiscussionImporter(TestCase):
     @mock.patch.object(discussion, 'M')
     @mock.patch.object(discussion, 'session')
     @mock.patch.object(discussion, 'h')
-    @mock.patch.object(discussion, 'ThreadLocalORMSession')
+    @mock.patch.object(discussion, 'ThreadLocalODMSession')
     def test_import_tool_multiple_forums(self, tlos, h, session, m, g, c):
         """ This test tests if it is possible to create a discussion with multiple forums """
 
@@ -316,7 +316,7 @@ class TestDiscussionImporter(TestCase):
     @mock.patch.object(discussion, 'M')
     @mock.patch.object(discussion, 'session')
     @mock.patch.object(discussion, 'h')
-    @mock.patch.object(discussion, 'ThreadLocalORMSession')
+    @mock.patch.object(discussion, 'ThreadLocalODMSession')
     def test_import_tool_multiple_threads(self, tlos, h, session, m, g, c):
         """ This method tests if import_tool can handle multiple threads """
 
@@ -408,7 +408,7 @@ class TestDiscussionImporter(TestCase):
     @mock.patch.object(discussion, 'M')
     @mock.patch.object(discussion, 'session')
     @mock.patch.object(discussion, 'h')
-    @mock.patch.object(discussion, 'ThreadLocalORMSession')
+    @mock.patch.object(discussion, 'ThreadLocalODMSession')
     def test_import_tool_forum_import_id(self, tlos, h, session, m, g, c):
         """ This method tests if an import id is added to a forum """
 
@@ -475,7 +475,7 @@ class TestDiscussionImporter(TestCase):
     @mock.patch.object(discussion, 'M')
     @mock.patch.object(discussion, 'session')
     @mock.patch.object(discussion, 'h')
-    @mock.patch.object(discussion, 'ThreadLocalORMSession')
+    @mock.patch.object(discussion, 'ThreadLocalODMSession')
     def test_import_tool_thread_import_id(self, tlos, h, session, m, g, c):
         """ This method tests if an import id is assigned to a thread """
 
@@ -552,7 +552,7 @@ class TestDiscussionImporter(TestCase):
     @mock.patch.object(discussion, 'M')
     @mock.patch.object(discussion, 'session')
     @mock.patch.object(discussion, 'h')
-    @mock.patch.object(discussion, 'ThreadLocalORMSession')
+    @mock.patch.object(discussion, 'ThreadLocalODMSession')
     def test_import_tool_missing_keys(self, tlos, h, session, m, g, c):
         """ This method tests if missing keys are handled correctly """
 
@@ -1306,7 +1306,7 @@ class TestForgeDiscussionController(TestController, TestCase):
     def test_create_limit(self, import_tool, siu):
         project = M.Project.query.get(shortname='test')
         project.set_tool_data('ForgeDiscussionImporter', pending=1)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         params = {
             'discussions_json': webtest.Upload('discussions.json', b'{"key": "val"}'),
             'mount_label': 'mylabel',

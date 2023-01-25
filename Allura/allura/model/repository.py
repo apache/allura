@@ -45,7 +45,7 @@ import bson
 import six
 
 from ming import schema as S
-from ming.orm import session
+from ming.odm import session
 from ming import Field, collection, Index
 from ming.utils import LazyProperty
 from ming.odm import FieldProperty, session, Mapper, mapper, MappedClass, RelationProperty

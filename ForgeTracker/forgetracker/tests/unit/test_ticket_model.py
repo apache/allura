@@ -23,8 +23,8 @@ import six.moves.urllib.error
 
 import mock
 import pytest
-from ming.orm.ormsession import ThreadLocalORMSession
-from ming.orm import session
+from ming.odm.odmsession import ThreadLocalODMSession
+from ming.odm import session
 from ming import schema
 from forgetracker.model import Ticket, TicketAttachment
 from forgetracker.tests.unit import TrackerTestWithModel
@@ -54,7 +54,7 @@ class TestTicketModel(TrackerTestWithModel):
         # create and save the tickets
         t1 = _test_ticket()
         t2 = _test_ticket2()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         # test label query results
         label_count1 = t1.artifacts_labeled_with(
@@ -66,7 +66,7 @@ class TestTicketModel(TrackerTestWithModel):
     def test_that_it_has_ordered_custom_fields(self):
         custom_fields = dict(my_field='my value')
         Ticket(summary='my ticket', custom_fields=custom_fields, ticket_num=3)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         ticket = Ticket.query.get(summary='my ticket')
         assert ticket.custom_fields == dict(my_field='my value')
 
@@ -128,7 +128,7 @@ class TestTicketModel(TrackerTestWithModel):
         role_creator = ProjectRole.by_user(t.reported_by, upsert=True)._id
         ProjectRole.by_user(
             developer, upsert=True).roles.append(role_developer)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         cred = Credentials.get().clear()
 
         t.private = True
@@ -247,8 +247,8 @@ class TestTicketModel(TrackerTestWithModel):
             {'name': '_test2', 'type': 'string', 'label': 'Test field 2'}])
         app2.globals.custom_fields.append(
             {'name': '_test', 'type': 'string', 'label': 'Test field'})
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
         with h.push_context(c.project._id, app_config_id=app1.config._id):
             ticket = Ticket.new()
             ticket.summary = 'test ticket'
@@ -279,8 +279,8 @@ class TestTicketModel(TrackerTestWithModel):
         app2.globals.custom_fields.extend([
             {'name': '_user_field', 'type': 'user', 'label': 'User field'},
             {'name': '_user_field_2', 'type': 'user', 'label': 'User field 2'}])
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
         from allura.websetup import bootstrap
         bootstrap.create_user('test-user-0')
         with h.push_context(c.project._id, app_config_id=app1.config._id):
@@ -317,7 +317,7 @@ class TestTicketModel(TrackerTestWithModel):
         TicketAttachment.save_attachment(
             'test_ticket_model.py', ResettableStream(f),
             artifact_id=ticket._id)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         # need to refetch since attachments are cached
         session(ticket).expunge(ticket)
         ticket = Ticket.query.get(_id=ticket._id)

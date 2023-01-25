@@ -24,7 +24,7 @@ import pymongo
 from tg import tmpl_context as c
 from ming import schema
 from ming.utils import LazyProperty
-from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty, Mapper
+from ming.odm import FieldProperty, RelationProperty, ForeignIdProperty, Mapper
 
 from tg import config as tg_config
 

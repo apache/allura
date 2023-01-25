@@ -20,7 +20,7 @@ import os
 
 from unittest import TestCase, skipIf
 from mock import Mock, patch
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 from tg import tmpl_context as c
 
 from allura.tests import TestController
@@ -154,7 +154,7 @@ class TestTracTicketImportController(TestController, TestCase):
         head.return_value.status_code = 200
         project = M.Project.query.get(shortname='test')
         project.set_tool_data('TracTicketImporter', pending=1)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         params = dict(trac_url='http://example.com/trac/url',
                       mount_label='mylabel',
                       mount_point='mymount',

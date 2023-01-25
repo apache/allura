@@ -21,8 +21,8 @@ from collections import defaultdict
 
 from ming import Session
 from ming.odm.base import ObjectState
-from ming.orm.base import state
-from ming.orm.ormsession import ThreadLocalORMSession, SessionExtension
+from ming.odm.base import state
+from ming.odm.odmsession import ThreadLocalODMSession, SessionExtension
 from contextlib import contextmanager
 
 from allura.lib.utils import chunked_list
@@ -272,22 +272,22 @@ def substitute_extensions(session, extensions=None):
 main_doc_session = Session.by_name('main')
 project_doc_session = Session.by_name('project')
 task_doc_session = Session.by_name('task')
-main_orm_session = ThreadLocalORMSession(
+main_orm_session = ThreadLocalODMSession(
     doc_session=main_doc_session,
     extensions=[IndexerSessionExtension]
     )
-main_explicitflush_orm_session = ThreadLocalORMSession(
+main_explicitflush_orm_session = ThreadLocalODMSession(
     doc_session=main_doc_session,
     extensions=[IndexerSessionExtension, ExplicitFlushOnlySessionExtension]
 )
-project_orm_session = ThreadLocalORMSession(
+project_orm_session = ThreadLocalODMSession(
     doc_session=project_doc_session,
     extensions=[IndexerSessionExtension]
 )
-task_orm_session = ThreadLocalORMSession(task_doc_session)
-artifact_orm_session = ThreadLocalORMSession(
+task_orm_session = ThreadLocalODMSession(task_doc_session)
+artifact_orm_session = ThreadLocalODMSession(
     doc_session=project_doc_session,
     extensions=[ArtifactSessionExtension])
-repository_orm_session = ThreadLocalORMSession(
+repository_orm_session = ThreadLocalODMSession(
     doc_session=main_doc_session,
     extensions=[])

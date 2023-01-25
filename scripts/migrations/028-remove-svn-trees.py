@@ -17,7 +17,7 @@
 
 import logging
 
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 
 from allura.lib import utils
 from allura import model as M
@@ -48,8 +48,8 @@ def main():
                 for commit in M.repository.Commit.query.find({'_id': {'$in': all_commit_ids}}):
                     if commit.tree_id and M.repository.Tree.query.get(_id=commit.tree_id):
                         kill_tree(r._impl, commit._id, '', commit.tree)
-                ThreadLocalORMSession.flush_all()
-                ThreadLocalORMSession.close_all()
+                ThreadLocalODMSession.flush_all()
+                ThreadLocalODMSession.close_all()
 
 if __name__ == '__main__':
     main()

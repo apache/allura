@@ -27,7 +27,7 @@ from bs4 import BeautifulSoup
 import git
 from tg import app_globals as g
 from tg import tmpl_context as c
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 from tg import (
     expose,
     flash,
@@ -155,7 +155,7 @@ class GitHubWikiImporter(ToolImporter):
             }
         )
         with_history = tool_option == 'import_history'
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         self.github_markdown_converter = GitHubMarkdownConverter(
             user_name, project_name)
         try:
@@ -173,7 +173,7 @@ class GitHubWikiImporter(ToolImporter):
                         extractor.get_page_url('project_info'),
                         exc_info=True)
                     raise
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
             M.AuditLog.log(
                 'import tool {} from {} on {}'.format(
                     self.app.config.options.mount_point,

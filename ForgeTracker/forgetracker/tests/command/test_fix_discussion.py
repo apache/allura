@@ -15,7 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from ming.orm import session
+from ming.odm import session
 import pkg_resources
 
 from alluratest.controller import setup_basic_test, setup_global_objects

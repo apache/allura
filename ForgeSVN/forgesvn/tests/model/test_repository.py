@@ -32,7 +32,7 @@ import mock
 import tg
 import ming
 from ming.base import Object
-from ming.orm import session, ThreadLocalORMSession
+from ming.odm import session, ThreadLocalODMSession
 from testfixtures import TempDirectory
 
 from alluratest.controller import setup_basic_test, setup_global_objects
@@ -65,8 +65,8 @@ class TestNewRepo(unittest.TestCase):
         self.repo = c.app.repo
         self.repo.refresh()
         self.rev = self.repo.commit('HEAD')
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
     def test_last_commit_for(self):
         tree = self.rev.tree
@@ -119,15 +119,15 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
             c.app.repo.fs_path = repo_dir
             self.repo = c.app.repo
             self.repo.refresh()
-            ThreadLocalORMSession.flush_all()
-            ThreadLocalORMSession.close_all()
+            ThreadLocalODMSession.flush_all()
+            ThreadLocalODMSession.close_all()
         with h.push_context('test', 'svn-tags', neighborhood='Projects'):
             c.app.repo.name = 'testsvn-trunk-tags-branches'
             c.app.repo.fs_path = repo_dir
             self.svn_tags = c.app.repo
             self.svn_tags.refresh()
-            ThreadLocalORMSession.flush_all()
-            ThreadLocalORMSession.close_all()
+            ThreadLocalODMSession.flush_all()
+            ThreadLocalODMSession.close_all()
         h.set_context('test', 'src', neighborhood='Projects')
 
     def test_init(self):
@@ -511,7 +511,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
             repo2.init()
             assert repo2.is_empty()
             repo2.refresh()
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
             assert repo2.is_empty()
 
     def test_webhook_payload(self):
@@ -585,8 +585,8 @@ class TestSVNRev(unittest.TestCase):
         self.repo = c.app.repo
         self.repo.refresh()
         self.rev = self.repo.commit(1)
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
     def test_url(self):
         assert self.rev.url().endswith('/1/')
@@ -635,9 +635,9 @@ class TestSVNRev(unittest.TestCase):
             tool='svn',
             status='creating')
         self.repo.refresh()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         send_notifications(self.repo, [self.repo.rev_to_commit_id(1)])
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         n = M.Notification.query.find({'subject': '[test:src] New commit [r1] by rick446'}).first()
 
         assert n
@@ -687,8 +687,8 @@ class _Test(unittest.TestCase):
     def setup_method(self, method):
         setup_basic_test()
         setup_global_objects()
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
         self.prefix = tg.config.get('scm.repos.root', '/')
 
 
@@ -708,7 +708,7 @@ class _TestWithRepo(_Test):
         self.repo._impl._repo = self.repo
         self.repo._impl.all_commit_ids = lambda *a, **kw: []
         self.repo._impl.commit().symbolic_ids = None
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
 
 class _TestWithRepoAndCommit(_TestWithRepo):
@@ -716,8 +716,8 @@ class _TestWithRepoAndCommit(_TestWithRepo):
     def setup_method(self, method):
         super().setup_method(method)
         self.ci, isnew = self._make_commit('foo')
-        ThreadLocalORMSession.flush_all()
-        # ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        # ThreadLocalODMSession.close_all()
 
 
 class TestRepo(_TestWithRepo):
@@ -814,7 +814,7 @@ class TestRepo(_TestWithRepo):
         self.repo.shorthand_for_commit = lambda oid: '[' + _id(oid) + ']'
         self.repo.url_for_commit = lambda oid: '/ci/' + _id(oid) + '/'
         self.repo.refresh()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         notifications = M.Notification.query.find().all()
         for n in notifications:
             if '100 new commits' in n.subject:
@@ -1034,8 +1034,8 @@ class TestRename(unittest.TestCase):
         self.repo = c.app.repo
         self.repo.refresh()
         self.rev = self.repo.commit('HEAD')
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
     def test_log_file_with_rename(self):
         entry = list(self.repo.log(path='/dir/b.txt', id_only=False, limit=1))[0]
@@ -1070,8 +1070,8 @@ class TestDirectRepoAccess:
         self.repo = c.app.repo
         self.repo.refresh()
         self.rev = self.repo.commit('HEAD')
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
     def test_paged_diffs(self):
         _id = self.repo._impl._oid(6)

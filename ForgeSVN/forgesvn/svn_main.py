@@ -22,7 +22,7 @@ from tg import tmpl_context as c, request
 
 # Non-stdlib imports
 from ming.utils import LazyProperty
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 from tg import expose, redirect, validate, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from timermiddleware import Timer
@@ -93,7 +93,7 @@ class ForgeSVNApp(RepositoryApp):
             tool='svn',
             status='initializing',
             fs_path=self.config.options.get('fs_path'))
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         init_from_url = self.config.options.get('init_from_url')
         init_from_path = self.config.options.get('init_from_path')
         if init_from_url or init_from_path:

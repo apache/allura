@@ -20,7 +20,7 @@ import datetime as dt
 import bson
 
 from mock import patch, MagicMock
-from ming.odm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 from tg import tmpl_context as c
 from tg import config
 from bson import ObjectId
@@ -88,7 +88,7 @@ class TestSiteAdmin(TestController):
         count = len(r.html.find('table').findAll('tr'))
         p = M.Project.query.get(shortname='test')
         p.deleted = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
             username='root'))
         assert len(r.html.find('table').findAll('tr')) == count - 1
@@ -198,7 +198,7 @@ class TestSiteAdminNotifications(TestController):
                                         user_role='test2',
                                         page_regex='test3',
                                         page_tool_type='test4')
-        ThreadLocalORMSession().flush_all()
+        ThreadLocalODMSession().flush_all()
         assert M.notification.SiteNotification.query.find().count() == 1
 
         r = self.app.get('/nf/admin/site_notifications/', extra_environ=dict(
@@ -268,7 +268,7 @@ class TestSiteAdminNotifications(TestController):
                                                user_role='test2',
                                                page_regex='test3',
                                                page_tool_type='test4')
-        ThreadLocalORMSession().flush_all()
+        ThreadLocalODMSession().flush_all()
         r = self.app.get(f'/nf/admin/site_notifications/{note._id}/edit')
 
         assert r
@@ -298,7 +298,7 @@ class TestSiteAdminNotifications(TestController):
         note = M.notification.SiteNotification(active=False,
                                                impressions=0,
                                                content='test')
-        ThreadLocalORMSession().flush_all()
+        ThreadLocalODMSession().flush_all()
 
         count = M.notification.SiteNotification.query.find().count()
 
@@ -309,7 +309,7 @@ class TestSiteAdminNotifications(TestController):
             user_role=user_role,
             page_regex=page_regex,
             page_tool_type=page_tool_type))
-        ThreadLocalORMSession().flush_all()
+        ThreadLocalODMSession().flush_all()
 
         note = next(M.notification.SiteNotification.query.find().sort('_id', -1))
 
@@ -326,7 +326,7 @@ class TestSiteAdminNotifications(TestController):
         note = M.notification.SiteNotification(active=False,
                                                impressions=0,
                                                content='test')
-        ThreadLocalORMSession().flush_all()
+        ThreadLocalODMSession().flush_all()
 
         count = M.notification.SiteNotification.query.find().count()
 
@@ -366,7 +366,7 @@ class TestProjectsSearch(TestController):
                 neighborhood_id=M.Neighborhood.query.get(url_prefix='/u/')._id,
                 shortname='test-project',
             )
-            ThreadLocalORMSession().flush_all()
+            ThreadLocalODMSession().flush_all()
 
     @patch('allura.controllers.site_admin.search')
     def test_default_fields(self, search):
@@ -419,7 +419,7 @@ class TestUsersSearch(TestController):
         u = M.User.query.get(_id=_id)
         if not u:
             M.User(_id=_id, username='darth')
-            ThreadLocalORMSession().flush_all()
+            ThreadLocalODMSession().flush_all()
 
     @patch('allura.controllers.site_admin.search.site_admin_search')
     def test_default_fields(self, site_admin_search):
@@ -532,7 +532,7 @@ class TestUserDetails(TestController):
         user = M.User.by_username('test-user-3')
         user.disabled = False
         user.pending = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert M.User.by_username('test-user-3').disabled is False
         assert M.User.by_username('test-user-3').pending is True
         r = self.app.get('/nf/admin/user/test-user-3')
@@ -551,7 +551,7 @@ class TestUserDetails(TestController):
         # user was not pending
         user = M.User.by_username('test-user-3')
         user.disabled = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert M.User.by_username('test-user-3').disabled is True
         assert M.User.by_username('test-user-3').pending is False
         r = self.app.get('/nf/admin/user/test-user-3')
@@ -570,7 +570,7 @@ class TestUserDetails(TestController):
         user = M.User.by_username('test-user-3')
         user.disabled = False
         user.pending = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert M.User.by_username('test-user-3').disabled is False
         assert M.User.by_username('test-user-3').pending is True
         r = self.app.get('/nf/admin/user/test-user-3')
@@ -589,7 +589,7 @@ class TestUserDetails(TestController):
         user = M.User.by_username('test-user-3')
         user.disabled = True
         user.pending = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert M.User.by_username('test-user-3').disabled is True
         assert M.User.by_username('test-user-3').pending is True
         r = self.app.get('/nf/admin/user/test-user-3')
@@ -608,7 +608,7 @@ class TestUserDetails(TestController):
         # user was disabled
         user = M.User.by_username('test-user-3')
         user.disabled = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert M.User.by_username('test-user-3').disabled is True
         assert M.User.by_username('test-user-3').pending is False
         r = self.app.get('/nf/admin/user/test-user-3')
@@ -627,7 +627,7 @@ class TestUserDetails(TestController):
         user = M.User.by_username('test-user-3')
         user.pending = False
         user.disabled = False
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert M.User.by_username('test-user-3').disabled is False
         assert M.User.by_username('test-user-3').pending is False
         r = self.app.get('/nf/admin/user/test-user-3')
@@ -713,7 +713,7 @@ class TestUserDetails(TestController):
         user = M.User.by_username('test-user')
         user.set_pref('email_address', 'test-user@example.org')
         M.EmailAddress(email='test-user@example.org', confirmed=True, claimed_by_user_id=user._id)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         with td.audits('Password recovery link sent to: test-user@example.org', user=True):
             r = self.app.post('/nf/admin/user/send_password_reset_link', params={'username': 'test-user'})
         hash = user.get_tool_data('AuthPasswordReset', 'hash')

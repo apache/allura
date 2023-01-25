@@ -18,7 +18,7 @@
 import logging
 import sys
 
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 import mock
 from tg import tmpl_context as c, app_globals as g
 
@@ -81,8 +81,8 @@ def scrub_project(p, options):
                     if not options.dry_run:
                         t.discussion_thread.delete()
                         t.delete()
-                ThreadLocalORMSession.flush_all()
-                ThreadLocalORMSession.close_all()
+                ThreadLocalODMSession.flush_all()
+                ThreadLocalODMSession.close_all()
             if counter > 0:
                 log.info('%s %s tickets from the %s/%s tool on '
                          'project "%s"' % (preamble, counter, tool_name,
@@ -112,8 +112,8 @@ def main(options):
         for projects in utils.chunked_find(M.Project, q):
             for p in projects:
                 scrub_project(p, options)
-            ThreadLocalORMSession.flush_all()
-            ThreadLocalORMSession.close_all()
+            ThreadLocalODMSession.flush_all()
+            ThreadLocalODMSession.close_all()
 
     log.info('%s %s EmailAddress documents' %
             (preamble, M.EmailAddress.find().count()))

@@ -33,7 +33,7 @@ import formencode
 from formencode import validators
 from webob import exc
 
-from ming.orm import session
+from ming.odm import session
 
 # Allura-specific imports
 from allura.app import Application, SitemapEntry, ConfigOption

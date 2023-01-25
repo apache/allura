@@ -29,8 +29,8 @@ import tg
 import mock
 from tg import tmpl_context as c, app_globals as g
 
-from ming.orm import FieldProperty, Mapper
-from ming.orm import ThreadLocalORMSession
+from ming.odm import FieldProperty, Mapper
+from ming.odm import ThreadLocalODMSession
 from testfixtures import LogCapture
 
 from alluratest.controller import setup_basic_test, setup_global_objects, TestController
@@ -116,7 +116,7 @@ class TestEventTasks(unittest.TestCase):
 
         g.post_event('my_event2', flush_immediately=False)
         assert not M.MonQTask.query.get(task_name='allura.tasks.event_tasks.event', args=['my_event2'])
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert M.MonQTask.query.get(task_name='allura.tasks.event_tasks.event', args=['my_event2'])
 
     def test_post_event_from_script(self):
@@ -309,7 +309,7 @@ class TestMailTasks(unittest.TestCase):
         c.user.disabled = True
         destination_user = M.User.by_username('test-user-1')
         destination_user.preferences['email_address'] = 'user1@mail.com'
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
             mail_tasks.sendmail(
                 fromaddr=str(c.user._id),
@@ -328,7 +328,7 @@ class TestMailTasks(unittest.TestCase):
         destination_user = M.User.by_username('test-user-1')
         destination_user.preferences['email_address'] = 'user1@mail.com'
         destination_user.disabled = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
             mail_tasks.sendmail(
                 fromaddr=str(c.user._id),
@@ -355,7 +355,7 @@ class TestMailTasks(unittest.TestCase):
             assert 'From: "Test Admin" <test-admin@users.localhost>' in body
 
             c.user.disabled = True
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
             mail_tasks.sendsimplemail(
                 fromaddr=str(c.user._id),
                 toaddr='test@mail.com',

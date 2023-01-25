@@ -25,7 +25,7 @@ import six.moves.urllib.error
 import PIL
 from mock import patch
 from tg import config
-from ming.orm.ormsession import ThreadLocalORMSession, session
+from ming.odm.odmsession import ThreadLocalODMSession, session
 from paste.httpexceptions import HTTPFound, HTTPMovedPermanently
 from tg import app_globals as g, tmpl_context as c
 
@@ -233,7 +233,7 @@ class TestNeighborhood(TestController):
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         proj = M.Project.query.get(neighborhood_id=neighborhood._id)
         proj.deleted = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         r = self.app.get('/adobe/_admin/stats/',
                          extra_environ=dict(username='root'))
         assert 'Deleted: 1' in r
@@ -244,7 +244,7 @@ class TestNeighborhood(TestController):
         proj = M.Project.query.get(neighborhood_id=neighborhood._id)
         proj.deleted = False
         proj.private = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         r = self.app.get('/adobe/_admin/stats/',
                          extra_environ=dict(username='root'))
         assert 'Deleted: 0' in r
@@ -254,7 +254,7 @@ class TestNeighborhood(TestController):
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         proj = M.Project.query.get(neighborhood_id=neighborhood._id)
         proj.private = False
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         r = self.app.get('/adobe/_admin/stats/adminlist',
                          extra_environ=dict(username='root'))
         pq = M.Project.query.find(
@@ -954,7 +954,7 @@ class TestNeighborhood(TestController):
 
     def test_user_project_creates_on_demand(self):
         M.User.register(dict(username='donald-duck'), make_project=False)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         self.app.get('/u/donald-duck/')
 
     def test_disabled_user_has_no_user_project(self):

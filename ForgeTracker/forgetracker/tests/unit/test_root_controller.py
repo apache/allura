@@ -18,7 +18,7 @@
 import unittest
 
 from mock import Mock, patch
-from ming.orm.ormsession import session
+from ming.odm.odmsession import session
 from tg import tmpl_context as c
 
 from allura.lib import helpers as h

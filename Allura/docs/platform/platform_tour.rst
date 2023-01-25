@@ -113,7 +113,7 @@ Some examples of artifacts in the current tools:
 In order to implement your own artifact, you should override at least a few of
 the methods of the `allura.model.artifact.Artifact` class::
 
-    from ming.orm.property import FieldProperty
+    from ming.odm.property import FieldProperty
     from allura.model import Artifact
 
     class NewArtifact(Artifact):

@@ -33,7 +33,7 @@ from tg import expose, redirect, flash, validate, config, jsonify
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
 from bson import ObjectId
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 from ming.odm import session
 import PIL
 
@@ -442,7 +442,7 @@ class ProjectAdminController(BaseController):
                 current_troves.append(trove_obj._id)
                 M.AuditLog.log('add trove %s: %s', type, trove_obj.fullpath)
                 # just in case the event handling is super fast
-                ThreadLocalORMSession.flush_all()
+                ThreadLocalODMSession.flush_all()
                 c.project.last_updated = datetime.utcnow()
                 in_trove = True
                 g.post_event('project_updated')
@@ -483,7 +483,7 @@ class ProjectAdminController(BaseController):
                 M.AuditLog.log('remove trove %s: %s', type, trove_obj.fullpath)
                 current_troves.remove(trove_obj._id)
                 # just in case the event handling is super fast
-                ThreadLocalORMSession.flush_all()
+                ThreadLocalODMSession.flush_all()
                 c.project.last_updated = datetime.utcnow()
                 in_trove = False
                 g.post_event('project_updated')

@@ -21,7 +21,7 @@ import logging
 from tg import tmpl_context as c
 
 from ming.utils import LazyProperty
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 from timermiddleware import Timer
 import git
 
@@ -86,7 +86,7 @@ class ForgeGitApp(RepositoryApp):
             tool='git',
             status='initializing',
             fs_path=self.config.options.get('fs_path'))
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         cloned_from_project_id = self.config.options.get('cloned_from_project_id')
         cloned_from_repo_id = self.config.options.get('cloned_from_repo_id')
         init_from_url = self.config.options.get('init_from_url')

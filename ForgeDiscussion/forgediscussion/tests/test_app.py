@@ -26,7 +26,7 @@ from alluratest.controller import setup_basic_test, setup_unit_test
 from tg import tmpl_context as c
 
 from forgediscussion.site_stats import posts_24hr
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 
 from allura import model as M
 from allura.tests import decorators as td
@@ -65,20 +65,20 @@ class TestAppSitemap:
             name="Test Forum",
             description="Test Forum Description",
         ))
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert [] == c.app.sitemap_xml()
         thread = ForumThread(
             subject='test-thread',
         )
         thread.set_forum(forum)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         assert [] == c.app.sitemap_xml()
         thread.post(
             subject='test-post',
             text='this is a test post.',
         )
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert 1 == len(c.app.sitemap_xml())
 
 
@@ -125,7 +125,7 @@ class TestBulkExport(TestDiscussionApiBase):
         test_file1.filename = 'test_file'
         test_file1.file = BytesIO(b'test file1\n')
         post.add_attachment(test_file1)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         f = tempfile.TemporaryFile('w+')
         temp_dir = tempfile.mkdtemp()

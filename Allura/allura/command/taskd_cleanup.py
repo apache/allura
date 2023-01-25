@@ -20,7 +20,7 @@ import time
 import signal
 import socket
 import subprocess
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 import six
 
 from allura import model as M
@@ -104,7 +104,7 @@ class TaskdCleanupCommand(base.Command):
         # check suspicious task and mark incomplete as error
         base.log.info('Checking suspicious list for incomplete tasks')
         self._check_suspicious_tasks()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         self.print_summary()
 
     def print_summary(self):

@@ -19,7 +19,7 @@
 Model tests for project
 """
 from tg import tmpl_context as c
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 from formencode import validators as fev
 
 from allura import model as M
@@ -59,18 +59,18 @@ class TestProjectModel:
         assert c.project.shortname == 'test'
         assert '<p>' in c.project.description_html
         c.project.uninstall_app('hello-test-mount-point')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         c.project.install_app('Wiki', 'hello-test-mount-point')
         c.project.support_page = 'hello-test-mount-point'
         assert c.project.app_config('wiki').tool_name == 'wiki'
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         with td.raises(ToolError):
             # already installed
             c.project.install_app('Wiki', 'hello-test-mount-point')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         c.project.uninstall_app('hello-test-mount-point')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         with td.raises(ToolError):
             # mount point reserved
             c.project.install_app('Wiki', 'feed')
@@ -128,9 +128,9 @@ class TestProjectModel:
                 sp = project.new_subproject('test-proj-nose')
         sp = project.new_subproject('test-proj-nose')
         spp = sp.new_subproject('spp')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         sp.delete()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
     @td.with_wiki
     def test_anchored_tools(self):
@@ -157,7 +157,7 @@ class TestProjectModel:
 
         user = p.admins()[0]
         user.disabled = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert p.users_with_role('Admin') == []
         assert p.users_with_role('Admin') == p.admins()
 
@@ -167,7 +167,7 @@ class TestProjectModel:
         assert users[0].username == 'test-admin'
         user = M.User.by_username('test-admin')
         user.disabled = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         users = p.users()
         assert users == []
 
@@ -175,7 +175,7 @@ class TestProjectModel:
         p = M.Project.query.get(shortname='test')
         screenshot_unicode = M.ProjectFile(project_id=p._id, category='screenshot', caption="ConSelección", filename='ConSelección.jpg')
         screenshot_ascii = M.ProjectFile(project_id=p._id, category='screenshot', caption='test-screenshot', filename='test_file.jpg')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         serialized = p.__json__()
         screenshots = sorted(serialized['screenshots'], key=lambda k: k['caption'])

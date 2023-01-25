@@ -15,7 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 from ming.base import Object
 
 from tg import tmpl_context as c
@@ -31,7 +31,7 @@ class TestTicketCustomFields(TrackerTestWithModel):
         globals_.custom_fields = [Object(name='_iteration_number',
                                          label='Iteration Number',
                                          type='string')]
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         fields = ticket_form.TicketCustomFields().fields
         iteration_field = fields[0]
         assert iteration_field.label == 'Iteration Number'

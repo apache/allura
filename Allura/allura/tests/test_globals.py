@@ -29,7 +29,7 @@ from tg import tmpl_context as c, app_globals as g
 import tg
 from oembed import OEmbedError
 
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 from alluratest.controller import (
     setup_basic_test,
     setup_global_objects,
@@ -108,7 +108,7 @@ class Test():
         p_test.remove_user(M.User.by_username('test-user-0'))
         p_test.acl = self.acl_bak
 
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
     @td.with_wiki
     def test_app_globals(self):
@@ -155,7 +155,7 @@ class Test():
         p_sub1.private = False
         p_test2.private = True
 
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         with h.push_config(c,
                            project=p_nbhd.neighborhood_project,
@@ -213,7 +213,7 @@ class Test():
             anon = M.User.anonymous()
             p_test.acl.insert(0, M.ACE.deny(
                 M.ProjectRole.anonymous(p_test)._id, 'read'))
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
             pg = WM.Page.query.get(title='Home', app_config_id=c.app.config._id)
             pg.text = 'Change'
             with h.push_config(c, user=M.User.by_username('test-admin')):
@@ -229,7 +229,7 @@ class Test():
             p.make_slug()
             with h.push_config(c, user=M.User.by_username('test-admin')):
                 p.commit()
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
             with h.push_config(c, user=anon):
                 r = g.markdown_wiki.convert('[[neighborhood_blog_posts]]')
             assert 'test content' in r
@@ -239,7 +239,7 @@ class Test():
         p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
         p_test.add_user(M.User.by_username('test-user'), ['Developer'])
         p_test.add_user(M.User.by_username('test-user-0'), ['Member'])
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         r = g.markdown_wiki.convert('[[members limit=2]]').replace('\t', '').replace('\n', '')
         assert (r ==
                 '<div class="markdown_content"><h6>Project Members:</h6>'
@@ -275,7 +275,7 @@ class Test():
         p_nbhd = M.Neighborhood.query.get(name='Projects')
         p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
         p_test.add_user(M.User.by_username('test-user'), ['Admin'])
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         with h.push_config(c, project=p_test):
             r = g.markdown_wiki.convert('[[project_admins]]\n[[download_button]]')
 
@@ -296,7 +296,7 @@ class Test():
             p = WM.Page.upsert(title='Include_3')
             p.text = 'included page 3'
             p.commit()
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
             md = '[[include ref=Include_1]]\n[[include ref=Include_2]]\n[[include ref=Include_3]]'
             html = g.markdown_wiki.convert(md)
 
@@ -322,7 +322,7 @@ class Test():
             p = WM.Page.upsert(title='CanRead')
             p.text = 'Can see this!'
             p.commit()
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
 
         with h.push_context(p_test._id, app_config_id=wiki2.config._id):
             role = M.ProjectRole.by_name('*anonymous')._id
@@ -333,7 +333,7 @@ class Test():
             p = WM.Page.upsert(title='CanNotRead')
             p.text = 'Can not see this!'
             p.commit()
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
 
         with h.push_context(p_test._id, app_config_id=wiki.config._id):
             c.user = M.User.anonymous()
@@ -647,7 +647,7 @@ class Test():
         test_project = M.Project.query.get(shortname='test')
         test_project_troves = getattr(test_project, 'trove_' + random_trove.type)
         test_project_troves.append(random_trove._id)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         p_nbhd = M.Neighborhood.query.get(name='Projects')
         with h.push_config(c,
@@ -710,7 +710,7 @@ class Test():
             granted_by_neighborhood=p_nbhd,
             granted_to_project=project)
 
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         with h.push_context(p_nbhd.neighborhood_project._id):
             r = g.markdown_wiki.convert('[[projects]]')
@@ -746,7 +746,7 @@ class Test():
     def test_project_screenshots_macro(self):
         with h.push_context('test', neighborhood='Projects'):
             M.ProjectFile(project_id=c.project._id, category='screenshot', caption='caption', filename='test_file.jpg')
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
 
             r = g.markdown_wiki.convert('[[project_screenshots]]')
 
@@ -912,12 +912,12 @@ class TestUserMentions(unittest.TestCase):
         output = g.markdown.convert('Hello.. @nouser1, how are you?')
         assert 'Hello.. @nouser1, how are you?' in output
         u1 = M.User.register(dict(username='admin1'), make_project=True)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         output = g.markdown.convert('Hello.. @admin1, how are you?')
         assert 'class="user-mention"' in output
         assert ('href="%s"' % u1.url()) in output
         u2 = M.User.register(dict(username='admin-2'), make_project=True)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         output = g.markdown.convert('Do you know @ab? @admin-2 has solved it!')
         assert 'Do you know @ab?' in output
         assert 'class="user-mention"' in output
@@ -927,7 +927,7 @@ class TestUserMentions(unittest.TestCase):
 
     def test_markdown_user_mention_in_code(self):
         u1 = M.User.register(dict(username='admin-user-4'), make_project=True)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         output = g.markdown.convert('Hello.. `@admin-user-4, how` are you?')
         assert 'class="user-mention"' not in output
         assert '<code>' in output
@@ -942,7 +942,7 @@ class TestUserMentions(unittest.TestCase):
         username = 'r_808__'
         NeighborhoodProjectShortNameValidator.to_python.return_value = username
         u1 = M.User.register(dict(username=username), make_project=True)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         output = g.markdown.convert(f'Hello.. @{username}, how are you?')
         assert 'class="user-mention"' in output
 

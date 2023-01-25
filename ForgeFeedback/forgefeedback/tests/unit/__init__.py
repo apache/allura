@@ -16,7 +16,7 @@
 #       under the License.
 
 from tg import tmpl_context as c
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 
 from allura.websetup import bootstrap
 from allura.lib import helpers as h
@@ -43,8 +43,8 @@ class FeedbackTestWithModel:
         project_reg.register_neighborhood_project(neighborhood, [c.user])
         c.project = neighborhood.register_project('test', c.user)
         c.project.install_app('Feedback', 'feedback')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         h.set_context('test', 'feedback', neighborhood='Projects')
 
     def teardown_method(self, method):
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.close_all()

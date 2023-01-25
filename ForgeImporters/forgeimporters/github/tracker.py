@@ -37,7 +37,7 @@ from allura.lib import helpers as h
 from allura.lib import validators as v
 from allura.lib.plugin import ImportIdConverter
 from allura.lib.decorators import require_post
-from ming.orm import session, ThreadLocalORMSession
+from ming.odm import session, ThreadLocalODMSession
 from tg import tmpl_context as c
 from tg import app_globals as g
 
@@ -117,7 +117,7 @@ class GitHubTrackerImporter(ToolImporter):
                                   )
         self.github_markdown_converter = GitHubMarkdownConverter(
             kw['user_name'], project_name)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         try:
             M.session.artifact_orm_session._get().skip_mod_date = True
             with h.push_config(c, user=M.User.anonymous(), app=app):
@@ -137,7 +137,7 @@ class GitHubTrackerImporter(ToolImporter):
                     session(ticket).expunge(ticket)
                 app.globals.custom_fields = self.postprocess_milestones()
                 app.globals.last_ticket_num = self.max_ticket_num
-                ThreadLocalORMSession.flush_all()
+                ThreadLocalODMSession.flush_all()
             M.AuditLog.log(
                 'import tool {} from {} on {}'.format(
                     app.config.options.mount_point,

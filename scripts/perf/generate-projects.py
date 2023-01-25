@@ -16,21 +16,21 @@
 #       under the License.
 
 import re
-from ming.odm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 from allura import model as M
 
 def main(start, cnt):
     n = M.Neighborhood.query.get(url_prefix='/p/')
     admin = M.User.by_username('admin1')
     #M.Project.query.remove({'shortname': re.compile('gen-proj-.*')})
-    #ThreadLocalORMSession.flush_all()
+    #ThreadLocalODMSession.flush_all()
     for i in range(start, cnt):
         name = f'gen-proj-{i}'
         project = n.register_project(name, admin)
         if (i-start) > 0 and (i-start) % 100 == 0:
             print(f'Created {i-start} projects')
     print('Flushing...')
-    ThreadLocalORMSession.flush_all()
+    ThreadLocalODMSession.flush_all()
     print('Done')
 
 if __name__ == '__main__':

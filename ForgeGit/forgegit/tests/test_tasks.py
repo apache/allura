@@ -18,7 +18,7 @@ import unittest
 import mock
 from testfixtures import LogCapture
 
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 from tg import tmpl_context as c
 
 from alluratest.controller import setup_basic_test, setup_global_objects
@@ -42,8 +42,8 @@ class TestGitTasks(unittest.TestCase):
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src-git', neighborhood='Projects')
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
     def test_init(self):
         repo_tasks.init()

@@ -39,10 +39,10 @@ from tg import tmpl_context as c, app_globals as g
 from tg import request
 from ming import schema as S
 from ming import Field
-from ming.orm import session, state
-from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
-from ming.orm.declarative import MappedClass
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm import session, state
+from ming.odm import FieldProperty, RelationProperty, ForeignIdProperty
+from ming.odm.declarative import MappedClass
+from ming.odm.odmsession import ThreadLocalODMSession
 from ming.utils import LazyProperty
 
 import allura.tasks.mail_tasks
@@ -759,7 +759,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
                 'completely deleting user project (was already flagged as deleted) %s',
                 project_shortname)
             p.delete()
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
             p = None
         if not p and not self.is_anonymous():
             # create user-project on demand if it is missing

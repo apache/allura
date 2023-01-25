@@ -48,8 +48,8 @@ import jinja2
 from paste.deploy.converters import asbool, aslist
 
 from ming import schema as S
-from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty, session
-from ming.orm.declarative import MappedClass
+from ming.odm import FieldProperty, ForeignIdProperty, RelationProperty, session
+from ming.odm.declarative import MappedClass
 
 from allura.lib import helpers as h
 from allura.lib import security

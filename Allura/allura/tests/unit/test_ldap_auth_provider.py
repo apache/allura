@@ -23,7 +23,7 @@ from bson import ObjectId
 from mock import patch, Mock
 from unittest import SkipTest
 from webob import Request
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 from tg import config
 
 from alluratest.controller import setup_basic_test
@@ -118,7 +118,7 @@ class TestLdapAuthenticationProvider:
         assert M.User.query.get(username=user_doc['username']) is None
         with h.push_config(config, **{'auth.ldap.autoregister': 'false'}):
             self.provider.register_user(user_doc)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert M.User.query.get(username=user_doc['username']) is not None
 
         dn = 'uid=%s,ou=people,dc=localdomain' % user_doc['username']

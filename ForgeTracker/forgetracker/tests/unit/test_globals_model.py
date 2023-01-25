@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 
 import mock
 from tg import tmpl_context as c
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 
 import forgetracker
 from forgetracker.model import Globals
@@ -32,7 +32,7 @@ class TestGlobalsModel(TrackerTestWithModel):
     def setup_method(self, method):
         super().setup_method(method)
         c.project.install_app('Tickets', 'doc-bugs')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
     def test_it_has_current_tracker_globals(self):
         bugs_globals = Globals.query.get(app_config_id=c.app.config._id)
@@ -164,5 +164,5 @@ class TestCustomFields(TrackerTestWithModel):
 
 def globals_with_custom_fields(custom_fields):
     c.app.globals.custom_fields = custom_fields
-    ThreadLocalORMSession.flush_all()
+    ThreadLocalODMSession.flush_all()
     return c.app.globals

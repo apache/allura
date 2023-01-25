@@ -22,7 +22,7 @@ import unittest
 import mock
 from tg import tmpl_context as c
 from bson import ObjectId
-from ming.orm import session
+from ming.odm import session
 from tg import config
 
 from alluratest.controller import setup_basic_test, setup_global_objects

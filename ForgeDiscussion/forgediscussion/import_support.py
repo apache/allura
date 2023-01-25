@@ -19,7 +19,7 @@ import logging
 from datetime import datetime
 
 from ming import schema as S
-from ming.orm import ThreadLocalORMSession, session
+from ming.odm import ThreadLocalODMSession, session
 
 from tg import tmpl_context as c
 
@@ -73,9 +73,9 @@ def perform_import(json, username_mapping, default_username=None, create_users=F
             for p in posts:
                 p = create_post(f._id, t._id, p)
             t.first_post_id = p._id
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
             t.update_stats()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         f.update_stats()
     return warnings
 

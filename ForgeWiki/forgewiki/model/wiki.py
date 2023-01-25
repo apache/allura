@@ -25,8 +25,8 @@ from tg import app_globals as g
 from tg import tmpl_context as context
 
 from ming import schema
-from ming.orm import FieldProperty, ForeignIdProperty, Mapper, session
-from ming.orm.declarative import MappedClass
+from ming.odm import FieldProperty, ForeignIdProperty, Mapper, session
+from ming.odm.declarative import MappedClass
 
 from tg import config as tg_config
 

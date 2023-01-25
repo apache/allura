@@ -19,7 +19,7 @@ import logging
 
 from . import base
 
-from ming.orm import session
+from ming.odm import session
 from bson import ObjectId
 
 from allura import model as M

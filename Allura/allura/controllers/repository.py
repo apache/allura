@@ -38,7 +38,7 @@ import formencode
 from formencode import validators
 from bson import ObjectId
 from ming.base import Object
-from ming.orm import ThreadLocalORMSession, session
+from ming.odm import ThreadLocalODMSession, session
 
 import allura.tasks
 from allura import model as M
@@ -125,8 +125,8 @@ class RepoRootController(BaseController, FeedController):
         if not c.app.forkable:
             raise exc.HTTPNotFound
         from_repo = c.app.repo
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
         from_project = c.project
         to_project = M.Project.query.get(_id=ObjectId(project_id))
         mount_label = mount_label or '{} - {}'.format(c.project.name,

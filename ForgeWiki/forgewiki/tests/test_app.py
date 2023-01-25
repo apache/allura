@@ -23,7 +23,7 @@ import os
 from io import BytesIO
 
 from tg import tmpl_context as c
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 
 from allura import model as M
 from allura.tests import decorators as td
@@ -94,7 +94,7 @@ class TestBulkExport:
         self.page.mod_date = datetime.datetime(2013, 7, 5)
         self.page.labels = ['test_label1', 'test_label2']
         self.page.attach('some/path/test_file', BytesIO(b'test string'))
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
     def test_bulk_export_with_attachmetns(self):
         self.add_page_with_attachmetns()

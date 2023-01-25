@@ -30,7 +30,7 @@ import tg
 from paste.script import command
 from paste.deploy.converters import asint
 
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 
 import allura
 from allura.command import base
@@ -137,7 +137,7 @@ class IRCBot(asynchat.async_chat):
             sender=self.nick,
             channel=out,
             text=message)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
     def handle_command(self, sender, cmd, rest):
         if cmd == 'NOTICE':
@@ -159,10 +159,10 @@ class IRCBot(asynchat.async_chat):
                 return
             for lnk in search.find_shortlinks(msg):
                 self.handle_shortlink(lnk, sender, rcpt)
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
         self.check_configure()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.close_all()
 
     def set_context(self, rcpt):
         if rcpt == self.nick:
@@ -195,5 +195,5 @@ class IRCBot(asynchat.async_chat):
             sender='!'.join(sender),
             channel=rcpt,
             text=text)
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()

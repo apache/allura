@@ -22,8 +22,8 @@ from collections import OrderedDict
 import typing
 
 from ming import schema as S
-from ming.orm import FieldProperty, RelationProperty
-from ming.orm.declarative import MappedClass
+from ming.odm import FieldProperty, RelationProperty
+from ming.odm.declarative import MappedClass
 from ming.utils import LazyProperty
 
 from tg import request

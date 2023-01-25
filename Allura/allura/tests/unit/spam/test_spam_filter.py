@@ -18,7 +18,7 @@
 import mock
 import unittest
 
-from ming.odm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 
 from allura.lib.spam import SpamFilter, ChainedSpamFilter
 from allura import model as M
@@ -84,7 +84,7 @@ class TestSpamFilterFunctional:
         user = M.User.query.get(username='test-user')
 
         SpamFilter(config).record_result(True, artifact, user)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         results = SpamCheckResult.query.find().all()
         assert len(results) == 1

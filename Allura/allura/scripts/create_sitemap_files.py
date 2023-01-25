@@ -36,7 +36,7 @@ from jinja2 import Template
 import tg
 import webob
 from tg import tmpl_context as c
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 from tg import config
 
 from allura import model as M
@@ -125,7 +125,7 @@ class CreateSitemapFiles(ScriptTask):
                     del locs[:options.urls_per_file]
                     file_count += 1
                 M.main_orm_session.clear()
-            ThreadLocalORMSession.close_all()
+            ThreadLocalODMSession.close_all()
         while locs:
             write_sitemap(locs[:options.urls_per_file], file_count)
             del locs[:options.urls_per_file]

@@ -22,7 +22,7 @@ from contextlib import contextmanager
 
 import faulthandler
 from tg import tmpl_context as c
-from ming.orm import ThreadLocalORMSession, session
+from ming.odm import ThreadLocalODMSession, session
 
 from allura import model as M
 from allura.lib.utils import chunked_find
@@ -130,7 +130,7 @@ class RefreshLastCommits(ScriptTask):
                     finally:
                         c.app.repo.status = 'ready'
                         session(c.app.repo).flush(c.app.repo)
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
 
     @classmethod
     def refresh_repo_lcds(cls, commit_ids, options):
@@ -150,12 +150,12 @@ class RefreshLastCommits(ScriptTask):
             with time(timings):
                 tree = commit.tree
                 cls._get_lcds(tree, model_cache)
-                ThreadLocalORMSession.flush_all()
+                ThreadLocalODMSession.flush_all()
             if i % 100 == 0:
                 cls._print_stats(i, timings, 100)
             if options.limit and i >= options.limit:
                 break
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
     @classmethod
     def _get_lcds(cls, tree, cache):

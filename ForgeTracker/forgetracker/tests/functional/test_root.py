@@ -46,7 +46,7 @@ from allura.lib.search import SearchError
 from allura.lib.utils import urlencode
 from allura.tests import decorators as td
 from allura.tasks import mail_tasks
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 import six
 
 
@@ -105,7 +105,7 @@ class TestMilestones(TrackerTestController):
         p = M.Project.query.get(shortname='test')
         app = p.app_instance('bugs')
         app.globals.custom_fields = []
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         d = {
             'field_name': '_milestone',
             'milestones-0.old_name': '',
@@ -250,9 +250,9 @@ class TestSubprojectTrackerController(TrackerTestController):
     def test_search_page_ticket_visibility(self):
         """Test that non-admin users can see tickets created by admins."""
         self.new_ticket(summary="my ticket", mount_point="/sub1/tickets/")
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         response = self.app.get('/p/test/sub1/tickets/search/?q=my',
                                 extra_environ=dict(username='*anonymous'))
         assert 'my ticket' in response, response.showbrowser()
@@ -262,9 +262,9 @@ class TestSubprojectTrackerController(TrackerTestController):
         """Test that admins can see deleted tickets in a subproject tracker."""
         self.new_ticket(summary='test', mount_point="/sub1/tickets/")
         self.app.post('/sub1/tickets/1/delete')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         r = self.app.get('/p/test/sub1/tickets/search/',
                          params=dict(q='test', deleted='True'))
         assert '<td><a href="/p/test/sub1/tickets/1/">test' in r
@@ -727,7 +727,7 @@ class TestFunctionalController(TrackerTestController):
 
         # Test solr search
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         # At this point, there is one ticket and it has discussion_disabled set to False
         r = self.app.get('/bugs/search/?q=discussion_disabled_b:False')
         assert '1 results' in r
@@ -737,7 +737,7 @@ class TestFunctionalController(TrackerTestController):
         ticket_params['ticket_form.discussion_disabled'] = 'on'
         self.app.post('/bugs/1/update_ticket_from_widget', ticket_params)
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         r = self.app.get('/bugs/search/?q=discussion_disabled_b:True')
         assert '1 results' in r
         assert 'test discussion disabled ticket' in r
@@ -751,9 +751,9 @@ class TestFunctionalController(TrackerTestController):
         summary = 'test two trackers'
         ticket_view = self.new_ticket(
             '/doc-bugs/', summary=summary, _milestone='1.0').follow()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         assert summary in ticket_view
         index_view = self.app.get('/doc-bugs/')
         assert summary in index_view
@@ -995,21 +995,21 @@ class TestFunctionalController(TrackerTestController):
             'labels': '',
         })
         self.new_ticket(summary='bbb')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         h.set_context('test', 'wiki', neighborhood='Projects')
         a = wm.Page.query.find(dict(title='aaa')).first()
         a.text = '\n[bugs:#1]\n[bugs:#2]\n'
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         b = tm.Ticket.query.find(dict(ticket_num=2)).first()
         b.description = '\n[#1]\n'
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         response = self.app.get('/p/test/bugs/1/')
         assert 'Related' in response
@@ -1018,9 +1018,9 @@ class TestFunctionalController(TrackerTestController):
 
         b = tm.Ticket.query.find(dict(ticket_num=2)).first()
         b.deleted = True
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         response = self.app.get('/p/test/bugs/1/')
         assert 'Tickets: #2' not in response
         response = self.app.get('/wiki/aaa/')
@@ -1030,9 +1030,9 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary='Ticket 1')
         self.new_ticket(summary='Ticket 2', status='closed')
         self.new_ticket(summary='Ticket 3', description='[#1]\n\n[#2]')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         r = self.app.get('/p/test/bugs/3/')
         assert 'Tickets: #1' in r
         assert 'Tickets: <s>#1</s>' not in r
@@ -1229,9 +1229,9 @@ class TestFunctionalController(TrackerTestController):
             'labels': '',
             'comment': ''
         })
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         ticket_view = self.app.get('/p/test/bugs/1/')
         assert 'Milestone' in ticket_view
         assert '1.0' in ticket_view
@@ -1357,9 +1357,9 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary='test first ticket')
         self.new_ticket(summary='test second ticket')
         self.new_ticket(summary='test third ticket')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         response = self.app.get('/p/test/bugs/')
         assert 'test third ticket' in response
 
@@ -1367,9 +1367,9 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary='test first ticket')
         self.new_ticket(summary='test second ticket')
         self.new_ticket(summary='test third ticket')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         response = self.app.get('/p/test/bugs/search/?q=test&limit=2')
         response.mustcontain('canonical')
         response.mustcontain('results of 3')
@@ -1391,9 +1391,9 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary='test sixth ticket')
         self.new_ticket(summary='test seventh ticket')
         self.new_ticket(summary='test eighth ticket')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         response = self.app.get('/p/test/bugs/search/?q=test&limit=1')
         canonical = response.html.select_one('link[rel=canonical]')
         assert 'limit=2' not in canonical['href']
@@ -1423,9 +1423,9 @@ class TestFunctionalController(TrackerTestController):
 
     def test_search_feed(self):
         self.new_ticket(summary='test first ticket')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         for ext in ['', '.rss', '.atom']:
             assert '<title>test first ticket</title>' in \
                    self.app.get('/p/test/bugs/search_feed%s/?q=test' % ext)
@@ -1439,9 +1439,9 @@ class TestFunctionalController(TrackerTestController):
         t.reported_by_id = M.User.by_username('test-user-0')._id
         t = tm.Ticket.query.get(summary='test second ticket')
         t.reported_by_id = M.User.by_username('test-user-1')._id
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         response = self.app.get('/p/test/bugs/search/?q=reported_by_s:$USER',
                                 extra_environ={'username': 'test-user-0'})
         assert '1 result' in response, response.showbrowser()
@@ -1455,9 +1455,9 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(
             summary='test first ticket',
             description='test description')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         response = self.app.get('/p/test/bugs/feed')
         assert 'test first ticket' in response
 
@@ -1468,8 +1468,8 @@ class TestFunctionalController(TrackerTestController):
         old_date = ticket.mod_date
         ticket.summary = 'changing the summary'
         time.sleep(1)
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
         ticket = tm.Ticket.query.get(ticket_num=1)
         new_date = ticket.mod_date
         assert new_date > old_date
@@ -1628,9 +1628,9 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary='test first ticket', status='open')
         self.new_ticket(summary='test second ticket', status='accepted')
         self.new_ticket(summary='test third ticket', status='closed')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         response = self.app.get('/p/test/bugs/?sort=summary+asc')
         ticket_rows = response.html.find('table', {'class': 'ticket-list'}).find('tbody')
         assert 'test first ticket' in ticket_rows.text
@@ -1651,9 +1651,9 @@ class TestFunctionalController(TrackerTestController):
                         status='accepted', _milestone='1.0')
         self.new_ticket(summary='test third ticket',
                         status='closed', _milestone='1.0')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         response = self.app.get('/p/test/bugs/milestone/1.0/?sort=ticket_num+asc')
         ticket_rows = response.html.find('table', {'class': 'ticket-list'}).find('tbody')
         assert 'test first ticket' in ticket_rows.text
@@ -1672,9 +1672,9 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary='test first ticket', status='open')
         self.new_ticket(summary='test second ticket', status='open')
         self.new_ticket(summary='test third ticket', status='closed', _milestone='1.0')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         response = self.app.get('/p/test/bugs/search/?q=status%3Aopen')
         ticket_rows = response.html.find('table', {'class': 'ticket-list'}).find('tbody')
         assert 'test first ticket' in ticket_rows.text
@@ -1691,9 +1691,9 @@ class TestFunctionalController(TrackerTestController):
 
     def test_bulk_edit_after_filtering(self):
         self.new_ticket(summary='test first ticket', status='open')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         self.app.get("/p/test/bugs/edit/?q=test&limit=25&sort=&page=0&filter={'status'%3A+['open']}")
 
     def test_new_ticket_notification_contains_attachments(self):
@@ -1704,9 +1704,9 @@ class TestFunctionalController(TrackerTestController):
             'ticket_form.summary': 'new ticket with attachment'
         }, upload_files=[upload]).follow()
         assert file_name in r
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         email = M.MonQTask.query.find(
             dict(task_name='allura.tasks.mail_tasks.sendmail')
         ).first()
@@ -1741,9 +1741,9 @@ class TestFunctionalController(TrackerTestController):
                       params=variable_encode(params))
         self.new_ticket(summary='test new milestone', _milestone='2.0',
                         **{'custom_fields._releases': '1.0-beta'})
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         email = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).first()
         assert '**Releases:** 1.0-beta' in email.kwargs.text
         assert '**Milestone:** 2.0' in email.kwargs.text
@@ -1754,9 +1754,9 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary='test second ticket',
                         status='accepted', _milestone='1.0')
         self.new_ticket(summary='test third ticket', status='unread')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         first_ticket = tm.Ticket.query.get(summary='test first ticket')
         second_ticket = tm.Ticket.query.get(summary='test second ticket')
         third_ticket = tm.Ticket.query.get(summary='test third ticket')
@@ -1840,9 +1840,9 @@ class TestFunctionalController(TrackerTestController):
         })
         self.new_ticket(summary='test first ticket',
                         status='open', _milestone='2.0', private=True)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         ticket = tm.Ticket.query.get(summary='test first ticket')
         M.MonQTask.query.remove()
         self.app.post('/p/test/bugs/update_tickets', {
@@ -1880,9 +1880,9 @@ class TestFunctionalController(TrackerTestController):
         })
         self.new_ticket(summary='test first ticket', status='open', _milestone='2.0')
         self.new_ticket(summary='test second ticket', status='open', private=True)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         tickets = tm.Ticket.query.find(dict(status='open')).all()
         M.MonQTask.query.remove()
         self.app.post('/p/test/bugs/update_tickets', {
@@ -1921,9 +1921,9 @@ class TestFunctionalController(TrackerTestController):
         })
         self.new_ticket(summary='test first ticket', status='open', private=True)
         self.new_ticket(summary='test second ticket', status='open', private=True)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         tickets = tm.Ticket.query.find(dict(status='open')).all()
         M.MonQTask.query.remove()
         self.app.post('/p/test/bugs/update_tickets', {
@@ -1964,9 +1964,9 @@ class TestFunctionalController(TrackerTestController):
         tickets[0].subscribe(user=users[1])
         tickets[1].subscribe(user=users[1])
         tickets[2].subscribe(user=users[2])
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         # Pretend we're changing first and second ticket.
         # Then we should notify test-user-0, test-user-1 and admin.
@@ -2099,7 +2099,7 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary='Imported ticket')
         ticket = tm.Ticket.query.get(ticket_num=1)
         ticket.import_id = {'source_id': '42000'}
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
         # expect permanent redirect to /p/test/bugs/1/
         r = self.app.get('/p/test/bugs/42000/', status=301).follow()
@@ -2506,9 +2506,9 @@ class TestFunctionalController(TrackerTestController):
         with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
             self.new_ticket(summary='test <h2> ticket',
                             status='open', _milestone='2.0')
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
             M.MonQTask.run_ready()
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
             email = M.MonQTask.query.find(
                 dict(task_name='allura.tasks.mail_tasks.sendmail')).first()
             assert (email.kwargs.subject ==
@@ -2612,9 +2612,9 @@ class TestFunctionalController(TrackerTestController):
     def test_bulk_delete(self):
         self.new_ticket(summary='test first ticket')
         self.new_ticket(summary='test second ticket')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         first_ticket = tm.Ticket.query.get(summary='test first ticket')
         second_ticket = tm.Ticket.query.get(summary='test second ticket')
 
@@ -2867,7 +2867,7 @@ class TestEmailMonitoring(TrackerTestController):
         self._set_options(monitoring_type='AllTicketChanges')
         M.MonQTask.query.remove()
         self.new_ticket(summary='test')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
         email_tasks = M.MonQTask.query.find(
             dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
@@ -3064,7 +3064,7 @@ class TestBulkMove(TrackerTestController):
             '__search': '',
         })
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         ac_id = tracker.config._id
         original_ac_id = original_tracker.config._id
         moved_tickets = tm.Ticket.query.find({'app_config_id': ac_id}).all()
@@ -3206,9 +3206,9 @@ class TestBulkMove(TrackerTestController):
         })
         self.new_ticket(summary='test first ticket', status='open')
         self.new_ticket(summary='test second ticket', status='open', private=True)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         tickets = [
             tm.Ticket.query.find({'summary': 'test first ticket'}).first(),
             tm.Ticket.query.find({'summary': 'test second ticket'}).first()]
@@ -3254,9 +3254,9 @@ class TestBulkMove(TrackerTestController):
         })
         self.new_ticket(summary='test first ticket', status='open', private=True)
         self.new_ticket(summary='test second ticket', status='open', private=True)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         tickets = [
             tm.Ticket.query.find({'summary': 'test first ticket'}).first(),
             tm.Ticket.query.find({'summary': 'test second ticket'}).first()]
@@ -3301,9 +3301,9 @@ class TestStats(TrackerTestController):
 class TestNotificationEmailGrouping(TrackerTestController):
     def test_new_ticket_message_id(self):
         self.new_ticket(summary='Test Ticket')
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         email = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).first()
         ticket = tm.Ticket.query.get(ticket_num=1)
         assert email.kwargs.message_id == ticket.message_id()
@@ -3312,16 +3312,16 @@ class TestNotificationEmailGrouping(TrackerTestController):
 
     def test_comments(self):
         ticket_view = self.new_ticket(summary='Test Ticket').follow()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.query.remove()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         _, form = find(ticket_view.forms, lambda f: f.action.endswith('/post'))
         field, _ = find(form.fields, lambda f: f[0].tag == 'textarea')
         form.set(field, 'top-level comment')
         r = form.submit()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         # Check that comment notification refers ticket's message id
         email = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).first()
         ticket = tm.Ticket.query.get(ticket_num=1)
@@ -3331,18 +3331,18 @@ class TestNotificationEmailGrouping(TrackerTestController):
         assert email.kwargs.in_reply_to == ticket.message_id()
         assert email.kwargs.references == [ticket.message_id()]
 
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.query.remove()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         r = self.app.get('/bugs/1/')
         _, form = find(r.forms, lambda f: f.action.endswith('/reply'))
         field, _ = find(form.fields, lambda f: f[0].tag == 'textarea')
         reply_text = 'Reply to top-level-comment'
         form.set(field, reply_text)
         r = form.submit()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         # Check that reply notification refers top-level comment's message id
         email = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).first()
         ticket = tm.Ticket.query.get(ticket_num=1)
@@ -3359,7 +3359,7 @@ def test_status_passthru():
     c.user = M.User.by_username('test-admin')
     c.project.install_app('tickets', mount_point='tsp',
                           open_status_names='foo bar', closed_status_names='qux baz')
-    ThreadLocalORMSession.flush_all()
+    ThreadLocalODMSession.flush_all()
     app = c.project.app_instance('tsp')
     assert app.globals.set_of_open_status_names == {'foo', 'bar'}
     assert app.globals.set_of_closed_status_names == {'qux', 'baz'}

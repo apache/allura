@@ -25,8 +25,8 @@ from datetime import datetime
 from bson import ObjectId
 from tg import tmpl_context as c
 from ming import schema
-from ming.orm import Mapper
-from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
+from ming.odm import Mapper
+from ming.odm import FieldProperty, ForeignIdProperty, RelationProperty
 
 # Pyforge-specific imports
 

@@ -18,7 +18,7 @@
 import logging
 
 from tg import tmpl_context as c
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm.odmsession import ThreadLocalODMSession
 
 from forgeblog import model as BM
 
@@ -31,8 +31,8 @@ def main():
         c.project = post.app.project
         c.app = post.app
         post.neighborhood_id = post.app.project.neighborhood_id
-        ThreadLocalORMSession.flush_all()
-    ThreadLocalORMSession.close_all()
+        ThreadLocalODMSession.flush_all()
+    ThreadLocalODMSession.close_all()
 
 if __name__ == '__main__':
     main()

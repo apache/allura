@@ -24,7 +24,7 @@ from tg import tmpl_context as c
 import tg
 import webob
 
-from ming.orm import session
+from ming.odm import session
 from allura.lib import helpers as h
 from allura.lib import utils
 from . import base

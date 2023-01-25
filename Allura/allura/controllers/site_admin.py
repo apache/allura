@@ -30,7 +30,7 @@ from tg import tmpl_context as c
 from tg import request
 from formencode import validators, Invalid
 from webob.exc import HTTPNotFound, HTTPFound
-from ming.odm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 import paginate
 
 from allura.app import SitemapEntry
@@ -470,7 +470,7 @@ class SiteNotificationController:
             active=active, impressions=impressions, content=content,
             user_role=user_role, page_regex=page_regex,
             page_tool_type=page_tool_type)
-        ThreadLocalORMSession().flush_all()
+        ThreadLocalODMSession().flush_all()
         redirect('../site_notifications')
 
     @expose('jinja:allura:templates/site_admin_site_notifications_create_update.html')
@@ -504,14 +504,14 @@ class SiteNotificationController:
         self.note.user_role = user_role
         self.note.page_regex = page_regex
         self.note.page_tool_type = page_tool_type
-        ThreadLocalORMSession().flush_all()
+        ThreadLocalODMSession().flush_all()
         redirect('..')
 
     @expose()
     @require_post()
     def delete(self):
         self.note.delete()
-        ThreadLocalORMSession().flush_all()
+        ThreadLocalODMSession().flush_all()
         redirect(six.ensure_text(request.referer or '/'))
 
 

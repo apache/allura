@@ -24,7 +24,7 @@ from bson import ObjectId
 from . import base
 from allura.command import base as allura_base
 
-from ming.orm import session
+from ming.odm import session
 from tg import tmpl_context as c
 
 from allura import model as M

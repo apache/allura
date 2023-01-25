@@ -18,7 +18,7 @@
 
 import logging
 import uuid
-from ming.orm import ThreadLocalORMSession, session
+from ming.odm import ThreadLocalODMSession, session
 from tg import tmpl_context as c
 from allura import model as M
 from forgediscussion.model import ForumPost, Forum

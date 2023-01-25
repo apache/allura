@@ -18,7 +18,7 @@
 import logging
 import argparse
 
-from ming.orm import session
+from ming.odm import session
 from allura.model import main_orm_session, main_explicitflush_orm_session
 
 from allura.scripts import ScriptTask

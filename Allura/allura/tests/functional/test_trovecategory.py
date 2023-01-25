@@ -18,7 +18,7 @@ from bs4 import BeautifulSoup
 import mock
 
 from tg import config
-from ming.orm import session
+from ming.odm import session
 
 from allura import model as M
 from allura.lib import helpers as h

@@ -17,7 +17,7 @@
 
 from functools import wraps
 
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 
 from allura.model.project import Project, Neighborhood, AppConfig
 from allura.model.auth import User
@@ -28,7 +28,7 @@ def flush_on_return(fn):
     @wraps(fn)
     def new_fn(*args, **kwargs):
         result = fn(*args, **kwargs)
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
         return result
     return new_fn
 

@@ -20,7 +20,7 @@ import re
 
 from tg import tmpl_context as c
 
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 
 from allura import model as M
 from allura.lib import utils
@@ -78,7 +78,7 @@ def main():
             else:
                 pass
 
-        ThreadLocalORMSession.flush_all()
+        ThreadLocalODMSession.flush_all()
 
 if __name__ == '__main__':
     main()

@@ -29,8 +29,8 @@ import ew
 
 from allura.model.oauth import dummy_oauths
 from ming import Session, mim
-from ming.orm import state, session
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm import state, session
+from ming.odm.odmsession import ThreadLocalODMSession
 
 import allura
 from allura.lib import plugin
@@ -71,7 +71,7 @@ def bootstrap(command, conf, vars):
     conf['auth.method'] = conf['registration.method'] = 'local'
 
     # Clean up all old stuff
-    ThreadLocalORMSession.close_all()
+    ThreadLocalODMSession.close_all()
     c.user = c.project = c.app = None
     wipe_database()
     try:
@@ -173,8 +173,8 @@ def bootstrap(command, conf, vars):
             allura.__path__[0], 'public', 'nf', 'images', file_name)
         M.NeighborhoodFile.from_path(file_path, neighborhood_id=n_adobe._id)
 
-    ThreadLocalORMSession.flush_all()
-    ThreadLocalORMSession.close_all()
+    ThreadLocalODMSession.flush_all()
+    ThreadLocalODMSession.close_all()
 
     if create_test_data:
         # Add some test users
@@ -207,7 +207,7 @@ def bootstrap(command, conf, vars):
             u_admin.email_addresses = ['test-admin@users.localhost']
             u_admin.set_password('foo')
             u_admin.claim_address('test-admin@users.localhost')
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
 
             admin_email = M.EmailAddress.get(email='test-admin@users.localhost')
             admin_email.confirmed = True
@@ -237,7 +237,7 @@ def bootstrap(command, conf, vars):
         # TODO: Hope that Ming can be improved to at least avoid stuff below
         sess.flush(x)
 
-    ThreadLocalORMSession.flush_all()
+    ThreadLocalODMSession.flush_all()
 
     if not asbool(conf.get('load_test_data')):
         # regular first-time setup
@@ -256,8 +256,8 @@ def bootstrap(command, conf, vars):
                                                      project_tools=[])
                                  ])
 
-    ThreadLocalORMSession.flush_all()
-    ThreadLocalORMSession.close_all()
+    ThreadLocalODMSession.flush_all()
+    ThreadLocalODMSession.close_all()
 
     if create_test_data:
         # reload our p0 project so that p0.app_configs is accurate with all the
@@ -271,8 +271,8 @@ def bootstrap(command, conf, vars):
         # only when running setup-app do we need this.  the few tests that need it do it themselves
         dummy_oauths()
 
-    ThreadLocalORMSession.flush_all()
-    ThreadLocalORMSession.close_all()
+    ThreadLocalODMSession.flush_all()
+    ThreadLocalODMSession.close_all()
 
 
 def wipe_database():

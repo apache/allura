@@ -41,10 +41,10 @@ import PIL
 
 from ming import schema as S
 from ming.utils import LazyProperty
-from ming.orm import ThreadLocalORMSession
-from ming.orm import session, state, MapperExtension
-from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
-from ming.orm.declarative import MappedClass
+from ming.odm import ThreadLocalODMSession
+from ming.odm import session, state, MapperExtension
+from ming.odm import FieldProperty, RelationProperty, ForeignIdProperty
+from ming.odm.declarative import MappedClass
 
 from allura.lib import helpers as h
 from allura.lib import plugin
@@ -1099,7 +1099,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                 self.install_app(ep_name, mount_point, label, ordinal=i)
             self.database_configured = True
             self.notifications_disabled = False
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
 
     def add_user(self, user, role_names):
         '''Convenience method to add member with the given role(s).'''

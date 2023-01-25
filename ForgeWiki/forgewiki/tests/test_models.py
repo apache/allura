@@ -16,7 +16,7 @@
 #       under the License.
 
 from tg import tmpl_context as c
-from ming.orm import session
+from ming.odm import session
 
 from allura.tests import TestController
 from allura.tests import decorators as td

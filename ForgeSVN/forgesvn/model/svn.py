@@ -39,7 +39,7 @@ from pymongo.errors import DuplicateKeyError
 from tg import tmpl_context as c, app_globals as g
 
 from ming.base import Object
-from ming.orm import Mapper, FieldProperty
+from ming.odm import Mapper, FieldProperty
 from ming.utils import LazyProperty
 
 from allura import model as M

@@ -22,7 +22,7 @@ from datetime import datetime
 
 from paste.util.converters import asbool
 from tg import tmpl_context as c
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalODMSession
 
 from allura import model as M
 from allura.lib.utils import chunked_find, chunked_list
@@ -118,7 +118,7 @@ class RefreshRepo(ScriptTask):
                                 options.all, notify=options.notify, commits_are_new=options.commits_are_new)
                     except Exception:
                         log.exception('Error refreshing %r', c.app.repo)
-            ThreadLocalORMSession.flush_all()
+            ThreadLocalODMSession.flush_all()
 
     @classmethod
     def parser(cls):
