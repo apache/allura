@@ -116,7 +116,7 @@ class Ming(fev.FancyValidator):
                 pass
         return result
 
-    def _from_python(self, value, state):
+    def _convert_from_python(self, value, state):
         if isinstance(value, ObjectId):
             return value
         else:
