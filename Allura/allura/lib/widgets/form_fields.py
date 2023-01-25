@@ -50,9 +50,9 @@ class LabelList(v.UnicodeString):
         value = super()._convert_to_python(value, state)
         return value.split(',')
 
-    def _from_python(self, value, state):
+    def _convert_from_python(self, value, state):
         value = ','.join(value)
-        value = super()._from_python(value, state)
+        value = super()._convert_from_python(value, state)
         return value
 
 

@@ -133,7 +133,7 @@ class AlluraUser(S.FancySchemaItem):
             self.mapping[value] = sf_username
         return result
 
-    def _from_python(self, value, state):
+    def _convert_from_python(self, value, state):
         return value.username
 
 

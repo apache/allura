@@ -533,7 +533,7 @@ class DateTimeConverter(FancyValidator):
             else:
                 raise
 
-    def _from_python(self, value, state):
+    def _convert_from_python(self, value, state):
         return value.isoformat()
 
 

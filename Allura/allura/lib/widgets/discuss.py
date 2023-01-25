@@ -36,7 +36,7 @@ class NullValidator(fev.FancyValidator):
     def _convert_to_python(self, value, state):
         return value
 
-    def _from_python(self, value, state):
+    def _convert_from_python(self, value, state):
         return value
 
 # Discussion forms
