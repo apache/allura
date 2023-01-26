@@ -169,20 +169,20 @@ class TestGitHubProjectExtractor(TestCase):
         e.get_page('http://example.com/')
         self.assertEqual(sleep.call_count, 1)
         self.assertEqual(urlopen.call_count, 2)
-        log.warn.assert_called_once_with(
+        log.warning.assert_called_once_with(
             'Rate limit exceeded (10 requests/hour). '
             'Sleeping until 2013-10-25 09:32:02 UTC'
         )
         sleep.reset_mock()
         urlopen.reset_mock()
-        log.warn.reset_mock()
+        log.warning.reset_mock()
         response_ok = BytesIO(b'{}')
         response_ok.info = lambda: {}
         urlopen.side_effect = [response_ok]
         e.get_page('http://example.com/2')
         self.assertEqual(sleep.call_count, 0)
         self.assertEqual(urlopen.call_count, 1)
-        self.assertEqual(log.warn.call_count, 0)
+        self.assertEqual(log.warning.call_count, 0)
 
     @patch('forgeimporters.base.h.urlopen')
     @patch('forgeimporters.github.time.sleep')
@@ -206,7 +206,7 @@ class TestGitHubProjectExtractor(TestCase):
         e.get_page('http://example.com/')
         self.assertEqual(sleep.call_count, 1)
         self.assertEqual(urlopen.call_count, 2)
-        log.warn.assert_called_once_with(
+        log.warning.assert_called_once_with(
             'Rate limit exceeded (10 requests/hour). '
             'Sleeping until 2013-10-25 09:32:02 UTC'
         )

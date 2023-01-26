@@ -622,7 +622,7 @@ class RootRestController(BaseController, AppRestControllerMixin):
         if request.method == 'POST':
             require_access(c.app, 'write')
             if BM.BlogPost.is_limit_exceeded(c.app.config, user=c.user):
-                log.warn('Create/edit rate limit exceeded. %s', c.app.config.url())
+                log.warning('Create/edit rate limit exceeded. %s', c.app.config.url())
                 raise forge_exc.HTTPTooManyRequests()
             post = BM.BlogPost.new(
                 title=title,
@@ -675,7 +675,7 @@ class PostRestController(BaseController):
     def _update_post(self, **post_data):
         require_access(self.post, 'write')
         if BM.BlogPost.is_limit_exceeded(c.app.config, user=c.user):
-            log.warn('Create/edit rate limit exceeded. %s', c.app.config.url())
+            log.warning('Create/edit rate limit exceeded. %s', c.app.config.url())
             raise forge_exc.HTTPTooManyRequests()
         if 'delete' in post_data:
             self.post.delete()

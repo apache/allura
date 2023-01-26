@@ -1852,7 +1852,7 @@ class RootRestController(BaseController, AppRestControllerMixin):
         require_access(c.app, 'create')
         if TM.Ticket.is_limit_exceeded(c.app.config, user=c.user):
             msg = 'Ticket creation rate limit exceeded. '
-            log.warn(msg + c.app.config.url())
+            log.warning(msg + c.app.config.url())
             raise forge_exc.HTTPTooManyRequests()
         if c.app.globals.milestone_names is None:
             c.app.globals.milestone_names = ''

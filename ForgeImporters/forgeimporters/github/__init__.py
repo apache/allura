@@ -96,7 +96,7 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         limit = headers.get('X-RateLimit-Limit')
         reset = datetime.utcfromtimestamp(int(reset))
         now = datetime.utcnow()
-        log.warn('Rate limit exceeded (%s requests/hour). '
+        log.warning('Rate limit exceeded (%s requests/hour). '
                  'Sleeping until %s UTC' % (limit, reset))
         time.sleep((reset - now).total_seconds() + 2)
 
@@ -232,7 +232,7 @@ class GitHubOAuthMixin:
         client_id = config.get('github_importer.client_id')
         secret = config.get('github_importer.client_secret')
         if not client_id or not secret:
-            log.warn('github_importer.* not set up in .ini file; cannot use OAuth for GitHub')
+            log.warning('github_importer.* not set up in .ini file; cannot use OAuth for GitHub')
             return  # GitHub app is not configured
         access_token = c.user.get_tool_data('GitHubProjectImport', 'token')
         if access_token and valid_access_token(access_token, scopes_required=scope):

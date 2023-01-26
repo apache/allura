@@ -163,7 +163,7 @@ class MockSOLR:
             if part in ('&&', 'AND'):
                 continue
             if part in ('||', 'OR'):
-                log.warn(f"MockSOLR doesn't implement OR yet; treating as AND. q={q} fq={fq}")
+                log.warning(f"MockSOLR doesn't implement OR yet; treating as AND. q={q} fq={fq}")
                 continue
             if ':' in part:
                 field, value = part.split(':', 1)

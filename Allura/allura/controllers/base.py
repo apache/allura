@@ -38,7 +38,7 @@ class BaseController:
     def rate_limit(self, artifact_class, message, redir='..'):
         if artifact_class.is_limit_exceeded(c.app.config, user=c.user):
             msg = f'{message} rate limit exceeded. '
-            log.warn(msg + c.app.config.url())
+            log.warning(msg + c.app.config.url())
             flash(msg + 'Please try again later.', 'error')
             redirect(redir or '/')
 

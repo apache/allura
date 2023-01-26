@@ -549,7 +549,7 @@ class TestRepoPushWebhookSender(TestWebhookBase):
         with h.push_config(c, app=self.git):
             sender.send(dict(arg1=1, arg2=2))
         assert send_webhook.post.call_count == 0
-        log.warn.assert_called_once_with(
+        log.warning.assert_called_once_with(
             'Webhook fires too often: %s. Skipping', self.wh)
 
     @patch('allura.webhooks.send_webhook', autospec=True)

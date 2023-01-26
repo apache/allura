@@ -443,7 +443,7 @@ class WebhookSender:
                     for payload in payloads:
                         send_webhook.post(webhook._id, payload)
                 else:
-                    log.warn('Webhook fires too often: %s. Skipping', webhook)
+                    log.warning('Webhook fires too often: %s. Skipping', webhook)
 
     def enforce_limit(self, app):
         '''

@@ -155,7 +155,7 @@ class RepositoryApp(Application):
             try:
                 self.repo.push_upstream_context()
             except Exception:
-                log.warn('Could not get upstream repo (perhaps it is gone) for: %s %s',
+                log.warning('Could not get upstream repo (perhaps it is gone) for: %s %s',
                          self.repo, self.repo.upstream_repo.name, exc_info=True)
             else:
                 has_upstream_repo = True

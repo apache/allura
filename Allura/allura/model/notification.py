@@ -238,7 +238,7 @@ class Notification(MappedClass):
             ''' Catch any errors loading or rendering the template,
             but the notification still gets sent if there is an error
             '''
-            log.warn('Could not render notification template %s' %
+            log.warning('Could not render notification template %s' %
                      artifact.type_s, exc_info=True)
 
         assert d['reply_to_address'] is not None
