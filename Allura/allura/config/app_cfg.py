@@ -61,6 +61,7 @@ class ForgeConfig(AppConfig):
         self.use_sqlalchemy = False
         self.use_toscawidgets = False
         self.use_transaction_manager = False
+        self['tm.enabled'] = False
         self.handle_status_codes = [403, 404, 410]
         self.disable_request_extensions = True
 
