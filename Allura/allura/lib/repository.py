@@ -314,7 +314,7 @@ class RepoAdminController(DefaultAdminController):
     def set_checkout_url(self, **post_data):
         flash_msgs = []
         external_checkout_url = (post_data.get('external_checkout_url') or '').strip()
-        if 'external_checkout_url' not in c.form_errors:
+        if 'external_checkout_url' not in request.validation.errors:
             if (self.app.config.options.get('external_checkout_url') or '') != external_checkout_url:
                 M.AuditLog.log('{}: set "{}" {} => {}'.format(
                     self.app.config.options['mount_point'], "external_checkout_url",
@@ -322,7 +322,7 @@ class RepoAdminController(DefaultAdminController):
                 self.app.config.options.external_checkout_url = external_checkout_url
                 flash_msgs.append("External checkout URL successfully changed.")
         else:
-            flash_msgs.append("Invalid external checkout URL: %s." % c.form_errors['external_checkout_url'])
+            flash_msgs.append("Invalid external checkout URL: %s." % request.validation.errors['external_checkout_url'])
 
         merge_disabled = bool(post_data.get('merge_disabled'))
         if merge_disabled != self.app.config.options.get('merge_disabled', False):

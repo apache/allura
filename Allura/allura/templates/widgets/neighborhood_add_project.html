@@ -51,7 +51,7 @@
     <h2 style="padding-left:20px">
         Select the tools to use in your project.  You may add or remove tools at any time.
     </h2>
-    <span class="fielderror">{{ c.form_errors.get('tools', '') }}</span>
+    <span class="fielderror">{{ request.validation.errors.get('tools', '') }}</span>
     {% for opt in widget.fields.tools.options %}
         {% set tool = g.entry_points["tool"][opt.html_value] %}
         {% set _ctx = widget.context_for(widget.fields.tools) %}

@@ -324,7 +324,7 @@ class ProjectImporter(BaseController):
         Ajax form validation.
 
         """
-        return c.form_errors
+        return request.validation.errors
 
     def after_project_create(self, project, **kw):
         """

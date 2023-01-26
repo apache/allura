@@ -143,7 +143,7 @@ class SVNRepoAdminController(RepoAdminController):
         else:
             flash("%s is not a valid path for this repository" %
                   checkout_url, "error")
-        if 'external_checkout_url' not in c.form_errors:
+        if 'external_checkout_url' not in request.validation.errors:
             if (self.app.config.options.get('external_checkout_url') or '') != external_checkout_url:
                 M.AuditLog.log('{}: set "{}" {} => {}'.format(
                     self.app.config.options['mount_point'], "external_checkout_url",
@@ -151,7 +151,7 @@ class SVNRepoAdminController(RepoAdminController):
                 self.app.config.options.external_checkout_url = external_checkout_url
                 flash("External checkout URL successfully changed")
         else:
-            flash("Invalid external checkout URL: %s" % c.form_errors['external_checkout_url'], "error")
+            flash("Invalid external checkout URL: %s" % request.validation.errors['external_checkout_url'], "error")
 
 
 class SVNImportController(BaseController, AdminControllerMixin):

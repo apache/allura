@@ -153,7 +153,7 @@ class NeighborhoodController:
     def add_project(self, **form_data):
         with h.login_overlay():
             require_access(self.neighborhood, 'register')
-        verify = c.form_errors == {'_the_form': 'phone-verification'}
+        verify = request.validation.errors == {'_the_form': 'phone-verification'}
         c.show_phone_verification_overlay = verify
         c.add_project = W.add_project
         form_data.setdefault('tools', W.add_project.default_tools)
@@ -197,7 +197,7 @@ class NeighborhoodController:
     @validate(W.add_project)
     def check_names(self, **raw_data):
         require_access(self.neighborhood, 'register')
-        return c.form_errors
+        return request.validation.errors
 
     @h.vardec
     @expose()

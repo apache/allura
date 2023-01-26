@@ -128,9 +128,9 @@ class WebhookController(BaseController, AdminControllerMixin, metaclass=WebhookC
     @with_trailing_slash
     @expose('jinja:allura:templates/webhooks/create_form.html')
     def index(self, **kw):
-        if not c.form_values and kw:
+        if not request.validation.values and kw:
             # Executes if update_webhook raises an error
-            c.form_values = {'url': kw.get('url'),
+            request.validation.values = {'url': kw.get('url'),
                              'secret': kw.get('secret')}
         return {'sender': self.sender,
                 'action': 'create',
@@ -148,7 +148,7 @@ class WebhookController(BaseController, AdminControllerMixin, metaclass=WebhookC
                 self.update_webhook(webhook, url, secret)
             except Invalid as e:
                 # trigger error_handler directly
-                c.form_errors['_the_form'] = e
+                request.validation.errors['_the_form'] = e
                 return self.index(url=url, secret=secret)
 
             M.AuditLog.log('add webhook %s %s %s',
@@ -170,7 +170,7 @@ class WebhookController(BaseController, AdminControllerMixin, metaclass=WebhookC
             self.update_webhook(webhook, url, secret)
         except Invalid as e:
             # trigger error_handler directly
-            c.form_errors['_the_form'] = e
+            request.validation.errors['_the_form'] = e
             return self._default(webhook=webhook, url=url, secret=secret)
         M.AuditLog.log('edit webhook %s\n%s => %s\n%s',
                        webhook.type, old_url, url,
@@ -199,7 +199,7 @@ class WebhookController(BaseController, AdminControllerMixin, metaclass=WebhookC
             wh = form.fields['webhook'].to_python(webhook)
         except Invalid:
             raise exc.HTTPNotFound()
-        c.form_values = {'url': kw.get('url') or wh.hook_url,
+        request.validation.values = {'url': kw.get('url') or wh.hook_url,
                          'secret': kw.get('secret') or wh.secret,
                          'webhook': str(wh._id)}
         return {'sender': self.sender,

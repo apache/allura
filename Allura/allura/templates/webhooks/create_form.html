@@ -58,8 +58,8 @@
 {% endblock %}
 
 {%- macro error(field_name) %}
-  {% if c.form_errors[field_name] %}
-  <div class="error">{{c.form_errors[field_name]}}</div>
+  {% if request.validation.errors[field_name] %}
+  <div class="error">{{request.validation.errors[field_name]}}</div>
   {% endif %}
 {%- endmacro %}
 
@@ -69,20 +69,20 @@
 <form action="{{action}}" method="post" enctype="multipart/form-data">
   <div>
     <label for="url">url</label>
-    <input name="url" value="{{ c.form_values['url'] }}">
+    <input name="url" value="{{ request.validation.values['url'] }}">
     {{ error('url') }}
   </div>
   <div>
     <label for="secret">secret (leave empty to autogenerate)</label>
-    <input name="secret" value="{{ c.form_values['secret'] }}">
+    <input name="secret" value="{{ request.validation.values['secret'] }}">
     {{ error('secret') }}
   </div>
 
   {% block additional_fields %}{% endblock %}
 
   <input type="submit" value="{{action|capitalize}}">
-  {% if c.form_values['webhook'] %}
-    <input type="hidden" name="webhook" value="{{c.form_values['webhook']}}">
+  {% if request.validation.values['webhook'] %}
+    <input type="hidden" name="webhook" value="{{request.validation.values['webhook']}}">
   {% endif %}
   {{lib.csrf_token()}}
 </form>

@@ -61,8 +61,8 @@
         {% if tg.config.get('support_tool_choices') %}
         <div class="support-page-fields">
         Preferred Support Page (for users of your project):<br>
-        {% if c.form_errors.get('support_page_url') %}
-            <div class="error">{{c.form_errors.get('support_page_url')}}</div>
+        {% if request.validation.errors.get('support_page_url') %}
+            <div class="error">{{request.validation.errors.get('support_page_url')}}</div>
         {% endif %}
         <input name="support_page" type="radio" value=""{% if value.support_page == '' %} checked{% endif %} id="support_page_none">
         <label for="support_page_none">None</label><br>
@@ -133,8 +133,8 @@
         {% set proj_text = 'Project' if value.is_root else 'Subproject' %}
         {{proj_text}} Status:
         <div>
-            {% if c.form_errors.get('moved_to_url') %}
-                <div class="error">{{c.form_errors.get('moved_to_url')}}</div>
+            {% if request.validation.errors.get('moved_to_url') %}
+                <div class="error">{{request.validation.errors.get('moved_to_url')}}</div>
             {% endif %}
             <input name="removal" type="radio" value="" id="removal_active_cb"
                    {% if value.removal == '' %} checked{% endif %}>

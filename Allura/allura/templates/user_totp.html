@@ -56,8 +56,8 @@
         <form method="POST" action="totp_set" id="totp_set">
         <p>
             Enter the {{ config['auth.multifactor.totp.length'] }}-digit code from the app, to confirm it is set up correctly:<br>
-            {% if c.form_errors['code'] %}
-                <span class="fielderror">{{ c.form_errors['code'] }}</span><br>
+            {% if request.validation.errors['code'] %}
+                <span class="fielderror">{{ request.validation.errors['code'] }}</span><br>
             {% endif %}
             <input type="text" name="code" autofocus autocomplete="off" maxlength="{{ config['auth.multifactor.totp.length']|int + 1 }}"/>
             {{ lib.csrf_token() }}

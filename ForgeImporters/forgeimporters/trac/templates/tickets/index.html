@@ -21,7 +21,7 @@
 {% block importer_fields %}
   <div>
     <label for="trac_url">URL of the Trac instance</label>
-    <input name="trac_url" value="{{ c.form_values['trac_url'] }}" />
+    <input name="trac_url" value="{{ request.validation.values['trac_url'] }} aajdspofijasopdfij" />
     {{ error('trac_url') }}
   </div>
   <div>
