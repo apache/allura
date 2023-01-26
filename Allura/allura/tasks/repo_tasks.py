@@ -148,7 +148,7 @@ def tarball(revision, path):
                     (c.project.shortname, c.app.config.options.mount_point, revision, path), exc_info=True)
                 raise
     else:
-        log.warn(
+        log.warning(
             'Skipped creation of snapshot: %s:%s because revision is not specified' %
             (c.project.shortname, c.app.config.options.mount_point))
 

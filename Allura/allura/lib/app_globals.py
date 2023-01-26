@@ -109,7 +109,7 @@ class ForgeMarkdown(markdown.Markdown):
         cache_field_name = field_name + '_cache'
         cache = getattr(artifact, cache_field_name, None)
         if not cache:
-            log.warn(
+            log.warning(
                 'Skipping Markdown caching - Missing cache field "%s" on class %s',
                 field_name, artifact.__class__.__name__)
             return self.convert(source_text)
@@ -132,7 +132,7 @@ class ForgeMarkdown(markdown.Markdown):
             threshold = float(threshold) if threshold else None
         except ValueError:
             threshold = None
-            log.warn('Skipping Markdown caching - The value for config param '
+            log.warning('Skipping Markdown caching - The value for config param '
                      '"markdown_cache_threshold" must be a float.')
 
         # Check if contains macro and never cache

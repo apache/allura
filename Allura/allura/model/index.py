@@ -228,9 +228,9 @@ class Shortlink(MappedClass):
 
     @classmethod
     def log_ambiguous_link(cls, msg, matches, *args):
-        log.warn(msg, *args)
+        log.warning(msg, *args)
         for m in matches:
-            log.warn('... %r', m)
+            log.warning('... %r', m)
 
     @classmethod
     def _parse_link(cls, s):

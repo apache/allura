@@ -589,7 +589,7 @@ class GitImplementation(M.RepositoryImplementation):
             threshold = float(threshold) if threshold else None
         except ValueError:
             threshold = None
-            log.warn('Skipping reference caching - The value for config param '
+            log.warning('Skipping reference caching - The value for config param '
                      '"repo_refs_cache_threshold" must be a float.')
 
         if threshold is not None and time_taken > threshold:

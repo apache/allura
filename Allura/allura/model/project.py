@@ -1220,7 +1220,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         try:
             _private = self.private
         except Exception:
-            log.warn(f'Error getting self.private on project {self.shortname}', exc_info=True)
+            log.warning(f'Error getting self.private on project {self.shortname}', exc_info=True)
             _private = False
         fields = dict(id=self.index_id(),
                       title='Project %s' % self.name,

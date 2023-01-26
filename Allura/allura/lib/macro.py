@@ -102,7 +102,7 @@ class parse:
             response = macro(**h.encode_keys(args))
             return response
         except (ValueError, TypeError) as ex:
-            log.warn('macro error.  Upwards stack is %s',
+            log.warning('macro error.  Upwards stack is %s',
                      ''.join(traceback.format_stack()),
                      exc_info=True)
             msg = html.escape(f'[[{s}]] ({repr(ex)})')

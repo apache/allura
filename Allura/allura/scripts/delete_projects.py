@@ -59,11 +59,11 @@ class DeleteProjects(ScriptTask):
         n, p = proj.split('/', 1)
         n = M.Neighborhood.query.get(url_prefix=f'/{n}/')
         if not n:
-            log.warn("Can't find neighborhood for %s", proj)
+            log.warning("Can't find neighborhood for %s", proj)
             return
         p = M.Project.query.get(neighborhood_id=n._id, shortname=n.shortname_prefix + p)
         if not p:
-            log.warn("Can't find project %s", proj)
+            log.warning("Can't find project %s", proj)
             return
         return p
 

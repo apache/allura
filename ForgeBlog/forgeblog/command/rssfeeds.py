@@ -108,7 +108,7 @@ class RssFeedsCommand(base.BlogCommand):
         allura_base.log.info(f"Getting {app.url} feed {feed_url}")
         f = feedparser.parse(feed_url)
         if f.bozo:
-            allura_base.log.warn(f"{app.url} feed {feed_url} errored: {f.bozo_exception}")
+            allura_base.log.warning(f"{app.url} feed {feed_url} errored: {f.bozo_exception}")
             return
         for e in f.entries:
             self.process_entry(e, appid)

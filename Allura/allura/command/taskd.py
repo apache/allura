@@ -111,7 +111,7 @@ class TaskdCommand(base.Command):
 
         def start_response(status, headers, exc_info=None):
             if status != '200 OK':
-                log.warn(
+                log.warning(
                     'Unexpected http response from taskd request: %s.  Headers: %s',
                     status, headers)
 

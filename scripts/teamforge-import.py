@@ -190,7 +190,7 @@ def save_user(usernames):
             user_data = client.service.getUserData(s, username)
             users[username] = Object(user_data)
             if users[username].status != 'Active':
-                log.warn('user: %s status: %s' %
+                log.warning('user: %s status: %s' %
                          (username, users[username].status))
 
 
@@ -217,12 +217,12 @@ def get_project(project):
         project, project.id + '.json')
 
     if len(groups):
-        log.warn('Project has groups %s' % groups)
+        log.warning('Project has groups %s' % groups)
     for u in admins:
         if not u.status != 'active':
-            log.warn('inactive admin %s' % u)
+            log.warning('inactive admin %s' % u)
         if u.superUser:
-            log.warn('super user admin %s' % u)
+            log.warning('super user admin %s' % u)
 
     save_user(data.createdBy)
     save_user(u.userName for u in admins)
@@ -239,7 +239,7 @@ def get_user(orig_username):
         load_users()
         user = users[orig_username]
         if user.status != 'Active':
-            log.warn(f'Inactive user {orig_username} {user.status}')
+            log.warning(f'Inactive user {orig_username} {user.status}')
 
         if not 3 <= len(user.fullName) <= 32:
             raise Exception('invalid fullName length: %s' % user.fullName)
@@ -637,26 +637,26 @@ def check_unsupported_tools(project):
             continue
         doc_count += 1
     if doc_count:
-        log.warn('Migrating documents is not supported, but found %s docs' %
+        log.warning('Migrating documents is not supported, but found %s docs' %
                  doc_count)
 
     scm = make_client(options.api_url, 'ScmApp')
     for repo in scm.service.getRepositoryList(s, project.id).dataRows:
-        log.warn('Migrating SCM repos is not supported, but found %s' %
+        log.warning('Migrating SCM repos is not supported, but found %s' %
                  repo.repositoryPath)
 
     tasks = make_client(options.api_url, 'TaskApp')
     task_count = len(
         tasks.service.getTaskList(s, project.id, filters=None).dataRows)
     if task_count:
-        log.warn('Migrating tasks is not supported, but found %s tasks' %
+        log.warning('Migrating tasks is not supported, but found %s tasks' %
                  task_count)
 
     tracker = make_client(options.api_url, 'TrackerApp')
     tracker_count = len(
         tracker.service.getArtifactList(s, project.id, filters=None).dataRows)
     if tracker_count:
-        log.warn(
+        log.warning(
             'Migrating trackers is not supported, but found %s tracker artifacts' %
             task_count)
 
@@ -849,7 +849,7 @@ def get_homepage_wiki(project):
     elif 'HomePage' in pages:
         homepage = pages.pop('HomePage')
     else:
-        log.warn('did not find homepage')
+        log.warning('did not find homepage')
 
     if homepage:
         save(homepage, project, 'wiki', 'homepage_text.markdown')
