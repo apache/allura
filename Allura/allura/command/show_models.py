@@ -353,7 +353,7 @@ class EnsureIndexCommand(base.Command):
                 base.log.info('Found dupes with %s', key)
                 dupes += [doc['_id'] for doc in docs[1:]]
         collection.drop_index(iname)
-        collection.remove(dict(_id={'$in': dupes}))
+        collection.delete_many(dict(_id={'$in': dupes}))
 
 
 def build_model_inheritance_graph():
