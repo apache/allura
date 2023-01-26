@@ -154,7 +154,7 @@ class File(MappedClass):
             image = new_image
 
         if thumbnail_size:
-            image.thumbnail(thumbnail_size, PIL.Image.ANTIALIAS)
+            image.thumbnail(thumbnail_size, PIL.Image.LANCZOS)
 
         thumbnail_meta = thumbnail_meta or {}
         thumbnail = cls(
