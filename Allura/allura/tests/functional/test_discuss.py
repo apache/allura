@@ -41,6 +41,24 @@ class TestDiscussBase(TestController):
         thread_link = new_post.find('form', {'id': 'edit_post'}).get('action')
         return thread_link.split('/')[-2]
 
+    def _make_post(self, text, username='root'):
+        thread_link = self._thread_link()
+        thread = self.app.get(thread_link, expect_errors=True)
+        for f in thread.html.findAll('form'):
+            if f.get('action', '').endswith('/post'):
+                break
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_attr('name'):
+                params[field['name']] = field.get('value') or ''
+        params[f.find('textarea')['name']] = text
+        r = self.app.post(f['action'], params=params,
+                          headers={'Referer': str(thread_link)},
+                          status=302,
+                          extra_environ=dict(username=username))
+        return self.app.get(r.response.headers['Location'], expect_errors=True)
+
 
 class TestDiscuss(TestDiscussBase):
 
@@ -66,23 +84,7 @@ class TestDiscuss(TestDiscussBase):
         r = self.app.post('/wiki/_discuss/subscribe', params=params)
         assert not self._is_subscribed(user, thread)
 
-    def _make_post(self, text):
-        thread_link = self._thread_link()
-        thread = self.app.get(thread_link, expect_errors=True)
-        for f in thread.html.findAll('form'):
-            if f.get('action', '').endswith('/post'):
-                break
-        params = dict()
-        inputs = f.findAll('input')
-        for field in inputs:
-            if field.has_attr('name'):
-                params[field['name']] = field.get('value') or ''
-        params[f.find('textarea')['name']] = text
-        r = self.app.post(f['action'], params=params,
-                          headers={'Referer': str(thread_link)},
-                          status=302,
-                          extra_environ=dict(username='root'))
-        return self.app.get(r.response.headers['Location'], expect_errors=True)
+
 
     @patch('allura.controllers.discuss.g.spam_checker.check')
     @patch('allura.controllers.discuss.g.spam_checker.submit_spam')

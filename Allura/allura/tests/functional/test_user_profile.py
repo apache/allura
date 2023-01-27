@@ -22,7 +22,7 @@ from alluratest.controller import TestRestApiBase
 from allura.model import Project, User
 from allura.tests import decorators as td
 from allura.tests import TestController
-
+from allura.tests.functional.test_discuss import TestDiscussBase
 
 class TestUserProfileSections(TestController):
 
@@ -64,7 +64,7 @@ class TestUserProfileSections(TestController):
         assert 'Section f' not in r.text
 
 
-class TestUserProfile(TestController):
+class TestUserProfile(TestDiscussBase):
 
     @td.with_user_project('test-admin')
     def test_profile(self):
@@ -271,8 +271,10 @@ class TestUserProfile(TestController):
         r = self.app.get('/u/test-user/profile/')
         assert 'content="noindex, follow"' in r.text
 
+    @td.with_user_project('test-user')
     def test_remove_no_index_tag_profile(self):
-        r = self.app.get('/u/test-admin/profile/')
+        self._make_post("New Post...", 'test-user')
+        r = self.app.get('/u/test-user/profile/')
         assert 'content="noindex, follow"' not in r.text
 
 
