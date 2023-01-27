@@ -156,13 +156,15 @@ class UserProfileController(BaseController, FeedController):
                     for section in c.app.profile_sections]
 
         noindex = True
-        required_section = 2
-        count = 0
+        has_projects = False
+        has_timeline = False
         for s in sections:
             s.setup_context()
-            if s.context.get('timeline') or s.context.get('projects'):
-                count += 1
-        if count == required_section:
+            if s.context.get('projects'):
+                has_projects = True
+            if s.context.get('timeline'):
+                has_timeline = True
+        if has_projects and has_timeline:
             noindex = False
         return dict(
             user=user,

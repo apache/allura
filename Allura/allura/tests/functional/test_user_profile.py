@@ -271,10 +271,9 @@ class TestUserProfile(TestDiscussBase):
         r = self.app.get('/u/test-user/profile/')
         assert 'content="noindex, follow"' in r.text
 
-    @td.with_user_project('test-user')
     def test_remove_no_index_tag_profile(self):
-        self._make_post("New Post...", 'test-user')
-        r = self.app.get('/u/test-user/profile/')
+        self._make_post("New Post...", 'test-admin')
+        r = self.app.get('/u/test-admin/profile/')
         assert 'content="noindex, follow"' not in r.text
 
 
