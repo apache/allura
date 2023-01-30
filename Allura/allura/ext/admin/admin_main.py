@@ -431,51 +431,84 @@ class ProjectAdminController(BaseController):
         current_troves = getattr(c.project, 'trove_%s' % type)
         trove_obj = M.TroveCategory.query.get(trove_cat_id=int(new_trove))
         error_msg = None
+        in_trove = False
         if type in ['license', 'audience', 'developmentstatus', 'language'] and len(current_troves) >= 6:
             error_msg = 'You may not have more than 6 of this category.'
         elif type in ['topic'] and len(current_troves) >= 3:
             error_msg = 'You may not have more than 3 of this category.'
         elif trove_obj is not None:
-            if trove_obj._id not in current_troves:
+            in_trove = trove_obj._id in current_troves
+            if not in_trove:
                 current_troves.append(trove_obj._id)
                 M.AuditLog.log('add trove %s: %s', type, trove_obj.fullpath)
                 # just in case the event handling is super fast
                 ThreadLocalORMSession.flush_all()
                 c.project.last_updated = datetime.utcnow()
+                in_trove = True
                 g.post_event('project_updated')
             else:
                 error_msg = 'This category has already been assigned to the project.'
-        return (trove_obj, error_msg)
+        else:
+            error_msg = 'This category is invalid.'
+
+        return (trove_obj, error_msg, in_trove)
 
     @expose('json:')
     @require_post()
     def add_trove_js(self, type, new_trove, **kw):
         require_access(c.project, 'update')
-        trove_obj, error_msg = self._add_trove(type, new_trove)
-        return dict(trove_full_path=trove_obj.fullpath_within_type, trove_cat_id=trove_obj.trove_cat_id, error_msg=error_msg)
+        trove_obj, error_msg, in_trove = self._add_trove(type, new_trove)
+        return dict(trove_full_path=trove_obj.fullpath_within_type,
+                    trove_cat_id=trove_obj.trove_cat_id,
+                    error_msg=error_msg,
+                    in_trove=in_trove)
 
     @expose()
     @require_post()
     def add_trove(self, type, new_trove, **kw):
         require_access(c.project, 'update')
-        trove_obj, error_msg = self._add_trove(type, new_trove)
+        trove_obj, error_msg, in_trove = self._add_trove(type, new_trove)
         if error_msg:
             flash(error_msg, 'error')
         redirect('trove')
 
+    def _delete_trove(self, type, trove):
+        trove_obj = M.TroveCategory.query.get(trove_cat_id=int(trove))
+        current_troves = getattr(c.project, 'trove_%s' % type)
+        error_msg = None
+        in_trove = False
+        if trove_obj is not None:
+            in_trove = trove_obj._id in current_troves
+            if in_trove:
+                M.AuditLog.log('remove trove %s: %s', type, trove_obj.fullpath)
+                current_troves.remove(trove_obj._id)
+                # just in case the event handling is super fast
+                ThreadLocalORMSession.flush_all()
+                c.project.last_updated = datetime.utcnow()
+                in_trove = False
+                g.post_event('project_updated')
+            else:
+                error_msg = 'This category has not been assigned to the project.'
+        else:
+            error_msg = 'This category is invalid.'
+        return (trove_obj, error_msg, in_trove)
+
+    @expose('json:')
+    @require_post()
+    def delete_trove_js(self, type, new_trove, **kw):
+        require_access(c.project, 'update')
+        trove_obj, error_msg, in_trove = self._delete_trove(type, new_trove)
+        return dict(trove_full_path=trove_obj.fullpath_within_type,
+                    trove_cat_id=trove_obj.trove_cat_id,
+                    error_msg=error_msg,
+                    in_trove=in_trove)
     @expose()
     @require_post()
     def delete_trove(self, type, trove, **kw):
         require_access(c.project, 'update')
-        trove_obj = M.TroveCategory.query.get(trove_cat_id=int(trove))
-        current_troves = getattr(c.project, 'trove_%s' % type)
-        if trove_obj is not None and trove_obj._id in current_troves:
-            M.AuditLog.log('remove trove %s: %s', type, trove_obj.fullpath)
-            current_troves.remove(trove_obj._id)
-            # just in case the event handling is super fast
-            ThreadLocalORMSession.flush_all()
-            c.project.last_updated = datetime.utcnow()
-            g.post_event('project_updated')
+        trove_obj, error_msg, in_trove = self._delete_trove(type, trove)
+        if error_msg:
+            flash(error_msg, 'error')
         redirect('trove')
 
     @expose()
