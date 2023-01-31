@@ -179,6 +179,10 @@ class TroveCategory(MappedClass):
     def by_trove_cat_ids(cls, *ids):
         return cls.query.find({'trove_cat_id': {'$in': ids}}).all()
 
+    @classmethod
+    def by_trove_fullpaths(cls, *ids):
+        return cls.query.find({'fullpath': {'$in': ids}}).all()
+
     def __json__(self):
         return dict(
             id=self.trove_cat_id,
