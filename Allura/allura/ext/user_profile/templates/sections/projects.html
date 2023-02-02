@@ -33,9 +33,6 @@
 {% block section_class %}projects{% endblock %}
 
 {% block content %}
-    {% if projects|length %}
-    <h4 id="widget-message">This is a list of open source software projects that {{ c.user.get_pref('display_name') }} is associated with:</h4>
-    {% endif %}
     <ul>
     {% for project in projects %}
         <li{% if loop.index > 5 %} class="hidden"{% endif %}>
