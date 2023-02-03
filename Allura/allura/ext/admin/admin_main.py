@@ -54,6 +54,7 @@ from . import widgets as aw
 import six
 
 
+
 log = logging.getLogger(__name__)
 
 
@@ -432,9 +433,10 @@ class ProjectAdminController(BaseController):
         trove_obj = M.TroveCategory.query.get(trove_cat_id=int(new_trove))
         error_msg = None
         in_trove = False
-        if type in ['license', 'audience', 'developmentstatus', 'language'] and len(current_troves) >= 6:
+        if type in ['license', 'audience', 'developmentstatus', 'language'] and len(
+                current_troves) >= 6 and not h.is_site_admin(c.user):
             error_msg = 'You may not have more than 6 of this category.'
-        elif type in ['topic'] and len(current_troves) >= 3:
+        elif type in ['topic'] and len(current_troves) >= 3 and not h.is_site_admin(c.user):
             error_msg = 'You may not have more than 3 of this category.'
         elif trove_obj is not None:
             in_trove = trove_obj._id in current_troves
