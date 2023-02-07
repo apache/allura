@@ -32,7 +32,7 @@
 
 {% block content %}
     {% if user.get_skills()|length %}
-    <h4 id="widget-message">This is a list of open source software projects that {{ c.user.get_pref('display_name') }} is associated with:</h4>
+    <h4 id="widget-message">This is a list of skills that {{ user.get_pref('display_name') }} possesses:</h4>
     {% endif %}
     <ul>
     {% for skill in user.get_skills() %}

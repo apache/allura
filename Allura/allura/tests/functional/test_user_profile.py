@@ -79,8 +79,7 @@ class TestUserProfile(TestDiscussBase):
         assert 'Last Updated:' in r.html.find(None, 'projects').getText()
         assert 'tools' in sections
         assert 'Admin' in r.html.find(None, 'tools').getText()
-        assert 'skills' in sections
-        assert 'No skills entered' in r.html.find(None, 'skills').getText()
+        assert 'skills' not in sections
 
     @td.with_user_project('test-admin')
     @mock.patch.dict(tg.config, {'use_gravatar': 'true'})

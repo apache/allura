@@ -325,6 +325,9 @@ class SkillsSection(ProfileSectionBase):
     def __json__(self):
         return dict(skills=self.user.get_skills())
 
+    def check_display(self):
+        return bool(self.user.skills)
+
 
 class ToolsSection(ProfileSectionBase):
     template = 'allura.ext.user_profile:templates/sections/tools.html'
@@ -336,3 +339,6 @@ class SocialSection(ProfileSectionBase):
     def __json__(self):
         return dict(
             socialnetworks=self.user.get_pref('socialnetworks')._deinstrument())
+
+    def check_display(self):
+        return bool(self.user.get_pref('socialnetworks'))
