@@ -184,19 +184,19 @@ class TestAuth:
         u1.disabled, u2.disabled = True, True
         ThreadLocalODMSession.flush_all()
         assert M.User.by_email_address('abc123@abc.me') is None
-        assert log.warn.call_count == 0
+        assert log.warning.call_count == 0
 
         # only u2 is active
         u1.disabled, u2.disabled = True, False
         ThreadLocalODMSession.flush_all()
         assert M.User.by_email_address('abc123@abc.me') == u2
-        assert log.warn.call_count == 0
+        assert log.warning.call_count == 0
 
         # both are active
         u1.disabled, u2.disabled = False, False
         ThreadLocalODMSession.flush_all()
         assert M.User.by_email_address('abc123@abc.me') in [u1, u2]
-        assert log.warn.call_count == 1
+        assert log.warning.call_count == 1
 
         # invalid email returns None, but not user which claimed
         # nobody@example.com as before
