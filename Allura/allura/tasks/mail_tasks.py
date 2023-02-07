@@ -16,7 +16,6 @@
 #       under the License.
 import html
 import logging
-import six.moves.html_parser
 import re
 
 from tg import tmpl_context as c, app_globals as g, config
@@ -27,7 +26,7 @@ from allura.lib import helpers as h
 from allura.lib.decorators import task
 from allura.lib import mail_util
 from allura.lib import exceptions as exc
-import six
+
 
 log = logging.getLogger(__name__)
 
@@ -113,6 +112,7 @@ def create_multipart_msg(text, metalink=None):
     :param metalink:
     :return:
     """
+    from allura.lib.app_globals import ForgeMarkdown
 
     def replace_html(matchobj):
         text_within_div = matchobj.group(1)
@@ -129,7 +129,7 @@ def create_multipart_msg(text, metalink=None):
     plain_text = html.unescape(plain_text)  # put literal HTML tags back into plaintext
     plain_msg = mail_util.encode_email_part(plain_text, 'plain')
 
-    html_text = g.forge_markdown(email=True).convert(text)
+    html_text = ForgeMarkdown(email=True).convert(text)
     if metalink:
         html_text = html_text + mail_meta_content(metalink)
     html_msg = mail_util.encode_email_part(html_text, 'html')
