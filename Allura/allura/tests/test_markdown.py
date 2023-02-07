@@ -16,6 +16,8 @@
 #       under the License.
 
 import unittest
+
+import markdown
 import mock
 
 from allura.lib import markdown_extensions as mde
@@ -140,7 +142,7 @@ Not *strong* or _underlined_."""
 * <a href="/p/project/tool/2/tree/test.py#l3">source:test.py@2#L3</a></p>
 <p>Not *strong* or _underlined_.</div>"""
 
-        md = ForgeMarkdown(
+        md = markdown.Markdown(
             extensions=[mde.CommitMessageExtension(app), 'markdown.extensions.nl2br'],
             output_format='html')
         self.assertEqual(md.convert(text), expected_html)

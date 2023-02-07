@@ -74,7 +74,26 @@ __all__ = ['Globals']
 log = logging.getLogger(__name__)
 
 
-class ForgeMarkdown(markdown.Markdown):
+class ForgeMarkdown:
+
+    def __init__(self, **forge_ext_kwargs):
+        self.forge_ext_kwargs = forge_ext_kwargs
+
+    def make_markdown_instance(self, **forge_ext_kwargs):
+        # for further performance improvements, this might be cachable including forge_ext_kwargs?
+        # but ForgeExtension and the classes it makes often save things on `self` which might not be thread safe
+        # when multiple threads are using the same instance
+        # TestCachedMarkdown re-uses the same instance previously, and had a bug that AddCustomClass wasn't running
+        return markdown.Markdown(
+            extensions=['markdown.extensions.fenced_code', 'markdown.extensions.codehilite',
+                        'markdown.extensions.abbr', 'markdown.extensions.def_list', 'markdown.extensions.footnotes',
+                        'markdown.extensions.md_in_html',
+                        ForgeExtension(**forge_ext_kwargs),
+                        EmojiExtension(),
+                        UserMentionExtension(),
+                        'markdown.extensions.tables', 'markdown.extensions.toc', 'markdown.extensions.nl2br',
+                        'markdown_checklist.extension'],
+            output_format='html')
 
     def convert(self, source, render_limit=True):
         if render_limit and len(source) > asint(config.get('markdown_render_max_length', 80000)):
@@ -84,7 +103,7 @@ class ForgeMarkdown(markdown.Markdown):
             escaped = html.escape(h.really_unicode(source))
             return Markup('<pre>%s</pre>' % escaped)
         try:
-            return super().convert(source)
+            return self.make_markdown_instance(**self.forge_ext_kwargs).convert(source)
         except Exception:
             log.info('Invalid markdown: %s  Upwards trace is %s', source,
                      ''.join(traceback.format_stack()), exc_info=True)
@@ -460,29 +479,18 @@ class Globals:
         else:
             return Markup(pygments.highlight(text, lexer, formatter))
 
-    def forge_markdown(self, **kwargs):
-        '''return a markdown.Markdown object on which you can call convert'''
-        return ForgeMarkdown(
-            extensions=['markdown.extensions.fenced_code', 'markdown.extensions.codehilite',
-                        'markdown.extensions.abbr', 'markdown.extensions.def_list', 'markdown.extensions.footnotes',
-                        'markdown.extensions.md_in_html',
-                        ForgeExtension(**kwargs), EmojiExtension(), UserMentionExtension(),
-                        'markdown.extensions.tables', 'markdown.extensions.toc', 'markdown.extensions.nl2br',
-                        'markdown_checklist.extension'],
-            output_format='html')
-
     @property
     def markdown(self):
-        return self.forge_markdown()
+        return ForgeMarkdown()
 
     @property
     def markdown_wiki(self):
         if c.project and c.project.is_nbhd_project:
-            return self.forge_markdown(wiki=True, macro_context='neighborhood-wiki')
+            return ForgeMarkdown(wiki=True, macro_context='neighborhood-wiki')
         elif c.project and c.project.is_user_project:
-            return self.forge_markdown(wiki=True, macro_context='userproject-wiki')
+            return ForgeMarkdown(wiki=True, macro_context='userproject-wiki')
         else:
-            return self.forge_markdown(wiki=True)
+            return ForgeMarkdown(wiki=True)
 
     @property
     def markdown_commit(self):
@@ -490,8 +498,10 @@ class Globals:
 
         """
         app = getattr(c, 'app', None)
-        return ForgeMarkdown(extensions=[CommitMessageExtension(app), EmojiExtension(), 'markdown.extensions.nl2br'],
-                             output_format='html')
+        return markdown.Markdown(
+            extensions=[CommitMessageExtension(app), EmojiExtension(), 'markdown.extensions.nl2br'],
+            output_format='html',
+        )
 
     @property
     def production_mode(self):

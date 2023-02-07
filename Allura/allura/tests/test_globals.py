@@ -482,7 +482,7 @@ class Test():
                 </code></pre></div>
                 </div>''')
         assert (
-            g.forge_markdown(email=True).convert('[Home]') ==
+            ForgeMarkdown(email=True).convert('[Home]') ==
             # uses localhost:
             '<div class="markdown_content"><p><a class="alink" href="http://localhost/p/test/wiki/Home/">[Home]</a></p></div>')
         assert g.markdown.convert(dedent('''\
@@ -760,7 +760,7 @@ class TestCachedMarkdown(unittest.TestCase):
         self.md = ForgeMarkdown()
         self.post = M.Post()
         self.post.text = '**bold**'
-        self.expected_html = '<p><strong>bold</strong></p>'
+        self.expected_html = '<div class="markdown_content"><p><strong>bold</strong></p></div>'
 
     def test_bad_source_field_name(self):
         self.assertRaises(AttributeError, self.md.cached_convert,
@@ -774,7 +774,7 @@ class TestCachedMarkdown(unittest.TestCase):
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='-0.01')
     def test_non_ascii(self):
         self.post.text = 'å∫ç'
-        expected = '<p>å∫ç</p>'
+        expected = '<div class="markdown_content"><p>å∫ç</p></div>'
         # test with empty cache
         self.assertEqual(expected, self.md.cached_convert(self.post, 'text'))
         # test with primed cache
