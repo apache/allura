@@ -76,8 +76,8 @@ class TestAuth(TestController):
         r = self.app.post('/auth/do_login', antispam=True, params=dict(
             username='test-user', password='foo', honey1='robot',  # bad honeypot value
             _session_id=self.app.cookies['_session_id']),
-                          extra_environ={'regular_antispam_err_handling_even_when_tests': 'true'},
-                          status=302)
+            extra_environ={'regular_antispam_err_handling_even_when_tests': 'true'},
+            status=302)
         wf = json.loads(self.webflash(r))
         assert wf['status'] == 'error'
         assert wf['message'] == 'Spambot protection engaged'
@@ -681,7 +681,7 @@ class TestAuth(TestController):
         assert 'test@example.com' not in r
         assert 'test-admin@users.localhost' in r
         assert (M.User.query.get(username='test-admin').get_pref('email_address') ==
-                     'test-admin@users.localhost')
+                'test-admin@users.localhost')
 
         # add test@example
         with td.audits('New email address: test@example.com', user=True):
@@ -932,8 +932,8 @@ class TestAuth(TestController):
                                       _session_id=self.app.cookies['_session_id']))
         assert 'Enter a value 6 characters long or more' in r
         assert ('Usernames must include only small letters, numbers, '
-                  'and dashes. They must also start with a letter and be '
-                  'at least 3 characters long.' in r)
+                'and dashes. They must also start with a letter and be '
+                'at least 3 characters long.' in r)
         r = self.app.post(
             '/auth/save_new',
             params=dict(
@@ -1264,7 +1264,6 @@ class TestPreferences(TestController):
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 0
 
-
     @td.with_user_project('test-admin')
     def test_contacts(self):
         # Add skype account
@@ -1321,8 +1320,8 @@ class TestPreferences(TestController):
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 2
         expected = [{'socialnetwork': socialnetwork2, 'accounturl': accounturl2},
-               {'socialnetwork': socialnetwork3, 'accounturl': accounturl3}]
-        assert  all([social in expected for social in user.socialnetworks])
+                    {'socialnetwork': socialnetwork3, 'accounturl': accounturl3}]
+        assert all([social in expected for social in user.socialnetworks])
 
         # Add empty social network account
         self.app.post('/auth/user_info/contacts/add_social_network',
@@ -1332,7 +1331,7 @@ class TestPreferences(TestController):
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 2
         expected = [{'socialnetwork': socialnetwork2, 'accounturl': accounturl2},
-               {'socialnetwork': socialnetwork3, 'accounturl': accounturl3}]
+                    {'socialnetwork': socialnetwork3, 'accounturl': accounturl3}]
         assert all([social in expected for social in user.socialnetworks])
 
         # Add invalid social network account
@@ -1343,7 +1342,7 @@ class TestPreferences(TestController):
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 2
         expected = [{'socialnetwork': socialnetwork2, 'accounturl': accounturl2},
-               {'socialnetwork': socialnetwork3, 'accounturl': accounturl3}]
+                    {'socialnetwork': socialnetwork3, 'accounturl': accounturl3}]
         assert all([social in expected for social in user.socialnetworks])
 
         # Add telephone number
@@ -2045,7 +2044,8 @@ class TestOAuth(TestController):
         )
         ThreadLocalODMSession.flush_all()
         r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key_reqtok_12345'})
-        assert r.location.startswith('http://my.domain.com/callback?myparam=foo&oauth_token=api_key_reqtok_12345&oauth_verifier=')
+        url = 'http://my.domain.com/callback?myparam=foo&oauth_token=api_key_reqtok_12345&oauth_verifier='
+        assert r.location.startswith(url)
 
 
 class TestOAuthRequestToken(TestController):
@@ -2197,7 +2197,7 @@ class TestDisableAccount(TestController):
             extra_environ={'username': '*anonymous'})
         assert r.status_int == 302
         assert (r.location ==
-                     'http://localhost/auth/?return_to=%2Fauth%2Fdisable%2F')
+                'http://localhost/auth/?return_to=%2Fauth%2Fdisable%2F')
 
     def test_lists_user_projects(self):
         r = self.app.get('/auth/disable/')
@@ -2565,7 +2565,8 @@ class TestTwoFactor(TestController):
         form['code'] = code
         with audits('Set up multifactor TOTP', user=True):
             r = form.submit()
-            assert 'Two factor authentication has now been set up.' == json.loads(self.webflash(r))['message'], self.webflash(r)
+            msg = 'Two factor authentication has now been set up.'
+            assert msg == json.loads(self.webflash(r))['message'], self.webflash(r)
 
         tasks = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
         assert len(tasks) == 1
@@ -2615,7 +2616,8 @@ class TestTwoFactor(TestController):
         form = r.forms['totp_set']
         form['code'] = code
         r = form.submit()
-        assert 'Two factor authentication has now been set up.' == json.loads(self.webflash(r))['message'], self.webflash(r)
+        msg = 'Two factor authentication has now been set up.'
+        assert msg == json.loads(self.webflash(r))['message'], self.webflash(r)
 
         # new key in place
         current_key = TotpService.get().get_secret_key(M.User.query.get(username='test-admin'))
@@ -2641,7 +2643,8 @@ class TestTwoFactor(TestController):
         r.form['password'] = 'foo'
         with audits('Disabled multifactor TOTP', user=True):
             r = r.form.submit()
-            assert 'Multifactor authentication has now been disabled.' == json.loads(self.webflash(r))['message'], self.webflash(r)
+            msg = 'Multifactor authentication has now been disabled.'
+            assert msg == json.loads(self.webflash(r))['message'], self.webflash(r)
         user = M.User.query.get(username='test-admin')
         assert user.get_pref('multifactor') is False
         assert TotpService().get().get_secret_key(user) is None
@@ -2746,7 +2749,7 @@ class TestTwoFactor(TestController):
 
         # sent back to regular login
         assert ('Your multifactor login was disrupted, please start over.' ==
-                     json.loads(self.webflash(r))['message']), self.webflash(r)
+                json.loads(self.webflash(r))['message']), self.webflash(r)
         r = r.follow()
         assert 'Password Login' in r
 

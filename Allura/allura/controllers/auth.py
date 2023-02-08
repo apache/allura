@@ -684,11 +684,8 @@ class PreferencesController(BaseController):
                     primary_addr,
                     user=user)
                 if not admin:
-                    email_body = g.jinja2_env.get_template('allura:templates/mail/primary_email_changed.md').render(dict(
-                        user=user,
-                        config=config,
-                        addr=primary_addr
-                    ))
+                    email_body = g.jinja2_env.get_template('allura:templates/mail/primary_email_changed.md').render(
+                        dict(user=user, config=config, addr=primary_addr))
                     # send to previous primary addr
                     send_system_mail_to_user(old_primary_addr, 'Primary Email Address Changed', email_body)
             user.set_pref('email_address', primary_addr)
@@ -842,10 +839,8 @@ class PreferencesController(BaseController):
             del session['totp_new_key']
             session.save()
             tg.flash('Two factor authentication has now been set up.')
-            email_body = g.jinja2_env.get_template('allura:templates/mail/twofactor_enabled.md').render(dict(
-                user=c.user,
-                config=config,
-            ))
+            email_body = g.jinja2_env.get_template('allura:templates/mail/twofactor_enabled.md').render(
+                dict(user=c.user, config=config, ))
             send_system_mail_to_user(c.user, 'Two-Factor Authentication Enabled', email_body)
             redirect('/auth/preferences/multifactor_recovery')
 
@@ -977,7 +972,7 @@ class UserSkillsController(BaseController):
     @with_trailing_slash
     @expose('jinja:allura:templates/user_skills.html')
     def index(self, **kw):
-        l = []
+        lst = []
         parents = []
         if kw.get('selected_category') is not None:
             selected_skill = M.TroveCategory.query.get(
@@ -985,12 +980,12 @@ class UserSkillsController(BaseController):
         elif self.category:
             selected_skill = self.category
         else:
-            l = M.TroveCategory.query.find(
+            lst = M.TroveCategory.query.find(
                 dict(trove_parent_id=0, show_as_skill=True)).all()
             selected_skill = None
         if selected_skill:
-            l = [scat for scat in selected_skill.subcategories
-                 if scat.show_as_skill]
+            lst = [scat for scat in selected_skill.subcategories
+                   if scat.show_as_skill]
             temp_cat = selected_skill.parent_category
             while temp_cat:
                 parents = [temp_cat] + parents
@@ -998,11 +993,11 @@ class UserSkillsController(BaseController):
         provider = plugin.AuthenticationProvider.get(request)
         menu = provider.account_navigation()
         return dict(
-            skills_list=l,
+            skills_list=lst,
             selected_skill=selected_skill,
             parents=parents,
             menu=menu,
-            add_details_fields=(len(l) == 0))
+            add_details_fields=(len(lst) == 0))
 
     @expose()
     @require_post()

@@ -111,7 +111,7 @@ class NeighborhoodController:
             else:
                 redirect(c.project.app_configs[0].options.mount_point + '/')
         else:
-            text=g.markdown.cached_convert(
+            text = g.markdown.cached_convert(
                 self.neighborhood, 'homepage'),
 
         c.project_summary = W.project_summary
@@ -251,7 +251,7 @@ class NeighborhoodController:
     def icon(self, w=None, **kw):
         try:
             if isinstance(w, list):
-               w = w[0]
+                w = w[0]
             icon = c.project.icon_sized(w=int(w or 48))
         except ValueError as e:
             log.info('Invalid project icon size: %s on %s', e, request.url)
@@ -287,7 +287,8 @@ class NeighborhoodProjectBrowseController(ProjectBrowseController):
     def _lookup(self, category_name, *remainder):
         c.project = self.neighborhood.neighborhood_project
         category_name = unquote(category_name)
-        return NeighborhoodProjectBrowseController(neighborhood=self.neighborhood, category_name=category_name, parent_category=self.category), remainder
+        return NeighborhoodProjectBrowseController(neighborhood=self.neighborhood, category_name=category_name,
+                                                   parent_category=self.category), remainder
 
     @expose('jinja:allura:templates/neighborhood_project_list.html')
     @without_trailing_slash
@@ -318,7 +319,7 @@ class ToolListController:
         c.page_list = W.page_list
         tool_name = tool_name.lower()
         entries = c.project.sitemap(included_tools=[tool_name],
-                tools_only=True, per_tool_limit=None)
+                                    tools_only=True, per_tool_limit=None)
         total_entries = len(entries)
         limit, page = h.paging_sanitizer(limit, page, total_entries)
         start = page * limit
@@ -330,7 +331,7 @@ class ToolListController:
             entries=entries[start:start + limit],
             type=tool_label,
             tool_name=h.pluralize_tool_name(tool_label, total_entries),
-            )
+        )
 
 
 class ProjectController(FeedController):
@@ -391,7 +392,8 @@ class ProjectController(FeedController):
                 developers.append(_user)
             else:
                 users.append(_user)
-        get_username = lambda user: user['username']
+
+        def get_username(user): return user['username']
         admins = sorted(admins, key=get_username)
         developers = sorted(developers, key=get_username)
         users = sorted(users, key=get_username)
@@ -407,7 +409,8 @@ class ProjectController(FeedController):
             if hasattr(app, 'default_redirect'):
                 app.default_redirect()
             args = dict(redirect_with=exc.HTTPMovedPermanently)
-            redirect(app.url() if callable(app.url) else app.url, **args)  # Application has property; Subproject has method
+            # Application has property; Subproject has method
+            redirect(app.url() if callable(app.url) else app.url, **args)
         else:
             redirect(c.project.app_configs[0].url(), redirect_with=exc.HTTPMovedPermanently)
 
@@ -427,7 +430,7 @@ class ProjectController(FeedController):
     def icon(self, w=48, **kw):
         try:
             if isinstance(w, list):
-               w = w[0]
+                w = w[0]
             icon = c.project.icon_sized(w=int(w))
         except ValueError as e:
             log.info('Invalid project icon size: %s on %s', e, request.url)

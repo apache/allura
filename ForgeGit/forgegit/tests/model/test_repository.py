@@ -485,11 +485,12 @@ By Dave Brondsema''' in text_body
         self._setup_weird_chars_repo()
         # commits aren't artifacts :/ but still can do some references with them
         # commit b85dfbe message mentions [616d24f8dd4e95cadd8e93df5061f09855d1a066]
-        ref = M.ArtifactReference.query.get(_id='allura.model.repository.Commit#616d24f8dd4e95cadd8e93df5061f09855d1a066')
+        id = 'allura.model.repository.Commit#616d24f8dd4e95cadd8e93df5061f09855d1a066'
+        ref = M.ArtifactReference.query.get(_id=id)
         assert ref
         assert 'b85dfbe' in ref.references[0], ref.references
-
-        otherway = M.ArtifactReference.query.get(_id='allura.model.repository.Commit#b85dfbec3a5d08677bdd402fc0338934f623a234')
+        id = 'allura.model.repository.Commit#b85dfbec3a5d08677bdd402fc0338934f623a234'
+        otherway = M.ArtifactReference.query.get(_id=id)
         assert otherway
         assert not otherway.references
 
@@ -499,9 +500,9 @@ By Dave Brondsema''' in text_body
             os.remove(
                 os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip"))
         assert (self.repo.tarball_path ==
-                     os.path.join(tmpdir, 'git/t/te/test/testgit.git'))
+                os.path.join(tmpdir, 'git/t/te/test/testgit.git'))
         assert (self.repo.tarball_url('HEAD') ==
-                     'file:///git/t/te/test/testgit.git/test-src-git-HEAD.zip')
+                'file:///git/t/te/test/testgit.git/test-src-git-HEAD.zip')
         self.repo.tarball('HEAD')
         assert os.path.isfile(
             os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip"))
@@ -606,14 +607,14 @@ By Dave Brondsema''' in text_body
 
     def test_default_branch_non_standard_unset(self):
         with mock.patch.object(self.repo, 'get_branches') as gb,\
-             mock.patch.object(self.repo, 'set_default_branch') as set_db:
+                mock.patch.object(self.repo, 'set_default_branch') as set_db:
             gb.return_value = [Object(name='foo')]
             assert self.repo.get_default_branch(('main', 'master')) == 'foo'
             set_db.assert_called_once_with('foo')
 
     def test_default_branch_non_standard_invalid(self):
         with mock.patch.object(self.repo, 'get_branches') as gb,\
-             mock.patch.object(self.repo, 'set_default_branch') as set_db:
+                mock.patch.object(self.repo, 'set_default_branch') as set_db:
             self.repo.default_branch_name = 'zz'
             gb.return_value = [Object(name='foo')]
             assert self.repo.get_default_branch(('main', 'master')) == 'foo'
@@ -621,7 +622,7 @@ By Dave Brondsema''' in text_body
 
     def test_default_branch_invalid(self):
         with mock.patch.object(self.repo, 'get_branches') as gb,\
-             mock.patch.object(self.repo, 'set_default_branch') as set_db:
+                mock.patch.object(self.repo, 'set_default_branch') as set_db:
             self.repo.default_branch_name = 'zz'
             gb.return_value = [Object(name='foo'), Object(name='master')]
             assert self.repo.get_default_branch(('main', 'master')) == 'master'
@@ -641,7 +642,7 @@ By Dave Brondsema''' in text_body
 
     def test_default_branch_main_before_master(self):
         with mock.patch.object(self.repo, 'get_branches') as gb,\
-             mock.patch.object(self.repo, 'set_default_branch') as set_db:
+                mock.patch.object(self.repo, 'set_default_branch') as set_db:
             self.repo.default_branch_name = None
             gb.return_value = [Object(name='master'), Object(name='main')]
             assert self.repo.get_default_branch(('main', 'master')) == 'main'
@@ -739,12 +740,12 @@ By Dave Brondsema''' in text_body
     @mock.patch('forgegit.model.git_repo.shutil', autospec=True)
     def test_merge(self, shutil, GitImplementation, git, tempfile):
         mr = mock.Mock(downstream_repo=mock.Mock(
-                           full_fs_path='downstream-url',
-                           url=lambda: 'downstream-repo-url'),
-                       source_branch='source-branch',
-                       target_branch='target-branch',
-                       url=lambda: '/merge-request/1/',
-                       downstream=mock.Mock(commit_id='cid'))
+            full_fs_path='downstream-url',
+            url=lambda: 'downstream-repo-url'),
+            source_branch='source-branch',
+            target_branch='target-branch',
+            url=lambda: '/merge-request/1/',
+            downstream=mock.Mock(commit_id='cid'))
         _git = mock.Mock()
         self.repo._impl._git.git = _git
         self.repo.merge(mr)
@@ -1004,7 +1005,7 @@ class TestGitImplementation(unittest.TestCase):
             'forgegit', 'tests/data/testrename.git')
         repo = mock.Mock(full_fs_path=repo_dir)
         impl = GM.git_repo.GitImplementation(repo)
-        lcd = lambda c, p: impl.last_commit_ids(mock.Mock(_id=c), p)
+        def lcd(c, p): return impl.last_commit_ids(mock.Mock(_id=c), p)
         self.assertEqual(lcd('13951944969cf45a701bf90f83647b309815e6d5', ['f2.txt', 'f3.txt']), {
             'f2.txt': '259c77dd6ee0e6091d11e429b56c44ccbf1e64a3',
             'f3.txt': '653667b582ef2950c1954a0c7e1e8797b19d778a',

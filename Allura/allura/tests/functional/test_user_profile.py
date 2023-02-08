@@ -24,6 +24,7 @@ from allura.tests import decorators as td
 from allura.tests import TestController
 from allura.tests.functional.test_discuss import TestDiscussBase
 
+
 class TestUserProfileSections(TestController):
 
     def teardown_method(self, method):
@@ -70,7 +71,7 @@ class TestUserProfile(TestDiscussBase):
     def test_profile(self):
         r = self.app.get('/u/test-admin/profile/')
         assert ('Test Admin' ==
-                     r.html.find('h1', 'project_title').find('a').text)
+                r.html.find('h1', 'project_title').find('a').text)
         sections = {c for s in r.html.findAll(None, 'profile-section') for c in s['class']}
         assert 'personal-data' in sections
         assert 'Username:\ntest-admin' in r.html.find(None, 'personal-data').getText().replace(' ', '')
@@ -85,7 +86,7 @@ class TestUserProfile(TestDiscussBase):
     @mock.patch.dict(tg.config, {'use_gravatar': 'true'})
     def test_profile_user_card(self):
         user = User.by_username('test-admin')
-        locals =  {
+        locals = {
             'city': 'test-city',
             'country': 'US'
         }

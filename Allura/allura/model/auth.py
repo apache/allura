@@ -177,8 +177,8 @@ please visit the following URL:
 
 %s
 ''' % (self.email,
-       self.claimed_by_user(include_pending=True).username,
-       h.absurl(f'/auth/verify_addr?a={h.urlquote(self.nonce)}'),
+            self.claimed_by_user(include_pending=True).username,
+            h.absurl(f'/auth/verify_addr?a={h.urlquote(self.nonce)}'),
        )
         log.info('Verification email:\n%s', text)
         allura.tasks.mail_tasks.sendsimplemail.post(
@@ -428,7 +428,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         self.set_tool_data('AuthPasswordReset',
                            hash=hash,
                            hash_expiry=datetime.utcnow() +
-                                       timedelta(seconds=int(config.get('auth.recovery_hash_expiry_period', 600))))
+                           timedelta(seconds=int(config.get('auth.recovery_hash_expiry_period', 600))))
         reset_url = h.absurl(f'/auth/forgotten_password/{hash}')
         return reset_url
 
@@ -638,7 +638,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             private_project = self.private_project()
         except Exception:
             log.warning('Error getting/creating user-project for %s',
-                     self.username, exc_info=True)
+                        self.username, exc_info=True)
             private_project = None
         icon_source = None
         if private_project and private_project.icon:
@@ -682,7 +682,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         users = [u for u in users if u is not None]
         if len(users) > 1:
             log.warning('Multiple active users matching confirmed email: %s %s. '
-                     'Using first one', [u.username for u in users], addr)
+                        'Using first one', [u.username for u in users], addr)
         return users[0] if len(users) > 0 else None
 
     @classmethod
@@ -981,7 +981,7 @@ class ProjectRole(MappedClass):
     def user(self):
         if (self.user_id is None
             and self.name
-            and self.name != '*anonymous'):
+                and self.name != '*anonymous'):
             return None
         return User.query.get(_id=self.user_id)
 
