@@ -957,33 +957,33 @@ class TestProjectAdmin(TestController):
         r.mustcontain('Neighborhood Invitation(s) for test')
 
     def test_social_networks(self):
-        #Invalid Twitter
-        resp = self.app.post('/admin/update', params={'twitter_handle':'https://twit.com/tests'})
+        # invalid Twitter
+        resp = self.app.post('/admin/update', params={'twitter_handle': 'https://twit.com/tests'})
         assert resp.status_int == 200
         resp = self.app.post('/admin/update', params={'twitter_handle': 'https://google.com'})
         assert resp.status_int == 200
-        #invalid Facebook
+        # invalid Facebook
         resp = self.app.post('/admin/update', params={'facebook_page': 'https://facebok.com'})
         assert resp.status_int == 200
         resp = self.app.post('/admin/update', params={'facebook_page': 'https://spam.com'})
         assert resp.status_int == 200
         assert 'Invalid Facebook address' in resp
-        #invalid instagram
+        # invalid instagram
         resp = self.app.post('/admin/update', params={'instagram_page': 'https://instagrams.com'})
         assert resp.status_int == 200
-        #invalid fediverse
+        # invalid fediverse
         resp = self.app.post('/admin/update', params={'fediverse_address': '@test12@indieweb'})
         assert resp.status_int == 200
 
-        #valid Twitter
+        # valid Twitter
         resp = self.app.post('/admin/update', params={'twitter_handle': 'https://twitter.com/sourceforge'})
         assert resp.status_int == 302
         resp = self.app.post('/admin/update', params={'twitter_handle': '@sourceforge'})
         assert resp.status_int == 302
-        #valid Facebook
+        # valid Facebook
         resp = self.app.post('/admin/update', params={'facebook_page': 'https://www.facebook.com/sourceforgenet/'})
         assert resp.status_int == 302
-        #valid instagram
+        # valid instagram
         resp = self.app.post('/admin/update', params={'instagram_page': 'https://instagram.com/test'})
         assert resp.status_int == 302
         resp = self.app.post('/admin/update', params={'instagram_page': '@test'})
@@ -993,7 +993,6 @@ class TestProjectAdmin(TestController):
         assert resp.status_int == 302
         resp = self.app.post('/admin/update', params={'fediverse_address': 'https://indieweb.social/@test'})
         assert resp.status_int == 302
-
 
 
 class TestExport(TestController):

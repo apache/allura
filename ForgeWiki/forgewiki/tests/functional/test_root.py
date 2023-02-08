@@ -186,9 +186,9 @@ class TestRootController(TestController):
                 'title': 'foo',
                 'text': 'sometext',
                 'labels': 'test label',
-                }).follow()
+            }).follow()
         assert ('<a href="/p/test/wiki/search/?q=labels_t:%22test label%22&parser=standard">test label (1)</a>' in
-                  response)
+                response)
 
     def test_title_slashes(self):
         # forward slash not allowed in wiki page title - converted to dash
@@ -198,7 +198,7 @@ class TestRootController(TestController):
                 'title': 'foo/bar',
                 'text': 'sometext',
                 'labels': '',
-                }).follow()
+            }).follow()
         assert 'foo-bar' in response
         assert 'foo-bar' in response.request.url
 
@@ -209,7 +209,7 @@ class TestRootController(TestController):
                 'title': 'page.dot',
                 'text': 'text1',
                 'labels': '',
-                }).follow()
+            }).follow()
         assert 'page.dot' in r
 
     def test_subpage_attempt(self):
@@ -220,7 +220,7 @@ class TestRootController(TestController):
                 'title': 'tést'.encode(),
                 'text': 'text1',
                 'labels': '',
-                })
+            })
         assert '/p/test/wiki/Home/' in self.app.get(h.urlquote('/wiki/tést/Home/'))
         self.app.get(h.urlquote('/wiki/tést/notthere/'), status=404)
 
@@ -232,14 +232,14 @@ class TestRootController(TestController):
                 'title': 'tést'.encode(),
                 'text': 'text1',
                 'labels': '',
-                })
+            })
         self.app.post(
             h.urlquote('/wiki/tést/update'),
             params={
                 'title': 'tést'.encode(),
                 'text': 'text2',
                 'labels': '',
-                })
+            })
         response = self.app.get(h.urlquote('/wiki/tést/history'))
         assert 'tést' in response
         # two revisions are shown
@@ -269,7 +269,7 @@ class TestRootController(TestController):
                 'title': 'tést'.encode(),
                 'text': 'sometext',
                 'labels': '',
-                })
+            })
         self.app.post(h.urlquote('/wiki/tést/revert'), params=dict(version='1'))
         response = self.app.get(h.urlquote('/wiki/tést/diff') + '?v1=0&v2=0')
         assert 'tést' in response
@@ -347,14 +347,14 @@ class TestRootController(TestController):
         self.app.post('/wiki/testdiff/update', params=d)
         response = self.app.get('/wiki/testdiff/diff?v1=1&v2=2')
         assert ('# Now fix <del> permissons. </del> <ins> permissions. </ins> '
-                  'Wrong permissions may cause <ins> a </ins> massive slowdown!' in
-                  response)
+                'Wrong permissions may cause <ins> a </ins> massive slowdown!' in
+                response)
         assert '<script>alert' not in response
         assert '&lt;script&gt;alert' in response
         response = self.app.get('/wiki/testdiff/diff?v1=2&v2=1')
         assert ('# Now fix <del> permissions. </del> <ins> permissons. </ins> '
-                  'Wrong permissions may cause <del> a </del> massive slowdown!' in
-                  response)
+                'Wrong permissions may cause <del> a </del> massive slowdown!' in
+                response)
 
     def test_page_raw(self):
         self.app.post(
@@ -363,7 +363,7 @@ class TestRootController(TestController):
                 'title': 'TEST',
                 'text': 'sometext',
                 'labels': '',
-                })
+            })
         response = self.app.get('/wiki/TEST/raw')
         assert 'TEST' in response
 
@@ -374,7 +374,7 @@ class TestRootController(TestController):
                 'title': 'tést'.encode(),
                 'text': '',
                 'labels': '',
-                })
+            })
         response = self.app.post(h.urlquote('/wiki/tést/revert'), params=dict(version='1'))
         assert '.' in response.json['location']
         response = self.app.get(h.urlquote('/wiki/tést/'))
@@ -388,7 +388,7 @@ class TestRootController(TestController):
                 'title': 'tést'.encode(),
                 'text': 'sometext',
                 'labels': '',
-                })
+            })
         response = self.app.post(h.urlquote('/wiki/tést/revert'), params=dict(version='1'))
         assert '.' in response.json['location']
         response = self.app.get(h.urlquote('/wiki/tést/'))
@@ -403,7 +403,7 @@ class TestRootController(TestController):
                 'title': 'tést'.encode(),
                 'text': 'sometext',
                 'labels': '',
-                })
+            })
         assert spam_checker.check.call_args[0][0] == 'tést\nsometext'
         assert response.location == 'http://localhost/wiki/t%C3%A9st/'
 
@@ -414,7 +414,7 @@ class TestRootController(TestController):
                 'title': 'tést'.encode(),
                 'text': '- [ ] checkbox',
                 'labels': '',
-                })
+            })
         response = self.app.get(h.urlquote('/wiki/tést/get_markdown'))
         assert '- [ ] checkbox' in response
 
@@ -425,7 +425,7 @@ class TestRootController(TestController):
                 'title': 'tést'.encode(),
                 'text': '- [ ] checkbox',
                 'labels': '',
-                })
+            })
         response = self.app.post(
             h.urlquote('/wiki/tést/update_markdown'),
             params={
@@ -448,7 +448,7 @@ class TestRootController(TestController):
                 'title': 'tést'.encode(),
                 'text': 'sometext',
                 'labels': 'yellow,green',
-                })
+            })
         assert response.location == 'http://localhost/wiki/t%C3%A9st/'
         response = self.app.post(
             h.urlquote('/wiki/tést/update'),
@@ -456,7 +456,7 @@ class TestRootController(TestController):
                 'title': 'tést'.encode(),
                 'text': 'sometext',
                 'labels': 'yellow',
-                })
+            })
         assert response.location == 'http://localhost/wiki/t%C3%A9st/'
 
     def test_page_label_count(self):
@@ -469,7 +469,7 @@ class TestRootController(TestController):
                 'title': 'tést'.encode(),
                 'text': 'sometext',
                 'labels': labels,
-                })
+            })
         r = self.app.get('/wiki/browse_tags/')
         assert 'results of 100 ' in r
         assert '<div class="page_list">' in r
@@ -502,7 +502,7 @@ class TestRootController(TestController):
                 'title': 'tést'.encode(),
                 'text': 'sometext',
                 'labels': '',
-                })
+            })
         content = open(__file__, 'rb').read()
         self.app.post(h.urlquote('/wiki/tést/attach'),
                       upload_files=[('file_info', 'test_root.py', content)])
@@ -516,7 +516,7 @@ class TestRootController(TestController):
                 'title': 'tést'.encode(),
                 'text': 'sometext',
                 'labels': '',
-                })
+            })
         content = open(__file__, 'rb').read()
         self.app.post(h.urlquote('/wiki/tést/attach'),
                       upload_files=[('file_info', 'test1.py', content), ('file_info', 'test2.py', content)])
@@ -531,7 +531,7 @@ class TestRootController(TestController):
                 'title': 'tést'.encode(),
                 'text': 'sometext',
                 'labels': '',
-                })
+            })
         file_name = 'test_root.py'
         file_data = open(__file__, 'rb').read()
         upload = ('file_info', file_name, file_data)
@@ -545,7 +545,7 @@ class TestRootController(TestController):
             'title': 'TEST',
             'text': 'sometext',
             'labels': '',
-            })
+        })
         file_name = 'neo-icon-set-454545-256x350.png'
         file_path = os.path.join(
             allura.__path__[0], 'nf', 'allura', 'images', file_name)
@@ -584,17 +584,17 @@ class TestRootController(TestController):
             'title': 'TEST',
             'text': 'sometext',
             'labels': '',
-            })
+        })
         self.app.post('/wiki/aaa/update', params={
             'title': 'aaa',
             'text': '',
             'labels': '',
-            })
+        })
         self.app.post('/wiki/bbb/update', params={
             'title': 'bbb',
             'text': '',
             'labels': '',
-            })
+        })
 
         h.set_context('test', 'wiki', neighborhood='Projects')
         a = model.Page.query.find(dict(title='aaa')).first()
@@ -616,7 +616,7 @@ class TestRootController(TestController):
             'title': 'tést'.encode(),
             'text': 'sometext',
             'labels': '',
-            })
+        })
         wiki_page = self.app.get(h.urlquote('/wiki/tést/'))
         assert wiki_page.html.find('div', {'id': 'new_post_holder'})
         options_admin = self.app.get(
@@ -635,7 +635,7 @@ class TestRootController(TestController):
             'title': 'tést'.encode(),
             'text': 'sometext',
             'labels': '',
-            })
+        })
         wiki_page = self.app.get(h.urlquote('/wiki/tést/'))
         assert wiki_page.html.find('ul', {'class': 'sidebarmenu'})
         options_admin = self.app.get(
@@ -657,7 +657,7 @@ class TestRootController(TestController):
             'title': 'tést'.encode(),
             'text': 'sometext',
             'labels': '',
-            })
+        })
         wiki_page = self.app.get(h.urlquote('/wiki/tést/'))
         assert wiki_page.html.find('div', {'class': 'editbox'})
         options_admin = self.app.get(
@@ -676,7 +676,7 @@ class TestRootController(TestController):
             'title': 'our_néw_home'.encode(),
             'text': 'sometext',
             'labels': '',
-            })
+        })
         homepage_admin = self.app.get('/admin/wiki/home', validate_chunk=True)
         assert homepage_admin.form['new_home'].value == 'Home'
         homepage_admin.form['new_home'].value = 'our_néw_home'
@@ -702,7 +702,7 @@ class TestRootController(TestController):
             'title': 'space page',
             'text': '''There is a space in the title!''',
             'labels': '',
-            }
+        }
         self.app.post('/wiki/space%20page/update', params=params)
         self.app.get('/wiki/TEST/')
         params = {
@@ -720,7 +720,7 @@ class TestRootController(TestController):
 * Here is a link to [attach](TEST/attachment/test_root.py)
 ''',
             'labels': '',
-            }
+        }
         self.app.post('/wiki/TEST/update', params=params)
         content = open(__file__, 'rb').read()
         self.app.post('/wiki/TEST/attach',
@@ -778,7 +778,7 @@ class TestRootController(TestController):
             'title': 'cache',
             'text': html,
             'labels': '',
-            })
+        })
         # first request caches html, second serves from cache
         r = self.app.get('/wiki/cache/')
         r = self.app.get('/wiki/cache/')
@@ -789,12 +789,12 @@ class TestRootController(TestController):
             'title': 'aaa',
             'text': '111',
             'labels': '',
-            })
+        })
         self.app.post('/wiki/bbb/update', params={
             'title': 'bbb',
             'text': '222',
             'labels': '',
-            })
+        })
         response = self.app.get('/wiki/browse_pages/')
         assert 'aaa' in response
         assert 'bbb' in response
@@ -827,7 +827,7 @@ class TestRootController(TestController):
 * Handmaid mailto <a href="mailto:yoda@jedi.org">Email Yoda</a>
 ''',
             'labels': '',
-            }
+        }
         self.app.post('/wiki/test_mailto/update', params=params)
         r = self.app.get('/wiki/test_mailto/')
         mailto_links = 0

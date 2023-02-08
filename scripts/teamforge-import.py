@@ -191,7 +191,7 @@ def save_user(usernames):
             users[username] = Object(user_data)
             if users[username].status != 'Active':
                 log.warning('user: %s status: %s' %
-                         (username, users[username].status))
+                            (username, users[username].status))
 
 
 def get_project(project):
@@ -638,19 +638,19 @@ def check_unsupported_tools(project):
         doc_count += 1
     if doc_count:
         log.warning('Migrating documents is not supported, but found %s docs' %
-                 doc_count)
+                    doc_count)
 
     scm = make_client(options.api_url, 'ScmApp')
     for repo in scm.service.getRepositoryList(s, project.id).dataRows:
         log.warning('Migrating SCM repos is not supported, but found %s' %
-                 repo.repositoryPath)
+                    repo.repositoryPath)
 
     tasks = make_client(options.api_url, 'TaskApp')
     task_count = len(
         tasks.service.getTaskList(s, project.id, filters=None).dataRows)
     if task_count:
         log.warning('Migrating tasks is not supported, but found %s tasks' %
-                 task_count)
+                    task_count)
 
     tracker = make_client(options.api_url, 'TrackerApp')
     tracker_count = len(
@@ -707,15 +707,12 @@ def download_file(tool, url_path, *filepaths):
     # log in to make sure the file should really be html
     if resp.headers.type == 'text/html':
         # log in and save the file
-        resp = loggedInOpener.open(scheme + '://' + hostname + "/sf/sfmain/do/login", six.moves.urllib.parse.urlencode({
-            'username': options.username,
-            'password': options.password,
-            'returnToUrl': url,
-            'sfsubmit': 'submit'
-        }))
+        resp = loggedInOpener.open(scheme + '://' + hostname + "/sf/sfmain/do/login", six.moves.urllib.parse.urlencode(
+            {'username': options.username, 'password': options.password, 'returnToUrl': url, 'sfsubmit': 'submit'}))
     with open(out_file, 'w', encoding='utf-8') as out:
         out.write(resp.fp.read())
     return out_file
+
 
 bracket_macro = re.compile(r'\[(.*?)\]')
 h1 = re.compile(r'^!!!', re.MULTILINE)
@@ -753,6 +750,7 @@ def wiki2markdown(markup):
 
     markup = re_stats.sub('', markup)
     return markup
+
 
 re_rel = re.compile(r'\b(rel\d+)\b')
 
@@ -1023,6 +1021,7 @@ def get_parser(defaults):
 
     return optparser
 
+
 re_username = re.compile(r"^[a-z\-0-9]+$")
 
 
@@ -1059,6 +1058,7 @@ def make_valid_sf_username(orig_username):
                   sf_username, adjusted_username)
         sf_username = adjusted_username
     return sf_username
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.WARN)

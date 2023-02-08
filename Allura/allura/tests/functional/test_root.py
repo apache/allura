@@ -62,7 +62,7 @@ class TestRootController(TestController):
     def test_neighborhood(self):
         response = self.app.get('/neighborhood')
         assert response.html.find('h2', {'class': 'dark title'}).find('span').contents[
-                     0].strip() == 'All Neighborhoods'
+            0].strip() == 'All Neighborhoods'
         nbhds = response.html.findAll('div', {'class': 'nbhd_name'})
         assert nbhds[0].find('a').get('href') == '/adobe/'
         cat_links = response.html.find('div', {'id': 'sidebar'}).findAll('li')
@@ -177,8 +177,7 @@ class TestRootController(TestController):
             callable_name.return_value = 'foo'
             self.app.get('/p/')
             arg = callable_name.call_args[0][0]
-            assert (arg.__wrapped__ ==
-                         NeighborhoodController.index.__wrapped__)
+            assert arg.__wrapped__ == NeighborhoodController.index.__wrapped__
             set_transaction_name.assert_called_with('foo', priority=2)
 
     def test_error_page(self):
@@ -186,8 +185,8 @@ class TestRootController(TestController):
         r = self.app.get('/error/document')
         r.mustcontain("We're sorry but we weren't able to process")
 
-    @mock.patch.dict(tg.config, {'csp.frame_sources_enforce': True, \
-                                 'csp.report_uri_enforce': 'https://example.com/r/d/csp/enforce', \
+    @mock.patch.dict(tg.config, {'csp.frame_sources_enforce': True,
+                                 'csp.report_uri_enforce': 'https://example.com/r/d/csp/enforce',
                                  'csp.form_actions_enforce': True,
                                  'csp.script_src_enforce': True})
     def test_headers(self):
@@ -213,8 +212,8 @@ class TestRootController(TestController):
         csp_headers = resp.headers.getall('Content-Security-Policy-Report-Only')[0]
         assert all([h.strip() in csp_headers for h in expected_headers.split(';')])
 
-
-    @mock.patch.dict(tg.config, {'csp.report_uri_enforce': 'https://example.com/r/d/csp/enforce', 'csp.frame_sources_enforce': True})
+    @mock.patch.dict(tg.config, {'csp.report_uri_enforce': 'https://example.com/r/d/csp/enforce',
+                                 'csp.frame_sources_enforce': True})
     def test_headers_frame_sources_enforce(self):
         resp = self.app.get('/p/wiki/Home/')
         expected_headers = "report-uri https://example.com/r/d/csp/enforce;"
@@ -225,6 +224,7 @@ class TestRootController(TestController):
         csp_report_headers = resp.headers.getall('Content-Security-Policy-Report-Only')[0]
         assert all([h.strip() in csp_headers for h in expected_headers.split(';')])
         assert all([h.strip() in csp_report_headers for h in expected_report_headers.split(';')])
+
 
 class TestRootWithSSLPattern(TestController):
     def setup_method(self, method):

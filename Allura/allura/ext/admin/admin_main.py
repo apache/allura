@@ -54,7 +54,6 @@ from . import widgets as aw
 import six
 
 
-
 log = logging.getLogger(__name__)
 
 
@@ -504,6 +503,7 @@ class ProjectAdminController(BaseController):
                     trove_cat_id=trove_obj.trove_cat_id,
                     error_msg=error_msg,
                     in_trove=in_trove)
+
     @expose()
     @require_post()
     def delete_trove(self, type, trove, **kw):
@@ -529,10 +529,12 @@ class ProjectAdminController(BaseController):
                 c_filename, c_fileext = os.path.splitext(screen.filename)
                 if c_fileext == '.png' and e_fileext.lower() == '.bmp' and e_filename == c_filename:
                     future_bmp = True
-                    # If both filename(without ext.) equals and exiting file ext. is png and given file ext is bmp, there will be two similar png files.
+                    # If both filename(without ext.) equals and exiting file ext. is png and given file ext is bmp,
+                    # there will be two similar png files.
 
                 if screen.filename == screenshot.filename or future_bmp:
-                    screenshot.filename = re.sub(r'(.*)\.(.*)', r'\1-' + str(randint(1000,9999)) + r'.\2', screenshot.filename)
+                    screenshot.filename = re.sub(r'(.*)\.(.*)', r'\1-' + str(randint(1000, 9999)) + r'.\2',
+                                                 screenshot.filename)
                     # if filename already exists append a random number
                     break
             M.AuditLog.log('screenshots: added screenshot {} with caption "{}"'.format(
@@ -705,7 +707,7 @@ class ProjectAdminController(BaseController):
             flash(f'{exc.__class__.__name__}: {exc.args[0]}',
                   'error')
         if request.referer is not None and tool is not None and 'delete' in tool[0] and \
-            re.search(c.project.url() + r'(admin\/|)' + tool[0]['mount_point']+ r'\/*',
+            re.search(c.project.url() + r'(admin\/|)' + tool[0]['mount_point'] + r'\/*',
                       six.ensure_text(request.referer)):
             # Redirect to root when deleting currect module
             redirect('../')
@@ -1073,7 +1075,7 @@ class PermissionsController(BaseController):
             permissions[perm] = role_ids
         c.project.acl = []
         for perm, role_ids in permissions.items():
-            role_names = lambda ids: ','.join(sorted(
+            def role_names(ids): return ','.join(sorted(
                 pr.name for pr in M.ProjectRole.query.find(dict(_id={'$in': ids}))))
             old_role_ids = old_permissions.get(perm, [])
             if old_role_ids != role_ids:

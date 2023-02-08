@@ -73,7 +73,8 @@ class TestRepoTasks(unittest.TestCase):
     @mock.patch.object(M, 'MergeRequest')
     def test_merge(self, MR, session):
         mr = mock.Mock(_id='_id', activity_name='merge req', activity_url='/fake/url', activity_extras={}, node_id=None,
-                       app=mock.Mock(activity_name='code merge', activity_url='/fake/url', activity_extras={}, node_id=None))
+                       app=mock.Mock(activity_name='code merge', activity_url='/fake/url', activity_extras={},
+                                     node_id=None))
         MR.query.get.return_value = mr
         repo_tasks.merge(mr._id)
         mr.app.repo.merge.assert_called_once_with(mr)
@@ -143,12 +144,12 @@ class TestEventTasks(unittest.TestCase):
 
     def test_compound_error(self):
         t = raise_compound_exception.post()
-        with LogCapture(level=logging.ERROR) as l, \
+        with LogCapture(level=logging.ERROR) as lc, \
                 mock.patch.dict(tg.config, {'monq.raise_errors': False}):  # match normal non-test behavior
             t()
-        # l.check() would be nice, but string is too detailed to check
-        assert l.records[0].name == 'allura.model.monq_model'
-        msg = l.records[0].getMessage()
+        # lc.check() would be nice, but string is too detailed to check
+        assert lc.records[0].name == 'allura.model.monq_model'
+        msg = lc.records[0].getMessage()
         assert "AssertionError('assert 0'" in msg
         assert "AssertionError('assert 5'" in msg
         assert ' on job <MonQTask ' in msg
@@ -210,7 +211,7 @@ class TestIndexTasks(unittest.TestCase):
             t3 = _TestArtifact.query.get(_shorthand_id='t3')
             assert len(t3.backrefs) == 5, t3.backrefs
             assert (find_slinks.call_args_list ==
-                         [mock.call(a.index().get('text')) for a in artifacts])
+                    [mock.call(a.index().get('text')) for a in artifacts])
 
     @td.with_wiki
     @mock.patch('allura.tasks.index_tasks.g.solr')
@@ -560,7 +561,7 @@ class TestUserNotificationTasks(TestController):
             dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
         assert len(tasks) == 1
         assert (tasks[0].kwargs['subject'] ==
-                     '[test:wiki] Your name was mentioned')
+                '[test:wiki] Your name was mentioned')
         assert tasks[0].kwargs['toaddr'] == 'test-user-1@allura.local'
         assert tasks[0].kwargs['reply_to'] == g.noreply
         text = tasks[0].kwargs['text']
@@ -644,7 +645,7 @@ class TestExportTasks(unittest.TestCase):
             dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
         assert len(tasks) == 1
         assert (tasks[0].kwargs['subject'] ==
-                     'Bulk export for project test completed')
+                'Bulk export for project test completed')
         assert tasks[0].kwargs['fromaddr'] == '"Allura" <noreply@localhost>'
         assert tasks[0].kwargs['reply_to'] == g.noreply
         text = tasks[0].kwargs['text']
@@ -662,5 +663,6 @@ class TestAdminTasks(unittest.TestCase):
 
     def test_install_app_docstring(self):
         assert 'ep_name, mount_point=None' in admin_tasks.install_app.__doc__
+
 
 Mapper.compile_all()

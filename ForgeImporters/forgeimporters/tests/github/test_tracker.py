@@ -127,7 +127,7 @@ class TestTrackerImporter(TestCase):
                         {'name': 'first', 'due_date':
                             '2015-04-23', 'complete': False},
                     {'name': 'second', 'due_date':
-                     '2015-04-25', 'complete': False},
+                            '2015-04-25', 'complete': False},
                 ],
             },
         ])
