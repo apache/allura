@@ -18,6 +18,8 @@
 """
 An Apache authorization handler for Allura
 
+Currently python2 only.  See https://forge-allura.apache.org/p/allura/tickets/8352/
+
 * This needs python-requests in the modpython path
 * Check fuse/accessfs.py for more details on the path mangling
   magic
@@ -49,7 +51,7 @@ def load_requests_lib(req):
         try:
             exec(compile(open(activate_this, "rb").read(), activate_this, 'exec'), {'__file__': activate_this})
         except Exception as e:
-            log(req, f"Couldn't activate venv via {activate_this}: {repr(e)}")
+            log(req, "Couldn't activate venv via {}: {}".format(activate_this, repr(e)))
     global requests
     import requests as requests_lib
     requests = requests_lib
@@ -64,7 +66,7 @@ def mangle(path):
     if len(parts) < 4:
         return None
     scm, nbhd, proj, rest = parts[0], parts[1], parts[2], parts[3:]
-    parts = [f'/SCM/{proj}.{nbhd}'] + rest
+    parts = ['/SCM/{}.{}'.format(proj, nbhd)] + rest
     return '/'.join(parts)
 
 
@@ -191,7 +193,7 @@ def check_permissions(req):
     permission = get_permission_name(req_path, req_query, req.method)
     authorized = cred.get(permission, False)
 
-    log(req, f"{r.url} -> {cred} -> {permission} -> authorized:{authorized}")
+    log(req, "{} -> {} -> {} -> authorized:{}".format(r.url, cred, permission, authorized))
     return authorized
 
 
