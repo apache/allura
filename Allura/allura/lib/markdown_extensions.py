@@ -437,7 +437,7 @@ class ForgeLinkTreeProcessor(markdown.treeprocessors.Treeprocessor):
         self.alinks = []
 
     def run(self, root):
-        for node in root.getiterator('a'):
+        for node in root.iter('a'):
             if 'alink' in node.get('class', '').split() and node.text:
                 node.text = '[' + node.text + ']'
         return root
