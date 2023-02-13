@@ -35,6 +35,7 @@ from tg import expose, validate, flash, redirect, config
 from tg.decorators import with_trailing_slash
 from tg import app_globals as g
 from tg import tmpl_context as c
+from tg import request
 from formencode import validators as fev, schema
 from webob import exc
 
@@ -324,7 +325,7 @@ class ProjectImporter(BaseController):
         Ajax form validation.
 
         """
-        return c.form_errors
+        return request.validation.errors
 
     def after_project_create(self, project, **kw):
         """

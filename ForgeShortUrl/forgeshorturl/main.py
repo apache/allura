@@ -225,11 +225,11 @@ class ShortURLAdminController(DefaultAdminController):
         else:
             require_access(self.app, 'create')
         if request.method == 'POST':
-            if c.form_errors:
+            if request.validation.errors:
                 error_msg = 'Error: '
-                for msg in list(c.form_errors):
+                for msg in list(request.validation.errors):
                     names = {'short_url': 'Short url', 'full_url': 'Full URL'}
-                    error_msg += f'{names[msg]}: {c.form_errors[msg]} '
+                    error_msg += f'{names[msg]}: {request.validation.errors[msg]} '
                     flash(error_msg, 'error')
                 redirect(six.ensure_text(request.referer or '/'))
 

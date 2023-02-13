@@ -92,8 +92,8 @@
       </div>
       <div class="grid-10">
           <input id="project_name" name="project_name" value="{{c.form_values['project_name']}}"/>
-          <div id="project_name_error" class="error{% if not c.form_errors['project_name'] %} hidden{% endif %}">
-              {{c.form_errors['project_name']}}
+          <div id="project_name_error" class="error{% if not request.validation.errors['project_name'] %} hidden{% endif %}">
+              {{request.validation.errors['project_name']}}
           </div>
       </div>
 
@@ -102,8 +102,8 @@
       </div>
       <div class="grid-10">
           <input id="project_shortname" name="project_shortname" value="{{c.form_values['project_shortname']}}"/>
-          <div id="project_shortname_error" class="error{% if not c.form_errors['project_shortname'] %} hidden{% endif %}">
-              {{c.form_errors['project_shortname']}}
+          <div id="project_shortname_error" class="error{% if not request.validation.errors['project_shortname'] %} hidden{% endif %}">
+              {{request.validation.errors['project_shortname']}}
           </div>
           <div id="project-url">
               http://{{request.environ['HTTP_HOST']}}{{importer.neighborhood.url()}}<span id="url-fragment">{{c.form_values['project_shortname']}}</span>
@@ -113,19 +113,19 @@
     </fieldset>
 
     <div id="tool-fields">
-        {% if c.form_errors['tools'] %}
-        <div class="error">{{c.form_errors['tools']}}</div>
+        {% if request.validation.errors['tools'] %}
+        <div class="error">{{request.validation.errors['tools']}}</div>
         {% endif %}
         {% for name, tool_importer in importer.tool_importers.items() %}
         <div class="tool">
             <img src="{{ tool_importer.tool_icon(g.theme, 48) }}" alt="{{ tool_importer.tool_label }} icon">
             <label>
-                <input name="tools" value="{{name}}" type="checkbox"{% if not c.form_errors or name in c.form_values['tools'] %} checked="checked"{% endif %}/>
+                <input name="tools" value="{{name}}" type="checkbox"{% if not request.validation.errors or name in c.form_values['tools'] %} checked="checked"{% endif %}/>
                 {{tool_importer.tool_label}}
             </label>
             {% for option_name, option_label in tool_importer.tool_option.items() %}
               <label>
-                <input name="tool_option" value="{{option_name}}" type="checkbox"{% if not c.form_errors or name in c.form_values['tool_option'] %} checked="checked"{% endif %}/>
+                <input name="tool_option" value="{{option_name}}" type="checkbox"{% if not request.validation.errors or name in c.form_values['tool_option'] %} checked="checked"{% endif %}/>
                 {{option_label}}
               </label>
             {% endfor %}

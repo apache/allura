@@ -30,8 +30,8 @@
     </div>
      <div class="grid-10">
         <input id="project_url" name="project_url" value="{{c.form_values['project_url']}}" />
-        <div id="project_url_error" class="error{% if not c.form_errors['project_url'] %} hidden{% endif %}">
-            {{c.form_errors['project_url']}}
+        <div id="project_url_error" class="error{% if not request.validation.errors['project_url'] %} hidden{% endif %}">
+            {{request.validation.errors['project_url']}}
         </div>
     </div>
     <div class="grid-10 field-divider">
@@ -48,8 +48,8 @@
     </div>
      <div class="grid-10">
         <input id="user_name" name="user_name" value="{{c.form_values['user_name']}}" autofocus/>
-         <div id="user_name_error" class="error{% if not c.form_errors['user_name'] %} hidden{% endif %}">
-            {{c.form_errors['user_name']}}
+         <div id="user_name_error" class="error{% if not request.validation.errors['user_name'] %} hidden{% endif %}">
+            {{request.validation.errors['user_name']}}
         </div>
     </div>
 
@@ -65,8 +65,8 @@
     </div>
      <div class="grid-10">
         <input id="project_name" name="project_name" value="{{c.form_values['project_name']}}" />
-        <div id="project_name_error" class="error{% if not c.form_errors['project_name'] %} hidden{% endif %}">
-            {{c.form_errors['project_name']}}
+        <div id="project_name_error" class="error{% if not request.validation.errors['project_name'] %} hidden{% endif %}">
+            {{request.validation.errors['project_name']}}
         </div>
     </div>
 
@@ -84,8 +84,8 @@
     </div>
     <div class="grid-10">
         <input id="project_shortname" name="project_shortname" value="{{c.form_values['project_shortname']}}"/>
-        <div id="project_shortname_error" class="error{% if not c.form_errors['project_shortname'] %} hidden{% endif %}">
-            {{c.form_errors['project_shortname']}}
+        <div id="project_shortname_error" class="error{% if not request.validation.errors['project_shortname'] %} hidden{% endif %}">
+            {{request.validation.errors['project_shortname']}}
         </div>
         <div id="project-url">
             http://{{request.environ['HTTP_HOST']}}{{importer.neighborhood.url()}}<span id="url-fragment">{{c.form_values['project_shortname']}}</span>

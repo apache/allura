@@ -27,8 +27,8 @@
 <form method="post">
     <h2>Password Confirmation</h2>
     <p>To access this account security page, you must reconfirm your password:<br>
-    {% if c.form_errors['password'] %}
-        <span class="fielderror">{{ c.form_errors['password'] }}</span><br>
+    {% if request.validation.errors['password'] %}
+        <span class="fielderror">{{ request.validation.errors['password'] }}</span><br>
     {% endif %}
     <input type="password" name="password" autofocus>
     <br>

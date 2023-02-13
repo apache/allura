@@ -412,11 +412,11 @@ class AuthController(BaseController):
                 recovery.verify_and_remove_code(user, code)
                 h.auditlog_user('Logged in using a multifactor recovery code', user=user)
         except (InvalidToken, InvalidRecoveryCode):
-            c.form_errors['code'] = 'Invalid code, please try again.'
+            request.validation.errors['code'] = 'Invalid code, please try again.'
             h.auditlog_user('Multifactor login - invalid code', user=user)
             return self.multifactor(mode=mode, **kwargs)
         except MultifactorRateLimitError:
-            c.form_errors['code'] = 'Multifactor rate limit exceeded, slow down and try again later.'
+            request.validation.errors['code'] = 'Multifactor rate limit exceeded, slow down and try again later.'
             h.auditlog_user('Multifactor login - rate limit', user=user)
             return self.multifactor(mode=mode, **kwargs)
         else:
@@ -828,7 +828,7 @@ class PreferencesController(BaseController):
             totp_service.verify(totp, code, c.user)
         except InvalidToken:
             h.auditlog_user('Failed to set up multifactor TOTP (wrong code)')
-            c.form_errors['code'] = 'Invalid code, please try again.'
+            request.validation.errors['code'] = 'Invalid code, please try again.'
             return self.totp_new(**kw)
         else:
             h.auditlog_user('Set up multifactor TOTP')
@@ -1062,7 +1062,6 @@ class UserContactsController(BaseController):
             Validator = validator_map.get(kw['socialnetwork'])
             kw['accounturl'] = Validator().to_python(kw['accounturl'])
         except fe.Invalid as e:
-            # c.form_errors['accounturl'] = e.msg
             flash(e.msg, 'error')
             redirect('.')
 
