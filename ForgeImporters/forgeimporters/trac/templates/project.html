@@ -23,7 +23,7 @@
         <label>Trac URL</label>
     </div>
     <div class="grid-10">
-        <input id="trac_url" name="trac_url" value="{{c.form_values['trac_url']}}" autofocus/>
+        <input id="trac_url" name="trac_url" value="{{request.validation.values['trac_url']}}" autofocus/>
         <div id="trac_url_error" class="error{% if not request.validation.errors['trac_url'] %} hidden{% endif %}">
             {{request.validation.errors['trac_url']}}
         </div>
@@ -33,7 +33,7 @@
         <label>User Map (optional)</label>
     </div>
     <div class="grid-10">
-        <input id="user_map" name="user_map" value="{{c.form_values['user_map']}}" type="file"/>
+        <input id="user_map" name="user_map" value="{{request.validation.values['user_map']}}" type="file"/>
         <br><small>JSON file mapping Trac usernames to Allura usernames</small>
         <div id="user_map_error" class="error{% if not request.validation.errors['user_map'] %} hidden{% endif %}">
             {{request.validation.errors['user_map']}}

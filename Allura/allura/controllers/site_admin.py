@@ -456,7 +456,7 @@ class SiteNotificationController:
         """Render the New SiteNotification form"""
         return dict(
             form_errors=request.validation.errors or {},
-            form_values=c.form_values or {},
+            form_values=request.validation.values or {},
             form_title='New Site Notification',
             form_action='create'
         )
@@ -475,10 +475,10 @@ class SiteNotificationController:
 
     @expose('jinja:allura:templates/site_admin_site_notifications_create_update.html')
     def edit(self, **kw):
-        if c.form_values:
+        if request.validation.values:
             return dict(
                 form_errors=request.validation.errors or {},
-                form_values=c.form_values or {},
+                form_values=request.validation.values or {},
                 form_title='Edit Site Notification',
                 form_action='update'
             )
@@ -584,7 +584,7 @@ class TaskManagerController:
         """Render the New Task form"""
         return dict(
             form_errors=request.validation.errors or {},
-            form_values=c.form_values or {},
+            form_values=request.validation.values or {},
         )
 
     @expose()

@@ -29,10 +29,10 @@
   {% set id = 0 %}
     {% for i in range(repetitions) %}
       {% set ctx = widget.context_for(i) %}
-        {% if c.form_values %}
-            {% if 'features-' ~ i ~ '.feature' in c.form_values %}
+        {% if request.validation.values %}
+            {% if 'features-' ~ i ~ '.feature' in request.validation.values %}
                 {% set ctx = widget.context_for(i) %}
-                {% do ctx.update({'value': {'feature': c.form_values.get('features-' ~ i ~ '.feature')} }) %}
+                {% do ctx.update({'value': {'feature': request.validation.values.get('features-' ~ i ~ '.feature')} }) %}
                 {{ widget.field.display(css_class=field_cls, **ctx) }}
             {% endif %}
         {% else %}
@@ -40,7 +40,7 @@
         {% endif %}
     {% endfor %}
     {% if extra_field_on_focus_name %}
-        {% if not c.form_values %}
+        {% if not request.validation.values %}
           {% set ctx = widget.context_for(repetitions) %}
           {{ widget.field.display(css_class=field_cls, **ctx) }}
         {% endif %}
