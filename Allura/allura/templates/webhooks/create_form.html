@@ -58,8 +58,8 @@
 {% endblock %}
 
 {%- macro error(field_name) %}
-  {% if c.form_errors[field_name] %}
-  <div class="error">{{c.form_errors[field_name]}}</div>
+  {% if request.validation.errors[field_name] %}
+  <div class="error">{{request.validation.errors[field_name]}}</div>
   {% endif %}
 {%- endmacro %}
 

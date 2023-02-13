@@ -30,8 +30,8 @@
     <span class="totp">Please enter the {{ config['auth.multifactor.totp.length'] }}-digit code from your authenticator app:</span>
     <span class="recovery">Please enter a recovery code:</span>
     <br>
-    {% if c.form_errors['code'] %}
-        <span class="fielderror">{{ c.form_errors['code'] }}</span><br>
+    {% if request.validation.errors['code'] %}
+        <span class="fielderror">{{ request.validation.errors['code'] }}</span><br>
     {% endif %}
     <input type="text" name="code" autofocus autocomplete="off"/>
     <input type="hidden" name="return_to" value="{{ return_to }}"/>

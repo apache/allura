@@ -219,12 +219,12 @@ class SiteAdminController:
                    mount_point=validators.NotEmpty()))
     def reclone_repo(self, prefix=None, shortname=None, mount_point=None, **data):
         if request.method == 'POST':
-            if c.form_errors:
+            if request.validation.errors:
                 error_msg = 'Error: '
-                for msg in list(c.form_errors):
+                for msg in list(request.validation.errors):
                     names = {'prefix': 'Neighborhood prefix', 'shortname':
                              'Project shortname', 'mount_point': 'Repository mount point'}
-                    error_msg += f'{names[msg]}: {c.form_errors[msg]} '
+                    error_msg += f'{names[msg]}: {request.validation.errors[msg]} '
                     flash(error_msg, 'error')
                 return dict(prefix=prefix, shortname=shortname, mount_point=mount_point)
             nbhd = M.Neighborhood.query.get(url_prefix='/%s/' % prefix)
@@ -455,7 +455,7 @@ class SiteNotificationController:
     def new(self, **kw):
         """Render the New SiteNotification form"""
         return dict(
-            form_errors=c.form_errors or {},
+            form_errors=request.validation.errors or {},
             form_values=c.form_values or {},
             form_title='New Site Notification',
             form_action='create'
@@ -477,7 +477,7 @@ class SiteNotificationController:
     def edit(self, **kw):
         if c.form_values:
             return dict(
-                form_errors=c.form_errors or {},
+                form_errors=request.validation.errors or {},
                 form_values=c.form_values or {},
                 form_title='Edit Site Notification',
                 form_action='update'
@@ -583,7 +583,7 @@ class TaskManagerController:
     def new(self, **kw):
         """Render the New Task form"""
         return dict(
-            form_errors=c.form_errors or {},
+            form_errors=request.validation.errors or {},
             form_values=c.form_values or {},
         )
 

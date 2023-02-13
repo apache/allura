@@ -148,7 +148,7 @@ class WebhookController(BaseController, AdminControllerMixin, metaclass=WebhookC
                 self.update_webhook(webhook, url, secret)
             except Invalid as e:
                 # trigger error_handler directly
-                c.form_errors['_the_form'] = e
+                request.validation.errors['_the_form'] = e
                 return self.index(url=url, secret=secret)
 
             M.AuditLog.log('add webhook %s %s %s',
@@ -170,7 +170,7 @@ class WebhookController(BaseController, AdminControllerMixin, metaclass=WebhookC
             self.update_webhook(webhook, url, secret)
         except Invalid as e:
             # trigger error_handler directly
-            c.form_errors['_the_form'] = e
+            request.validation.errors['_the_form'] = e
             return self._default(webhook=webhook, url=url, secret=secret)
         M.AuditLog.log('edit webhook %s\n%s => %s\n%s',
                        webhook.type, old_url, url,
