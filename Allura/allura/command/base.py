@@ -28,7 +28,7 @@ from tg.wsgiapp import RequestLocals
 
 import activitystream
 import ming
-from allura.config.environment import load_environment
+from allura.config.app_cfg import base_config
 from allura.lib.decorators import task
 from allura.lib import helpers as h
 from allura.lib.utils import configure_ming
@@ -99,7 +99,8 @@ class Command(command.Command, metaclass=MetaParserDocstring):
                 logging_config, disable_existing_loggers=False)
             log = logging.getLogger('allura.command')
             log.info('Initialize command with config %r', self.args[0])
-            load_environment(conf.global_conf, conf.local_conf)
+            conf = base_config.configure(conf.global_conf, conf.local_conf)
+            base_config.setup(conf)
             self.setup_globals()
             from allura import model
             M = model

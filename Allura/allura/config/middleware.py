@@ -15,7 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-"""WSGI middleware initialization for the allura application."""
+"""core app and WSGI middleware initialization.  New TurboGears2 apps name it application.py"""
 
 import ast
 import importlib
@@ -23,12 +23,10 @@ import mimetypes
 import pickle
 import six
 import tg
-import tg.error
 import pkg_resources
 from tg import config
 from paste.deploy.converters import asbool, aslist, asint
 from tg.support.registry import RegistryManager
-from tg.support.middlewares import StatusCodeRedirect
 from beaker.middleware import SessionMiddleware
 from beaker.util import PickleSerializer
 from paste.exceptions.errormiddleware import ErrorMiddleware
@@ -51,8 +49,7 @@ except ImportError:
 else:
     patches.newrelic()
 
-from allura.config.app_cfg import base_config, AlluraJinjaRenderer  # noqa: E402
-from allura.config.environment import load_environment  # noqa: E402
+from allura.config.app_cfg import AlluraJinjaRenderer  # noqa: E402
 from allura.config.app_cfg import ForgeConfig  # noqa: E402
 from allura.lib.custom_middleware import AlluraTimerMiddleware  # noqa: E402
 from allura.lib.custom_middleware import SSLMiddleware  # noqa: E402
@@ -64,13 +61,15 @@ from allura.lib.custom_middleware import RememberLoginMiddleware  # noqa: E402
 from allura.lib.custom_middleware import SetRequestHostFromConfig  # noqa: E402
 from allura.lib.custom_middleware import MingTaskSessionSetupMiddleware  # noqa: E402
 from allura.lib.custom_middleware import ContentSecurityPolicyMiddleware  # noqa: E402
+from allura.lib.custom_middleware import StatusCodeRedirect  # noqa: E402
 from allura.lib import helpers as h  # noqa: E402
 from allura.lib.utils import configure_ming  # noqa: E402
 
 __all__ = ['make_app']
 
 
-def make_app(global_conf, full_stack=True, **app_conf):
+# this is webapp entry point from setup.py
+def make_app(global_conf: dict, **app_conf):
     override_root_module_name = app_conf.get('override_root', None)
     if override_root_module_name:
         # get an actual instance of it, like BasetestProjectRootController or TaskController
@@ -80,7 +79,7 @@ def make_app(global_conf, full_stack=True, **app_conf):
         root = rootClass()
     else:
         root = None  # will default to RootController in root.py
-    return _make_core_app(root, global_conf, full_stack, **app_conf)
+    return _make_core_app(root, global_conf, **app_conf)
 
 
 class BeakerPickleSerializerWithLatin1(PickleSerializer):
@@ -89,7 +88,7 @@ class BeakerPickleSerializerWithLatin1(PickleSerializer):
         return pickle.loads(data_string, **{'encoding': 'latin1'} if six.PY3 else {})
 
 
-def _make_core_app(root, global_conf, full_stack=True, **app_conf):
+def _make_core_app(root, global_conf: dict, **app_conf):
     """
     Set allura up with the settings found in the PasteDeploy configuration
     file used.
@@ -98,8 +97,6 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     :param global_conf: The global settings for allura (those
         defined under the ``[DEFAULT]`` section).
     :type global_conf: dict
-    :param full_stack: Should the whole TG2 stack be set up?
-    :type full_stack: str or bool
     :return: The allura application with all the relevant middleware
         loaded.
 
@@ -107,8 +104,6 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
 
     ``app_conf`` contains all the application-specific settings (those defined
     under ``[app:main]``.
-
-
     """
     # Run all the initialization code here
     mimetypes.init([pkg_resources.resource_filename('allura', 'etc/mime.types')] + mimetypes.knownfiles)
@@ -128,16 +123,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
 
     # Create base app
     base_config = ForgeConfig(root)
-    load_environment = base_config.make_load_environment()
-
-    # Code adapted from tg.configuration, replacing the following lines:
-    #     make_base_app = base_config.setup_tg_wsgi_app(load_environment)
-    #     app = make_base_app(global_conf, full_stack=True, **app_conf)
-
-    # Configure the TG environment
-    load_environment(global_conf, app_conf)
-
-    app = tg.TGApp()
+    app = base_config.make_wsgi_app(global_conf, app_conf, wrap_app=None)
 
     for mw_ep in h.iter_entry_points('allura.middleware'):
         Middleware = mw_ep.load()
@@ -204,16 +190,16 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
             # Converts exceptions to HTTP errors, shows traceback in debug mode
             app = DebuggedApplication(app, evalex=True)
         else:
-            app = ErrorMiddleware(app, config, **config['tg.errorware'])
+            app = ErrorMiddleware(app, config)
 
         app = SetRequestHostFromConfig(app, config)
 
         # Redirect some status codes to /error/document
+        handle_status_codes = [403, 404, 410]
         if asbool(config['debug']):
-            app = StatusCodeRedirect(app, base_config.handle_status_codes)
+            app = StatusCodeRedirect(app, handle_status_codes)
         else:
-            app = StatusCodeRedirect(
-                app, base_config.handle_status_codes + [500])
+            app = StatusCodeRedirect(app, handle_status_codes + [500])
 
     for mw_ep in h.iter_entry_points('allura.middleware'):
         Middleware = mw_ep.load()

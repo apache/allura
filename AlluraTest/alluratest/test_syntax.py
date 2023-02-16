@@ -62,7 +62,7 @@ def test_no_prints():
         '/scripts/',
         'ForgeSVN/setup.py',
     ]
-    if run(find_py + " | grep -v '" + "' | grep -v '".join(skips) + "' | xargs grep -v '^ *#' | grep 'print ' | grep -E -v '(pprint|#pragma: ?printok)' ") != 1:
+    if run(find_py + " | grep -v '" + "' | grep -v '".join(skips) + "' | xargs grep -v '^ *#' | egrep -n '\bprint\(' | grep -E -v '(pprint|#pragma: ?printok)' ") != 1:
         raise Exception("These should use logging instead of print")
 
 

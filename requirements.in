@@ -42,7 +42,7 @@ requests-oauthlib
 setproctitle
 six
 TimerMiddleware
-TurboGears2==2.3.12
+TurboGears2
 WebHelpers2
 WebOb
 werkzeug

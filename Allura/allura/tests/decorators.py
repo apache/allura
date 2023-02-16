@@ -142,9 +142,9 @@ class patch_middleware_config:
     def __enter__(self):
         self._make_app = allura.config.middleware.make_app
 
-        def make_app(global_conf, full_stack=True, **app_conf):
+        def make_app(global_conf, **app_conf):
             app_conf.update(self.new_configs)
-            return self._make_app(global_conf, full_stack, **app_conf)
+            return self._make_app(global_conf, **app_conf)
 
         allura.config.middleware.make_app = make_app
 

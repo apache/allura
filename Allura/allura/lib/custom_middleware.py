@@ -24,9 +24,8 @@ import pkg_resources
 from paste import fileapp
 from paste.deploy.converters import aslist, asbool
 from tg import tmpl_context as c
-from tg.support.middlewares import _call_wsgi_application as call_wsgi_application
 from timermiddleware import Timer, TimerMiddleware
-from webob import exc, Request
+from webob import exc, Request, Response
 import pysolr
 import six
 from ming.odm import session
@@ -154,7 +153,7 @@ class LoginRedirectMiddleware:
         self.app = app
 
     def __call__(self, environ, start_response):
-        status, headers, app_iter, exc_info = call_wsgi_application(self.app, environ)
+        status, headers, app_iter, exc_info = _call_wsgi_application(self.app, environ)
         is_api_request = environ.get('PATH_INFO', '').startswith('/rest/')
         if status[:3] == '401' and not is_api_request and not is_ajax(Request(environ)):
             login_url = tg.config.get('auth.login_url', '/auth/')
@@ -520,3 +519,90 @@ class ContentSecurityPolicyMiddleware:
             report_rules.add(f'report-uri {report_uri}')
             resp.headers.add('Content-Security-Policy-Report-Only', '; '.join(report_rules))
         return resp(environ, start_response)
+
+
+"""
+_call_wsgi_application & StatusCodeRedirect were originally part of TurboGears, but then removed from it.
+They came from Pylons before that.
+
+TurboGears provides a ErrorPageApplicationWrapper alternative, but it is TG-specific and has behavior changes.
+We'd have to enable in AppConfig with:
+    self['errorpage.enabled'] = True
+    self['errorpage.status_codes'] = [400, 401, 403, 404, 410]
+And then lots of other changes:
+    `request.disable_error_pages()` instead of `request.environ['tg.status_code_redirect'] = True`
+    `request.disable_error_pages()` in jsonify() and some other places
+    `req = req.environ.get('tg.original_request') or req` in lots of middleware that uses the req *after* response
+    ... more
+"""
+
+
+def _call_wsgi_application(application, environ):
+    """
+    Call the given WSGI application, returning ``(status_string,
+    headerlist, app_iter)``
+
+    Be sure to call ``app_iter.close()`` if it's there.
+    """
+    captured = []
+    output = []
+    def _start_response(status, headers, exc_info=None):
+        captured[:] = [status, headers, exc_info]
+        return output.append
+
+    app_iter = application(environ, _start_response)
+    if not captured or output:
+        try:
+            output.extend(app_iter)
+        finally:
+            if hasattr(app_iter, 'close'):
+                app_iter.close()
+        app_iter = output
+    return (captured[0], captured[1], app_iter, captured[2])
+
+
+class StatusCodeRedirect:
+    """Internally redirects a request based on status code
+    StatusCodeRedirect watches the response of the app it wraps. If the
+    response is an error code in the errors sequence passed the request
+    will be re-run with the path URL set to the path passed in.
+    This operation is non-recursive and the output of the second
+    request will be used no matter what it is.
+    Should an application wish to bypass the error response (ie, to
+    purposely return a 401), set
+    ``environ['tg.status_code_redirect'] = False`` in the application.
+    """
+    def __init__(self, app, errors=(400, 401, 403, 404),
+                 path='/error/document'):
+        """Initialize the ErrorRedirect
+        ``errors``
+            A sequence (list, tuple) of error code integers that should
+            be caught.
+        ``path``
+            The path to set for the next request down to the
+            application.
+        """
+        self.app = app
+        self.error_path = path
+
+        # Transform errors to str for comparison
+        self.errors = tuple([str(x) for x in errors])
+
+    def __call__(self, environ, start_response):
+        status, headers, app_iter, exc_info = _call_wsgi_application(self.app, environ)
+        if status[:3] in self.errors and \
+            'tg.status_code_redirect' not in environ and self.error_path:
+            # Create a response object
+            environ['tg.original_response'] = Response(status=status, headerlist=headers, app_iter=app_iter)
+            environ['tg.original_request'] = Request(environ)
+
+            environ['pylons.original_response'] = environ['tg.original_response']
+            environ['pylons.original_request'] = environ['tg.original_request']
+
+            # Create a new environ to avoid touching the original request data
+            new_environ = environ.copy()
+            new_environ['PATH_INFO'] = self.error_path
+
+            newstatus, headers, app_iter, exc_info = _call_wsgi_application(self.app, new_environ)
+        start_response(status, headers, exc_info)
+        return app_iter
