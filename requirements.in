@@ -7,7 +7,7 @@ cryptography
 decorator
 EasyWidgets
 # https://github.com/carpedm20/emoji/issues/191
-emoji!=1.6.0
+emoji
 feedgenerator
 feedparser
 FormEncode
@@ -16,7 +16,7 @@ html5lib
 Jinja2
 Markdown==3.3.7
 markdown-checklist
-MarkupSafe!=2.1.1
+MarkupSafe
 Ming
 oauthlib
 paginate
