@@ -232,7 +232,7 @@ webencodings==0.5.1
     #   tinycss2
 webhelpers2==2.0
     # via -r requirements.in
-webob==1.7.4
+webob==1.8.7
     # via
     #   -r requirements.in
     #   easywidgets
