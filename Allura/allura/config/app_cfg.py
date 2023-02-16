@@ -41,7 +41,6 @@ from tg.configurator.components.helpers import HelpersConfigurationComponent
 from tg.configurator.components.dispatch import DispatchConfigurationComponent
 from tg.configurator.components.rendering import TemplateRenderingConfigurationComponent
 from tg.renderers.jinja import JinjaRenderer
-from tg.renderers.mako import MakoRenderer
 from tg.renderers.json import JSONRenderer
 
 import jinja2
@@ -81,7 +80,7 @@ class ForgeConfig(MinimalApplicationConfiguratorNoRegistry):
         self.update_blueprint({
             'package': allura,
             'root_controller': root_controller,  # optional override, otherwise default will be found in allura package
-            'renderers': ['json', 'mako', 'jinja'],
+            'renderers': ['json', 'jinja'],
             'default_renderer': 'jinja',
 
             # prevent dispatcher from striping extensions like '.io' from URLs
@@ -101,7 +100,6 @@ class AlluraTemplateConfig(TemplateRenderingConfigurationComponent):
     def on_bind(self, configurator: ForgeConfig):
         # no super, only register a few (other ones aren't a problem but are unnecessary, so this is optimal)
         self.register_engine(JSONRenderer)
-        self.register_engine(MakoRenderer)
         # this is *our* JinjaRenderer, not the default one
         self.register_engine(AlluraJinjaRenderer)
 
