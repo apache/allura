@@ -27,9 +27,12 @@ Please read http://pythonpaste.org/webtest/ for more information.
 
 """
 import os
+import re
 from unittest import skipIf
 
 from tg import tmpl_context as c
+
+from allura.tests.decorators import patch_middleware_config
 from alluratest.tools import module_not_available
 from ming.odm.odmsession import ThreadLocalODMSession
 import mock
@@ -239,3 +242,39 @@ class TestRootWithSSLPattern(TestController):
         assert '302 Found' not in r.text, r.text
         assert '301 Moved Permanently' not in r.text, r.text
         assert '/error/document' not in r.text, r.text
+
+
+class TestErrorMiddleware(TestController):
+    def setup_method(self):
+        with patch_middleware_config({
+            # this makes all the middleware get used (normally override_root=basetest_project_root makes it skip some)
+            'override_root': None,
+            'debug': 'false',
+        }):
+            super().setup_method()
+
+    def test_404_error(self):
+        r = self.app.get('/this-is-a-404', status=404)
+        assert r.content_type == 'text/html'
+        r.mustcontain('404 Error has Occurred')  # in error.html
+        r.mustcontain('This project is powered by')  # in master template
+
+    def test_error_nodebug(self):
+        with mock.patch.object(M.Project, 'ordered_mounts') as function_nbhd_controller_calls:
+            function_nbhd_controller_calls.side_effect = Exception('forced an error!')
+            r = self.app.get('/p/',
+                             # suppress ErrorMiddleware from throwing the error, we want it to trap & return 500 page
+                             extra_environ={'paste.throw_errors': False},
+                             status=500,
+                             expect_errors=True,  # because stderr gets error details printed to it
+                             )
+        assert r.status_code == 500
+        assert r.content_type == 'text/html'
+        r.mustcontain('500 Error has Occurred')  # in error.html
+        r.mustcontain('This project is powered by')  # in master template
+
+        # error logging from ErrorMiddleware
+        assert 'Exception: forced an error!' in r.errors
+        assert 'Allura/allura/controllers/project.py' in r.errors
+        assert 'CGI Variables' in r.errors
+        assert "PATH_INFO: '/p/'" in r.errors

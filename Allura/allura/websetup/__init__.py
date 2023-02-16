@@ -19,9 +19,9 @@
 
 import logging
 
-from allura.config.environment import load_environment
-
+from allura.config.app_cfg import base_config
 __all__ = ['setup_app']
+
 
 log = logging.getLogger(__name__)
 
@@ -31,6 +31,8 @@ from . import bootstrap
 
 def setup_app(command, conf, vars):
     """Place any commands to setup allura here"""
-    load_environment(conf.global_conf, conf.local_conf)
+    conf = base_config.configure(conf.global_conf, conf.local_conf)
+    base_config.setup(conf)
+
     setup_schema(command, conf, vars)
     bootstrap.bootstrap(command, conf, vars)

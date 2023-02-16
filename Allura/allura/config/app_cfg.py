@@ -29,15 +29,17 @@ convert them into boolean, for example, you should use the
 
 """
 import logging
-from functools import partial
-import six
 import sys
 
 import tg
-from tg import app_globals as g
 from tg.renderers.jinja import JinjaRenderer
+from tg.renderers.mako import MakoRenderer
+from tg.renderers.json import JSONRenderer
+from tg import MinimalApplicationConfigurator
+from tg.configurator.components.rendering import TemplateRenderingConfigurationComponent
+from tg.configuration import config
+
 import jinja2
-from tg.configuration import AppConfig, config
 from markupsafe import Markup
 import ew
 from tg.support.converters import asint
@@ -50,25 +52,37 @@ from allura.lib.package_path_loader import PackagePathLoader
 log = logging.getLogger(__name__)
 
 
-class ForgeConfig(AppConfig):
+class ForgeConfig(MinimalApplicationConfigurator):
 
     def __init__(self, root_controller=None):
-        AppConfig.__init__(self, minimal=True, root_controller=root_controller)
-        self.package = allura
-        self.renderers = ['json', 'mako', 'jinja']
-        self.default_renderer = 'jinja'
-        self.register_rendering_engine(AlluraJinjaRenderer)
-        self.use_sqlalchemy = False
-        self.use_toscawidgets = False
-        self.use_transaction_manager = False
-        self['tm.enabled'] = False
-        self.handle_status_codes = [403, 404, 410]
-        self.disable_request_extensions = True
+        super().__init__()
 
-        # if left to True (default) would use crank.util.default_path_translator to convert all URL punctuation to "_"
-        # which is convenient for /foo-bar to execute a "def foo_bar" method, but is a pretty drastic change for us
-        # and makes many URLs be valid that we might not want like /foo*bar /foo@bar /foo:bar
-        self.dispatch_path_translator = None
+        self.update_blueprint({
+            'package': allura,
+            'root_controller': root_controller,  # optional override, otherwise default will be found in allura package
+            'renderers': ['json', 'mako', 'jinja'],
+            'default_renderer': 'jinja',
+
+            # prevent dispatcher from striping extensions like '.io' from URLs
+            'disable_request_extensions': True,
+
+            # if left to True (default) would use crank.util.default_path_translator to convert all URL punctuation to "_"
+            # which is convenient for /foo-bar to execute a "def foo_bar" method, but is a pretty drastic change for us
+            # and makes many URLs be valid that we might not want like /foo*bar /foo@bar /foo:bar
+            'dispatch_path_translator': None,
+
+        })
+        self.replace(TemplateRenderingConfigurationComponent.id, AlluraTemplateConfig)
+
+
+class AlluraTemplateConfig(TemplateRenderingConfigurationComponent):
+
+    def on_bind(self, configurator: ForgeConfig):
+        # no super, only register a few (other ones aren't a problem but are unnecessary, so this is optimal)
+        self.register_engine(JSONRenderer)
+        self.register_engine(MakoRenderer)
+        # this is *our* JinjaRenderer, not the default one
+        self.register_engine(AlluraJinjaRenderer)
 
 
 class AlluraJinjaRenderer(JinjaRenderer):

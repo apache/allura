@@ -215,7 +215,7 @@ tomli==2.0.1
     # via pytest
 translationstring==1.4
     # via colander
-turbogears2==2.3.12
+turbogears2==2.4.3
     # via -r requirements.in
 typing-extensions==4.4.0
     # via
