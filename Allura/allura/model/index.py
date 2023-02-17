@@ -27,7 +27,8 @@ from six.moves.urllib.parse import unquote
 
 import bson
 import pymongo
-from tg import tmpl_context as c
+from tg import tmpl_context as c, config
+from tg.support.converters import asbool
 
 from ming import schema as S
 from ming.utils import LazyProperty
@@ -179,6 +180,12 @@ class Shortlink(MappedClass):
                     links_by_artifact[unquote(d['artifact'])].append(d)
                 else:
                     result[link] = parsed_links.pop(link)
+            if not project_ids:
+                msg = f"No project_id found in parsed_links, maybe c.project etc aren't set? {links}"
+                if asbool(config['debug']):
+                    raise ValueError(msg)
+                else:
+                    log.warning(msg)
             q = cls.query.find(
                 dict(
                     link={'$in': list(links_by_artifact.keys())},
@@ -248,6 +255,12 @@ class Shortlink(MappedClass):
             p_shortname = getattr(c.project, 'shortname', None)
             p_id = getattr(c.project, '_id', None)
             p_nbhd = c.project.neighborhood_id
+        if p_id is None:
+            msg = "c.project is not set"
+            if asbool(config['debug']):
+                raise ValueError(msg)
+            else:
+                log.warning(msg)
         if len(parts) == 3:
             p = Project.query.get(shortname=parts[0], neighborhood_id=p_nbhd)
             if p:
