@@ -24,10 +24,10 @@ from ming.odm.base import ObjectState
 from ming.odm.base import state
 from ming.odm.odmsession import ThreadLocalODMSession, SessionExtension
 from contextlib import contextmanager
+from tg import tmpl_context as c
 
 from allura.lib.utils import chunked_list
 from allura.tasks import index_tasks
-import six
 
 log = logging.getLogger(__name__)
 

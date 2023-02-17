@@ -32,12 +32,17 @@ import logging
 import sys
 
 import tg
+from tg.configuration import config
+from tg.configurator.application import ApplicationConfigurator
+from tg.configurator.components.mimetypes import MimeTypesConfigurationComponent
+from tg.configurator.components.paths import PathsConfigurationComponent
+from tg.configurator.components.app_globals import AppGlobalsConfigurationComponent
+from tg.configurator.components.helpers import HelpersConfigurationComponent
+from tg.configurator.components.dispatch import DispatchConfigurationComponent
+from tg.configurator.components.rendering import TemplateRenderingConfigurationComponent
 from tg.renderers.jinja import JinjaRenderer
 from tg.renderers.mako import MakoRenderer
 from tg.renderers.json import JSONRenderer
-from tg import MinimalApplicationConfigurator
-from tg.configurator.components.rendering import TemplateRenderingConfigurationComponent
-from tg.configuration import config
 
 import jinja2
 from markupsafe import Markup
@@ -52,7 +57,23 @@ from allura.lib.package_path_loader import PackagePathLoader
 log = logging.getLogger(__name__)
 
 
-class ForgeConfig(MinimalApplicationConfigurator):
+class MinimalApplicationConfiguratorNoRegistry(ApplicationConfigurator):
+    """
+    Copied from tg.MinimalApplicationConfigurator but without the registry
+    since we use RegistryManager in a specific part of our middleware already
+    """
+    def __init__(self):
+        super().__init__()
+        self.register(MimeTypesConfigurationComponent, after=False)
+        self.register(PathsConfigurationComponent, after=False)
+        self.register(DispatchConfigurationComponent, after=False)
+        self.register(AppGlobalsConfigurationComponent)
+        self.register(HelpersConfigurationComponent)
+        self.register(TemplateRenderingConfigurationComponent)
+        # self.register(RegistryConfigurationComponent, after=True)
+
+
+class ForgeConfig(MinimalApplicationConfiguratorNoRegistry):
 
     def __init__(self, root_controller=None):
         super().__init__()
