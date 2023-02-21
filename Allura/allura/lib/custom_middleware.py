@@ -514,10 +514,12 @@ class ContentSecurityPolicyMiddleware:
         rules.add("object-src 'none'")
         rules.add("frame-ancestors 'self'")
         if rules:
-            rules.add(f'report-uri {report_uri_enforce}')
+            if report_uri_enforce:
+                rules.add(f'report-uri {report_uri_enforce}')
             resp.headers.add('Content-Security-Policy', '; '.join(rules))
         if report_rules:
-            report_rules.add(f'report-uri {report_uri}')
+            if report_uri:
+                report_rules.add(f'report-uri {report_uri}')
             resp.headers.add('Content-Security-Policy-Report-Only', '; '.join(report_rules))
         return resp(environ, start_response)
 

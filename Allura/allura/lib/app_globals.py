@@ -236,7 +236,7 @@ class Globals:
         self.pypeline_markup = pypeline_markup
 
         # Setup analytics
-        accounts = config.get('ga.account', 'UA-XXXXX-X')
+        accounts = config.get('ga.account', '')
         accounts = accounts.split(' ')
         self.analytics = analytics.GoogleAnalytics(accounts=accounts)
 
