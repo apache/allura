@@ -31,8 +31,6 @@ class ErrorController:
         code = -1
         if resp:
             code = resp.status_int
-        default_message = ("<p>We're sorry but we weren't able to process "
-                           " this request.</p>")
+        default_message = "We're sorry but we weren't able to process this request."
         message = request.environ.get('error_message', default_message)
-        message += '<pre>%r</pre>' % resp
         return dict(code=code, message=message)
