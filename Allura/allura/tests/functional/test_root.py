@@ -203,7 +203,7 @@ class TestRootController(TestController):
     def test_error_page(self):
         # hard to force a real error (esp. with middleware debugging being different for tests) but we can hit direct:
         r = self.app.get('/error/document')
-        r.mustcontain("We're sorry but we weren't able to process")
+        r.mustcontain("We&#39;re sorry but we weren&#39;t able to process")
 
     @mock.patch.dict(tg.config, {'csp.frame_sources_enforce': True,
                                  'csp.report_uri_enforce': 'https://example.com/r/d/csp/enforce',
