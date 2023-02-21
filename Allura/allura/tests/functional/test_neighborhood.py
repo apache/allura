@@ -297,10 +297,10 @@ class TestNeighborhood(TestController):
         neighborhood.features['google_analytics'] = True
         r = self.app.get('/adobe/_admin/overview',
                          extra_environ=dict(username='root'))
-        assert 'Google Analytics ID' in r
+        r.mustcontain('Google Analytics ID')
         r = self.app.get('/adobe/adobe-1/admin/overview',
                          extra_environ=dict(username='root'))
-        assert 'Google Analytics ID' in r
+        r.mustcontain('Google Analytics ID')
         r = self.app.post('/adobe/_admin/update',
                           params=dict(name='Adobe', css='',
                                       homepage='# MozQ1', tracking_id='U-123456'),
@@ -310,21 +310,21 @@ class TestNeighborhood(TestController):
                           extra_environ=dict(username='root'), status=302)
         r = self.app.get('/adobe/adobe-1/admin/overview',
                          extra_environ=dict(username='root'))
-        assert "_add_tracking('nbhd', 'U-123456');" in r, r
-        assert "_add_tracking('proj', 'U-654321');" in r
+        r.mustcontain("_add_tracking('nbhd', 'U-123456');")
+        r.mustcontain("_add_tracking('proj', 'U-654321');")
         # analytics not allowed
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.features['google_analytics'] = False
         r = self.app.get('/adobe/_admin/overview',
                          extra_environ=dict(username='root'))
-        assert 'Google Analytics ID' not in r
+        r.mustcontain(no='Google Analytics ID')
         r = self.app.get('/adobe/adobe-1/admin/overview',
                          extra_environ=dict(username='root'))
-        assert 'Google Analytics ID' not in r
+        r.mustcontain(no='Google Analytics ID')
         r = self.app.get('/adobe/adobe-1/admin/overview',
                          extra_environ=dict(username='root'))
-        assert "_add_tracking('nbhd', 'U-123456');" not in r
-        assert "_add_tracking('proj', 'U-654321');" not in r
+        r.mustcontain(no="_add_tracking('nbhd', 'U-123456');")
+        r.mustcontain(no="_add_tracking('proj', 'U-654321');")
 
     def test_custom_css(self):
         test_css = '.test{color:red;}'

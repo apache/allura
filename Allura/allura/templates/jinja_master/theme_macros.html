@@ -84,14 +84,16 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
     {# This should be overridden in your custom theme (e.g., sftheme) to implement custom tracking code. #}
     var _gaq = _gaq || [];
 
+    /*eslint-disable no-unused-vars */
     function _add_tracking(prefix, tracking_id) {
         _gaq.push(
             [prefix+'._setAccount', tracking_id],
             [prefix+'._trackPageview']
         );
     }
+    /*eslint-enable no-unused-vars */
 
-    {%- for account in accounts %}
+    {%- for account in accounts if account %}
     _add_tracking('acct{{ loop.index }}', '{{account}}');
     {%- endfor %}
     {% if project and project.neighborhood.features['google_analytics'] -%}
