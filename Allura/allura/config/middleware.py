@@ -180,9 +180,11 @@ def _make_core_app(root, global_conf: dict, **app_conf):
     app = MingTaskSessionSetupMiddleware(app)
     app = MingMiddleware(app)
     # Set up the registry for stacked object proxies (SOPs).
-    #    streaming=true ensures they won't be cleaned up till
-    #    the WSGI application's iterator is exhausted
-    app = RegistryManager(app, streaming=True)
+    app = RegistryManager(app,
+                          # streaming=True causes cleanup problems when StatusCodeRedirect does an extra request
+                          streaming=False,
+                          preserve_exceptions=asbool(config['debug']),  # allow inspecting them when debugging errors
+                          )
 
     # "task" wsgi would get a 2nd request to /error/document if we used this middleware
     if config.get('override_root') not in ('task', 'basetest_project_root'):

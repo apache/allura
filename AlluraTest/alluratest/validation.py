@@ -362,3 +362,16 @@ class ValidatingTestApp(PostParamCheckingTestApp):
         if not self.validate_skip and not val_params['validate_skip']:
             self._validate(resp, 'delete', val_params)
         return resp
+
+    def do_request(self, *args, **kwargs):
+        # middleware should do this already, but be sure that no global c/config/request etc remains between tests
+        resp = super().do_request(*args, **kwargs)
+        tgGlobalsRegistry = resp.request.environ['paste.registry']
+        try:
+            tgGlobalsRegistry.cleanup()
+        except IndexError:
+            # already cleaned up
+            pass
+        except Exception:
+            log.warning('Error cleaning up TG Registry', exc_info=True)
+        return resp
