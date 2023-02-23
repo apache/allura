@@ -30,6 +30,7 @@ import os
 import re
 from unittest import skipIf
 
+import pytest
 from tg import tmpl_context as c
 
 from allura.tests.decorators import patch_middleware_config
@@ -43,6 +44,20 @@ from allura.tests import TestController
 from allura import model as M
 from allura.lib import helpers as h
 from alluratest.controller import setup_trove_categories
+
+
+def assert_globals_are_reset():
+    # in normal tests the globals 'stacks' are cleared
+    assert tg.config._object_stack() == []
+
+    # and similarly, 'c' and 'request' TG globals are not even accessible at all
+    with pytest.raises(AttributeError):
+        c._object_stack()
+    assert 'allura.websetup.schema.EmptyClass' in repr(c)  # can't use isinstance/type because it's a proxy
+
+    with pytest.raises(AttributeError) as exc_info:
+        tg.request._object_stack()
+    assert str(exc_info.value) == 'request', exc_info
 
 
 class TestRootController(TestController):
@@ -61,6 +76,8 @@ class TestRootController(TestController):
 
         response = self.app.get('/')
         assert response.location == 'http://localhost/dashboard'
+
+        assert_globals_are_reset()  # should be ok, but just to make sure what "normal" is (might change with upgrades)
 
     def test_neighborhood(self):
         response = self.app.get('/neighborhood')
@@ -258,6 +275,9 @@ class TestErrorMiddleware(TestController):
         assert r.content_type == 'text/html'
         r.mustcontain('404 Error has Occurred')  # in error.html
         r.mustcontain('This project is powered by')  # in master template
+
+        # Ensure 404 handling with StatusCodeRedirect doesn't leave anything behind
+        assert_globals_are_reset()
 
     def test_error_nodebug(self):
         with mock.patch.object(M.Project, 'ordered_mounts') as function_nbhd_controller_calls:
