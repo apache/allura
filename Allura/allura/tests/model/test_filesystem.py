@@ -130,7 +130,9 @@ class TestFile(TestCase):
                 patch('allura.lib.utils.tg.response', Response()) as response, \
                 patch('allura.lib.utils.etag_cache') as etag_cache:
             response_body = list(f.serve())
-            etag_cache.assert_called_once_with('{}?{}'.format(f.filename, f._id.generation_time))
+            etag_val = etag_cache.call_args[0][0]
+            etag_val.encode('latin1')  # ensure it is all latin1 and OK for a http header (no unicode!)
+            assert etag_val == '{}?{}'.format(r'te s\u0b6e1.txt', f._id.generation_time)
             assert [b'test1'] == response_body
             assert response.content_type == f.content_type
             assert 'Content-Disposition' not in response.headers
@@ -142,7 +144,9 @@ class TestFile(TestCase):
                 patch('allura.lib.utils.tg.response', Response()) as response, \
                 patch('allura.lib.utils.etag_cache') as etag_cache:
             response_body = list(f.serve(embed=False))
-            etag_cache.assert_called_once_with('{}?{}'.format(f.filename, f._id.generation_time))
+            etag_val = etag_cache.call_args[0][0]
+            etag_val.encode('latin1')  # ensure it is all latin1 and OK for a http header (no unicode!)
+            assert etag_val == '{}?{}'.format(r'te s\u0b6e1.txt', f._id.generation_time)
             assert [b'test1'] == response_body
             assert response.content_type == f.content_type
             assert response.headers['Content-Disposition'] == 'attachment;filename="te%20s%E0%AD%AE1.txt"'
