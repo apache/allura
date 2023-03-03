@@ -25,12 +25,13 @@ import six.moves.urllib.request
 import six.moves.urllib.error
 from datetime import datetime
 
-from tg import config, session, redirect, request, expose
+from tg import config, session, redirect, request, expose, flash
 from tg.decorators import without_trailing_slash
 from tg import tmpl_context as c
 from requests_oauthlib import OAuth2Session
 from formencode import validators as fev
 
+from allura.lib.security import is_site_admin
 from forgeimporters import base
 from urllib.parse import urlparse
 
@@ -232,7 +233,10 @@ class GitHubOAuthMixin:
         client_id = config.get('github_importer.client_id')
         secret = config.get('github_importer.client_secret')
         if not client_id or not secret:
-            log.warning('github_importer.* not set up in .ini file; cannot use OAuth for GitHub')
+            msg = 'github_importer.* not set up in .ini file; cannot use OAuth for GitHub'
+            log.warning(msg)
+            if is_site_admin(c.user):
+                flash(msg, 'error')
             return  # GitHub app is not configured
         access_token = c.user.get_tool_data('GitHubProjectImport', 'token')
         if access_token and valid_access_token(access_token, scopes_required=scope):

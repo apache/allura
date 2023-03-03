@@ -491,10 +491,13 @@ class ContentSecurityPolicyMiddleware:
                 report_rules.add(f"frame-src {self.config['csp.frame_sources']}")
 
         if self.config.get('csp.form_action_urls'):
+            srcs = self.config['csp.form_action_urls']
+            if environ.get('csp_form_actions'):
+                srcs += ' ' + ' '.join(environ['csp_form_actions'])
             if asbool(self.config.get('csp.form_actions_enforce', False)):
-                rules.add(f"form-action {self.config['csp.form_action_urls']}")
+                rules.add(f"form-action {srcs}")
             else:
-                report_rules.add(f"form-action {self.config['csp.form_action_urls']}")
+                report_rules.add(f"form-action {srcs}")
 
         if self.config.get('csp.script_src'):
             script_srcs = self.config['csp.script_src']
