@@ -124,7 +124,7 @@ class TestFile(TestCase):
         self._assert_content(f, b'test2')
 
     def test_serve_embed(self):
-        f = File.from_data('te s\u0b6e1.txt', b'test1')
+        f = File.from_data('te s\u0b6e1\xe9.txt', b'test1')
         self.session.flush()
         with patch('allura.lib.utils.tg.request', Request.blank('/')), \
                 patch('allura.lib.utils.tg.response', Response()) as response, \
@@ -132,7 +132,7 @@ class TestFile(TestCase):
             response_body = list(f.serve())
             etag_val = etag_cache.call_args[0][0]
             etag_val.encode('latin1')  # ensure it is all latin1 and OK for a http header (no unicode!)
-            assert etag_val == '{}?{}'.format(r'te s\u0b6e1.txt', f._id.generation_time)
+            assert etag_val == '{}?{}'.format(r'te s\u0b6e1é.txt', f._id.generation_time)
             assert [b'test1'] == response_body
             assert response.content_type == f.content_type
             assert 'Content-Disposition' not in response.headers

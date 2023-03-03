@@ -520,7 +520,7 @@ def serve_file(fp, filename, content_type, last_modified=None,
     '''Sets the response headers and serves as a wsgi iter'''
     if not etag and filename and last_modified:
         # must be latin1, no unicode
-        etag = filename.encode("latin1", "backslashreplace").decode() + f'?{last_modified}'
+        etag = filename.encode("latin1", "backslashreplace").decode('latin1') + f'?{last_modified}'
     if etag:
         etag_cache(etag)
     tg.response.headers['Content-Type'] = ''
