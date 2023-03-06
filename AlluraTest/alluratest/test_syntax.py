@@ -81,10 +81,9 @@ def run_pyflakes(files):
     # skip some that aren't critical errors
     files = [f for f in files if '/migrations/' not in f]
     cmd = "ruff check " + ' '.join(files) + " | grep -v '" + "'"
-    #print("CMD", cmd)
     if run(cmd) != 1:
         # print 'Command was: %s' % cmd
-        raise Exception('ruff failure, see stdout', sys.stderr)
+        raise Exception('ruff failure, see stdout')
 
 
 class TestLinters:
