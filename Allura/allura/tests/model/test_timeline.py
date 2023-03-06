@@ -36,5 +36,5 @@ class TestActivityObject_Functional:
         wiki_app = p.app_instance('wiki')
         app_config = wiki_app.config
 
-        assert (bool(app_config.has_activity_access('read', user=M.User.anonymous(), activity=None)) ==
+        assert (bool(app_config.has_activity_access('read', user=M.User.anonymous(), activity=None)) is
                      True)

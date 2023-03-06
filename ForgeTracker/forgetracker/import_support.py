@@ -175,7 +175,7 @@ class ImportSupport:
                     break
             else:
                 milestone = {'due_date': '',
-                             'complete': not ticket_status in c.app.globals.open_status_names,
+                             'complete': ticket_status not in c.app.globals.open_status_names,
                              'description': '',
                              'name': value,
                              'old_name': value}
@@ -289,7 +289,7 @@ class ImportSupport:
     def find_unknown_users(self, users):
         unknown = set()
         for u in users:
-            if u and not u in self.options['user_map'] and not M.User.by_username(u):
+            if u and u not in self.options['user_map'] and not M.User.by_username(u):
                 unknown.add(u)
         return unknown
 

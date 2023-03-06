@@ -666,7 +666,7 @@ class ProjectAdminController(BaseController):
             else:
                 require_access(c.project, 'admin')
                 installable_tools = AdminApp.installable_tools_for(c.project)
-                if not ep_name.lower() in [t['name'].lower() for t in installable_tools]:
+                if ep_name.lower() not in [t['name'].lower() for t in installable_tools]:
                     flash('Installation limit exceeded.', 'error')
                     return
                 mount_point = new['mount_point'] or ep_name
@@ -946,7 +946,7 @@ class ProjectAdminRestController(BaseController):
             }
         installable_tools = AdminApp.installable_tools_for(c.project)
         tools_names = [t['name'] for t in installable_tools]
-        if not (tool in tools_names):
+        if tool not in tools_names:
             return {
                 'success': False,
                 'info': 'Incorrect tool name, or limit is reached.'

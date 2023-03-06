@@ -138,7 +138,7 @@ class TestAnyTotpServiceImplementation:
     def test_none(self):
         srv = self.Service()
         user = self.mock_user()
-        assert None == srv.get_secret_key(user)
+        assert srv.get_secret_key(user) is None
 
     def test_set_get(self):
         srv = self.Service()
@@ -152,7 +152,7 @@ class TestAnyTotpServiceImplementation:
         srv.set_secret_key(user, self.sample_key)
         assert self.sample_key == srv.get_secret_key(user)
         srv.set_secret_key(user, None)
-        assert None == srv.get_secret_key(user)
+        assert srv.get_secret_key(user) is None
 
     @patch('allura.lib.multifactor.time')
     def test_rate_limiting(self, time):

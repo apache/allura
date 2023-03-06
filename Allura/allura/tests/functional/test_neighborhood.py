@@ -769,9 +769,9 @@ class TestNeighborhood(TestController):
         assert "My home text!" in r
         # check tool options
         opts = p.app_config('wiki').options
-        assert False == opts.show_discussion
-        assert False == opts.show_left_bar
-        assert False == opts.show_right_bar
+        assert opts.show_discussion is False
+        assert opts.show_left_bar is False
+        assert opts.show_right_bar is False
         assert "http://foo.com/testtemp/" == opts.some_url
         # check that custom groups/perms/users were setup correctly
         roles = p.named_roles

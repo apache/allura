@@ -224,7 +224,7 @@ class TestProjectRegistrationProviderPhoneVerification:
                 'request-id', '1111')
             assert result == g.phone_service.check.return_value
             assert (
-                self.user.get_tool_data('phone_verification', 'number_hash') ==
+                self.user.get_tool_data('phone_verification', 'number_hash') is
                 None)
             audit.assert_called_once_with(
                 'Phone verification failed. Hash: hash', user=self.user)
@@ -689,7 +689,7 @@ class TestLocalAuthenticationProvider:
     def test_login_details_from_auditlog(self):
         user = M.User(username='asfdasdf')
 
-        assert (self.provider.login_details_from_auditlog(M.AuditLog(message='')) ==
+        assert (self.provider.login_details_from_auditlog(M.AuditLog(message='')) is
                 None)
 
         detail = self.provider.login_details_from_auditlog(M.AuditLog(message='IP Address: 1.2.3.4\nFoo', user=user))
@@ -702,7 +702,7 @@ class TestLocalAuthenticationProvider:
         assert detail.ua is None
 
         assert (self.provider.login_details_from_auditlog(M.AuditLog(
-            message='blah blah IP Address: 1.2.3.4\nFoo', user=user)) ==
+            message='blah blah IP Address: 1.2.3.4\nFoo', user=user)) is
             None)
 
         detail = self.provider.login_details_from_auditlog(M.AuditLog(

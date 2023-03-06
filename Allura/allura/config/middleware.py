@@ -49,21 +49,21 @@ except ImportError:
 else:
     patches.newrelic()
 
-from allura.config.app_cfg import AlluraJinjaRenderer  # noqa: E402
-from allura.config.app_cfg import ForgeConfig  # noqa: E402
-from allura.lib.custom_middleware import AlluraTimerMiddleware  # noqa: E402
-from allura.lib.custom_middleware import SSLMiddleware  # noqa: E402
-from allura.lib.custom_middleware import StaticFilesMiddleware  # noqa: E402
-from allura.lib.custom_middleware import CSRFMiddleware  # noqa: E402
-from allura.lib.custom_middleware import CORSMiddleware  # noqa: E402
-from allura.lib.custom_middleware import LoginRedirectMiddleware  # noqa: E402
-from allura.lib.custom_middleware import RememberLoginMiddleware  # noqa: E402
-from allura.lib.custom_middleware import SetRequestHostFromConfig  # noqa: E402
-from allura.lib.custom_middleware import MingTaskSessionSetupMiddleware  # noqa: E402
-from allura.lib.custom_middleware import ContentSecurityPolicyMiddleware  # noqa: E402
-from allura.lib.custom_middleware import StatusCodeRedirect  # noqa: E402
-from allura.lib import helpers as h  # noqa: E402
-from allura.lib.utils import configure_ming  # noqa: E402
+from allura.config.app_cfg import AlluraJinjaRenderer
+from allura.config.app_cfg import ForgeConfig
+from allura.lib.custom_middleware import AlluraTimerMiddleware
+from allura.lib.custom_middleware import SSLMiddleware
+from allura.lib.custom_middleware import StaticFilesMiddleware
+from allura.lib.custom_middleware import CSRFMiddleware
+from allura.lib.custom_middleware import CORSMiddleware
+from allura.lib.custom_middleware import LoginRedirectMiddleware
+from allura.lib.custom_middleware import RememberLoginMiddleware
+from allura.lib.custom_middleware import SetRequestHostFromConfig
+from allura.lib.custom_middleware import MingTaskSessionSetupMiddleware
+from allura.lib.custom_middleware import ContentSecurityPolicyMiddleware
+from allura.lib.custom_middleware import StatusCodeRedirect
+from allura.lib import helpers as h
+from allura.lib.utils import configure_ming
 
 __all__ = ['make_app']
 

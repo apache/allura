@@ -181,7 +181,7 @@ class File(MappedClass):
                    convert_bmp=False):
         if content_type is None:
             content_type = utils.guess_mime_type(filename)
-        if not content_type.lower() in SUPPORTED_BY_PIL:
+        if content_type.lower() not in SUPPORTED_BY_PIL:
             log.debug('Content type %s from file %s not supported',
                       content_type, filename)
             return None, None
