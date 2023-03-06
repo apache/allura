@@ -465,7 +465,7 @@ class DateField(JQueryMixin, ew.TextField):
     def resources(self):
         yield from super().resources()
         yield ew.JSLink('allura/js/jquery-ui-1.13.2.min.js', location='body_top_js')
-        yield ew.CSSLink('allura/css/smoothness/jquery-ui-1.13.2.min.css', compress=False)  # compress will also serve from a different location, breaking image refs
+        yield ew.CSSLink('allura/css/smoothness/jquery-ui-1.13.2.min.css', compress=False)  # noqa: E501 compress will also serve from a different location, breaking image refs
 
 
 class FieldCluster(ew.CompoundField):

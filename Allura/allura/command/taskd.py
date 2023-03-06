@@ -61,7 +61,7 @@ class TaskdCommand(base.Command):
     parser.add_option('--only', dest='only', type='string', default=None,
                       help='only handle tasks of the given name(s) (can be comma-separated list)')
     parser.add_option('--nocapture', dest='nocapture', action="store_true", default=False,
-                      help='Do not capture stdout and redirect it to logging.  Useful for development with pdb.set_trace()')
+                      help='Do not capture stdout and redirect it to logging.  Useful for development with pdb.set_trace()') # noqa: E501
 
     def command(self):
         setproctitle('taskd')
@@ -196,7 +196,7 @@ class TaskCommand(base.Command):
     commit: run a solr 'commit' as a background task
 
     All subcommands except 'commit' can use the --filter-... options.
-    '''
+    ''' # noqa: E501
 
     def command(self):
         self.basic_setup()

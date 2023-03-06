@@ -29,7 +29,7 @@ class TestNewForgeController(TestController):
     def test_markdown_to_html(self):
         n = M.Neighborhood.query.get(name='Projects')
         r = self.app.get(
-            '/nf/markdown_to_html?markdown=*aaa*bb[wiki:Home]&project=test&app=bugs&neighborhood=%s' % n._id, validate_chunk=True)
+            '/nf/markdown_to_html?markdown=*aaa*bb[wiki:Home]&project=test&app=bugs&neighborhood=%s' % n._id, validate_chunk=True) # noqa: E501
         assert '<p><em>aaa</em>bb<a class="alink" href="/p/test/wiki/Home/">[wiki:Home]</a></p>' in r, r
 
         # this happens to trigger an error

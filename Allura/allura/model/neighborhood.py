@@ -269,7 +269,7 @@ class Neighborhood(MappedClass):
 
         if 'titlebarbackground' in css_form_dict and css_form_dict['titlebarbackground'] != '':
             css_text += "/*titlebarbackground*/.pad h2.title{background-color:%(bgcolor)s; background-image: none;}\n" % \
-                        {'bgcolor': css_form_dict['titlebarbackground']}
+                        {'bgcolor': css_form_dict['titlebarbackground']} # noqa: E501
 
         if 'titlebarcolor' in css_form_dict and css_form_dict['titlebarcolor'] != '':
             css_text += "/*titlebarcolor*/.pad h2.title, .pad h2.title small a {color:%s;}\n" % (

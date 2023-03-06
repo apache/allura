@@ -385,7 +385,7 @@ class TestNeighborhood(TestController):
         assert '/*projecttitlefont*/.project_title{font-family:arial,sans-serif;}' in neighborhood.css
         assert '/*projecttitlecolor*/.project_title{color:green;}' in neighborhood.css
         assert '/*barontop*/.pad h2.colored {background-color:#555555; background-image: none;}' in neighborhood.css
-        assert '/*titlebarbackground*/.pad h2.title{background-color:#333; background-image: none;}' in neighborhood.css
+        assert '/*titlebarbackground*/.pad h2.title{background-color:#333; background-image: none;}' in neighborhood.css # noqa: E501
         assert "/*titlebarcolor*/.pad h2.title, .pad h2.title small a {color:#444;}" in neighborhood.css
 
     def test_max_projects(self):

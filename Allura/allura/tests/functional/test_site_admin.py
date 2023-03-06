@@ -400,10 +400,10 @@ class TestUsersSearch(TestController):
         'id': 'allura/model/auth/User#540efdf2100d2b1483155d39',
         'last_access_login_date_dt': '2014-09-09T13:17:40.176Z',
         'last_access_login_ip_s': '10.0.2.2',
-        'last_access_login_ua_t': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36',
+        'last_access_login_ua_t': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36', # noqa: E501
         'last_access_session_date_dt': '2014-09-09T13:17:40.33Z',
         'last_access_session_ip_s': '10.0.2.2',
-        'last_access_session_ua_t': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36',
+        'last_access_session_ua_t': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36', # noqa: E501
         'last_password_updated_dt': '2014-09-09T13:17:38.857Z',
         'localization_s': 'None/None',
         'sex_s': 'Unknown',

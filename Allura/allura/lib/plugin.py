@@ -563,7 +563,7 @@ class LocalAuthenticationProvider(AuthenticationProvider):
     def by_username(self, username):
         from allura import model as M
         un = re.escape(username)
-        escaped_underscore = re.escape('_')  # changes in py3.x versions # https://docs.python.org/3/library/re.html#re.escape
+        escaped_underscore = re.escape('_')  # noqa: E501 changes in py3.x versions # https://docs.python.org/3/library/re.html#re.escape
         un = un.replace(escaped_underscore, '[-_]')
         un = un.replace(r'\-', '[-_]')
         rex = re.compile('^' + un + '$')

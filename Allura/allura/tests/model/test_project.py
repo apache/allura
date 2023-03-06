@@ -173,8 +173,8 @@ class TestProjectModel:
 
     def test_screenshot_unicode_serialization(self):
         p = M.Project.query.get(shortname='test')
-        screenshot_unicode = M.ProjectFile(project_id=p._id, category='screenshot', caption="ConSelección", filename='ConSelección.jpg')
-        screenshot_ascii = M.ProjectFile(project_id=p._id, category='screenshot', caption='test-screenshot', filename='test_file.jpg')
+        screenshot_unicode = M.ProjectFile(project_id=p._id, category='screenshot', caption="ConSelección", filename='ConSelección.jpg') # noqa: E501
+        screenshot_ascii = M.ProjectFile(project_id=p._id, category='screenshot', caption='test-screenshot', filename='test_file.jpg') # noqa: E501
         ThreadLocalODMSession.flush_all()
 
         serialized = p.__json__()

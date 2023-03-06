@@ -171,7 +171,7 @@ class TestDiscuss(TestDiscussBase):
         r = self._make_post('Test post')
         assert '<span><i class="fa fa-exclamation" aria-hidden="true"></i></span>' in r
         r = self.app.get('/wiki/Home/', extra_environ={'username': 'test-user-1'})
-        assert '<span><i class="fa fa-exclamation" aria-hidden="true"></i></span>' not in r, 'User without moderate perm must not see Spam link'
+        assert '<span><i class="fa fa-exclamation" aria-hidden="true"></i></span>' not in r, 'User without moderate perm must not see Spam link' # noqa: E501
 
     @patch('allura.controllers.discuss.g.spam_checker.submit_spam')
     def test_moderate(self, submit_spam):

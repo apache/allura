@@ -633,7 +633,7 @@ def test_slugify():
 
 
 class TestRateLimit(TestCase):
-    rate_limits = '{"60": 1, "120": 3, "900": 5, "1800": 7, "3600": 10, "7200": 15, "86400": 20, "604800": 50, "2592000": 200}'
+    rate_limits = '{"60": 1, "120": 3, "900": 5, "1800": 7, "3600": 10, "7200": 15, "86400": 20, "604800": 50, "2592000": 200}' # noqa: E501
     key_comment = 'allura.rate_limits_per_user'
 
     def test(self):

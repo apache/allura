@@ -72,7 +72,6 @@ if typing.TYPE_CHECKING:
     from ming.odm.mapper import Query
     from allura.model import AppConfig
 
-
 log = logging.getLogger(__name__)
 
 # max sitemap entries per tool type
@@ -82,7 +81,6 @@ DEFAULT_ICON_WIDTH = 48
 
 
 class ProjectFile(File):
-
     class __mongometa__:
         session = main_orm_session
         indexes = [('project_id', 'category')]
@@ -96,7 +94,6 @@ class ProjectFile(File):
 
 
 class ProjectCategory(MappedClass):
-
     class __mongometa__:
         session = main_orm_session
         name = 'project_category'
@@ -131,7 +128,6 @@ class TroveCategoryMapperExtension(MapperExtension):
 
 
 class TroveCategory(MappedClass):
-
     class __mongometa__:
         session = main_orm_session
         name = 'trove_category'
@@ -1352,7 +1348,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             self.trove_environment
         )
         for cat in TroveCategory.query.find({'_id': {'$in': all_troves}}):
-            ET.SubElement(project, 'category', {'rdf:resource': 'http://sourceforge.net/api/trove/index/rdf#%s' % cat.trove_cat_id})
+            ET.SubElement(project, 'category', {'rdf:resource': 'http://sourceforge.net/api/trove/index/rdf#%s' % cat.trove_cat_id}) # noqa: E501
 
         # Awards
         for a in self.accolades:
@@ -1397,7 +1393,8 @@ class AppConfig(MappedClass, ActivityObject):
     Configuration information for an instantiated :class:`Application <allura.app.Application>`
     in a :class:`Project`
 
-    :var options: an object on which various options are stored.  options.mount_point is the url component for this app instance
+    :var options: an object on which various options are stored.
+    options.mount_point is the url component for this app instance
     :var acl: a dict that maps permissions (strings) to lists of roles that have the permission
     """
 

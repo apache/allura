@@ -480,11 +480,11 @@ class Test():
                 <div class="codehilite"><pre><span></span><code><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
                     <span class="nb">print</span> <span class="n">i</span>
                 </code></pre></div>
-                </div>''')
+                </div>''') # noqa: E501
         assert (
             ForgeMarkdown(email=True).convert('[Home]') ==
             # uses localhost:
-            '<div class="markdown_content"><p><a class="alink" href="http://localhost/p/test/wiki/Home/">[Home]</a></p></div>')
+            '<div class="markdown_content"><p><a class="alink" href="http://localhost/p/test/wiki/Home/">[Home]</a></p></div>') # noqa: E501
         assert g.markdown.convert(dedent('''\
             ~~~~
             def foo(): pass
@@ -597,7 +597,7 @@ class Test():
 
     Si une idée vous vient à l'esprit, merci de me tenir au courant.
 
-    cordialement, julien.'''))
+    cordialement, julien.''')) # noqa: E501
         assert True   # finished!
 
     def test_macro_include(self):

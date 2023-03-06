@@ -129,8 +129,9 @@ class ForumController(DiscussionController):
         if subscribe:
             self.discussion.subscribe(type='direct')
 
-            # unsubscribe from all individual threads that are part of this forum, so you don't have overlapping subscriptions
-            forumthread_index_prefix = (DM.ForumThread.__module__ + '.' + DM.ForumThread.__name__).replace('.', '/') + '#'
+            # unsubscribe from all individual threads that are part of this forum,
+            # so you don't have overlapping subscriptions
+            forumthread_index_prefix = (DM.ForumThread.__module__ + '.' + DM.ForumThread.__name__).replace('.', '/') + '#' # noqa: E501
             thread_mboxes = M.Mailbox.query.find(dict(
                 user_id=c.user._id,
                 project_id=c.project._id,

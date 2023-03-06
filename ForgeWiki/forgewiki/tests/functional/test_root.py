@@ -306,7 +306,7 @@ class TestRootController(TestController):
 
                                             Now hit your wiki a few times from a browser. Initially, it will be dead slow, as it is trying to build thumbnails for the images. And it will time out, a lot. Keep hitting reload, until it works.
 
-                                            **Note:** The logo shown in the sidebar is no longer stored as an object in the wiki (as it was in the Hosted App installation). Rather save it as a regular file, then edit LocalSettings.php, adding""")
+                                            **Note:** The logo shown in the sidebar is no longer stored as an object in the wiki (as it was in the Hosted App installation). Rather save it as a regular file, then edit LocalSettings.php, adding""") # noqa: E501
         self.app.post('/wiki/testdiff/update', params=d)
         d = dict(title='testdiff', text="""**Optionally**, you may also want to remove all the unused accounts that have accumulated (one was created for *every* logged in SF-user who has visited your MediaWiki hosted app):
 
@@ -343,7 +343,7 @@ class TestRootController(TestController):
 
                                             **Note:** The logo shown in the sidebar is no longer stored as an object in the wiki (as it was in the Hosted App installation). Rather save it as a regular file, then edit LocalSettings.php, adding
 
-                                            <script>alert(1)</script>""")
+                                            <script>alert(1)</script>""") # noqa: E501
         self.app.post('/wiki/testdiff/update', params=d)
         response = self.app.get('/wiki/testdiff/diff?v1=1&v2=2')
         assert ('# Now fix <del> permissons. </del> <ins> permissions. </ins> '

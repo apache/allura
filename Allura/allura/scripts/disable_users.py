@@ -65,7 +65,7 @@ class DisableUsers(ScriptTask):
     def parser(cls):
         parser = argparse.ArgumentParser(description='Disable listed users')
         parser.add_argument('--message', '-m', dest='message', type=str, default='Account disabled',
-                            help='Message to add to the audit log for each user (set to empty string to skip message altogether)')
+                            help='Message to add to the audit log for each user (set to empty string to skip message altogether)') # noqa: E501
         parser.add_argument(
             '--usernames', dest='usernames', type=str, nargs='+', metavar='<username>', required=True,
             help='List of usernames, or "-" to read from stdin')

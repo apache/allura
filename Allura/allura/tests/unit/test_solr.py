@@ -224,7 +224,7 @@ class TestSearch_app(unittest.TestCase):
                 'type_s': 'Post',
                 'title_match': Markup('blah blah'),
                 # highlighting in text
-                'text_match': Markup('less scary but still dangerous &amp;lt;script&amp;gt;alert(1)&amp;lt;/script&amp;gt; blah <strong>bar</strong> foo foo'),
+                'text_match': Markup('less scary but still dangerous &amp;lt;script&amp;gt;alert(1)&amp;lt;/script&amp;gt; blah <strong>bar</strong> foo foo'), # noqa: E501
                 '_artifact': None,
             }]
         )

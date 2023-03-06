@@ -1273,7 +1273,7 @@ def slugify(name, allow_periods=False):
     """
     RE_NON_ALPHA_ETC = re.compile(r'[^.\w]+' if allow_periods else r'[^\w]+')
     slug = RE_NON_ALPHA_ETC.sub('-',  # replace non ". alphanum_" sequences into single -
-                                unicodedata.normalize('NFKD', name).encode('ascii', 'ignore').decode().replace("'", '')  # asciify & strip apostophes.   https://stackoverflow.com/a/53261200
+                                unicodedata.normalize('NFKD', name).encode('ascii', 'ignore').decode().replace("'", '')  # noqa: E501 asciify & strip apostophes.   https://stackoverflow.com/a/53261200
                                 ).strip('-')  # leading - or trailing - gets removed
     return slug, slug.lower()
 

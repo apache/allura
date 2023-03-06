@@ -91,7 +91,7 @@ class TestGitHubProjectExtractor(TestCase):
     def test_get_next_page_url(self):
         self.assertIsNone(self.extractor.get_next_page_url(None))
         self.assertIsNone(self.extractor.get_next_page_url(''))
-        link = '<https://api.github.com/repositories/8560576/issues?state=open&page=2>; rel="next", <https://api.github.com/repositories/8560576/issues?state=open&page=10>; rel="last"'
+        link = '<https://api.github.com/repositories/8560576/issues?state=open&page=2>; rel="next", <https://api.github.com/repositories/8560576/issues?state=open&page=10>; rel="last"' # noqa: E501
         self.assertEqual(self.extractor.get_next_page_url(link),
                          'https://api.github.com/repositories/8560576/issues?state=open&page=2')
 

@@ -219,7 +219,7 @@ class UserProfileController(BaseController, FeedController):
             else:
                 c.user.set_pref('message_reply_real_address', False)
             c.user.send_user_message(
-                c.project.user_project_of, subject, message, cc, reply_to_real_address, c.user.preferences.email_address)
+                c.project.user_project_of, subject, message, cc, reply_to_real_address, c.user.preferences.email_address) # noqa: E501
             flash("Message sent.")
         else:
             flash("You can't send more than %i messages per %i seconds" % (

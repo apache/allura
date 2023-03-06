@@ -350,7 +350,7 @@ class TestRootController(_TestCase):
                     <span class="gi">+Which means Hello!</span>''') in
                 diffhtml)
 
-        resp = self.app.get(h.urlquote(ci + 'tree/привіт.txt') + '?diff=407950e8fba4dbc108ffbce0128ed1085c52cfd7&diformat=sidebyside')
+        resp = self.app.get(h.urlquote(ci + 'tree/привіт.txt') + '?diff=407950e8fba4dbc108ffbce0128ed1085c52cfd7&diformat=sidebyside') # noqa: E501
         diffhtml = str(resp.html.select_one('.diffbrowser'))
         assert (textwrap.dedent('''\
                     <thead>
@@ -1048,8 +1048,8 @@ class TestGitRename(TestController):
 
         # the diff portion of the output
         resp_no_ws = re.sub(r'\s+', '', str(resp))
-        assert ('<a href="/p/test/src-git/ci/fbb0644603bb6ecee3ebb62efe8c86efc9b84ee6/tree/f.txt" rel="nofollow">f.txt</a>'
-                'to<a href="/p/test/src-git/ci/b120505a61225e6c14bee3e5b5862db81628c35c/tree/f2.txt" rel="nofollow">f2.txt</a>'
+        assert ('<a href="/p/test/src-git/ci/fbb0644603bb6ecee3ebb62efe8c86efc9b84ee6/tree/f.txt" rel="nofollow">f.txt</a>' # noqa: E501
+                'to<a href="/p/test/src-git/ci/b120505a61225e6c14bee3e5b5862db81628c35c/tree/f2.txt" rel="nofollow">f2.txt</a>' # noqa: E501
                 .replace(' ', '') in resp_no_ws)
         assert '<span class="empty-diff">File was renamed.</span>' in resp
 
@@ -1058,7 +1058,7 @@ class TestGitRename(TestController):
         resp = self.app.get('/src-git/ci/7b1c9ef214eb0ef8c06bada0966dd941f442beec/')
 
         resp_no_ws = re.sub(r'\s+', '', str(resp))
-        assert ('<a href="/p/test/src-git/ci/7b1c9ef214eb0ef8c06bada0966dd941f442beec/tree/b_dir" rel="nofollow">b_dir</a>'
+        assert ('<a href="/p/test/src-git/ci/7b1c9ef214eb0ef8c06bada0966dd941f442beec/tree/b_dir" rel="nofollow">b_dir</a>' # noqa: E501
                 '</h6>'
                 '<div id="diff-3" class="inline-diff-body">'
                 '<span class="empty-diff">Symlink.</span>'
@@ -1068,7 +1068,7 @@ class TestGitRename(TestController):
         # change a_dir to a file; b_dir to a symlink
         resp = self.app.get('/src-git/ci/7b1c9ef214eb0ef8c06bada0966dd941f442beec/tree/')
 
-        resp.mustcontain('<a class="icon" href="b_dir" rel="nofollow" title="b_dir"><i class="fa fa-star"></i>&nbsp;b_dir</a>')
+        resp.mustcontain('<a class="icon" href="b_dir" rel="nofollow" title="b_dir"><i class="fa fa-star"></i>&nbsp;b_dir</a>') # noqa: E501
 
 
 class TestGitBranch(TestController):

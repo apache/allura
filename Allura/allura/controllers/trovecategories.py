@@ -139,7 +139,7 @@ class TroveCategoryController(BaseController):
 
         if oldcat:
             raise TroveAdminException(
-                (f'A category with shortname "{shortname}" already exists ({oldcat.fullpath}).  Try a different, unique shortname', "error"),
+                (f'A category with shortname "{shortname}" already exists ({oldcat.fullpath}).  Try a different, unique shortname', "error"), # noqa: E501
                 f'?categoryname={name}&shortname={shortname}',
                 upper
             )

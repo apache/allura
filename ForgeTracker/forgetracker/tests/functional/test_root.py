@@ -2242,7 +2242,8 @@ class TestFunctionalController(TrackerTestController):
 
     def test_move_ticket_bad_data(self):
         self.new_ticket(summary='test')
-        r = self.app.post('/p/test/bugs/1/move', extra_environ={'HTTP_REFERER': '/p/test/bugs/1/'}).follow()  # empty POST
+        # empty POST
+        r = self.app.post('/p/test/bugs/1/move', extra_environ={'HTTP_REFERER': '/p/test/bugs/1/'}).follow()
         assert 'Select valid tracker' in r, r
         r = self.app.post('/p/test/bugs/1/move',
                           params={'tracker': 'invalid tracker id'},
@@ -2872,7 +2873,7 @@ class TestEmailMonitoring(TrackerTestController):
         email_tasks = M.MonQTask.query.find(
             dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
         assert 'Sent from localhost because mailinglist@example.com is subscribed to http://localhost/p/test/bugs/' in \
-               email_tasks[0].kwargs['text']
+               email_tasks[0].kwargs['text'] # noqa: E501
         assert 'a project admin can change settings at http://localhost/p/test/admin/bugs/options' in \
                email_tasks[0].kwargs['text']
 

@@ -165,7 +165,8 @@ class ForgeMarkdown:
                     details += ' ' + artifact.url()
                 except Exception:
                     pass
-                log.info(f'Not saving markdown cache since it has a dynamic macro.  Took {render_time:.03}s on {details}')
+                log.info(
+                    f'Not saving markdown cache since it has a dynamic macro.  Took {render_time:.03}s on {details}')
             return html
 
         if threshold is not None and render_time > threshold:
@@ -173,7 +174,7 @@ class ForgeMarkdown:
             if md5 is None:
                 md5 = hashlib.md5(source_text.encode('utf-8')).hexdigest()
             cache.md5, cache.html, cache.render_time = md5, html, render_time
-            cache.fix7528 = bugfix_rev  # flag to indicate good caches created after [#7528] and other critical bugs were fixed.
+            cache.fix7528 = bugfix_rev # noqa: E501 # flag to indicate good caches created after [#7528] and other critical bugs were fixed.
 
             try:
                 sess = session(artifact)

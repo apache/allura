@@ -140,4 +140,4 @@ class TestMemoize:
                 continue
             else:
                 raise AssertionError('Unexpected reference to `r` instance: {!r}\n'
-                                     '@memoize probably made a reference to it and has created a circular reference loop'.format(gc_ref))
+                                     '@memoize probably made a reference to it and has created a circular reference loop'.format(gc_ref)) # noqa: E501

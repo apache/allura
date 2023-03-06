@@ -98,7 +98,7 @@ class TestTrackerImporter(TestCase):
             importer.process_fields(extractor, ticket, issue)
             self.assertEqual(ticket.summary, 'title')
             self.assertEqual(ticket.description,
-                             '*Originally created by:* [creator](https://github.com/creator)\n*Originally owned by:* [owner](https://github.com/owner)\n\nhello')
+                             '*Originally created by:* [creator](https://github.com/creator)\n*Originally owned by:* [owner](https://github.com/owner)\n\nhello') # noqa: E501
             self.assertEqual(ticket.status, 'New')
             self.assertEqual(ticket.created_date, 'created_at')
             self.assertEqual(ticket.mod_date, 'updated_at')
@@ -138,14 +138,14 @@ class TestTrackerImporter(TestCase):
         extractor.urlopen().read.return_value = b'data'
         body = 'hello\n' \
             '![cdbpzjc5ex4](https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg)\r\n' \
-            '![screensh0t](http://f.cl.ly/items/13453x43053r2G0d3x0v/Screen%20Shot%202012-04-28%20at%2010.48.17%20AM.png)'
+            '![screensh0t](http://f.cl.ly/items/13453x43053r2G0d3x0v/Screen%20Shot%202012-04-28%20at%2010.48.17%20AM.png)' # noqa: E501
         new_body, attachments = importer._get_attachments(extractor, body)
         self.assertEqual(new_body, 'hello\n')
         self.assertEqual(len(attachments), 2)
         self.assertEqual(
-            attachments[0].url, 'https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg')
+            attachments[0].url, 'https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg') # noqa: E501
         self.assertEqual(
-            attachments[1].url, 'http://f.cl.ly/items/13453x43053r2G0d3x0v/Screen%20Shot%202012-04-28%20at%2010.48.17%20AM.png')
+            attachments[1].url, 'http://f.cl.ly/items/13453x43053r2G0d3x0v/Screen%20Shot%202012-04-28%20at%2010.48.17%20AM.png') # noqa: E501
         self.assertEqual(attachments[0].file.read(), b'data')
         self.assertEqual(attachments[1].file.read(), b'data')
 

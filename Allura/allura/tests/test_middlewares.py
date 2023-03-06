@@ -75,7 +75,8 @@ class TestCORSMiddleware:
         exc.HTTPOk.return_value.assert_called_once_with(env, callback)
 
     def test_get_response_headers_simple(self):
-        # Allow-Origin: * is crucial for security, since that prevents browsers from exposing results fetched withCredentials: true (aka cookies)
+        # Allow-Origin: * is crucial for security, since that prevents browsers from exposing results fetched
+        # withCredentials: true (aka cookies)
         assert (self.cors.get_response_headers() ==
                      [('Access-Control-Allow-Origin', '*')])
         assert (self.cors.get_response_headers(preflight=False) ==

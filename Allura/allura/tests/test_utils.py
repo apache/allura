@@ -294,17 +294,17 @@ class TestHTMLSanitizer(unittest.TestCase):
         assert self.simple_tag_list(p) == ['div', 'iframe', 'iframe', 'div']
 
     def test_html_sanitizer_form_elements(self):
-        walker = self.walker_from_text('<p>test</p><form method="post" action="http://localhost/foo.php"><input type=file><input type=text><textarea>asdf</textarea></form>')
+        walker = self.walker_from_text('<p>test</p><form method="post" action="http://localhost/foo.php"><input type=file><input type=text><textarea>asdf</textarea></form>') # noqa: E501
         p = utils.ForgeHTMLSanitizerFilter(walker)
         assert self.simple_tag_list(p) == ['p', 'p']
 
     def test_html_sanitizer_checkbox(self):
-        walker = self.walker_from_text('<p><input type="checkbox" disabled/><input type="text" disabled/><input type="checkbox" disabled checked/></p>')
+        walker = self.walker_from_text('<p><input type="checkbox" disabled/><input type="text" disabled/><input type="checkbox" disabled checked/></p>') # noqa: E501
         p = utils.ForgeHTMLSanitizerFilter(walker)
         assert self.simple_tag_list(p) == ['p', 'input', 'input', 'p']
 
     def test_html_sanitizer_summary(self):
-        walker = self.walker_from_text('<details open="open"><summary>An Summary</summary><ul><li>Bullet Item</li></ul></details>')
+        walker = self.walker_from_text('<details open="open"><summary>An Summary</summary><ul><li>Bullet Item</li></ul></details>') # noqa: E501
         p = utils.ForgeHTMLSanitizerFilter(walker)
         assert self.simple_tag_list(p) == ['details', 'summary', 'summary', 'ul', 'li', 'li', 'ul', 'details']
 

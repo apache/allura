@@ -780,7 +780,7 @@ class RegistrationForm(ForgeForm):
             ew.PasswordField(
                 name='pw',
                 label='New Password',
-                attrs=dict(minlength=asint(tg.config.get('auth.min_password_len', 6)), maxlength=asint(tg.config.get('auth.max_password_len', 30))),
+                attrs=dict(minlength=asint(tg.config.get('auth.min_password_len', 6)), maxlength=asint(tg.config.get('auth.max_password_len', 30))), # noqa: E501
                 validator=V.UnicodeString(
                     not_empty=True,
                     min=asint(tg.config.get('auth.min_password_len', 6)),
@@ -860,8 +860,8 @@ class NeighborhoodOverviewForm(ForgeForm):
                 empty_val = False
                 if inp['value'] is None or inp['value'] == '':
                     empty_val = True
-                display += '<tr><td class="left"><label>%(label)s</label></td>' \
-                           '<td><input type="checkbox" name="%(ctx_name)s-%(inp_name)s-def" %(def_checked)s>default</td>' \
+                display += '<tr><td class="left"><label>%(label)s</label></td><td>' \
+                           '<input type="checkbox" name="%(ctx_name)s-%(inp_name)s-def" %(def_checked)s>default</td>' \
                            '<td class="right"><div class="%(ctx_name)s-%(inp_name)s-inp"><table class="input_inner">' \
                            '<tr><td><input type="text" class="%(inp_type)s" name="%(ctx_name)s-%(inp_name)s" ' \
                            'value="%(inp_value)s"></td><td>%(inp_additional)s</td></tr></table></div></td></tr>\n' % {
@@ -977,7 +977,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
             ew.InputField(name='project_unixname',
                           label='Short Name', field_type='text',
                           attrs={
-                              'title': 'Create a URL name that matches your project name as closely as possible to improve search indexing and maximize visibility.',
+                              'title': 'Create a URL name that matches your project name as closely as possible to improve search indexing and maximize visibility.', # noqa: E501
                               'class': 'tooltip'
                           },
                           validator=provider.shortname_validator),

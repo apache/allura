@@ -835,7 +835,7 @@ class PreferencesController(BaseController):
             totp_service.set_secret_key(c.user, key)
             c.user.set_pref('multifactor', True)
             c.user.set_tool_data('allura', multifactor_date=datetime.utcnow())
-            c.user.set_tool_data('allura', pwd_reset_preserve_session=session.id)  # other sessions will have to re-auth; preserve this one
+            c.user.set_tool_data('allura', pwd_reset_preserve_session=session.id)  # noqa: E501 other sessions will have to re-auth; preserve this one
             del session['totp_new_key']
             session.save()
             tg.flash('Two factor authentication has now been set up.')

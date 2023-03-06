@@ -55,7 +55,7 @@ __all__ = [
     'AwardFile', 'Award', 'AwardGrant', 'VotableArtifact', 'Discussion', 'Thread', 'PostHistory', 'Post',
     'DiscussionAttachment', 'BaseAttachment', 'AuthGlobals', 'User', 'ProjectRole', 'EmailAddress',
     'AuditLog', 'AlluraUserProperty', 'File', 'Notification', 'Mailbox', 'Repository',
-    'RepositoryImplementation', 'CommitStatus', 'MergeRequest', 'GitLikeTree', 'Stats', 'OAuthToken', 'OAuthConsumerToken',
+    'RepositoryImplementation', 'CommitStatus', 'MergeRequest', 'GitLikeTree', 'Stats', 'OAuthToken', 'OAuthConsumerToken', # noqa: E501
     'OAuthRequestToken', 'OAuthAccessToken', 'MonQTask', 'Webhook', 'ACE', 'ACL', 'EVERYONE', 'ALL_PERMISSIONS',
     'DENY_ALL', 'MarkdownCache', 'main_doc_session', 'main_orm_session', 'project_doc_session', 'project_orm_session',
     'artifact_orm_session', 'repository_orm_session', 'task_orm_session', 'ArtifactSessionExtension', 'repository',

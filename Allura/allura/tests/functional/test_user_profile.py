@@ -98,7 +98,7 @@ class TestUserProfile(TestDiscussBase):
         assert user.icon_url() in r.html.find('img').attrs['src']
         assert user.display_name == r.html.find('div', attrs={'class': 'name'}).getText()
         assert user.get_pref('localization')['city'] in r.html.find('span', attrs={'class': 'subitem-loc'}).getText()
-        assert user.get_pref('localization')['country'] in r.html.find('span', attrs={'class': 'subitem-loc'}).getText()
+        assert user.get_pref('localization')['country'] in r.html.find('span', attrs={'class': 'subitem-loc'}).getText() # noqa: E501
         assert user.get_pref('webpages')[0] in str(r.html.find('span', attrs={'class': 'subitem-web'}))
 
     def test_wrong_profile(self):
@@ -161,7 +161,7 @@ class TestUserProfile(TestDiscussBase):
 
         sendsimplemail.post.assert_called_once_with(
             cc=User.by_username('test-admin').get_pref('email_address'),
-            text='test message\n\n---\n\nThis message was sent to you via the Allura web mail form.  You may reply to this message directly, or send a message to Test Admin at http://localhost/u/test-admin/profile/send_message\n',
+            text='test message\n\n---\n\nThis message was sent to you via the Allura web mail form.  You may reply to this message directly, or send a message to Test Admin at http://localhost/u/test-admin/profile/send_message\n', # noqa: E501
             toaddr=User.by_username('test-user').get_pref('email_address'),
             fromaddr=User.by_username('test-admin').get_pref('email_address'),
             reply_to=User.by_username('test-admin').get_pref('email_address'),
@@ -174,7 +174,7 @@ class TestUserProfile(TestDiscussBase):
 
         sendsimplemail.post.assert_called_once_with(
             cc=None,
-            text='test message\n\n---\n\nThis message was sent to you via the Allura web mail form.  You may reply to this message directly, or send a message to Test Admin at http://localhost/u/test-admin/profile/send_message\n',
+            text='test message\n\n---\n\nThis message was sent to you via the Allura web mail form.  You may reply to this message directly, or send a message to Test Admin at http://localhost/u/test-admin/profile/send_message\n', # noqa: E501
             toaddr=User.by_username('test-user').get_pref('email_address'),
             fromaddr=User.by_username('test-admin').get_pref('email_address'),
             reply_to=User.by_username('test-admin').get_pref('email_address'),
@@ -209,7 +209,7 @@ class TestUserProfile(TestDiscussBase):
         sender_address = test_admin.preferences.email_address
         sendsimplemail.post.assert_called_once_with(
             cc=User.by_username('test-admin').get_pref('email_address'),
-            text='test message\n\n---\n\nThis message was sent to you via the Allura web mail form.  You may reply to this message directly, or send a message to Test Admin at http://localhost/u/test-admin/profile/send_message\n',
+            text='test message\n\n---\n\nThis message was sent to you via the Allura web mail form.  You may reply to this message directly, or send a message to Test Admin at http://localhost/u/test-admin/profile/send_message\n', # noqa: E501
             toaddr=User.by_username('test-user').get_pref('email_address'),
             fromaddr=User.by_username('test-admin').get_pref('email_address'),
             reply_to=sender_address,

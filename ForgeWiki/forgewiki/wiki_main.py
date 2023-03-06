@@ -171,7 +171,7 @@ This is the default page, edit it as you see fit. To add a new page simply refer
 The wiki uses [Markdown](%s) syntax.
 
 [[members limit=20]]
-""" % (self.url + 'markdown_syntax/')
+""" % (self.url + 'markdown_syntax/') # noqa: E501
 
     @property
     def show_discussion(self):
@@ -996,7 +996,7 @@ class WikiAdminController(DefaultAdminController):
 
         if self.app.allow_email_posting != bool(allow_email_posting):
             M.AuditLog.log('{}: set option "{}" {} => {}'.format(
-                mount_point, "Allow posting replies via email", self.app.allow_email_posting, bool(allow_email_posting)))
+                mount_point, "Allow posting replies via email", self.app.allow_email_posting, bool(allow_email_posting))) # noqa: E501
             self.app.allow_email_posting = allow_email_posting
 
         flash('Wiki options updated')

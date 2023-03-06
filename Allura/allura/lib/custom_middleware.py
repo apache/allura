@@ -321,7 +321,7 @@ class AlluraTimerMiddleware(TimerMiddleware):
             Timer('jinja', jinja2.Template, 'render', 'stream', 'generate'),
             Timer('jinja.compile', jinja2.Environment, 'compile'),
             Timer('markdown', markdown.Markdown, 'convert'),
-            Timer('ming', ming.odm.odmsession.ODMCursor, 'next',  # FIXME: this may captures timings ok, but is misleading for counts
+            Timer('ming', ming.odm.odmsession.ODMCursor, 'next',  # noqa: E501 FIXME: this may captures timings ok, but is misleading for counts
                   debug_each_call=False),
             Timer('ming', ming.odm.odmsession.ODMSession,
                   'insert_now', 'update_now', 'delete_now',

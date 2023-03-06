@@ -135,7 +135,7 @@ class Credentials:
     def user_roles(self, user_id, project_id=None):
         '''
         :returns: a :class:`RoleCache` of :class:`ProjectRoles <allura.model.auth.ProjectRole>` for given user_id and optional project_id, ``*anonymous`` and ``*authenticated`` checked as appropriate
-        '''
+        ''' # noqa: E501
         roles = self.users.get((user_id, project_id))
         if roles is None:
             if project_id is None:

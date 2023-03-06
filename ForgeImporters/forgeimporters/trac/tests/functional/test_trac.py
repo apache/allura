@@ -41,7 +41,7 @@ class TestTracImportController(TestController):
             r = form.submit()
 
         assert r.status_int == 302 and '/p/my-project' in r.location, \
-            'Did not redirect as expected (status {} location {}).  Got a flash message: {} and inline errors: {}'.format(
+            'Did not redirect as expected (status {} location {}).  Got a flash message: {} and inline errors: {}'.format( # noqa: E501
                 r.status_int,
                 r.location,
                 self.webflash(r),

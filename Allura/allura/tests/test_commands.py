@@ -548,7 +548,7 @@ class TestReindexCommand:
         def on_post(chunk, **kw):
             if len(chunk) > 1:
                 e = pymongo.errors.InvalidDocument(
-                    "BSON document too large (16906035 bytes) - the connected server supports BSON document sizes up to 16777216 bytes.")
+                    "BSON document too large (16906035 bytes) - the connected server supports BSON document sizes up to 16777216 bytes.") # noqa: E501
                 # ming injects a 2nd arg with the document, so we do too
                 e.args = e.args + ("doc:  {'task_name': 'allura.tasks.index_tasks.add_artifacts', ........",)
                 raise e

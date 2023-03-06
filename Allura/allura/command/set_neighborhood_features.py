@@ -40,7 +40,7 @@ class SetNeighborhoodFeaturesCommand(base.Command):
         "\t    max_projects - maximum projects allowed in neighborhood - specify None for no limit\r\n" \
         "\t    css - type of css customization - use \"none\", \"picker\", or \"custom\".\r\n" \
         "\t    google_analytics - allow the user to use google analytics - True or False\r\n" \
-        "\t    private_projects - allow private projects in the neighborhood - True or False"
+        "\t    private_projects - allow private projects in the neighborhood - True or False" # noqa: E501
     parser = base.Command.standard_parser(verbose=True)
 
     def command(self):

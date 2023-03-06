@@ -53,7 +53,7 @@ class NexmoPhoneService(PhoneService):
         return dict(params, **common)
 
     def error(self, code=None, msg=None, number=''):
-        allowed_codes = ['3', '10', '15', '16', '17']  # https://docs.nexmo.com/index.php/verify/search#verify_return_code
+        allowed_codes = ['3', '10', '15', '16', '17']  # noqa: E501 https://docs.nexmo.com/index.php/verify/search#verify_return_code
         if code is None or str(code) not in allowed_codes:
             msg = 'Failed sending request to Nexmo'
         if str(code) == '3' and msg.endswith(' number'):
@@ -61,7 +61,7 @@ class NexmoPhoneService(PhoneService):
                 '{}{}{}'.format(
                     html.escape(msg),  # escape it just in case Nexmo sent some HTML we don't want through
                     '<br>Make sure you include the country code (see examples above)',
-                    '. For US numbers, you must include <code>1-</code> before the area code.' if len(number) == 10 else '',
+                    '. For US numbers, you must include <code>1-</code> before the area code.' if len(number) == 10 else '', # noqa: E501
                 ))
 
         return {'status': 'error', 'error': msg}

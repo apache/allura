@@ -86,7 +86,8 @@ class ForgeConfig(MinimalApplicationConfiguratorNoRegistry):
             # prevent dispatcher from striping extensions like '.io' from URLs
             'disable_request_extensions': True,
 
-            # if left to True (default) would use crank.util.default_path_translator to convert all URL punctuation to "_"
+            # if left to True (default) would use crank.util.default_path_translator
+            # to convert all URL punctuation to "_"
             # which is convenient for /foo-bar to execute a "def foo_bar" method, but is a pretty drastic change for us
             # and makes many URLs be valid that we might not want like /foo*bar /foo@bar /foo:bar
             'dispatch_path_translator': None,

@@ -682,8 +682,8 @@ class GitImplementation(M.RepositoryImplementation):
             cmd_args[4] = '-r'
         if asbool(tg.config.get('scm.commit.git.detect_copies', True)):
             cmd_args += ['-M', '-C']
-
-        cmd_output = self._git.git.diff_tree(commit_id, *cmd_args).split('\x00')[:-1]  # don't escape filenames and use \x00 as fields delimiter
+        # don't escape filenames and use \x00 as fields delimiter
+        cmd_output = self._git.git.diff_tree(commit_id, *cmd_args).split('\x00')[:-1]
 
         ''' cmd_output will be like:
         [

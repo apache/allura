@@ -697,7 +697,7 @@ class TestLocalAuthenticationProvider:
         assert detail.ip == '1.2.3.4'
         assert detail.ua is None
 
-        detail = self.provider.login_details_from_auditlog(M.AuditLog(message='Foo\nIP Address: 1.2.3.4\nFoo', user=user))
+        detail = self.provider.login_details_from_auditlog(M.AuditLog(message='Foo\nIP Address: 1.2.3.4\nFoo', user=user)) # noqa: E501
         assert detail.ip == '1.2.3.4'
         assert detail.ua is None
 

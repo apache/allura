@@ -69,7 +69,8 @@ class macro:
 
     def __init__(self, context: str = None, cacheable: bool = False):
         """
-        :param context: either "neighborhood-wiki" or "userproject-wiki" to limit the macro to be used in those contexts
+        :param context: either "neighborhood-wiki" or "userproject-wiki"
+        to limit the macro to be used in those contexts
         :param cacheable: indicates if its ok to cache the macro's output permanently
         """
         self._context = context

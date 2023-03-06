@@ -68,7 +68,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
         search_help = SearchHelp(comments=False, history=False,
                                  fields={'author_user_name_t': 'Username',
                                          'text': '"Post text"',
-                                         'timestamp_dt': 'Date posted.  Example: timestamp_dt:[2018-01-01T00:00:00Z TO *]',
+                                         'timestamp_dt': 'Date posted.  Example: timestamp_dt:[2018-01-01T00:00:00Z TO *]', # noqa: E501
                                          'name_s': 'Subject'})
 
     def _check_security(self):

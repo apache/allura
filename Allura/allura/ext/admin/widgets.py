@@ -142,7 +142,7 @@ class ScreenshotAdmin(ff.ForgeFormResponsive):
                           field_type="text",
                           label='Caption',
                           attrs={
-                              'title': "Reuse your project name in screenshot file names and create a caption to briefly describe each screenshot.",
+                              'title': "Reuse your project name in screenshot file names and create a caption to briefly describe each screenshot.", # noqa: E501
                               'class': 'm-tooltip',
                           }
                           )
@@ -156,7 +156,7 @@ class FeaturesField(ew.CompoundField):
 
     def resources(self):
         yield ew.JSLink('allura/js/jquery-ui-1.13.2.min.js', location='body_top_js')
-        yield ew.CSSLink('allura/css/smoothness/jquery-ui-1.13.2.min.css', compress=False)  # compress will also serve from a different location, breaking image refs
+        yield ew.CSSLink('allura/css/smoothness/jquery-ui-1.13.2.min.css', compress=False)  # noqa: E501 compress will also serve from a different location, breaking image refs
 
 
 class MetadataAdmin(ff.AdminForm):
@@ -173,7 +173,7 @@ class MetadataAdmin(ff.AdminForm):
                                  V.MaxBytesValidator(max=40),
                              ),
                              attrs={'maxlength': 40,
-                                    'title': "This is the publicly viewable name of the project, and will appear on project listings. It should be what you want to see as the project title in search listing.",
+                                    'title': "This is the publicly viewable name of the project, and will appear on project listings. It should be what you want to see as the project title in search listing.", # noqa: E501
                                     'class': 'tooltip',
                                     })
         summary = ew.InputField(field_type="text", label='Short Summary',
@@ -181,13 +181,13 @@ class MetadataAdmin(ff.AdminForm):
                                     V.UnicodeString(max=70),
                                     V.MaxBytesValidator(max=70)),
                                 attrs={'maxlength': 70,
-                                       'title': 'Briefly state what your project is and what it does without repeating the project name. This summary appears in Google search results beneath the project name.',
+                                       'title': 'Briefly state what your project is and what it does without repeating the project name. This summary appears in Google search results beneath the project name.', # noqa: E501
                                        'class': 'tooltip',
                                        })
         short_description = ew.TextArea(label='Full Description',
                                         validator=V.UnicodeString(max=1000),
                                         attrs={
-                                            'title': 'Describe the full functionality of your project using related keywords. The first sentence has the most impact on search. Provide unique content that calls out keywords and describes the merits of your project.',
+                                            'title': 'Describe the full functionality of your project using related keywords. The first sentence has the most impact on search. Provide unique content that calls out keywords and describes the merits of your project.', # noqa: E501
                                             'class': 'tooltip'
                                         })
         # Apparently, child field must be CompoundField with custom template

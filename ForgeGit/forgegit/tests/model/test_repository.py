@@ -479,7 +479,7 @@ By Dave Brondsema''' in text_body
 * three</p>
 <p>http://example.com/</p></div>
 
-<p>By Dave Brondsema''' in html_body
+<p>By Dave Brondsema''' in html_body # noqa: E501
 
     def test_commit_artifact_references(self):
         self._setup_weird_chars_repo()

@@ -152,7 +152,7 @@ class Oauth1Validator(oauthlib.oauth1.RequestValidator):
 
     def validate_verifier(self, client_key: str, token: str, verifier: str, request: oauthlib.common.Request) -> bool:
         req_tok = M.OAuthRequestToken.query.get(api_key=token)
-        return oauthlib.common.safe_string_equals(req_tok.validation_pin, verifier)  # NoneType error? you need dummy_oauths()
+        return oauthlib.common.safe_string_equals(req_tok.validation_pin, verifier) # noqa: E501 NoneType error? you need dummy_oauths()
 
     def save_verifier(self, token: str, verifier: dict, request: oauthlib.common.Request) -> None:
         req_tok = M.OAuthRequestToken.query.get(api_key=token)

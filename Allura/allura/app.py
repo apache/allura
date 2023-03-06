@@ -100,8 +100,8 @@ class SitemapEntry:
 
     """
 
-    def __init__(self, label, url=None, children=None, className=None,
-                 ui_icon=None, small=None, tool_name=None, matching_urls=None, extra_html_attrs=None, mount_point=None):
+    def __init__(self, label, url=None, children=None, className=None, ui_icon=None, small=None, tool_name=None,
+                 matching_urls=None, extra_html_attrs=None, mount_point=None):
         """
         Create a new SitemapEntry.
 

@@ -102,7 +102,7 @@ class ACL(S.Array):
 
         ace = M.ACE.deny(role_id, 'read')  # reason = None
         acl = [{role_id=ObjectId(...), permission='read', access='DENY', reason='Spammer'}]
-        """
+        """ # noqa: E501
         def clear_reason(ace):
             return Object(access=ace.access, role_id=ace.role_id, permission=ace.permission)
 
