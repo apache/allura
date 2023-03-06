@@ -86,10 +86,11 @@ def run_pyflakes(files):
         '__version__',
     ]
     files = [f for f in files if '/migrations/' not in f]
-    cmd = "pyflakes " + ' '.join(files) + " | grep -v '" + "' | grep -v '".join(skips) + "'"
+    cmd = "ruff check " + ' '.join(files) + " | grep -v '" + "' | grep -v '".join(skips) + "'"
+    #print("CMD", cmd)
     if run(cmd) != 1:
         # print 'Command was: %s' % cmd
-        raise Exception('pyflakes failure, see stdout')
+        raise Exception('ruff failure, see stdout')
 
 
 class TestLinters:
@@ -97,7 +98,7 @@ class TestLinters:
     pass
 
 
-# Dynamically generate many test methods, to run pylint & pyflakes commands in separate batches
+# Dynamically generate many test methods, to run pylint & ruff commands in separate batches
 # Can't use http://nose.readthedocs.io/en/latest/writing_tests.html#test-generators because nose doesn't run
 # those in parallel
 def create_many_lint_methods():
