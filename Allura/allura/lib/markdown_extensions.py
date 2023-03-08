@@ -103,20 +103,27 @@ class CommitMessageExtension(markdown.Extension):
         md.registerExtension(self)
         # remove default preprocessors and add our own
         clear_markdown_registry(md.preprocessors)
-        md.preprocessors['trac_refs'] = PatternReplacingProcessor(TracRef1(), TracRef2(), TracRef3(self.app))
+
+        # The last param of .register() is priority. Higher vals go first.
+
+        md.preprocessors.register(PatternReplacingProcessor(TracRef1(), TracRef2(), TracRef3(self.app)), 'trac_refs', 0)
+
         # remove all inlinepattern processors except short refs and links
         clear_markdown_registry(md.inlinePatterns, keep=['link'])
-        md.inlinePatterns['short_reference'] = ForgeLinkPattern(SHORT_REF_RE, md, ext=self)
+        md.inlinePatterns.register(ForgeLinkPattern(SHORT_REF_RE, md, ext=self), 'short_reference', 0)
+
         # remove all default block processors except for paragraph
         clear_markdown_registry(md.parser.blockprocessors, keep=['paragraph'])
+
         # wrap artifact link text in square brackets
         self.forge_link_tree_processor = ForgeLinkTreeProcessor(md)
-        md.treeprocessors['links'] = self.forge_link_tree_processor
+        md.treeprocessors.register(self.forge_link_tree_processor, 'links', 0)
+
         # Sanitize HTML
-        md.postprocessors['sanitize_html'] = HTMLSanitizer()
+        md.postprocessors.register(HTMLSanitizer(), 'sanitize_html', 3)
         # Put a class around markdown content for custom css
-        md.postprocessors['add_custom_class'] = AddCustomClass()
-        md.postprocessors['mark_safe'] = MarkAsSafe()
+        md.postprocessors.register(AddCustomClass(), 'add_custom_class', 2)
+        md.postprocessors.register(MarkAsSafe(), 'mark_safe', 1)
 
     def reset(self):
         self.forge_link_tree_processor.reset()
@@ -272,27 +279,32 @@ class ForgeExtension(markdown.Extension):
 
     def extendMarkdown(self, md):
         md.registerExtension(self)
-        md.preprocessors.add('macro_include', ForgeMacroIncludePreprocessor(md), '_end')
+        md.preprocessors.register(ForgeMacroIncludePreprocessor(md), 'macro_include', -99)
+
+        # The last param of .register() is priority. Higher vals go first.
+
         # this has to be before the 'escape' processor, otherwise weird
         # placeholders are inserted for escaped chars within urls, and then the
         # autolink can't match the whole url
-        md.inlinePatterns.add('autolink_without_brackets',
-                              AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-\\_%?&=+#;~:!]+)', md),
-                              '<escape')
+        md.inlinePatterns.register(AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-\\_%?&=+#;~:!]+)', md),
+                                   'autolink_without_brackets',
+                                   185)  # was '<escape' and 'escape' is priority 180; great num runs first, so: 185
         # replace the link pattern with our extended version
-        md.inlinePatterns['link'] = ForgeLinkPattern(FORGE_LINK_RE, md, ext=self)
-        md.inlinePatterns['short_reference'] = ForgeLinkPattern(SHORT_REF_RE, md, ext=self)
+        md.inlinePatterns.register(ForgeLinkPattern(FORGE_LINK_RE, md, ext=self), 'link', 160)
+        md.inlinePatterns.register(ForgeLinkPattern(SHORT_REF_RE, md, ext=self), 'short_reference', 130)
         # macro must be processed before links
-        md.inlinePatterns.add('macro', ForgeMacroPattern(MACRO_PATTERN, md, ext=self), '<link')
+        md.inlinePatterns.register(ForgeMacroPattern(MACRO_PATTERN, md, ext=self), 'macro', 165)  # similar to above
+
         self.forge_link_tree_processor = ForgeLinkTreeProcessor(md)
-        md.treeprocessors['links'] = self.forge_link_tree_processor
+        md.treeprocessors.register(self.forge_link_tree_processor, 'links', 100)
+
         # Sanitize HTML
-        md.postprocessors['sanitize_html'] = HTMLSanitizer()
+        md.postprocessors.register(HTMLSanitizer(), 'sanitize_html', 5)
         # Rewrite all relative links that don't start with . to have a '../' prefix
-        md.postprocessors['rewrite_relative_links'] = RelativeLinkRewriter(make_absolute=self._is_email)
+        md.postprocessors.register(RelativeLinkRewriter(make_absolute=self._is_email), 'rewrite_relative_links', 4)
         # Put a class around markdown content for custom css
-        md.postprocessors['add_custom_class'] = AddCustomClass()
-        md.postprocessors['mark_safe'] = MarkAsSafe()
+        md.postprocessors.register(AddCustomClass(), 'add_custom_class', 3)
+        md.postprocessors.register(MarkAsSafe(), 'mark_safe', 2)
 
     def reset(self):
         self.forge_link_tree_processor.reset()
@@ -304,7 +316,7 @@ class EmojiExtension(markdown.Extension):
 
     def extendMarkdown(self, md):
         md.registerExtension(self)
-        md.inlinePatterns["emoji"] = EmojiInlinePattern(self.EMOJI_RE)
+        md.inlinePatterns.register(EmojiInlinePattern(self.EMOJI_RE), 'emoji', 0)
 
 
 class EmojiInlinePattern(markdown.inlinepatterns.Pattern):
@@ -320,7 +332,7 @@ class UserMentionExtension(markdown.Extension):
 
     def extendMarkdown(self, md):
         md.registerExtension(self)
-        md.inlinePatterns["user_mentions"] = UserMentionInlinePattern(self.UM_RE)
+        md.inlinePatterns.register(UserMentionInlinePattern(self.UM_RE), 'user_mentions', 0)
 
 
 class UserMentionInlinePattern(markdown.inlinepatterns.Pattern):
@@ -424,7 +436,7 @@ class ForgeMacroPattern(markdown.inlinepatterns.Pattern):
 
     def handleMatch(self, m):
         html = self.macro(m.group(2))
-        placeholder = self.markdown.htmlStash.store(html)
+        placeholder = self.md.htmlStash.store(html)
         return placeholder
 
 
