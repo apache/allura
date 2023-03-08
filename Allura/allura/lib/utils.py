@@ -17,7 +17,7 @@
 from __future__ import annotations
 
 import base64
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping, MutableMapping
 from contextlib import contextmanager
 import time
 import string
@@ -421,7 +421,7 @@ class TruthyCallable:
             return NotImplemented
 
 
-class TransformedDict(collections.MutableMapping):
+class TransformedDict(MutableMapping):
 
     """
     A dictionary which applies an arbitrary
@@ -807,7 +807,7 @@ def smart_str(s):
 
 
 def generate_smart_str(params):
-    if isinstance(params, collections.Mapping):
+    if isinstance(params, Mapping):
         params_list = params.items()
     else:
         params_list = params
