@@ -11,6 +11,7 @@ ignore = [
     'E402', # Module level import not at top of file
     'E731', # Do not assign a lambda expression, use a def
     'E741', # Ambiguous variable name: I,
+    'E501' # Line too long
 ]
 line-length = 119
 
