@@ -80,7 +80,7 @@ def run_linter(files):
 def run_pyflakes(files):
     # skip some that aren't critical errors
     files = [f for f in files if '/migrations/' not in f]
-    cmd = "ruff check " + ' '.join(files) + " | grep -v '" + "'"
+    cmd = "ruff check " + ' '.join(files) + " --show-source"
     if run(cmd) != 1:
         # print 'Command was: %s' % cmd
         raise Exception('ruff failure, see stdout')
