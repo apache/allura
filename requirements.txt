@@ -128,8 +128,6 @@ profanityfilter==2.0.6
     # via -r requirements.in
 pycparser==2.21
     # via cffi
-pyflakes==3.0.1
-    # via -r requirements.in
 pygments==2.14.0
     # via -r requirements.in
 pymongo==3.13.0
@@ -179,6 +177,8 @@ requests==2.28.1
     #   pysolr
     #   requests-oauthlib
 requests-oauthlib==1.3.1
+    # via -r requirements.in
+ruff==0.0.254
     # via -r requirements.in
 setproctitle==1.3.2
     # via -r requirements.in
