@@ -77,7 +77,7 @@ def run_linter(files):
         raise Exception('Custom Allura pylint errors found.')
 
 
-def run_pyflakes(files):
+def run_ruff(files):
     # skip some that aren't critical errors
     files = [f for f in files if '/migrations/' not in f]
     cmd = f"ruff check {' '.join(files)}  --config {BASE_PATH[0]}/ruff.toml --show-source"
@@ -112,9 +112,9 @@ def create_many_lint_methods():
         lint_test_method.__name__ = str(f'test_pylint_{i}')
         setattr(TestLinters, f'test_pylint_{i}', lint_test_method)
 
-        pyflake_test_method = lambda self, these_files=files: run_pyflakes(these_files)
-        pyflake_test_method.__name__ = str(f'test_pyflakes_{i}')
-        setattr(TestLinters, f'test_pyflakes_{i}', pyflake_test_method)
+        pyflake_test_method = lambda self, these_files=files: run_ruff(these_files)
+        pyflake_test_method.__name__ = str(f'test_ruff_{i}')
+        setattr(TestLinters, f'test_ruff_{i}', pyflake_test_method)
 
 
 create_many_lint_methods()
