@@ -37,13 +37,6 @@ def run(cmd):
 find_py = r"find Allura Forge* -not -path '*/\.*' -name '*.py'"
 
 
-# a recipe from itertools doc
-def grouper(n, iterable, fillvalue=None):
-    "grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx"
-    args = [iter(iterable)] * n
-    return zip_longest(fillvalue=fillvalue, *args)
-
-
 def test_no_local_tz_functions():
     if run(find_py + r" | xargs grep '\.now(' ") not in [1, 123]:
         raise Exception("These should use .utcnow()")
@@ -62,7 +55,7 @@ def test_no_prints():
         '/scripts/',
         'ForgeSVN/setup.py',
     ]
-    if run(find_py + " | grep -v '" + "' | grep -v '".join(skips) + "' | xargs grep -v '^ *#' | egrep -n '\bprint\(' | grep -E -v '(pprint|#pragma: ?printok)' ") != 1:
+    if run(find_py + " | grep -v '" + "' | grep -v '".join(skips) + r"' | xargs grep -v '^ *#' | egrep -n '\bprint\(' | grep -E -v '(pprint|#pragma: ?printok)' ") != 1:
         raise Exception("These should use logging instead of print")
 
 
@@ -71,40 +64,9 @@ def test_no_tabs():
         raise Exception('These should not use tab chars')
 
 
-def run_ruff(files):
-    # skip some that aren't critical errors
-    files = [f for f in files if '/migrations/' not in f]
-    cmd = f"ruff check {' '.join(files)}  --config {BASE_PATH[0]}/ruff.toml --show-source"
+def test_ruff():
+    cmd = f"ruff check . --config {BASE_PATH[0]}/ruff.toml --show-source"
     if run(cmd) != 0:
         # print 'Command was: %s' % cmd
         raise Exception('ruff failure, see stdout')
 
-
-class TestLinters:
-    # this will get populated dynamically with test methods, see below
-    pass
-
-
-# Dynamically generate many test methods, to run pylint & ruff commands in separate batches
-# Can't use http://nose.readthedocs.io/en/latest/writing_tests.html#test-generators because nose doesn't run
-# those in parallel
-def create_many_lint_methods():
-    proc = Popen(find_py, shell=True, cwd=toplevel_dir, stdout=PIPE, stderr=PIPE)
-    (find_stdout, stderr) = proc.communicate()
-    find_stdout = find_stdout.decode('utf-8')
-    stderr = stderr.decode('utf-8')
-    sys.stderr.write(stderr)
-    assert proc.returncode == 0, proc.returncode
-    py_files = find_stdout.split('\n')
-
-    for i, files in enumerate(grouper(40, py_files)):
-        files = [_f for _f in files if _f]
-        if not files:
-            continue
-
-        pyflake_test_method = lambda self, these_files=files: run_ruff(these_files)
-        pyflake_test_method.__name__ = str(f'test_ruff_{i}')
-        setattr(TestLinters, f'test_ruff_{i}', pyflake_test_method)
-
-
-create_many_lint_methods()
