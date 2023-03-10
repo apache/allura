@@ -71,12 +71,6 @@ def test_no_tabs():
         raise Exception('These should not use tab chars')
 
 
-def run_linter(files):
-    raise SkipTest('pylint see [#8346]')
-    if run('pylint -E --disable=all --enable=exposed-api-needs-kwargs --load-plugins alluratest.pylint_checkers {}'.format(' '.join(files))) != 0:
-        raise Exception('Custom Allura pylint errors found.')
-
-
 def run_ruff(files):
     # skip some that aren't critical errors
     files = [f for f in files if '/migrations/' not in f]
@@ -107,10 +101,6 @@ def create_many_lint_methods():
         files = [_f for _f in files if _f]
         if not files:
             continue
-
-        lint_test_method = lambda self, these_files=files: run_linter(these_files)
-        lint_test_method.__name__ = str(f'test_pylint_{i}')
-        setattr(TestLinters, f'test_pylint_{i}', lint_test_method)
 
         pyflake_test_method = lambda self, these_files=files: run_ruff(these_files)
         pyflake_test_method.__name__ = str(f'test_ruff_{i}')

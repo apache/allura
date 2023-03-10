@@ -50,7 +50,6 @@ wrapt
 # testing
 mock
 ruff
-#pylint -- disabled due to [#8346]  (also requires diff versions on py2 vs 3, including transitive deps which gets tricky with pip-compile)
 testfixtures
 WebTest
 pytest
