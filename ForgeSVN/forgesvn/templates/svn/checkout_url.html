@@ -47,7 +47,7 @@
   <hr>
   <div class="grid-13">&nbsp;</div>
   <div class="grid-13">
-    <input type="button" onclick="save_checkout_url()" value="Save">
+    <input type="button" id="save-checkout-url" value="Save">
     <a href="#" class="close">Cancel</a>
   </div>
   {% endif %}
@@ -65,6 +65,10 @@
             location.reload();
         });
     }
+    $('#save-checkout-url').on('click', function(e){
+        save_checkout_url();
+        e.preventDefault();
+    })
   </script>
 {% endif %}
 {% endblock %}

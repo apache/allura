@@ -58,7 +58,7 @@
     </ul>
     {% if projects|length > 5 %}
     <div class="show-more-projects">
-        <button onclick="$(this).hide().closest('.section-body').find('li.hidden').show()">
+        <button id="show-more-profile-projects">
           {{ g.icons['add'].render(title='Show More', show_title=True, tag='b') }}
         </button>
     </div>

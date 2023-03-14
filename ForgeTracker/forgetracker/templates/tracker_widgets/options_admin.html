@@ -43,7 +43,15 @@
     {% for b in buttons %}
       {{b.display()}}
     {% endfor %}
-    <a href="#" onclick="window.history.back(); return false;" class="close">Cancel</a>
+    <a href="#" id="tracker-options-cancel" class="close">Cancel</a>
   </div>
   {% if method.upper() == 'POST' %}{{lib.csrf_token()}}{% endif %}
 </form>
+{% block extra_js %}
+<script>
+$('#tracker-options-cancel').on('click', function(e){
+    window.history.back();
+    e.preventDefault();
+})
+</script>
+{% endblock %}

@@ -22,7 +22,7 @@
 
 <!-- macro for feedback textarea -->
 {% macro feed_textarea(name='description',id='description',placeholder='',description='') %}
-<textarea class="textbox" name="{{name}}" id="{{id}}" maxlength=100 onkeyup="manage()" placeholder="{{placeholder}}">{{description}}</textarea>
+<textarea class="textbox" name="{{name}}" id="{{id}}" maxlength=100 placeholder="{{placeholder}}">{{description}}</textarea>
 {% endmacro %}
 
 <!-- macro for feedback alert message -->
@@ -60,10 +60,13 @@ function manage()
 </script>
 
 <script>
+    $("#description").on('keyup', function(e){
+        manage()
+    })
     $('#feedback_form').submit(function(event){
     event.preventDefault();
     var description = $("#description").val();
-    
+
     $.ajax({
         context: this,
         url:'{{url}}feedback_check',
@@ -83,6 +86,14 @@ function manage()
         
     });
 });
+
+    function setupRatingEvent(){
+        $('.rating > input').each(function(el,index){
+            $(this).on('click', function(e){
+                manage();
+            })
+        })
+    }
 </script>
 
 {% endmacro %}

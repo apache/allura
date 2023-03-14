@@ -117,7 +117,7 @@ Files {% if folder_object %} - {{path_links(folder_path.split('/'), urls)}} {% e
                          <a data-toggle="tooltip " {% if not folder.disabled %} class="delete_icon admin_modal" href="{{c.app.url}}get_deletable_object?object_id={{folder._id}}" title="Delete" {% else %} class="disable_object" {% endif %}><i class="fa fa-trash-o" data-toggle='modal'></i></a>
 
 
-                         <a href="#" data-toggle="tooltip" {% if folder.disabled %} title="Enable" {% else %} title="Disable" {% endif %} onclick="ConfirmDisableFolder('{{ folder._id }}', '{{folder.disabled}}', '{{folder.parent_folder.disabled}}','{{c.app.url}}disable_folder')" ><i {% if folder.disabled %} class="fa fa-undo" {% else %} class="fa fa-ban" {% endif %}></i></a>
+                         <a href="#" data-toggle="tooltip" {% if folder.disabled %} title="Enable" {% else %} title="Disable" {% endif %} class="confirm-disable-folder" data-folder-id="{{ folder._id }}" data-folder-disabled="{{folder.disabled}}" data-folder-parent-disabled="{{folder.parent_folder.disabled}}" data-folder-disable-url="{{c.app.url}}disable_folder" ><i {% if folder.disabled %} class="fa fa-undo" {% else %} class="fa fa-ban" {% endif %}></i></a>
 
 
                      </div>
@@ -144,12 +144,12 @@ Files {% if folder_object %} - {{path_links(folder_path.split('/'), urls)}} {% e
                 {% if h.has_access(c.project, 'admin')() %}
                  <td>
                      <div class="file_actions">
-                         <a data-toggle="tooltip" {% if not file.disabled  %}  href= "#" {% if not file.linked_to_download%} title="Link" {% else %} title="Unlink" {% endif %} class="link_icon" onclick="ConfirmLinkFile('{{ file._id }}', '{{ file.linked_to_download }}', '{{c.app.url}}link_file')" {% else %} class="disable_object" {% endif %} ><i class= "fa fa-link" {% if file.linked_to_download %} id="disable_link" {% endif %}></i></a>
+                         <a data-toggle="tooltip" {% if not file.disabled  %}  href= "#" {% if not file.linked_to_download%} title="Link" {% else %} title="Unlink" {% endif %} class="link_icon confirm-link-file" data-file-id="{{ file._id }}" data-linked-download="{{ file.linked_to_download }}" data-linked-url="{{c.app.url}}link_file" {% else %} class="disable_object" {% endif %} ><i class= "fa fa-link" {% if file.linked_to_download %} id="disable_link" {% endif %}></i></a>
                          <a data-toggle="tooltip " {% if not file.disabled %} class="edit_icon admin_modal" href="{{c.app.url}}get_editable_object?object_id={{file._id}}" title="Edit" {% else %} class="disable_object" {% endif %}><i class="fa fa-edit" data-toggle='modal' ></i></a>
 
                          <a data-toggle="tooltip " {% if not file.disabled %} class="delete_icon admin_modal" href="{{c.app.url}}get_deletable_object?object_id={{file._id}}" title="Delete" {% else %} class="disable_object" {% endif %}><i class="fa fa-trash-o" data-toggle='modal' {% if not file.disabled %} {% endif %} ></i></a>
 
-                         <a href="#" data-toggle="tooltip" {% if file.disabled %} title="Enable" {% else %} title="Disable" {% endif %} onclick="ConfirmDisableFile('{{ file._id }}', '{{file.disabled}}', '{{file.parent_folder.disabled}}','{{c.app.url}}disable_file')" ><i {% if file.disabled %} class="fa fa-undo" {% else %} class="fa fa-ban" {% endif %}></i></a>
+                         <a href="#" data-toggle="tooltip" {% if file.disabled %} title="Enable" {% else %} title="Disable" {% endif %} class="confirm-disable-file" data-file-id="{{ file._id }}" data-file-disabled="{{file.disabled}}" data-file-parent-folder-disabled="parent_folder.disabled" data-file-url="{{c.app.url}}disable_file" ><i {% if file.disabled %} class="fa fa-undo" {% else %} class="fa fa-ban" {% endif %}></i></a>
 
                      </div>
                  </td>
@@ -185,6 +185,34 @@ Files {% if folder_object %} - {{path_links(folder_path.split('/'), urls)}} {% e
 {% block extra_js %}
 
 <script type="text/javascript" src="{{g.app_static('js/files.js')}}"></script>
+<script>
+$('.confirm-disable-folder').each(function(el,index){
+    $(this).on('click', function(e){
+        var folder_id = $(this).data('folder-id');
+        var folder_disabled = $(this).data('folder-disabled');
+        var folder_parent_disabled = $(this).data('folder-parent-disabled');
+        var folder_disable_url = $(this).data('folder-disable-url');
+        ConfirmDisableFolder(folder_id, folder_disabled, folder_parent_disabled, folder_disable_url);
+    });
+});
+$('.confirm-link-file').each(function(el, index){
+    $(this).on('click', function(e){
+        var file_id = $(this).data('file-id');
+        var linked_download = $(this).data('linked-download');
+        var linked_url = $(this).data('linked-url');
+        ConfirmLinkFile(file_id,linked_download, linked_url);
+    });
+});
+$('.confirm-disable-file').each(function(el,index){
+    $(this).on('click', function(e){
+        var file_id = $(this).data('file-id');
+        var file_disabled = $(this).data('file-disabled');
+        var file_parent_folder_disabled = $(this).data('file-parent-folder-disabled');
+        var file_url = $(this).data('file-url');
+        ConfirmDisableFile(file_id, file_disabled, file_parent_folder_disabled, file_url);
+    });
+});
+</script>
 
 {% endblock %}
 

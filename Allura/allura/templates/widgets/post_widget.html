@@ -133,7 +133,7 @@
                  <div class="attachment_toolbar">
                     <form method="POST" action="{{att.url()}}">
                         {% if can_moderate_post %}
-                            <a href="javascript: void(0)"  onclick="$(this).closest('form').submit();" title="Remove Attachment" class="btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only">
+                            <a href="javascript: void(0)" id="remove-attachment" title="Remove Attachment" class="btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only">
                                 <span><i class="fa fa-trash-o" aria-hidden="true"></i></span>
                             </a>
                         {% endif %}
@@ -187,3 +187,11 @@
     </ul>
   </div>
 </div>
+
+{% block extra_js %}
+<script>
+$('.attachment_toolbar #remove-attachment').on('click', function(e){
+    $(this).closest('form').submit();
+})
+</script>
+{% endblock %}
