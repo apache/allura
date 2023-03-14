@@ -48,11 +48,11 @@ p {
 	</div>
         <div class="col-75">
           <fieldset class="rating" id="sar">
-              <input type="radio" id="star5" name="rating" value="5" onclick="manage()" /><label for="star5" title="Excellent">5 stars</label>
-              <input type="radio" id="star4" name="rating" value="4" onclick="manage()" /><label for="star4" title="Great">4 stars</label>
-              <input type="radio" id="star3" name="rating" value="3" onclick="manage()" /><label for="star3" title="Good">3 stars</label>
-              <input type="radio" id="star2" name="rating" value="2" onclick="manage()" /><label for="star2" title="Average">2 stars</label>
-              <input type="radio" id="star1" name="rating" value="1" onclick="manage()" /><label for="star1" title="Poor">1 star</label>
+              <input type="radio" id="star5" name="rating" value="5" /><label for="star5" title="Excellent">5 stars</label>
+              <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="Great">4 stars</label>
+              <input type="radio" id="star3" name="rating" value="3" /><label for="star3" title="Good">3 stars</label>
+              <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="Average">2 stars</label>
+              <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="Poor">1 star</label>
           </fieldset>
         </div>
     </div>
@@ -68,10 +68,12 @@ p {
 </div>
 {% endblock %}
 
-
 {% block extra_js %}
 <!-- profanity script's macro -->
     {{ common_feed.profanity_scripts(url=c.app.url) }}
+    <script>
+        setupRatingEvent()
+    </script>
 {% endblock %}
 
 

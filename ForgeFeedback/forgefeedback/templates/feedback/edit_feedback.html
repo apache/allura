@@ -51,11 +51,11 @@ p {
         <div class="col-75">
 <fieldset class="rating">
     
-    <input type="radio" id="star5" name="rating" value="5" {% if rating == '5' %} checked="checked" {% endif %} onclick="manage()" /><label for="star5" title="Excellent"></label>
-    <input type="radio" id="star4" name="rating" value="4" {% if rating == '4' %} checked="checked" {% endif %} onclick="manage()" /><label for="star4" title="Great"></label>
-    <input type="radio" id="star3" name="rating" value="3" {% if rating == '3' %} checked="checked" {% endif %} onclick="manage()" /><label for="star3" title="Good"></label>
-    <input type="radio" id="star2" name="rating" value="2" {% if rating == '2' %} checked="checked" {% endif %} onclick="manage()" /><label for="star2" title="Average"></label>
-    <input type="radio" id="star1" name="rating" value="1" {% if rating == '1' %} checked="checked" {% endif %} onclick="manage()" /><label for="star1" title="Poor"></label>
+    <input type="radio" id="star5" name="rating" value="5" {% if rating == '5' %} checked="checked" {% endif %} /><label for="star5" title="Excellent"></label>
+    <input type="radio" id="star4" name="rating" value="4" {% if rating == '4' %} checked="checked" {% endif %} /><label for="star4" title="Great"></label>
+    <input type="radio" id="star3" name="rating" value="3" {% if rating == '3' %} checked="checked" {% endif %} /><label for="star3" title="Good"></label>
+    <input type="radio" id="star2" name="rating" value="2" {% if rating == '2' %} checked="checked" {% endif %} /><label for="star2" title="Average"></label>
+    <input type="radio" id="star1" name="rating" value="1" {% if rating == '1' %} checked="checked" {% endif %} /><label for="star1" title="Poor"></label>
     
 </fieldset>
 </div>
@@ -79,6 +79,9 @@ p {
 {% block extra_js %}
 <!-- profanity script's macro -->
     {{ common_feed.profanity_scripts(url=c.app.url) }}
+     <script>
+        setupRatingEvent()
+    </script>
 {% endblock %}
 
 

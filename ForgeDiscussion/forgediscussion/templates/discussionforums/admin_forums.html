@@ -89,7 +89,7 @@
         <td>{{lib.post_summary(forum.last_post)}}</td>
         <td>
           <input name="{{'forum-%s.id' % loop.index0}}" type="hidden" value="{{forum._id}}"/>
-          <input type="submit" name="{{'forum-%s.delete' % loop.index0}}" value="Delete" onclick="return confirm('Really delete this forum?');" /><br/>
+          <input type="submit" name="{{'forum-%s.delete' % loop.index0}}" class="delete-forum" value="Delete" /><br/>
         </td>
       </tr>
       {% endfor %}
@@ -115,5 +115,10 @@
         return false;
       });
     });
+    $('.delete-forum').each(function(el, index){
+        $(this).on('click', function(e){
+            return confirm('Really delete this forum?');
+        })
+    })
   </script>
 {% endblock %}

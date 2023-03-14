@@ -510,9 +510,15 @@ class ContentSecurityPolicyMiddleware:
                 script_srcs = f"{script_srcs} {' '.join(environ['csp_script_domains'])}"
 
             if asbool(self.config.get('csp.script_src_enforce', False)):
-                rules.add(f"script-src {script_srcs} {self.config.get('csp.script_src.extras','')}")
+                rules.add(f"script-src {script_srcs} {self.config.get('csp.script_src.extras','')} 'report-sample'")
             else:
-                report_rules.add(f"script-src {script_srcs} {self.config.get('csp.script_src.extras','')}")
+                report_rules.add(f"script-src {script_srcs} {self.config.get('csp.script_src.extras','')} 'report-sample'")
+
+        if self.config.get('csp.script_src_attr'):
+            if asbool(self.config.get('csp.script_src_attr_enforce', False)):
+                rules.add(f"script-src-attr {self.config.get('csp.script_src_attr')} 'report-sample'")
+            else:
+                report_rules.add(f"script-src-attr {self.config.get('csp.script_src_attr')} 'report-sample'")
 
         rules.add("object-src 'none'")
         rules.add("frame-ancestors 'self'")

@@ -120,10 +120,6 @@ class TrackerFieldAdmin(f.ForgeForm):
 
     class buttons(ew_core.NameList):
         save = ew.SubmitButton(label='Save')
-        cancel = ew.SubmitButton(
-            label="Cancel",
-            css_class='cancel', attrs=dict(
-                onclick='window.location.reload(); return false;'))
 
     def resources(self):
         yield from self.fields['custom_fields'].resources()

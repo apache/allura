@@ -91,7 +91,7 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
 
     <div class="grid-19 merge-toolbar">
     {% if req.merge_allowed(c.user) %}
-        <form action="merge" method="POST" onsubmit="return confirm('Do you really want to Accept this Merge Request?');">
+        <form action="merge" method="POST" id="merge-accept">
           {{ lib.csrf_token() }}
           <button type="submit" id="merge-btn" {% if not can_merge or merge_status in ('ready', 'busy') %}disabled="disabled"{% endif %}>
             <i class="fa fa-code-fork fa-flip-vertical" aria-hidden="true"></i> Merge
@@ -100,7 +100,7 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
     {% endif %}
 
     {% if req.creator == c.user and req.status == "open" %}
-        <form action="save" method="POST" onsubmit="return confirm('Do you really want to Reject this Merge Request?');">
+        <form action="save" method="POST" id="merge-reject">
             {{ lib.csrf_token() }}
             <input type="hidden" value="rejected" name="status">
             <button type="submit" id="reject-btn" type="submit" >
@@ -297,5 +297,13 @@ $(function() {
       check_commits();
     {% endif %}
 });
+$('#merge-accept, #merge-reject').on('submit', function(e){
+    if ($(this).attr('id') === 'merge-accept'){
+        return confirm('Do you really want to Accept this Merge Request?');
+    }
+    if ($(this).attr('id') === 'merge-reject'){
+        return confirm('Do you really want to Reject this Merge Request?');
+    }
+})
 </script>
 {% endblock %}

@@ -68,7 +68,7 @@
           {% set admin_menu = c.app.admin_menu() %}
         {% endif %}
         {% if admin_menu %}
-          <a id='sidebar-admin-header' onclick='$("#sidebar-admin-menu").toggleClass("hidden");$("#sidebar-admin-header").toggleClass("expanded");return false;'
+          <a id='sidebar-admin-header'
              href='#' {% if request.path.startswith(c.app.admin_url) %}class="expanded"{% endif %}>
             {{sidebar_item(c.app.admin_menu_collapse_button)}}
           </a>
@@ -99,3 +99,14 @@
       </script>
     {% endif %}
 </div>
+
+
+{% block extra_js %}
+<script>
+$('#sidebar-admin-header').on('click', function(e){
+    $("#sidebar-admin-menu").toggleClass("hidden");
+    $(this).toggleClass("expanded");
+    e.preventDefault();
+});
+</script>
+{% endblock %}

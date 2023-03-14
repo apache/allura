@@ -47,7 +47,7 @@
                       <td><a href="{{award.longurl()}}">{{award.short}}</a></td>
                       <td>{{award.full}}</td>
                       <td>
-                        <form action="{{award.longurl()}}/delete" method="post" onsubmit="return confirm('Continue to delete this award?');">
+                        <form action="{{award.longurl()}}/delete" method="post" class="delete-accolades" >
                           <input type="submit" value="Delete"/>
                           {{lib.csrf_token()}}
                         </form>
@@ -126,7 +126,7 @@
                       <td>{{grant.comment}}</td>
                       <td>
                         {% if grant.granted_to_project %}
-                        <form action="{{grant.longurl()}}/revoke" method="post" onsubmit="return confirm('Continue to revoke this award?');">
+                        <form action="{{grant.longurl()}}/revoke" method="post" class="revoke-award">
                           <input type="submit" value="Revoke"/>
                           {{lib.csrf_token()}}
                         </form>
@@ -138,4 +138,19 @@
             </div>
           </p>
           {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+    $('.delete-accolades, .revoke-award').each(function(el,index){
+        $(this).on('submit', function(e){
+            if ($(this).attr('class') === 'delete-accolades') {
+                return confirm('Continue to delete this award?');
+            }
+            if ($(this).attr('class') === 'revoke-award') {
+                return confirm('Continue to revoke this award?');
+            }
+        })
+    })
+    </script>
 {% endblock %}
