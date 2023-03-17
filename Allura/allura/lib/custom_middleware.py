@@ -488,7 +488,7 @@ class ContentSecurityPolicyMiddleware:
             if asbool(self.config.get('csp.frame_sources_enforce', False)):
                 rules.add(f"frame-src {self.config['csp.frame_sources']}")
             else:
-                report_rules.add(f"frame-src {self.config['csp.frame_sources']}")
+                report_rules.add(f"frame-src {self.config['csp.frame_sources']} 'report-sample'")
 
         if self.config.get('csp.form_action_urls'):
             srcs = self.config['csp.form_action_urls']
@@ -497,7 +497,7 @@ class ContentSecurityPolicyMiddleware:
             if asbool(self.config.get('csp.form_actions_enforce', False)):
                 rules.add(f"form-action {srcs}")
             else:
-                report_rules.add(f"form-action {srcs}")
+                report_rules.add(f"form-action {srcs} 'report-sample'")
 
         if self.config.get('csp.script_src'):
             script_srcs = self.config['csp.script_src']
@@ -512,13 +512,13 @@ class ContentSecurityPolicyMiddleware:
             if asbool(self.config.get('csp.script_src_enforce', False)):
                 rules.add(f"script-src {script_srcs} {self.config.get('csp.script_src.extras','')}")
             else:
-                report_rules.add(f"script-src {script_srcs} {self.config.get('csp.script_src.extras','')}")
+                report_rules.add(f"script-src {script_srcs} {self.config.get('csp.script_src.extras','')} 'report-sample'")
 
         if self.config.get('csp.script_src_attr'):
             if asbool(self.config.get('csp.script_src_attr_enforce', False)):
                 rules.add(f"script-src-attr {self.config.get('csp.script_src_attr')}")
             else:
-                report_rules.add(f"script-src-attr {self.config.get('csp.script_src_attr')}")
+                report_rules.add(f"script-src-attr {self.config.get('csp.script_src_attr')} 'report-sample'")
 
         rules.add("object-src 'none'")
         rules.add("frame-ancestors 'self'")
