@@ -114,7 +114,6 @@ class CommitMessageExtension(markdown.Extension):
 
         # remove all default block processors except for paragraph
         clear_markdown_registry(md.parser.blockprocessors, keep=['paragraph'])
-
         # wrap artifact link text in square brackets
         self.forge_link_tree_processor = ForgeLinkTreeProcessor(md)
         md.treeprocessors.register(self.forge_link_tree_processor, 'links', 0)
@@ -296,8 +295,7 @@ class ForgeExtension(markdown.Extension):
         md.inlinePatterns.register(ForgeMacroPattern(MACRO_PATTERN, md, ext=self), 'macro', 165)  # similar to above
 
         self.forge_link_tree_processor = ForgeLinkTreeProcessor(md)
-        md.treeprocessors.register(self.forge_link_tree_processor, 'links', 100)
-
+        md.treeprocessors.register(self.forge_link_tree_processor, 'links', 0)
         # Sanitize HTML
         md.postprocessors.register(HTMLSanitizer(), 'sanitize_html', 5)
         # Rewrite all relative links that don't start with . to have a '../' prefix

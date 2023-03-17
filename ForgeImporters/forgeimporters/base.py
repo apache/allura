@@ -348,7 +348,7 @@ class ToolImportControllerMeta(type):
         the appropriate App for this controller's importer.
 
         """
-        if hasattr(cls, 'create') and getattr(cls.create.decoration, 'validations', None) is None:
+        if hasattr(cls, 'create') and not getattr(cls.create.decoration, 'validations', None):
             index_meth = getattr(cls.index, '__func__', cls.index)
             cls.create = validate(cls.import_form(aslist(importer.target_app)[0]),
                                   error_handler=index_meth)(cls.create)
