@@ -20,7 +20,6 @@
 <form method="post"
       id="attachment_form"
       action="{{action}}"
-      onsubmit="{{onsubmit}}"
       enctype="multipart/form-data">
       <a href="#" class="btn link attachment_form_add_button">Add attachments</a>
       <div class="attachment_form_fields" style="display:none">
@@ -29,3 +28,11 @@
       </div>
       {{lib.csrf_token()}}
 </form>
+
+{% block extra_js %}
+    <script>
+        $('#attachment_form').on('submit', function(e){
+            {{onsubmit}}
+        })
+    </script>
+{% endblock %}
