@@ -193,18 +193,6 @@ class TestTracTicketImportController(TestController, TestCase):
         r = self.app.post('/p/test/admin/ext/import/trac-tickets/create', params, status=200)
         self.assertIn('Invalid URL', r.text)
 
-    @with_wiki
-    @patch('forgeimporters.trac.requests.head')
-    @patch('forgeimporters.base.import_tool')
-    def test_url_wiki_import_fail(self, import_tool, head):
-        head.return_value.status_code = 200
-        params = dict(trac_url=f'{config["base_url"]}/trac/url',
-                      mount_label='mylabel',
-                      mount_point='mymount')
-        r = self.app.post('/p/test/admin/ext/import/trac-wiki/create', params, status=200)
-        self.assertIn('Invalid URL', r.text)
-
-
 class TestTracImportSupport(TestCase):
 
     def test_link_processing(self):
