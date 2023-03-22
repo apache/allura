@@ -24,7 +24,7 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
 
 
 {# account_links are used in primary nav, and off-canvas menu for small screens #}
-{% if not account_links %}
+{% if account_links is undefined %}
 {%- macro account_links(c, h, config, login_url, logout_url) %}
     {% if c.user._id %}
         <a href="/auth/preferences/">Account</a>
@@ -39,7 +39,7 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
 {%- endmacro %}
 {% endif %}
 
-{%  if not header %}
+{% if header is undefined %}
 {%- macro header(login_url, logout_url) %}
 {% set breakpoint='medium' %}
 <div class="row">
@@ -62,7 +62,7 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
 {% endif %}
 
 
-{% if not all_content_wrapper %}
+{% if all_content_wrapper is undefined %}
 {% macro all_content_wrapper(login_url, logout_url) -%}
     <div class="off-canvas position-right" id="offCanvas" data-off-canvas>
         <div class="menu vertical">
@@ -79,7 +79,7 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
 {% endif %}
 
 
-{% if not footer %}
+{% if footer is undefined %}
 {%- macro footer(year, path_to_static='') %}
 <footer id="site-footer" class="row align-right">
     <p>This project is powered by <a href="https://allura.apache.org/">Apache Allura</a>&trade;.</p>
@@ -87,7 +87,7 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
 {%- endmacro %}
 {% endif %}
 
-{% if not custom_js %}
+{% if custom_js is undefined %}
 {%- macro custom_js(path_to_static) %}
 <script>
     $(document).foundation();
@@ -95,7 +95,7 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
 {%- endmacro %}
 {% endif %}
 
-{% if not custom_tracking_js %}
+{% if custom_tracking_js is undefined %}
 {%- macro custom_tracking_js(accounts, user, project) %}
 <script type="text/javascript">
     {# This should be overridden in your custom theme (e.g., sftheme) to implement custom tracking code. #}
@@ -129,13 +129,13 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
 {%- endmacro %}
 {% endif %}
 
-{% if not extra_header %}
+{% if extra_header is undefined %}
 {%- macro extra_header(path_to_static) %}
 
 {%- endmacro %}
 {% endif %}
 
-{% if not breadcrumbs %}
+{% if breadcrumbs is undefined %}
 {%- macro breadcrumbs(project, app) %}
     <nav aria-label="You are here:" role="navigation" class="row">
         <ul class="breadcrumbs">
@@ -156,7 +156,7 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
 {% endif %}
 
 
-{% if not project_header_right %}
+{% if project_header_right is undefined %}
 {%- macro project_header_right(project, app) %}
   {% if project.neighborhood.icon %}
   <div class="column shrink neighborhood_block">
@@ -177,7 +177,7 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
 {%- endmacro %}
 {% endif %}
 
-{% if not login_overlay %}
+{% if login_overlay is undefined %}
 {%- macro login_overlay() %}
     {% do g.register_js('js/jquery.lightbox_me.js') %}
     {% do g.register_forge_js('js/jquery-ui-1.13.2.min.js') %}
@@ -189,7 +189,7 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
 {%- endmacro %}
 {% endif %}
 
-{% if not site_notification %}
+{% if site_notification is undefined %}
 {%- macro site_notification() %}
     {% set note = g.theme.get_site_notification() %}
     {% if note %}
@@ -206,7 +206,7 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
 {%- endmacro %}
 {% endif %}
 
-{% if not placeholder_project_icon %}
+{% if placeholder_project_icon is undefined %}
 {%- macro placeholder_project_icon() %}
     <div class="placeholder-icon"></div>
 {%- endmacro %}

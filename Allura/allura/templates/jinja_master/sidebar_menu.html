@@ -55,7 +55,7 @@
   {% else %}
     <div class="placeholder-no-searchbox">&nbsp;</div>
   {% endif %}
-    {% if c.custom_sidebar_menu %}
+    {% if c.custom_sidebar_menu|default %}
       {% for s in c.custom_sidebar_menu %}
         {{sidebar_item(s)}}
       {% endfor %}

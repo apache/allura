@@ -59,7 +59,7 @@
         <style type="text/css">
             {{c.project.neighborhood.get_custom_css()|safe}}
         </style>
-    {% elif neighborhood and neighborhood.css %}
+    {% elif neighborhood|default and neighborhood.css %}
         <style type="text/css">
             {{neighborhood.get_custom_css()}}
         </style>
@@ -85,11 +85,11 @@
 
 {% set flash = tg.flash_obj.render('flash', use_js=False) %}
 
-{% call theme_macros.all_content_wrapper(login_url, logout_url) %}
-    {{ theme_macros.header(g.login_url, '/auth/logout') }}
+{% call theme_macros.all_content_wrapper(g.login_url, g.logout_url) %}
+    {{ theme_macros.header(g.login_url, g.logout_url) }}
     {{ theme_macros.site_notification() }}
     {% block masthead %}{% endblock %}
-    <section id="page-body" class="{{ g.document_class(neighborhood) }} {% block page_body_classes %}{% endblock %}">
+    <section id="page-body" class="{{ g.document_class(neighborhood|default) }} {% block page_body_classes %}{% endblock %}">
         <div id="nav_menu_holder">
             {% if c.project and c.project.is_nbhd_project %}
                 {% set neighborhood=c.project.neighborhood %}
@@ -107,7 +107,7 @@
         </div>
         <div id="content_base">
             {% block content_base %}
-                {% if not hide_left_bar %}
+                {% if not hide_left_bar|default %}
                     {% block sidebar_menu %}
                         {% include g.theme.sidebar_menu %}
                     {% endblock %}
@@ -115,7 +115,7 @@
                 {% else %}
                     {% set outer_width = 24 %}
                 {% endif %}
-                {% if show_right_bar %}
+                {% if show_right_bar|default %}
                     {% set inner_width = outer_width - 8 %}
                 {% else %}
                     {% set inner_width = outer_width %}
@@ -130,12 +130,12 @@
                         <!-- /actions -->
                     </h2>
                     {% block edit_box %}{% endblock %}
-                    <div{% if show_right_bar %}
+                    <div{% if show_right_bar|default %}
                         class="{% block inner_grid scoped %}grid-{{ inner_width }}{% endblock %}"{% endif %}>
                         {% block before_content %}{% endblock %}
                         {% block content %}{% endblock %}
                     </div>
-                    {% if show_right_bar %}
+                    {% if show_right_bar|default %}
                         <div id="sidebar-right" class="grid-6 fright">
                             {% block right_content %}{% endblock %}
                         </div>
@@ -156,7 +156,7 @@
         </section>
     {% endfor %}
 </div>
-{% if c.show_login_overlay %}
+{% if c.show_login_overlay|default %}
     {{ theme_macros.login_overlay() }}
 {% endif %}
 {% for blob in g.resource_manager.emit('body_js') %}
@@ -166,7 +166,7 @@
     {{ blob }}
 {% endfor %}
 {% block extra_js %}{% endblock %}
-{% if neighborhood %}
+{% if neighborhood|default %}
     {{ neighborhood.site_specific_html | safe }}
 {% elif c.project.neighborhood %}
     {{ c.project.neighborhood.site_specific_html | safe }}
