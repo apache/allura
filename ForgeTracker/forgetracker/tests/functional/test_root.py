@@ -894,7 +894,7 @@ class TestFunctionalController(TrackerTestController):
         assert file_name in ticket_editor, ticket_editor.showbrowser()
         req = self.app.get('/bugs/1/')
         form = self._find_update_ticket_form(req)
-        file_link = BeautifulSoup(form.text).findAll('a')[2]
+        file_link = BeautifulSoup(form.text, features="html5lib").findAll('a')[2]
         assert file_link.string == file_name
         self.app.post(str(file_link['href']), {
             'delete': 'True'
@@ -937,7 +937,7 @@ class TestFunctionalController(TrackerTestController):
             'summary': 'zzz'
         }, upload_files=[upload]).follow()
         form = self._find_update_ticket_form(ticket_editor)
-        download = self.app.get(str(BeautifulSoup(form.text).findAll('a')[2]['href']))
+        download = self.app.get(str(BeautifulSoup(form.text, features="html5lib").findAll('a')[2]['href']))
         assert download.body == file_data
 
     def test_two_attachments(self):
@@ -1317,7 +1317,7 @@ class TestFunctionalController(TrackerTestController):
         error_form = form.submit()
         form = self._find_new_ticket_form(error_form)
         assert form['ticket_form.labels'].value == 'foo'
-        error_message = BeautifulSoup(form.text).find('div', {'class': 'error'})
+        error_message = BeautifulSoup(form.text, features="html5lib").find('div', {'class': 'error'})
         assert error_message
         assert (error_message.string == 'You must provide a Title' or
                 error_message.string == 'Missing value')

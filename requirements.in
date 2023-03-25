@@ -1,13 +1,13 @@
 ActivityStream
 beautifulsoup4
 Beaker
-cchardet
 colander
 cryptography
 decorator
 EasyWidgets
 # https://github.com/carpedm20/emoji/issues/191
 emoji
+faust-cchardet
 feedgenerator
 feedparser
 FormEncode

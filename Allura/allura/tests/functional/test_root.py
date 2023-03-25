@@ -57,7 +57,7 @@ def assert_globals_are_reset():
 
     with pytest.raises(AttributeError) as exc_info:
         tg.request._object_stack()
-    assert str(exc_info.value) == 'request', exc_info
+    assert 'request' in str(exc_info.value), exc_info
 
 
 class TestRootController(TestController):

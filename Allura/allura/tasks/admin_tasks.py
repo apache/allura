@@ -16,6 +16,7 @@
 #       under the License.
 
 import inspect
+import wrapt
 
 from tg import tmpl_context as c
 
@@ -34,6 +35,6 @@ def install_app(*args, **kwargs):
 install_app.__doc__ += '''
     Arguments::
 
-        ''' + inspect.formatargspec(*inspect.getargspec(
+        ''' + wrapt.formatargspec(*inspect.getfullargspec(
     M.Project.install_app
 )).replace('self, ', '')

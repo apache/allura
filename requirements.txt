@@ -16,8 +16,6 @@ beautifulsoup4==4.11.1
     #   webtest
 bleach[css]==5.0.1
     # via pypeline
-cchardet==2.1.7
-    # via -r requirements.in
 certifi==2022.12.7
     # via requests
 cffi==1.15.1
@@ -44,6 +42,8 @@ exceptiongroup==1.1.0
     # via pytest
 execnet==1.9.0
     # via pytest-xdist
+faust-cchardet==2.1.18
+    # via -r requirements.in
 feedgenerator==2.0.0
     # via -r requirements.in
 feedparser==6.0.10
