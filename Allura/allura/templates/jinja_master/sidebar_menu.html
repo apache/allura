@@ -99,3 +99,14 @@
       </script>
     {% endif %}
 </div>
+
+
+{% block extra_js %}
+<script>
+$('#sidebar-admin-header').on('click', function(e){
+    $("#sidebar-admin-menu").toggleClass("hidden");
+    $(this).toggleClass("expanded");
+    e.preventDefault();
+});
+</script>
+{% endblock %}

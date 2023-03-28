@@ -65,3 +65,11 @@
     {% endif %}
 
 {% endblock %}
+
+{% block extra_js %}
+    <script>
+    $('#show-more-profile-projects').on('click', function(e){
+        $(this).hide().closest('.section-body').find('li.hidden').show();
+    });
+    </script>
+{% endblock %}

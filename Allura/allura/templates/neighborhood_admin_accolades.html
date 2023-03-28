@@ -144,13 +144,11 @@
     <script>
     $('.delete-accolades, .revoke-award').each(function(el,index){
         $(this).on('submit', function(e){
-            e.preventDefault();
             if ($(this).attr('class') === 'delete-accolades') {
                 return confirm('Continue to delete this award?');
             }
             if ($(this).attr('class') === 'revoke-award') {
                 return confirm('Continue to revoke this award?');
-            }
             }
         })
     })
