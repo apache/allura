@@ -3844,6 +3844,7 @@ fieldset.preferences legend {
     margin-left: 1px;
     display: inline-block;
     border: transparent solid 1px;
+    cursor: pointer;
 }
 
 .post-reactions-list .current {

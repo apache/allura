@@ -55,7 +55,7 @@ $(function () {
             var emohtml = '';
             for (var emo in global_reactions) {
                 emohtml += '<div class=\'emoji_button' + (currentemoji == emo ? ' current' : '') + '\' data-emoji=\'' + emo + '\'>' +
-                    twemoji.parse(global_reactions[emo]) + '</div>';
+                    global_reactions[emo] + '</div>';
             }
             var tooltiptext = '<div class="post-reactions-list">' + emohtml + '</div>';
             $(this).tooltipster('content', tooltiptext);
@@ -104,7 +104,6 @@ function reactComment(btn, r) {
             }
 
             reacts_list.html(react_html);
-            twemoji.parse(reacts_list[0]);
             btn.tooltipster('hide');
 
             // attach events to newly added dom

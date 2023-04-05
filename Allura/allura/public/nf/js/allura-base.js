@@ -225,9 +225,6 @@ $(function(){
         return false;
     });
 
-    twemoji.size = '72x72';
-    twemoji.parse($('#content_base')[0]);
-
     $('.lightbox').click(function(e) {
         var image_source = $(this).data("src") || $(this).attr('href');
         if ($('#lightbox').length === 0) {
