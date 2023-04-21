@@ -20,7 +20,7 @@ certifi==2022.12.7
     # via requests
 cffi==1.15.1
     # via cryptography
-charset-normalizer==2.1.1
+charset-normalizer==3.1.0
     # via requests
 colander==1.8.3
     # via -r requirements.in
@@ -171,7 +171,7 @@ regex-as-re-globally==0.0.2
     # via -r requirements.in
 repoze-lru==0.7
     # via turbogears2
-requests==2.28.1
+requests==2.28.2
     # via
     #   -r requirements.in
     #   pysolr
@@ -221,7 +221,7 @@ typing-extensions==4.5.0
     # via
     #   gitpython
     #   importlib-metadata
-urllib3==1.26.12
+urllib3==1.26.15
     # via requests
 waitress==2.1.2
     # via webtest
