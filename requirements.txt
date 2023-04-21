@@ -6,8 +6,6 @@
 #
 activitystream==0.4.0
     # via -r requirements.in
-attrs==22.2.0
-    # via pytest
 beaker==1.12.1
     # via -r requirements.in
 beautifulsoup4==4.12.2
@@ -38,7 +36,7 @@ easywidgets==0.4.1
     # via -r requirements.in
 emoji==2.2.0
     # via -r requirements.in
-exceptiongroup==1.1.0
+exceptiongroup==1.1.1
     # via pytest
 execnet==1.9.0
     # via pytest-xdist
@@ -103,7 +101,7 @@ oauthlib==3.2.2
     # via
     #   -r requirements.in
     #   requests-oauthlib
-packaging==23.0
+packaging==23.1
     # via
     #   pytest
     #   pytest-sugar
@@ -141,7 +139,7 @@ pypng==0.20220715.0
     # via qrcode
 pysolr==3.9.0
     # via -r requirements.in
-pytest==7.2.1
+pytest==7.3.1
     # via
     #   -r requirements.in
     #   pytest-sugar
