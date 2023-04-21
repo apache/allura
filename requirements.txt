@@ -137,6 +137,8 @@ pymongo==3.13.0
     #   ming
 pypeline[creole,markdown,rst,textile]==0.6.1
     # via -r requirements.in
+pypng==0.20220715.0
+    # via qrcode
 pysolr==3.9.0
     # via -r requirements.in
 pytest==7.2.1
@@ -161,7 +163,7 @@ pytz==2023.3
     #   -r requirements.in
     #   feedgenerator
     #   ming
-qrcode==7.3.1
+qrcode==7.4.2
     # via -r requirements.in
 regex==2022.10.31
     # via
@@ -221,6 +223,7 @@ typing-extensions==4.5.0
     # via
     #   gitpython
     #   importlib-metadata
+    #   qrcode
 urllib3==1.26.15
     # via requests
 waitress==2.1.2
