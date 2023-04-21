@@ -97,7 +97,7 @@ markupsafe==2.1.2
     #   werkzeug
 ming==0.13.0
     # via -r requirements.in
-mock==5.0.1
+mock==5.0.2
     # via -r requirements.in
 oauthlib==3.2.2
     # via
