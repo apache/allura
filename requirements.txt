@@ -67,7 +67,7 @@ html5lib==1.1
     #   textile
 idna==3.4
     # via requests
-importlib-metadata==6.0.0
+importlib-metadata==6.5.0
     # via
     #   markdown
     #   pluggy
@@ -245,7 +245,7 @@ werkzeug==2.2.3
     # via -r requirements.in
 wrapt==1.14.1
     # via -r requirements.in
-zipp==3.11.0
+zipp==3.15.0
     # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
