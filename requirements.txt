@@ -28,7 +28,7 @@ crank==0.8.1
     # via turbogears2
 creoleparser==0.7.5
     # via pypeline
-cryptography==39.0.1
+cryptography==40.0.2
     # via -r requirements.in
 decorator==5.1.1
     # via -r requirements.in
