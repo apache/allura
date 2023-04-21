@@ -128,7 +128,7 @@ profanityfilter==2.0.6
     # via -r requirements.in
 pycparser==2.21
     # via cffi
-pygments==2.14.0
+pygments==2.15.1
     # via -r requirements.in
 pymongo==3.13.0
     # via
