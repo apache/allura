@@ -205,7 +205,7 @@ soupsieve==2.4.1
     # via beautifulsoup4
 termcolor==2.1.1
     # via pytest-sugar
-testfixtures==7.0.4
+testfixtures==7.1.0
     # via -r requirements.in
 textile==4.0.2
     # via pypeline
