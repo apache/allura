@@ -44,7 +44,7 @@ execnet==1.9.0
     # via pytest-xdist
 faust-cchardet==2.1.18
     # via -r requirements.in
-feedgenerator==2.0.0
+feedgenerator==2.1.0
     # via -r requirements.in
 feedparser==6.0.10
     # via -r requirements.in
@@ -156,7 +156,7 @@ python-magic==0.4.27
     # via -r requirements.in
 python-oembed==0.2.4
     # via -r requirements.in
-pytz==2022.6
+pytz==2023.3
     # via
     #   -r requirements.in
     #   feedgenerator
