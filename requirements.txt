@@ -146,7 +146,7 @@ pytest==7.3.1
     #   pytest-xdist
 pytest-sugar==0.9.6
     # via -r requirements.in
-pytest-xdist==3.1.0
+pytest-xdist==3.2.1
     # via -r requirements.in
 python-dateutil==2.8.2
     # via
