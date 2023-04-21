@@ -19,6 +19,7 @@
 #       under the License.
 
 IMAGE_TAG=allura
+PY_VERSION="${PY_VERSION:-3.7}"
 
 echo
 echo "============================================================================="
@@ -50,7 +51,7 @@ echo
 echo "============================================================================="
 echo "Run: build docker image"
 echo "============================================================================="
-docker-compose build
+docker-compose build --build-arg PY_VERSION=$PY_VERSION
 
 echo
 echo "============================================================================="
@@ -70,7 +71,6 @@ echo "Docker Container Info:"
 echo "============================================================================="
 docker-compose exec -T web bash -c '
 echo python path: `which python; python -V`;
-echo python3.7 path: `which python3.7; python3.7 -V`;
 git --version;
 svn --version;
 echo pip: `pip3 --version`;
