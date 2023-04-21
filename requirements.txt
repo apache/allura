@@ -54,9 +54,9 @@ formencode==2.0.1
     #   easywidgets
 genshi==0.7.7
     # via creoleparser
-gitdb==4.0.9
+gitdb==4.0.10
     # via gitpython
-gitpython==3.1.30
+gitpython==3.1.31
     # via -r requirements.in
 gunicorn==20.1.0
     # via -r requirements.in
@@ -217,7 +217,7 @@ translationstring==1.4
     # via colander
 turbogears2==2.4.3
     # via -r requirements.in
-typing-extensions==4.4.0
+typing-extensions==4.5.0
     # via
     #   gitpython
     #   importlib-metadata
