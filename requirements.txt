@@ -14,7 +14,7 @@ beautifulsoup4==4.12.2
     # via
     #   -r requirements.in
     #   webtest
-bleach[css]==5.0.1
+bleach[css]==6.0.0
     # via pypeline
 certifi==2022.12.7
     # via requests
