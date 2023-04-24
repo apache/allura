@@ -20,7 +20,7 @@
 $('#admin_modal_title').hide();
 $('#folder_id').focus();
 
-function validateFolderForm(){
+function validateFolderForm(e){
     var folder_id = document.getElementById('folder_id');
     var folder_name = $(folder_id).val().trim();
     var error = $('#error_message');
@@ -29,6 +29,7 @@ function validateFolderForm(){
     flag = validateName(folder_name);
 
     if ( folder_name.length === 0){
+        e.preventDefault();
         $(error).text('Please enter folder name.');
         return false;
     }

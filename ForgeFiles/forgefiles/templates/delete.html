@@ -26,7 +26,7 @@
     </h1>
 
 <div id="delete_folder_popup"  >
-<form id ='delete_folder_form' method="post" {% if folder_object %} action="{{c.app.url}}delete_folder" {% elif file_object %} action="{{c.app.url}}delete_file" {% endif %} onsubmit="return ConfirmDeleteFolder();" >
+<form id ='delete_folder_form' method="post" {% if folder_object %} action="{{c.app.url}}delete_folder" {% elif file_object %} action="{{c.app.url}}delete_file" {% endif %}>
 <div class="modal-dialog">
     <!-- Modal content-->
     <div class="modal-content">
@@ -58,5 +58,8 @@
 {{lib.csrf_token()}}
 </form>
 </div>
+<script>
+    $('#delete_folder_form').on('submit', ConfirmDeleteFolder(e));
+</script>
 
 

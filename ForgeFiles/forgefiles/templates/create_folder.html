@@ -26,7 +26,7 @@
     </h1>
 
     <div id="folder_popup" class="" role="dialog" >
-     <form {% if folder_object %} action="{{folder_object.url()}}/create_folder" {% else %} action="{{c.app.url}}create_folder" {% endif %} method="post"  enctype="multipart/form-data" onsubmit="return validateFolderForm();">
+     <form {% if folder_object %} action="{{folder_object.url()}}/create_folder" {% else %} action="{{c.app.url}}create_folder" {% endif %} method="post" id="create-folder-form"  enctype="multipart/form-data">
      <div class="modal-dialog">
          <!-- Modal content-->
          <div class="modal-content">
@@ -54,5 +54,7 @@
      {{lib.csrf_token()}}
      </form>
     </div>
-
+<script>
+    $('#create-folder-form').on('submit', validateFolderForm(e));
+</script>
 

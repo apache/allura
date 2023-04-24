@@ -27,7 +27,7 @@
 
   <!-- popup for publish folder-->
 <div id="publish_folder_popup"  >
-<form id ='publish_folder_form' method="post" action="{{c.app.url}}publish_folder" onsubmit="return ConfirmPublishFolder();" >
+<form id ='publish_folder_form' method="post" action="{{c.app.url}}publish_folder">
 <div class="modal-dialog">
     <!-- Modal content-->
     <div class="modal-content">
@@ -64,6 +64,9 @@
 
 
 <script type="text/javascript" src="{{g.app_static('js/publish_folder.js')}}"></script>
+<script>
+    $('#publish_folder_form').on('submit', ConfirmPublishFolder(e));
+</script>
 
 
 

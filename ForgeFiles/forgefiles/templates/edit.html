@@ -33,7 +33,7 @@
     {% elif file_object %}
         action="{{c.app.url}}edit_file"
     {% endif %}
-    onsubmit="return validateEditFolderForm();" >
+    >
  <div class="modal-dialog">
      <!-- Modal content-->
      <div class="modal-content">
@@ -74,5 +74,8 @@
  {{lib.csrf_token()}}
  </form>
 </div>
+<script>
+    $('#edit_folder_form').on('submit', validateEditFolderForm(e));
+</script>
 
 
