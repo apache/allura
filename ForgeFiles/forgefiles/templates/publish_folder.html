@@ -65,7 +65,7 @@
 
 <script type="text/javascript" src="{{g.app_static('js/publish_folder.js')}}"></script>
 <script>
-    $('#publish_folder_form').on('submit', ConfirmPublishFolder(e));
+    $('#publish_folder_form').on('submit', function(e){ ConfirmPublishFolder(e) });
 </script>
 
 
