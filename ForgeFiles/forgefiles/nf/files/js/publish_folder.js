@@ -21,7 +21,7 @@ $('#admin_modal_title').hide();
 $('#remarks_id').focus();
 
 
- function ConfirmPublishFolder(){
+ function ConfirmPublishFolder(e){
      var remarks = document.getElementById('remarks_id');
      var release_notes = $(remarks).val().trim();
      var error = $('#error_message');
@@ -31,6 +31,7 @@ $('#remarks_id').focus();
      var publish_status = $(current_folder).val();
      var submit_btn = $('#submit_btn');
      if(release_notes.length === 0){
+         e.preventDefault();
         $(error).text('Please enter release notes');
         return false;
      }

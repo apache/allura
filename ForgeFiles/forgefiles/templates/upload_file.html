@@ -27,7 +27,7 @@
 
  <!-- popup for add files-->
  <div id="file_popup" >
-     <form {% if folder_object %} action="{{folder_object.url()}}/upload_file" {% else %} action="{{c.app.url}}upload_file" {% endif %} method="post"  enctype="multipart/form-data" onsubmit="return validateFileForm()" >
+     <form {% if folder_object %} action="{{folder_object.url()}}/upload_file" {% else %} action="{{c.app.url}}upload_file" {% endif %} method="post"  enctype="multipart/form-data" id="upload-file-form">
      <div class="modal-dialog">
          <!-- Modal content-->
          <div class="modal-content">
@@ -53,3 +53,6 @@
      {{lib.csrf_token()}}
      </form>
  </div>
+<script>
+    $('#upload-file-form').on('submit', function(e){ validateFileForm(e) });
+</script>

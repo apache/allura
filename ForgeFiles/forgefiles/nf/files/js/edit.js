@@ -21,13 +21,14 @@ $('#admin_modal_title').hide();
 $('#obj_id').select();
 var obj_type = $('#obj_type').val();
 
-function validateEditFolderForm(){
+function validateEditFolderForm(e){
     var folder_obj = document.getElementById('obj_id');
     var folder_name = $(folder_obj).val().trim();
     var error = $('#error_message');
     var flag;
     flag = validateName(folder_name);
     if (folder_name.length === 0){
+        e.preventDefault();
         if(obj_type == 'folder')
             $(error).text('Please enter folder name');
         else if(obj_type == 'file')
