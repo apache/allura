@@ -261,7 +261,7 @@ class PersonalDataForm(ForgeForm):
                         [ew.Option(py_value=c, label=n, selected=False)
                          for c, n in sorted(list(country_names.items()),
                                             key=lambda k_v: k_v[1])],
-                attrs={'onchange': 'selectTimezone(this.value)'}),
+                ),
             ew.TextField(
                 name='city',
                 label='City of residence',
@@ -334,7 +334,7 @@ class PersonalDataForm(ForgeForm):
         yield ew.JSScript('''
 var $allTimezones = $("#tz").clone();
 var $t = ''' + h.escape_json(dict(country_timezones)) + ''';
-function selectTimezone($country){
+function selectTimeZ($country){
      if($country == " "){
          $("#tz").replaceWith($allTimezones);
      }
@@ -344,7 +344,9 @@ function selectTimezone($country){
              $("#tz").append($("<option></option>").attr("value", value).text(value))
          })
      }
-}''')
+};
+$("select[name='country']").on("change", function(e){ selectTimeZ(e.target.value) });
+''')
 
 
 class AddTelNumberForm(ForgeForm):
