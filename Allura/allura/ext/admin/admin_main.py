@@ -52,6 +52,7 @@ from allura.lib.widgets.project_list import ProjectScreenshots
 
 from . import widgets as aw
 import six
+import uuid
 
 
 log = logging.getLogger(__name__)
@@ -517,6 +518,7 @@ class ProjectAdminController(BaseController):
     @require_post()
     @validate(W.screenshot_admin)
     def add_screenshot(self, screenshot=None, caption=None, **kw):
+        id = uuid.uuid1()
         require_access(c.project, 'update')
         screenshots = c.project.get_screenshots()
         if len(screenshots) >= 6:
@@ -525,18 +527,7 @@ class ProjectAdminController(BaseController):
         elif screenshot is not None and screenshot != '':
             future_bmp = False
             e_filename, e_fileext = os.path.splitext(screenshot.filename)
-            for screen in screenshots:
-                c_filename, c_fileext = os.path.splitext(screen.filename)
-                if c_fileext == '.png' and e_fileext.lower() == '.bmp' and e_filename == c_filename:
-                    future_bmp = True
-                    # If both filename(without ext.) equals and exiting file ext. is png and given file ext is bmp,
-                    # there will be two similar png files.
-
-                if screen.filename == screenshot.filename or future_bmp:
-                    screenshot.filename = re.sub(r'(.*)\.(.*)', r'\1-' + str(randint(1000, 9999)) + r'.\2',
-                                                 screenshot.filename)
-                    # if filename already exists append a random number
-                    break
+            screenshot.filename = f"{e_filename}-{id.hex[:8]}{e_fileext}"
             M.AuditLog.log('screenshots: added screenshot {} with caption "{}"'.format(
                 screenshot.filename, caption))
             sort = 1 + max([ss.sort or 0 for ss in screenshots] or [0])
