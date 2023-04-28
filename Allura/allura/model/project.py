@@ -94,6 +94,10 @@ class ProjectFile(File):
     caption = FieldProperty(str)
     sort = FieldProperty(int)
 
+    @LazyProperty
+    def screenshot_timestamp(self):
+        return timegm(self._id.generation_time.timetuple())
+
 
 class ProjectCategory(MappedClass):
 
