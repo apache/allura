@@ -497,6 +497,7 @@ class Test():
         # this is not a valid way to make a list in original Markdown or python-markdown
         #   https://github.com/Python-Markdown/markdown/issues/874
         # it is valid in the CommonMark spec https://spec.commonmark.org/0.30/#lists
+        # for now the current version of Markdown seems to create a more well formed list with <br/> tags
         # TODO: try https://github.com/adamb70/mdx-breakless-lists
         #       or https://gitlab.com/ayblaq/prependnewline
         assert (
@@ -504,8 +505,8 @@ class Test():
     Regular text
     * first item
     * second item''')) ==
-            '<div class="markdown_content"><p>Regular text\n'  # no <br>
-            '* first item\n'  # no <br>
+            '<div class="markdown_content"><p>Regular text<br/>\n'
+            '* first item<br/>\n'
             '* second item</p></div>')
 
         assert (
