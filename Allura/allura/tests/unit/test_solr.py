@@ -119,6 +119,11 @@ class TestSolr(unittest.TestCase):
         search.assert_called_once_with(
             'username_s:admin1 || username_s:root', fq=fq, ignore_errors=False)
 
+        search.reset_mock()
+        site_admin_search(User, '2601:404:c300:a560:598f:9336:d2bb:9e32', 'registration_ip')
+        search.assert_called_once_with(
+            'registration_ip:(2601\:404\:c300\:a560\:598f\:9336\:d2bb\:9e32)', fq=fq, ignore_errors=False, **{'q.op': 'AND'})
+
 
 class TestSearchIndexable(unittest.TestCase):
 

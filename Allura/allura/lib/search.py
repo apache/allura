@@ -215,6 +215,7 @@ def site_admin_search(model, q, field, **kw):
     if obj is None:
         return  # if there are no objects, we won't find anything
     fields = obj.index()
+
     if field == '__custom__':
         # custom query -> query as is
         q = obj.translate_query(q, fields)
@@ -224,6 +225,7 @@ def site_admin_search(model, q, field, **kw):
         # escaping spaces with '\ ' isn't sufficient for display_name_t since its stored as text_general (why??)
         # and wouldn't handle foo@bar.com split on @ either
         # This should work, but doesn't for unknown reasons: q = u'{!term f=%s}%s' % (field, q)
+        q = q.replace(':', '\:') # Must escape the colon for IPv6 addresses
         q = obj.translate_query(f'{field}:({q})', fields)
         kw['q.op'] = 'AND'  # so that all terms within the () are required
     fq = ['type_s:%s' % model.type_s]
