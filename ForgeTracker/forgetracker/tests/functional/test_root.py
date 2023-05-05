@@ -2514,7 +2514,7 @@ class TestFunctionalController(TrackerTestController):
             assert (email.kwargs.subject ==
                     '[test:bugs] #1 test <h2> ticket')
             text = email.kwargs.text
-            assert '** [bugs:#1] test &lt;h2&gt; ticket**' in text
+            assert '**[bugs:#1] test &lt;h2&gt; ticket**' in text
             mail_tasks.sendmail(
                 fromaddr=str(c.user._id),
                 destinations=[str(c.user._id)],
@@ -2528,11 +2528,11 @@ class TestFunctionalController(TrackerTestController):
             # check subject
             assert 'Subject: [test:bugs] #1 test <h2> ticket' in body
             # check html, need tags escaped
-            assert ('<p><strong> <a class="alink" href="http://localhost/p/test/bugs/1/">[bugs:#1]</a>'
+            assert ('<p><strong><a class="alink" href="http://localhost/p/test/bugs/1/">[bugs:#1]</a>'
                     ' test &lt;h2&gt; ticket</strong></p>' in
                     body)
             # check plaintext (ok to have "html" tags)
-            assert '** [bugs:#1] test <h2> ticket**' in body
+            assert '**[bugs:#1] test <h2> ticket**' in body
 
     @patch('forgetracker.search.query_filter_choices', autospec=True)
     def test_multiselect(self, query_filter_choices):
