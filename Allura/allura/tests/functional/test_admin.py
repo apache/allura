@@ -395,7 +395,9 @@ class TestProjectAdmin(TestController):
         assert image.size == (96, 96)
         r = self.app.get('/p/test/icon?w=12345', status=404)
 
-    def test_project_screenshot(self):
+    @mock.patch('allura.ext.admin.admin_main.uuid.uuid1')
+    def test_project_screenshot(self, uuid1):
+        uuid1.return_value = mock.Mock(hex='123')
         file_name = 'neo-icon-set-454545-256x350.png'
         file_path = os.path.join(
             allura.__path__[0], 'nf', 'allura', 'images', file_name)
@@ -403,7 +405,8 @@ class TestProjectAdmin(TestController):
         upload = ('screenshot', file_name, file_data)
 
         self.app.get('/admin/')
-        with audits('screenshots: added screenshot {}'.format(file_name)):
+        e_filename, e_fileext =  os.path.splitext(file_name)
+        with audits('screenshots: added screenshot {}'.format(f"{e_filename}-123{e_fileext}")):
             self.app.post('/admin/add_screenshot', params=dict(
                 caption='test me'),
                 upload_files=[upload])
@@ -435,7 +438,9 @@ class TestProjectAdmin(TestController):
         # r = self.app.get('/p/test/home/')
         # assert 'aaa' not in r
 
-    def test_sort_screenshots(self):
+    @mock.patch('allura.ext.admin.admin_main.uuid.uuid1')
+    def test_sort_screenshots(self, uuid1):
+        uuid1.return_value = mock.Mock(hex='123')
         for file_name in ('admin_24.png', 'admin_32.png'):
             file_path = os.path.join(allura.__path__[0], 'nf', 'allura',
                                      'images', file_name)
@@ -450,12 +455,12 @@ class TestProjectAdmin(TestController):
                                       neighborhood_id=p_nbhd._id)
         # first uploaded is first by default
         screenshots = project.get_screenshots()
-        assert screenshots[0].filename == 'admin_24.png'
+        assert screenshots[0].filename == 'admin_24-123.png'
         # reverse order
         params = {str(ss._id): str(len(screenshots) - 1 - i)
                   for i, ss in enumerate(screenshots)}
         self.app.post('/admin/sort_screenshots', params)
-        assert project.get_screenshots()[0].filename == 'admin_32.png'
+        assert project.get_screenshots()[0].filename == 'admin_32-123.png'
 
     def test_project_delete_undelete(self):
         # create a subproject
