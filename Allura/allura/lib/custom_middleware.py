@@ -533,6 +533,21 @@ class ContentSecurityPolicyMiddleware:
         return resp(environ, start_response)
 
 
+class IframePermissionsPolicy:
+    """ Sets Permissions-Policy header for iframes """
+
+    def __init__(self, app, config):
+        self.app = app
+        self.config = config
+
+    def __call__(self, environ, start_response):
+        req = Request(environ)
+        resp = req.get_response(self.app)
+        if self.config.get('iframe_permissions', ''):
+            resp.headers.add('Permissions-Policy', f"{', '.join(aslist(self.config['iframe_permissions']))}")
+        return resp(environ, start_response)
+
+
 """
 _call_wsgi_application & StatusCodeRedirect were originally part of TurboGears, but then removed from it.
 They came from Pylons before that.
