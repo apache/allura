@@ -24,7 +24,7 @@ APPS=(Allura* *Forge*)
 APPS_WITH_DASH_E="${APPS[@]/#/-e ./}"
 
 # don't install ForgeSVN in a main command, since it often is not installable, and its optional
-APPS_DASHE_NO_SVN="${APPS_WITH_DASH_E//-eForgeSVN/}"  # string replacement
+APPS_DASHE_NO_SVN="${APPS_WITH_DASH_E//-e .\/ForgeSVN/}"  # string replacement
 pip install $APPS_DASHE_NO_SVN
 main_ret=$?
 
