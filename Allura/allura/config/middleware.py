@@ -61,7 +61,7 @@ from allura.lib.custom_middleware import RememberLoginMiddleware
 from allura.lib.custom_middleware import SetRequestHostFromConfig
 from allura.lib.custom_middleware import MingTaskSessionSetupMiddleware
 from allura.lib.custom_middleware import ContentSecurityPolicyMiddleware
-from allura.lib.custom_middleware import BrowserPermissionsPolicy
+from allura.lib.custom_middleware import SetHeadersMiddleware
 from allura.lib.custom_middleware import StatusCodeRedirect
 from allura.lib import helpers as h
 from allura.lib.utils import configure_ming
@@ -133,7 +133,7 @@ def _make_core_app(root, global_conf: dict, **app_conf):
     # CSP headers
     app = ContentSecurityPolicyMiddleware(app, config)
     # broswer permissions policy
-    app = BrowserPermissionsPolicy(app, config)
+    app = SetHeadersMiddleware(app, config)
     # Required for sessions
     app = SessionMiddleware(app, config, data_serializer=BeakerPickleSerializerWithLatin1())
     # Handle "Remember me" functionality
