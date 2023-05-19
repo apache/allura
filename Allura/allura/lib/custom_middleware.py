@@ -533,8 +533,8 @@ class ContentSecurityPolicyMiddleware:
         return resp(environ, start_response)
 
 
-class BrowserPermissionsPolicy:
-    """ Sets Permissions-Policy header for iframes """
+class SetHeadersMiddleware:
+    """ Set headers """
 
     def __init__(self, app, config):
         self.app = app
@@ -547,6 +547,8 @@ class BrowserPermissionsPolicy:
             resp.headers.add('Permissions-Policy', f"{self.config['permissions_policies']}")
         if self.config.get('features_policies', ''):
             resp.headers.add('Feature-Policy', f"{self.config['features_policies']}")
+        if self.config.get('referrer_policy'):
+            resp.headers.add('Referrer-Policy', f"{self.config['referrer_policy']}")
         return resp(environ, start_response)
 
 
