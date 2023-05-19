@@ -21,14 +21,14 @@ APPS=(Allura* *Forge*)
 
 # the "${...-e}" magic is inspired by this stack exchange and turns a list into a oneline
 # https://unix.stackexchange.com/a/445522
-APPS_WITH_DASH_E="${APPS[@]/#/-e}"
+APPS_WITH_DASH_E="${APPS[@]/#/-e ./}"
 
 # don't install ForgeSVN in a main command, since it often is not installable, and its optional
 APPS_DASHE_NO_SVN="${APPS_WITH_DASH_E//-eForgeSVN/}"  # string replacement
-pip install --no-index $APPS_DASHE_NO_SVN
+pip install $APPS_DASHE_NO_SVN
 main_ret=$?
 
-pip install --no-index -e ForgeSVN
+pip install -e ./ForgeSVN
 if [ "$?" -gt 0 ]; then
   echo -e "\nIt is okay that ForgeSVN failed.  It needs pysvn which can be difficult to install."
   echo "You can ignore this error.  If you do want SVN support, see install_each_step.rst notes about SVN."
