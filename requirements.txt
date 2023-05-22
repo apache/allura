@@ -167,7 +167,7 @@ regex==2022.10.31
     # via
     #   regex-as-re-globally
     #   textile
-regex-as-re-globally==0.0.2
+regex-as-re-globally==0.0.3
     # via -r requirements.in
 repoze-lru==0.7
     # via turbogears2
