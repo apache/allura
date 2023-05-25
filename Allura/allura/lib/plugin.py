@@ -1085,7 +1085,7 @@ class ProjectRegistrationProvider:
             for i, tool in enumerate(project_template['tools'].keys()):
                 tool_config = project_template['tools'][tool]
                 tool_options = tool_config.get('options', {})
-                for k, v in tool_options.items():
+                for k, v in list(tool_options.items()):
                     if isinstance(v, str):
                         tool_options[k] = \
                             string.Template(v).safe_substitute(

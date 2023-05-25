@@ -273,7 +273,7 @@ def create_project_with_attrs(p, nbhd, update=False, ensure_tools=False):
             if project.app_instance(tool_config['mount_point']):
                 continue
             tool_options = tool_config.get('options', {})
-            for k, v in tool_options.items():
+            for k, v in list(tool_options.items()):
                 if isinstance(v, str):
                     tool_options[k] = string.Template(v).safe_substitute(
                         project.root_project.__dict__.get('root_project', {}))
