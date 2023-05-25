@@ -96,7 +96,7 @@ class AkismetSpamFilter(SpamFilter):
                     log.debug("couldn't get Snapshot for this artifact %s", artifact)
 
         # kw will be urlencoded, need to utf8-encode
-        for k, v in kw.items():
+        for k, v in list(kw.items()):
             kw[k] = h.really_unicode(v).encode('utf8')
         return kw
 

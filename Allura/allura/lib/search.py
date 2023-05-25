@@ -106,7 +106,7 @@ class SearchIndexable:
 
         # convert some date/time field types to str
         # from https://github.com/django-haystack/pysolr/blob/1a8887cb2ce1c30ef9d6570704254b4520f8a959/pysolr.py#L692
-        for k, value in doc.items():
+        for k, value in list(doc.items()):
             if hasattr(value, "strftime"):
                 if hasattr(value, "hour"):
                     offset = value.utcoffset()
