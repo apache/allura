@@ -16,6 +16,7 @@
 #       under the License.
 from __future__ import annotations
 
+import sys
 import os
 import shutil
 import string
@@ -48,6 +49,10 @@ if typing.TYPE_CHECKING:
 
 
 log = logging.getLogger(__name__)
+
+assert sys.getfilesystemencoding() == 'utf-8', \
+    'Filesystem encoding is not set to utf-8.  You should set https://docs.python.org/3/library/os.html#utf8-mode'
+
 
 gitdb.util.mman = gitdb.util.mman.__class__(
     max_open_handles=128)
