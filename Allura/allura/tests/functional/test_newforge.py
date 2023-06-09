@@ -39,6 +39,9 @@ class TestNewForgeController(TestController):
         r.mustcontain('The markdown supplied could not be parsed correctly.')
         r.mustcontain('<pre>&lt;foo {bar}&gt;</pre>')
 
+        r = self.app.get('/nf/markdown_to_html?markdown=*aaa*bb[wiki:Home]&project=test&app=bugs&neighborhood=bogus',
+                         status=400)
+
     def test_markdown_syntax(self):
         r = self.app.get('/nf/markdown_syntax')
         r.mustcontain('Markdown Syntax')

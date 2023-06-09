@@ -25,6 +25,7 @@ from webob import exc
 from tg import app_globals as g
 from allura.lib import helpers as h
 from allura.lib import utils
+from allura.lib.exceptions import ForgeError
 
 
 class NewForgeController:
@@ -38,7 +39,10 @@ class NewForgeController:
         """Convert markdown to html."""
         if neighborhood is None or project is None:
             raise exc.HTTPBadRequest()
-        h.set_context(project, app, neighborhood=neighborhood)
+        try:
+            h.set_context(project, app, neighborhood=neighborhood)
+        except ForgeError:
+            raise exc.HTTPBadRequest()
 
         if app == 'wiki':
             html = g.markdown_wiki.convert(markdown)

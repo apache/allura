@@ -17,21 +17,26 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-APPS=(Allura* *Forge*)
+PKGDIR=$(python -c 'from distutils import sysconfig; print(sysconfig.get_python_lib())')
 
-# the "${...-e}" magic is inspired by this stack exchange and turns a list into a oneline
-# https://unix.stackexchange.com/a/445522
-APPS_WITH_DASH_E="${APPS[@]/#/-e ./}"
+function rebuild() {
+    local DIR=$1
+    echo "# setting up $DIR"
+    pushd $DIR > /dev/null
+    if [ -d *.egg-info ] && [[ $(find *.egg-info ! -newer setup.py | grep -v zip-safe) == "" ]]; then
+        # as long as there's .egg-info directory around, and all are newer than setup.py
+        # we can do a quick and dirty replacement of `pip install -e`
+        # its so much faster, but misses the `python setup.py egg_info` part (entry points and other distribution info)
+        echo -e -n "$(pwd -P)\n." > $PKGDIR/$(basename $(pwd -P)).egg-link
+        grep -q $(pwd -P) $PKGDIR/easy-install.pth || pwd -P >> $PKGDIR/easy-install.pth  # if path is not in this file, append
+    else
+        # full proper installation
+        pip install -e .
+    fi
+    popd > /dev/null
+}
 
-# don't install ForgeSVN in a main command, since it often is not installable, and its optional
-APPS_DASHE_NO_SVN="${APPS_WITH_DASH_E//-e .\/ForgeSVN/}"  # string replacement
-pip install $APPS_DASHE_NO_SVN
-main_ret=$?
-
-pip install -e ./ForgeSVN
-if [ "$?" -gt 0 ]; then
-  echo -e "\nIt is okay that ForgeSVN failed.  It needs pysvn which can be difficult to install."
-  echo "You can ignore this error.  If you do want SVN support, see install_each_step.rst notes about SVN."
-fi
-
-exit $main_ret
+for APP in Allura* *Forge*
+do
+    rebuild $APP
+done
