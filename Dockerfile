@@ -15,16 +15,16 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-FROM ubuntu:18.04
+FROM ubuntu:22.04
 
 ARG PY_VERSION=3.7
 
 # Ubunutu 18.04's latest python is 3.6 (and Ubuntu 20.04's is 3.8)
 # In order to get a different python, we must add the deadsnakes apt repo, and install a specific version
 RUN apt-get update \
-    && apt-get install software-properties-common -y --no-install-recommends \
+    && apt-get install gpg gpg-agent software-properties-common -y --no-install-recommends \
     && add-apt-repository ppa:deadsnakes/ppa -y \
-    && add-apt-repository ppa:git-core/ppa -y \
+    #&& add-apt-repository ppa:git-core/ppa -y \
     && apt-get update
     
 RUN apt-get upgrade -y git
@@ -55,7 +55,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
 ENV PYTHON_EXE=python$PY_VERSION
 
 # up-to-date version of node & npm
-RUN curl --silent --location https://deb.nodesource.com/setup_10.x | sudo bash - && \
+RUN curl --silent --location https://deb.nodesource.com/setup_14.x | sudo bash - && \
     DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends nodejs
 
 # Snapshot generation for SVN (and maybe other SCMs) might fail without this
