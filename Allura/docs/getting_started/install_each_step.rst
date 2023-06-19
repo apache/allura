@@ -26,15 +26,15 @@ Step-by-Step Installation
 
 For a simpler setup using Docker images, see :ref:`docker-install` instead.
 
-In these instructions, we'll use `VirtualBox <http://www.virtualbox.org>`__ and `Ubuntu 18.04 <http://ubuntu.com>`_  to create a disposable sandbox for Allura development/testing.  Allura should work on other Linux systems (including OSX), but setting up all the dependencies will be different.
+In these instructions, we'll use `VirtualBox <http://www.virtualbox.org>`__ and `Ubuntu 22.04 <http://ubuntu.com>`_  to create a disposable sandbox for Allura development/testing.  Allura should work on other Linux systems (including OSX), but setting up all the dependencies will be different.
 
 * Download and install `VirtualBox <http://www.virtualbox.org/wiki/Downloads>`__ for your platform.
 
-* Download a minimal `Ubuntu 18.04 64-bit ISO <https://help.ubuntu.com/community/Installation/MinimalCD>`_.
+* Download a server image of `Ubuntu 22.04 64-bit ISO <https://releases.ubuntu.com/jammy/>`_.
 
 * Create a new virtual machine in Virtual Box, selecting Ubuntu (64 bit) as the OS type.  The rest of the wizards' defaults are fine.
 
-* When you launch the virtual machine for the first time, you will be prompted to attach your installation media.  Browse to the :file:`mini.iso` that you downloaded earlier.
+* When you launch the virtual machine for the first time, you will be prompted to attach your installation media.  Browse to the :file:`ubuntu-22.04.2-live-server-amd64.iso` that you downloaded earlier.
 
 * After a text-only installation, you may end up with a blank screen and blinking cursor.  Press :code:`Alt-F1` to switch to the first console.
 
