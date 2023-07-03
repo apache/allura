@@ -30,7 +30,7 @@ import json
 import logging
 import string
 import random
-import six.moves.cPickle as pickle
+import pickle as pickle
 from hashlib import sha1
 from datetime import datetime, timedelta
 from collections import defaultdict, OrderedDict

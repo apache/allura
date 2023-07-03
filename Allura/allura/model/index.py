@@ -21,9 +21,9 @@ from itertools import groupby
 import typing
 
 from ming.odm.property import FieldProperty
-from six.moves.cPickle import dumps, loads
+from pickle import dumps, loads
 from collections import defaultdict
-from six.moves.urllib.parse import unquote
+from urllib.parse import unquote
 
 import bson
 import pymongo

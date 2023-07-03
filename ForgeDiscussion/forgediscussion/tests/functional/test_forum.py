@@ -19,9 +19,9 @@ import mock
 import pytest
 import random
 import logging
-from six.moves.email_mime_text import MIMEText
-from six.moves.email_mime_image import MIMEImage
-from six.moves.email_mime_multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
 
 import pkg_resources
 import pymongo

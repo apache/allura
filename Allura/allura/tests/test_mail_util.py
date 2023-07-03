@@ -16,8 +16,8 @@
 #       under the License.
 
 import unittest
-from six.moves.email_mime_multipart import MIMEMultipart
-from six.moves.email_mime_text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 import mock
 import pytest

@@ -22,7 +22,7 @@ import logging
 import six
 from http.cookies import SimpleCookie as Cookie
 from collections import defaultdict
-from six.moves.urllib.parse import unquote
+from urllib.parse import unquote
 from datetime import datetime
 from datetime import timedelta
 

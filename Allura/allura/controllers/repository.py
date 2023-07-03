@@ -21,7 +21,7 @@ import difflib
 
 from allura.lib.utils import permanent_redirect
 from datetime import datetime
-from six.moves.urllib.parse import quote, unquote
+from urllib.parse import quote, unquote
 from collections import defaultdict, OrderedDict
 
 

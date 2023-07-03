@@ -25,8 +25,8 @@ import six.moves.urllib.parse
 import six.moves.urllib.error
 from collections import defaultdict
 import traceback
-from six.moves.urllib.parse import urlparse
-from six.moves.urllib.parse import unquote
+from urllib.parse import urlparse
+from urllib.parse import unquote
 from datetime import datetime
 import six
 

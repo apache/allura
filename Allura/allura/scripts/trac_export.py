@@ -42,7 +42,7 @@ except ImportError:
     try:
         from allura.lib.helpers import urlopen
     except ImportError:
-        from six.moves.urllib.request import urlopen
+        from urllib.request import urlopen
 
 log = logging.getLogger(__name__)
 

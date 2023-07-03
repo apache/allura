@@ -23,7 +23,7 @@ import typing
 
 import six
 from markupsafe import Markup
-from six.moves.urllib.parse import urlparse
+from urllib.parse import urlparse
 from email import header
 from hashlib import sha256
 from datetime import timedelta, datetime, time
@@ -84,7 +84,7 @@ class EmailAddress(MappedClass):
         indexes = ['nonce', ]
         unique_indexes = [('email', 'claimed_by_user_id'), ]
 
-    query: 'Query[EmailAddress]'
+    query: Query[EmailAddress]
 
     _id = FieldProperty(S.ObjectId)
     email = FieldProperty(str)
@@ -195,7 +195,7 @@ class AuthGlobals(MappedClass):
         name = 'auth_globals'
         session = main_orm_session
 
-    query: 'Query[AuthGlobals]'
+    query: Query[AuthGlobals]
 
     _id = FieldProperty(int)
     next_uid = FieldProperty(int, if_missing=10000)
@@ -251,7 +251,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             dict(fields=('tool_data.phone_verification.number_hash',), sparse=True),
         ]
 
-    query: 'Query[User]'
+    query: Query[User]
 
     type_s = 'User'
 
@@ -887,7 +887,7 @@ class ProjectRole(MappedClass):
             ('roles',),
         ]
 
-    query: 'Query[ProjectRole]'
+    query: Query[ProjectRole]
 
     _id = FieldProperty(S.ObjectId)
     user_id: ObjectId = AlluraUserProperty(if_missing=None)
@@ -1021,7 +1021,7 @@ class AuditLog(MappedClass):
             'user_id',
         ]
 
-    query: 'Query[AuditLog]'
+    query: Query[AuditLog]
 
     _id = FieldProperty(S.ObjectId)
     project_id = ForeignIdProperty('Project', if_missing=None)
@@ -1111,7 +1111,7 @@ class UserLoginDetails(MappedClass):
         unique_indexes = [('user_id', 'ip', 'ua'),  # DuplicateKeyError checked in add_login_detail
                           ]
 
-    query: 'Query[UserLoginDetails]'
+    query: Query[UserLoginDetails]
 
     _id = FieldProperty(S.ObjectId)
     user_id: ObjectId = AlluraUserProperty(required=True)

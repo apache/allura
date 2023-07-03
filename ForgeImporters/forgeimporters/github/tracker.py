@@ -18,7 +18,7 @@
 import re
 import logging
 from datetime import datetime
-from six.moves.urllib.error import HTTPError
+from urllib.error import HTTPError
 import six
 from io import BytesIO
 

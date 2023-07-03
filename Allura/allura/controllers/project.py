@@ -20,7 +20,7 @@ import logging
 from datetime import datetime, timedelta
 
 import six
-from six.moves.urllib.parse import unquote
+from urllib.parse import unquote
 
 from bson import ObjectId
 from tg import expose, flash, redirect, validate, request, config, session

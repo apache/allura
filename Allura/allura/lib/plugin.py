@@ -25,8 +25,8 @@ import subprocess
 import string
 import crypt
 import random
-from six.moves.urllib.request import urlopen
-from six.moves.urllib.parse import urlparse
+from urllib.request import urlopen
+from urllib.parse import urlparse
 from io import BytesIO
 from random import randint
 from hashlib import sha256

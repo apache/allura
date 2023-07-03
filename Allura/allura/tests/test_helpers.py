@@ -485,7 +485,7 @@ class TestUrlOpen(TestCase):
 
     @patch('six.moves.urllib.request.urlopen')
     def test_handled_http_error(self, urlopen):
-        from six.moves.urllib.error import HTTPError
+        from urllib.error import HTTPError
 
         def side_effect(url, timeout=None):
             raise HTTPError('url', 408, 'timeout', None, io.BytesIO())
@@ -496,7 +496,7 @@ class TestUrlOpen(TestCase):
 
     @patch('six.moves.urllib.request.urlopen')
     def test_unhandled_http_error(self, urlopen):
-        from six.moves.urllib.error import HTTPError
+        from urllib.error import HTTPError
 
         def side_effect(url, timeout=None):
             raise HTTPError('url', 404, 'timeout', None, io.BytesIO())

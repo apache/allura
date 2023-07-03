@@ -32,7 +32,7 @@ import oembed
 import jinja2
 import markupsafe
 from operator import attrgetter
-from six.moves.urllib.parse import urlparse, urlunparse
+from urllib.parse import urlparse, urlunparse
 
 import pymongo
 from tg import tmpl_context as c, app_globals as g

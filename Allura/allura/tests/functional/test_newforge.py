@@ -16,7 +16,7 @@
 #       under the License.
 
 
-from six.moves.urllib.parse import quote
+from urllib.parse import quote
 
 from allura.tests import TestController
 from allura.tests import decorators as td

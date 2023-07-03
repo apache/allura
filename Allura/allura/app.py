@@ -17,7 +17,7 @@
 
 import os
 import logging
-from six.moves.urllib_parse import urljoin
+from urllib.parse import urljoin
 from io import BytesIO
 from collections import defaultdict
 from xml.etree import ElementTree as ET

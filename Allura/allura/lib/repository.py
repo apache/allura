@@ -18,7 +18,7 @@
 import logging
 
 import six
-from six.moves.urllib.parse import quote
+from urllib.parse import quote
 
 from tg import tmpl_context as c, app_globals as g
 from tg import request

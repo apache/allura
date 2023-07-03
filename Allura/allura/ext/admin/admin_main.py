@@ -21,7 +21,7 @@ import os
 from random import randint
 from collections import OrderedDict
 from datetime import datetime
-from six.moves.urllib.parse import urlparse
+from urllib.parse import urlparse
 import json
 from operator import itemgetter, attrgetter
 import pkg_resources
@@ -570,7 +570,7 @@ class ProjectAdminController(BaseController):
         require_access(c.project, 'update')
         if id is not None and id != '':
             screenshot = M.ProjectFile.query.get(project_id=c.project._id, _id=ObjectId(id))
-            M.AuditLog.log('screenshots: deleted screenshot {}'.format(screenshot.filename))
+            M.AuditLog.log(f'screenshots: deleted screenshot {screenshot.filename}')
             M.ProjectFile.query.remove(
                 dict(project_id=c.project._id, _id=ObjectId(id)))
             g.post_event('project_updated')

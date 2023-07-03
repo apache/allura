@@ -18,7 +18,7 @@
 '''This is the main controller module for the Files Plugin.'''
 
 import logging
-from six.moves.urllib.parse import unquote
+from urllib.parse import unquote
 
 from tg import config, redirect, expose, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash

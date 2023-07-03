@@ -28,9 +28,9 @@ from hashlib import sha1
 from datetime import datetime, timedelta
 from time import time
 from collections import defaultdict, OrderedDict
-from six.moves.urllib.parse import urljoin
+from urllib.parse import urljoin
 from threading import Thread
-from six.moves.queue import Queue
+from queue import Queue
 from itertools import chain, islice
 import typing
 from collections.abc import Iterable
@@ -354,7 +354,7 @@ class Repository(Artifact, ActivityObject):
         name = 'generic-repository'
         indexes = ['upstream_repo.name']
 
-    query: 'Query[Repository]'
+    query: Query[Repository]
 
     _impl = None
     repo_id = 'repo'
@@ -812,7 +812,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
         indexes = ['commit_id', 'creator_id']
         unique_indexes = [('app_config_id', 'request_number')]
 
-    query: 'Query[MergeRequest]'
+    query: Query[MergeRequest]
 
     type_s = 'MergeRequest'
 
@@ -1056,7 +1056,7 @@ class CommitStatus(MappedClass):
         name = 'commit_status'
         indexes = [('commit_id', 'context'),]
 
-    query: 'Query[CommitStatus]'
+    query: Query[CommitStatus]
 
     _id = FieldProperty(S.ObjectId)
     state = FieldProperty(str)
@@ -1094,7 +1094,7 @@ class Commit(MappedClass, RepoObject, ActivityObject):
             'repo_ids',
         ]
 
-    query: 'Query[Commit]'
+    query: Query[Commit]
 
     _id = FieldProperty(str)  # hexsha of the commit (for Git and Hg)
     tree_id = FieldProperty(str)
@@ -1362,7 +1362,7 @@ class Tree(MappedClass, RepoObject):
         indexes = [
         ]
 
-    query: 'Query[Tree]'
+    query: Query[Tree]
 
     _id = FieldProperty(str)
     tree_ids = FieldProperty([dict(name=str, id=str)])
@@ -1638,7 +1638,7 @@ class LastCommit(MappedClass, RepoObject):
             ('commit_id', 'path'),
         ]
 
-    query: 'Query[LastCommit]'
+    query: Query[LastCommit]
 
     _id = FieldProperty(S.ObjectId)
     commit_id = FieldProperty(str)

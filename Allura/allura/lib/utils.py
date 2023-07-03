@@ -35,7 +35,7 @@ from itertools import groupby
 import operator as op
 import collections
 import ming
-from six.moves.urllib.parse import urlparse
+from urllib.parse import urlparse
 import six.moves.urllib.request
 import six.moves.urllib.parse
 import six.moves.urllib.error
@@ -159,7 +159,7 @@ class CustomWatchedFileHandler(logging.handlers.WatchedFileHandler):
         return super().format(record)
 
 
-def chunked_find(cls: Type[T], query: dict | None = None, pagesize: int = 1024, sort_key: str | None = '_id',
+def chunked_find(cls: type[T], query: dict | None = None, pagesize: int = 1024, sort_key: str | None = '_id',
                  sort_dir: int = 1) -> Iterable[Iterable[T]]:
     '''
     Execute a mongo query against the specified class, yield some results at

@@ -17,7 +17,7 @@
 
 
 import six
-from six.moves.urllib.parse import unquote
+from urllib.parse import unquote
 from webob import exc
 
 from tg import expose, request, redirect

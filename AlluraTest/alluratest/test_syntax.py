@@ -20,7 +20,7 @@ from subprocess import Popen, PIPE
 import sys
 
 from unittest import SkipTest
-from six.moves import zip_longest
+from itertools import zip_longest
 
 toplevel_dir = os.path.abspath(os.path.dirname(__file__) + "/../..")
 BASE_PATH = (toplevel_dir,) #freeze main path

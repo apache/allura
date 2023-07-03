@@ -20,7 +20,7 @@ Upload, UploadFolder & UploadFile are the collections'''
 
 from datetime import datetime
 
-from six.moves.urllib.parse import quote
+from urllib.parse import quote
 import re
 import typing
 

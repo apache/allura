@@ -21,7 +21,7 @@ from base64 import b32encode
 from datetime import datetime
 import re
 import warnings
-from six.moves.urllib.parse import urlparse, urljoin
+from urllib.parse import urlparse, urljoin
 
 import bson
 import formencode as fe

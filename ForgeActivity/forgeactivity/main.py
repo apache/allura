@@ -149,7 +149,7 @@ class ForgeActivityController(BaseController):
                 else:
                     # fix gravatar urls with old default avatar urls in them
                     t.actor.activity_extras.icon_url = re.sub(r'([&?])d=[^&]*',
-                                                              r'\1d={}'.format(default_avatar),
+                                                              fr'\1d={default_avatar}',
                                                               t.actor.activity_extras.icon_url)
             if t.actor.activity_url:
                 t.actor.activity_url = f'{t.actor.activity_url}profile/'

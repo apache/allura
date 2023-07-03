@@ -18,7 +18,7 @@
 from datetime import datetime
 from operator import itemgetter
 from unittest import TestCase
-from six.moves.urllib.error import HTTPError
+from urllib.error import HTTPError
 import mock
 
 from ...github import tracker

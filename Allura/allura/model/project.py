@@ -87,7 +87,7 @@ class ProjectFile(File):
         session = main_orm_session
         indexes = [('project_id', 'category')]
 
-    query: 'Query[ProjectFile]'
+    query: Query[ProjectFile]
 
     project_id = FieldProperty(S.ObjectId)
     category = FieldProperty(str)
@@ -101,7 +101,7 @@ class ProjectCategory(MappedClass):
         session = main_orm_session
         name = 'project_category'
 
-    query: 'Query[ProjectCategory]'
+    query: Query[ProjectCategory]
 
     _id = FieldProperty(S.ObjectId)
     parent_id = FieldProperty(S.ObjectId, if_missing=None)
@@ -138,7 +138,7 @@ class TroveCategory(MappedClass):
         extensions = [TroveCategoryMapperExtension]
         indexes = ['trove_cat_id', 'trove_parent_id', 'shortname', 'fullpath']
 
-    query: 'Query[TroveCategory]'
+    query: Query[TroveCategory]
 
     _id = FieldProperty(S.ObjectId)
     trove_cat_id = FieldProperty(int, if_missing=None)
@@ -228,7 +228,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             ('neighborhood_id', 'is_nbhd_project', 'deleted')]
         unique_indexes = [('neighborhood_id', 'shortname')]
 
-    query: 'Query[Project]'
+    query: Query[Project]
 
     type_s = 'Project'
 
@@ -1409,7 +1409,7 @@ class AppConfig(MappedClass, ActivityObject):
             'options.import_id',
             ('options.mount_point', 'project_id')]
 
-    query: 'Query[AppConfig]'
+    query: Query[AppConfig]
 
     # AppConfig schema
     _id = FieldProperty(S.ObjectId)

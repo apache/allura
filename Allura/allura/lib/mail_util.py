@@ -19,8 +19,8 @@ import re
 import logging
 import smtplib
 import email.parser
-from six.moves.email_mime_multipart import MIMEMultipart
-from six.moves.email_mime_text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from email import header
 from email.message import EmailMessage
 

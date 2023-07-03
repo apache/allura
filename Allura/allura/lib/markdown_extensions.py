@@ -20,7 +20,7 @@ import logging
 from typing import List
 import xml.etree.ElementTree as etree
 
-from six.moves.urllib.parse import urljoin
+from urllib.parse import urljoin
 
 from tg import config
 from bs4 import BeautifulSoup

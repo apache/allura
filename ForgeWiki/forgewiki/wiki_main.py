@@ -21,7 +21,7 @@ import os
 from pprint import pformat
 
 import six
-from six.moves.urllib.parse import unquote, urlencode
+from urllib.parse import unquote, urlencode
 
 # Non-stdlib imports
 from tg import expose, validate, redirect, flash, jsonify
@@ -411,7 +411,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
         self._discuss = AppDiscussionController()
 
     def catch_all(self, *args, **kw):
-        url = '/{}/?{}'.format(request.controller_url, urlencode(kw))
+        url = f'/{request.controller_url}/?{urlencode(kw)}'
         redirect(h.urlquote(h.really_unicode(url)))
 
     def _check_security(self):

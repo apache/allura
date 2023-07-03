@@ -78,7 +78,7 @@ class Repository(M.Repository):
     class __mongometa__:
         name = 'git-repository'
 
-    query: 'Query[Repository]'
+    query: Query[Repository]
 
     @LazyProperty
     def _impl(self):

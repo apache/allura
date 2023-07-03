@@ -17,7 +17,7 @@
 
 """Main Controller"""
 import logging
-from six.moves.urllib.parse import unquote
+from urllib.parse import unquote
 
 from tg import tmpl_context as c
 from tg import request

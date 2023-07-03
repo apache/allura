@@ -51,7 +51,7 @@ class URL(fev.URL):
 class URLIsPrivate(URL):
 
     def _convert_to_python(self, value, state):
-        value = super(URLIsPrivate, self)._convert_to_python(value, state)
+        value = super()._convert_to_python(value, state)
         url_components = urlsplit(value)
         try:
             host_ip = socket.gethostbyname(url_components.netloc)

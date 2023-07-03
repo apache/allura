@@ -16,7 +16,7 @@
 #       under the License.
 
 import logging
-from six.moves.urllib.parse import urljoin
+from urllib.parse import urljoin
 import html
 import json
 

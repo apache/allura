@@ -19,7 +19,7 @@ import sys
 import re
 from functools import wraps
 import contextlib
-from six.moves.urllib.parse import parse_qs
+from urllib.parse import parse_qs
 
 from ming.odm.odmsession import ThreadLocalODMSession
 from tg import tmpl_context as c

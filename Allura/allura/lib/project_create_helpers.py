@@ -30,7 +30,7 @@ import bson
 import requests
 import formencode
 import six
-from six.moves.urllib.parse import urlparse
+from urllib.parse import urlparse
 
 from allura.lib.helpers import slugify
 from allura.model import Neighborhood

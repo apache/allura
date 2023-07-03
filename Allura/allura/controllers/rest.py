@@ -198,7 +198,7 @@ class Oauth1Validator(oauthlib.oauth1.RequestValidator):
     @property
     def safe_characters(self):
         # add a few characters, so tests can have clear readable values
-        return super(Oauth1Validator, self).safe_characters | {'_', '-'}
+        return super().safe_characters | {'_', '-'}
 
     def get_default_realms(self, client_key, request):
         return []

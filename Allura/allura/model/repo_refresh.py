@@ -16,7 +16,7 @@
 #       under the License.
 
 import logging
-from six.moves.cPickle import dumps
+from pickle import dumps
 
 import bson
 import tg
