@@ -107,7 +107,7 @@ class TestUIController(TestController):
                         'added', 'eee.txt',
                         'added', 'ggg.txt']
         for i, item in enumerate(sortedCommits):
-            assert actualCommit[i] == ''.join(item.findAll(text=True)).strip()
+            assert actualCommit[i] == ''.join(item.findAll(string=True)).strip()
 
 
 class TestRootController(_TestCase):

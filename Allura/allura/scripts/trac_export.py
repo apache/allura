@@ -222,7 +222,7 @@ class TracExport:
                 if desc_el:
                     # TODO: Convert to Allura link syntax as needed
                     d['description'] = ''.join(
-                        desc_el.findAll(text=True)).strip()
+                        desc_el.findAll(string=True)).strip()
             list.append(d)
         return list
 
