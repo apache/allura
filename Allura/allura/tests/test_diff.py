@@ -20,100 +20,12 @@ import unittest
 from allura.lib.diff import HtmlSideBySideDiff
 
 
-class TestHtmlSideBySideDiff(unittest.TestCase):
-
-    def setup_method(self, method):
-        self.diff = HtmlSideBySideDiff()
-
-    def test_render_change(self):
-        html = self.diff._render_change(
-            'aline', 'aline <span class="diff-add">bline</span>',
-            1, 2, 'aclass', 'bclass')
-        expected = '''
-<tr>
-  <td class="lineno">1</td>
-  <td class="aclass"><pre>aline</pre></td>
-  <td class="lineno">2</td>
-  <td class="bclass"><pre>aline <span class="diff-add">bline</span></pre></td>
-</tr>'''.strip()
-        self.assertEqual(html, expected)
-
-    def test_render_change_default_args(self):
-        html = self.diff._render_change('aline', 'bline')
-        expected = '''
-<tr>
-  <td class="lineno"></td>
-  <td><pre>aline</pre></td>
-  <td class="lineno"></td>
-  <td><pre>bline</pre></td>
-</tr>'''.strip()
-        self.assertEqual(html, expected)
-
-    def test_preprocess(self):
-        d = self.diff
-        self.assertEqual(d._preprocess(None), None)
-        self.assertEqual(d._preprocess('<br>&nbsp;'), '&lt;br&gt;&amp;nbsp;')
-        self.assertEqual(d._preprocess('\ttabbed'), '    tabbed')
-        # test non default tab size
-        d = HtmlSideBySideDiff(2)
-        self.assertEqual(d._preprocess('\ttabbed'), '  tabbed')
-
-    def test_replace_marks(self):
-        line, flag = self.diff._replace_marks('\0+line added\1')
-        self.assertEqual(line, 'line added')
-        self.assertEqual(flag, 'diff-add')
-        line, flag = self.diff._replace_marks('\0-line removed\1')
-        self.assertEqual(line, 'line removed')
-        self.assertEqual(flag, 'diff-rem')
-        line, flag = self.diff._replace_marks('\0^line changed\1')
-        self.assertEqual(line, '<span class="diff-chg">line changed</span>')
-        self.assertEqual(flag, 'diff-chg')
-        line, flag = self.diff._replace_marks('chunk \0+add\1ed')
-        self.assertEqual(line, 'chunk <span class="diff-add">add</span>ed')
-        self.assertEqual(flag, 'diff-chg')
-        line, flag = self.diff._replace_marks('chunk \0-remov\1ed')
-        self.assertEqual(line, 'chunk <span class="diff-rem">remov</span>ed')
-        self.assertEqual(flag, 'diff-chg')
-        line, flag = self.diff._replace_marks('chunk \0^chang\1ed')
-        self.assertEqual(line, 'chunk <span class="diff-chg">chang</span>ed')
-        self.assertEqual(flag, 'diff-chg')
-
-    def test_make_line(self):
-        # context separation
-        d = (None, None, None)
-        expected = '''
-<tr>
-  <td class="lineno"></td>
-  <td class="diff-gap"><pre>...</pre></td>
-  <td class="lineno"></td>
-  <td class="diff-gap"><pre>...</pre></td>
-</tr>'''.strip()
-        self.assertEqual(self.diff._make_line(d), expected)
-        # no change
-        d = ((1, 'aline'), (1, 'aline'), False)
-        expected = '''
-<tr>
-  <td class="lineno">1</td>
-  <td><pre>aline</pre></td>
-  <td class="lineno">1</td>
-  <td><pre>aline</pre></td>
-</tr>'''.strip()
-        self.assertEqual(self.diff._make_line(d), expected)
-        # has change
-        d = ((1, '\0^a\1line'), (1, '\0^b\1line'), True)
-        expected = '''
-<tr>
-  <td class="lineno">1</td>
-  <td class="diff-chg"><pre><span class="diff-chg">a</span>line</pre></td>
-  <td class="lineno">1</td>
-  <td class="diff-chg"><pre><span class="diff-chg">b</span>line</pre></td>
-</tr>'''.strip()
-        self.assertEqual(self.diff._make_line(d), expected)
+class TestHtmlSideBySideDiff:
 
     def test_make_table(self):
-        a = 'line 1\nline 2'.split('\n')
-        b = 'changed line 1\nchanged line 2'.split('\n')
-        expected = '''
+        a = 'line A1\nline 2\nline 3'.splitlines(keepends=True)
+        b = 'line 1B\nline X\ntotalchg\n\tnew<script>&"'.splitlines(keepends=True)
+        expected = '''\
 <table class="side-by-side-diff">
   <thead>
     <th class="lineno"></th>
@@ -123,23 +35,88 @@ class TestHtmlSideBySideDiff(unittest.TestCase):
   </thead>
 <tr>
   <td class="lineno">1</td>
-  <td class="diff-rem"><pre>line 1</pre></td>
+  <td class="diff-chg"><pre>line <span class="diff-rem">A</span>1\n</pre></td>
   <td class="lineno">1</td>
-  <td class="diff-add"><pre>changed line 1</pre></td>
+  <td class="diff-chg"><pre>line 1<span class="diff-add">B</span>\n</pre></td>
 </tr>
 <tr>
   <td class="lineno">2</td>
-  <td class="diff-rem"><pre>line 2</pre></td>
+  <td class="diff-chg"><pre>line <span class="diff-chg">2</span>\n</pre></td>
   <td class="lineno">2</td>
-  <td class="diff-add"><pre>changed line 2</pre></td>
+  <td class="diff-chg"><pre>line <span class="diff-chg">X</span>\n</pre></td>
+</tr>
+<tr>
+  <td class="lineno">3</td>
+  <td class="diff-rem"><pre>line 3</pre></td>
+  <td class="lineno">3</td>
+  <td class="diff-add"><pre>totalchg\n</pre></td>
+</tr>
+<tr>
+  <td class="lineno"></td>
+  <td><pre>\n</pre></td>
+  <td class="lineno">4</td>
+  <td class="diff-add"><pre>  new&lt;script&gt;&amp;"</pre></td>
 </tr>
 </table>
 '''.strip()
-        html = self.diff.make_table(a, b, 'file a', 'file b')
-        self.assertEqual(html, expected)
+        html = HtmlSideBySideDiff().make_table(a, b, 'file a', 'file b').strip()
+        assert html == expected
+
+    def test_make_table_context_gap_start(self):
+        a = 'line 1\nline 2\nline 3\nline 4\n line 5\nline 6\nline 7\nline 8'.splitlines(keepends=True)
+        b = 'line 1\nline 2\nline 3\nline 4\n line 5\nline 6\nline X\nline 8'.splitlines(keepends=True)
+        start = '''\
+<table class="side-by-side-diff">
+  <thead>
+    <th class="lineno"></th>
+    <th>file a</th>
+    <th class="lineno"></th>
+    <th>file b</th>
+  </thead>
+<tr>
+  <td class="lineno"></td>
+  <td class="diff-gap"><pre>...</pre></td>
+  <td class="lineno"></td>
+  <td class="diff-gap"><pre>...</pre></td>
+</tr>
+<tr>
+  <td class="lineno">2</td>
+  <td><pre>line 2\n</pre></td>
+  <td class="lineno">2</td>
+  <td><pre>line 2\n</pre></td>
+</tr>
+'''.strip()
+        html = HtmlSideBySideDiff().make_table(a, b, 'file a', 'file b').strip()
+        assert start in html
+
+    def test_make_table_context_gap_middle(self):
+        a = 'line 1\nline 2\nline 3\nline 4\n line 5\nline 6\nline 7\nline 8\nline 9\nline 10\nline 11\nline 12\nline 13'.splitlines(keepends=True)
+        b = 'line X\nline 2\nline 3\nline 4\n line 5\nline 6\nline 7\nline 8\nline 9\nline 10\nline 11\nline 12\nline Y'.splitlines(keepends=True)
+        middle = '''\
+<tr>
+  <td class="lineno">6</td>
+  <td><pre>line 6\n</pre></td>
+  <td class="lineno">6</td>
+  <td><pre>line 6\n</pre></td>
+</tr>
+<tr>
+  <td class="lineno"></td>
+  <td class="diff-gap"><pre>...</pre></td>
+  <td class="lineno"></td>
+  <td class="diff-gap"><pre>...</pre></td>
+</tr>
+<tr>
+  <td class="lineno">8</td>
+  <td><pre>line 8\n</pre></td>
+  <td class="lineno">8</td>
+  <td><pre>line 8\n</pre></td>
+</tr>
+'''.strip()
+        html = HtmlSideBySideDiff().make_table(a, b, 'file a', 'file b').strip()
+        assert middle in html
 
     def test_unicode_make_table(self):
         a = ['строка']
         b = ['измененная строка']
-        html = self.diff.make_table(a, b, 'file a', 'file b')
+        html = HtmlSideBySideDiff().make_table(a, b, 'file a', 'file b')
         assert 'строка' in html
