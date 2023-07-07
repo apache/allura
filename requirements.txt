@@ -30,6 +30,8 @@ cryptography==41.0.1
     # via -r requirements.in
 decorator==5.1.1
     # via -r requirements.in
+diff-match-patch==20230430
+    # via sxsdiff
 docutils==0.19
     # via pypeline
 easywidgets==0.4.1
@@ -196,11 +198,14 @@ six==1.16.0
     #   paste
     #   pastescript
     #   python-dateutil
+    #   sxsdiff
     #   webhelpers2
 smmap==5.0.0
     # via gitdb
 soupsieve==2.4.1
     # via beautifulsoup4
+sxsdiff==0.3.0
+    # via -r requirements.in
 termcolor==2.2.0
     # via pytest-sugar
 testfixtures==7.1.0

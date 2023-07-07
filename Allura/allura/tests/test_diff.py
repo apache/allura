@@ -22,6 +22,10 @@ from allura.lib.diff import HtmlSideBySideDiff
 
 class TestHtmlSideBySideDiff:
 
+    # these tests are representative but not complete
+    # there are a lot of different nuanced situations (e.g. trailing blanks etc)
+    # and manually testing after changes is recommended too
+
     def test_make_table(self):
         a = 'line A1\nline 2\nline 3'.splitlines(keepends=True)
         b = 'line 1B\nline X\ntotalchg\n\tnew<script>&"'.splitlines(keepends=True)
@@ -35,27 +39,27 @@ class TestHtmlSideBySideDiff:
   </thead>
 <tr>
   <td class="lineno">1</td>
-  <td class="diff-chg"><pre>line <span class="diff-rem">A</span>1\n</pre></td>
+  <td class="diff-chg"><pre>line <span class="diff-rem">A</span>1</pre></td>
   <td class="lineno">1</td>
-  <td class="diff-chg"><pre>line 1<span class="diff-add">B</span>\n</pre></td>
+  <td class="diff-chg"><pre>line 1<span class="diff-add">B</span></pre></td>
 </tr>
 <tr>
   <td class="lineno">2</td>
-  <td class="diff-chg"><pre>line <span class="diff-chg">2</span>\n</pre></td>
+  <td class="diff-chg"><pre>line <span class="diff-rem">2</span></pre></td>
   <td class="lineno">2</td>
-  <td class="diff-chg"><pre>line <span class="diff-chg">X</span>\n</pre></td>
+  <td class="diff-chg"><pre>line <span class="diff-add">X</span></pre></td>
 </tr>
 <tr>
   <td class="lineno">3</td>
   <td class="diff-rem"><pre>line 3</pre></td>
   <td class="lineno">3</td>
-  <td class="diff-add"><pre>totalchg\n</pre></td>
+  <td class="diff-add"><pre>totalchg</pre></td>
 </tr>
 <tr>
   <td class="lineno"></td>
-  <td><pre>\n</pre></td>
+  <td><pre></pre></td>
   <td class="lineno">4</td>
-  <td class="diff-add"><pre>  new&lt;script&gt;&amp;"</pre></td>
+  <td class="diff-add"><pre>    new&lt;script&gt;&amp;&quot;</pre></td>
 </tr>
 </table>
 '''.strip()
@@ -81,11 +85,12 @@ class TestHtmlSideBySideDiff:
 </tr>
 <tr>
   <td class="lineno">2</td>
-  <td><pre>line 2\n</pre></td>
+  <td><pre>line 2</pre></td>
   <td class="lineno">2</td>
-  <td><pre>line 2\n</pre></td>
+  <td><pre>line 2</pre></td>
 </tr>
-'''.strip()
+'''.strip()  # more lines follow in full output
+
         html = HtmlSideBySideDiff().make_table(a, b, 'file a', 'file b').strip()
         assert start in html
 
@@ -95,9 +100,9 @@ class TestHtmlSideBySideDiff:
         middle = '''\
 <tr>
   <td class="lineno">6</td>
-  <td><pre>line 6\n</pre></td>
+  <td><pre>line 6</pre></td>
   <td class="lineno">6</td>
-  <td><pre>line 6\n</pre></td>
+  <td><pre>line 6</pre></td>
 </tr>
 <tr>
   <td class="lineno"></td>
@@ -107,9 +112,9 @@ class TestHtmlSideBySideDiff:
 </tr>
 <tr>
   <td class="lineno">8</td>
-  <td><pre>line 8\n</pre></td>
+  <td><pre>line 8</pre></td>
   <td class="lineno">8</td>
-  <td><pre>line 8\n</pre></td>
+  <td><pre>line 8</pre></td>
 </tr>
 '''.strip()
         html = HtmlSideBySideDiff().make_table(a, b, 'file a', 'file b').strip()

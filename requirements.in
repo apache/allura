@@ -41,6 +41,7 @@ requests-oauthlib
 # for taskd proc name switching
 setproctitle
 six
+sxsdiff
 TimerMiddleware
 TurboGears2
 WebHelpers2
