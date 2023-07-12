@@ -285,7 +285,7 @@ class ForgeExtension(markdown.Extension):
         # this has to be before the 'escape' processor, otherwise weird
         # placeholders are inserted for escaped chars within urls, and then the
         # autolink can't match the whole url
-        md.inlinePatterns.register(AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-\\_%?&=+#;~:!]+)', md),
+        md.inlinePatterns.register(AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-\\_%?&=+#;~:!@]+)', md),
                                    'autolink_without_brackets',
                                    185)  # was '<escape' and 'escape' is priority 180; great num runs first, so: 185
         # replace the link pattern with our extended version

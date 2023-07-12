@@ -547,6 +547,9 @@ class Test():
         # beginning of a line
         assert ('<br/>\n<a href="http://' in
                 g.markdown.convert('foobar\nhttp://domain.net abc'))
+        # special characters allowed
+        assert (' href="http://mst.dn/@acct:%20#target" ' in
+                g.markdown.convert('foo http://mst.dn/@acct:%20#target bar'))
         # no conversion of these urls:
         assert ('a blahttp://sdf.com z' in
                 g.markdown.convert('a blahttp://sdf.com z'))
