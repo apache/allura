@@ -470,6 +470,8 @@ class Artifact(MappedClass, SearchIndexable):
         """
         ArtifactReference.query.remove(dict(_id=self.index_id()))
         super().delete()
+        session(self).flush(self)
+        session(self).imap.expunge(self)
 
     def get_mail_footer(self, notification, toaddr):
         allow_email_posting = self.app.config.options.get('AllowEmailPosting', True)
