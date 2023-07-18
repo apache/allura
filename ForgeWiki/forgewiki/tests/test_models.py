@@ -102,6 +102,8 @@ class TestPage(TestController):
             page = Page.upsert('test-delete')
             _id = page._id
             session(page).flush(page)
+            thread = page.discussion_thread
+            thread_id = thread._id
 
         page.soft_delete()
         session(page).flush(page)
@@ -109,7 +111,11 @@ class TestPage(TestController):
         page = Page.query.get(_id=_id)
         assert page
         assert page.deleted
+        thread = M.Thread.query.get(_id=thread_id)
+        assert thread
 
         page.delete()
         page = Page.query.get(_id=_id)
         assert not page
+        thread = M.Thread.query.get(_id=thread_id)
+        assert not thread

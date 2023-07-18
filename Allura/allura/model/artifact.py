@@ -385,6 +385,30 @@ class Artifact(MappedClass, SearchIndexable):
         """
         return self.shorthand_id()
 
+    def _get_discussion_thread(self):
+        from .discuss import Thread
+        threads = Thread.query.find(dict(ref_id=self.index_id())).all()
+        if not threads:
+            return None
+
+        if len(threads) == 1:
+            return threads[0]
+
+        # there should not be multiple threads, we'll merge them
+        destination = threads.pop()
+        for thread in threads:
+            for post in thread.posts:
+                post.thread_id = destination._id
+                destination.num_replies += 1
+                destination.last_post_date = max(destination.last_post_date, post.mod_date)
+                session(post).flush(post)
+                session(post).expunge(post)  # so thread.posts ref later in the code doesn't use stale posts
+            Thread.query.remove({'_id': thread._id})  # NOT thread.delete() since that would remove its posts too
+            thread.attachment_class().query.update({'thread_id': thread._id},
+                                                   {'$set': {'thread_id': destination._id}},
+                                                   multi=True)
+        return destination
+
     def get_discussion_thread(self, data=None):
         """Return the discussion thread and parent_id for this artifact.
 
@@ -392,31 +416,14 @@ class Artifact(MappedClass, SearchIndexable):
 
         """
         from .discuss import Thread
-        threads = Thread.query.find(dict(ref_id=self.index_id())).all()
-        if not threads:
+        thread = self._get_discussion_thread()
+        if not thread:
             idx = self.index()
-            t = Thread.new(
+            thread = Thread.new(
                 app_config_id=self.app_config_id,
                 discussion_id=self.app_config.discussion_id,
                 ref_id=idx['id'],
                 subject='%s discussion' % h.get_first(idx, 'title'))
-        elif len(threads) == 1:
-            t = threads[0]
-        else:
-            # there should not be multiple threads, we'll merge them
-            destination = threads.pop()
-            for thread in threads:
-                for post in thread.posts:
-                    post.thread_id = destination._id
-                    destination.num_replies += 1
-                    destination.last_post_date = max(destination.last_post_date, post.mod_date)
-                    session(post).flush(post)
-                    session(post).expunge(post)  # so thread.posts ref later in the code doesn't use stale posts
-                Thread.query.remove({'_id': thread._id})  # NOT thread.delete() since that would remove its posts too
-                thread.attachment_class().query.update({'thread_id': thread._id},
-                                                       {'$set': {'thread_id': destination._id}},
-                                                       multi=True)
-            t = destination
 
         parent_id = None
         if data:
@@ -424,7 +431,7 @@ class Artifact(MappedClass, SearchIndexable):
             if in_reply_to:
                 parent_id = in_reply_to[0]
 
-        return t, parent_id
+        return thread, parent_id
 
     @LazyProperty
     def discussion_thread(self):
@@ -468,6 +475,9 @@ class Artifact(MappedClass, SearchIndexable):
         """Delete this Artifact.
 
         """
+        thread = self._get_discussion_thread()
+        if thread:
+            thread.delete()
         ArtifactReference.query.remove(dict(_id=self.index_id()))
         super().delete()
         session(self).flush(self)
