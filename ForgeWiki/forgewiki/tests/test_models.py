@@ -94,3 +94,22 @@ class TestPage(TestController):
         assert len(authors) == 1
         assert user not in authors
         assert admin in authors
+
+    @td.with_wiki
+    def test_delete(self):
+        admin = M.User.by_username('test-admin')
+        with h.push_config(c, user=admin):
+            page = Page.upsert('test-delete')
+            _id = page._id
+            session(page).flush(page)
+
+        page.soft_delete()
+        session(page).flush(page)
+
+        page = Page.query.get(_id=_id)
+        assert page
+        assert page.deleted
+
+        page.delete()
+        page = Page.query.get(_id=_id)
+        assert not page

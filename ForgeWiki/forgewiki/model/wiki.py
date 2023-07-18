@@ -276,6 +276,10 @@ class Page(VersionedArtifact, ActivityObject):
         }).all()
 
     def delete(self):
+        self.soft_delete()
+        super().delete()
+
+    def soft_delete(self):
         subject = '{} removed page {}'.format(
             context.user.username, self.title)
         description = self.text

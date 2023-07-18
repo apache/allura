@@ -665,7 +665,7 @@ class PageController(BaseController, FeedController):
             c.app.config.options['mount_point'],
             self.page.title,
         ))
-        self.page.delete()
+        self.page.soft_delete()
         return dict(location='../' + self.page.title + '/?deleted=True')
 
     @without_trailing_slash

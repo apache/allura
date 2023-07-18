@@ -238,7 +238,7 @@ class GitHubWikiImporter(ToolImporter):
             wiki_page.text = self.convert_markup(
                 h.really_unicode(text), filename)
         else:
-            wiki_page.delete()
+            wiki_page.soft_delete()
         import_id_name = renamed_orig_name if renamed_orig_name else orig_name
         wiki_page.import_id = ImportIdConverter.get().expand(
             import_id_name, self.app)
