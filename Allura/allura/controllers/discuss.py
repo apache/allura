@@ -437,7 +437,7 @@ class PostController(BaseController, metaclass=h.ProxiedAttrMeta):
     def moderate(self, **kw):
         require_access(self.post.thread, 'moderate')
         if kw.pop('delete', None):
-            self.post.delete()
+            self.post.soft_delete()
         elif kw.pop('spam', None):
             self.post.spam()
         elif kw.pop('undo', None):
@@ -556,6 +556,7 @@ class ModerationController(BaseController, metaclass=h.ProxiedAttrMeta):
 
             if posted:
                 if delete:
+                    # full, for real, delete since this is post was never visible and denied by admin.
                     posted.delete()
                     # If we just deleted the last post in the
                     # thread, delete the thread.

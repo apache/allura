@@ -755,6 +755,11 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
             return 'Re: ' + (self.subject or '(no subject)')
 
     def delete(self):
+        thread = self.thread
+        super().delete()
+        thread.update_stats()
+
+    def soft_delete(self):
         self.deleted = True
         session(self).flush(self)
         self.thread.update_stats()

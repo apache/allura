@@ -156,7 +156,7 @@ class TestDiscussion:
         assert t.num_replies == 1
         p.undo('ok')
         assert t.num_replies == 2
-        p.delete()
+        p.soft_delete()
         assert t.num_replies == 1
 
     def test_attachment_methods(self):
