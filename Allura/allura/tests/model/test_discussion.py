@@ -489,16 +489,114 @@ class TestDiscussion:
         p1.spam()
         assert t.num_replies == 1
 
-    def test_deleted_thread_index(self):
+    def test_delete_discussion(self):
         d = M.Discussion(shortname='test', name='test')
-        t = M.Thread(discussion_id=d._id, subject='Test Thread')
-        p = M.Post(discussion_id=d._id, thread_id=t._id, status='ok')
-        t.delete()
+        t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
+        p = t.post('This is a post')  # type: M.Post
+        d.attach('discussion.txt', BytesIO(b'Hello, discussion!'),
+                 discussion_id=d._id)
+        t.attach('thread.txt', BytesIO(b'Hello, thread!'),
+                 discussion_id=d._id,
+                 thread_id=t._id)
+        p.attach('post.txt', BytesIO(b'Hello, world!'),
+                 discussion_id=d._id,
+                 thread_id=t._id,
+                 post_id=p._id)
         ThreadLocalODMSession.flush_all()
 
-        # re-query, so relationships get reloaded
-        ThreadLocalODMSession.close_all()
-        p = M.Post.query.get(_id=p._id)
+        assert M.BaseAttachment.query.get(filename='discussion.txt')
+        assert M.BaseAttachment.query.get(filename='thread.txt')
+        assert M.BaseAttachment.query.get(filename='post.txt')
 
-        # just make sure this doesn't fail
-        p.index()
+        d.delete()
+
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
+
+        # discussion is higher in hierarchy than thread, so should still exist
+        d = M.Discussion.query.get(_id=d._id)
+
+        assert not d
+        # post 'belongs to' thread, so should be deleted
+        t = M.Thread.query.get(_id=t._id)
+        assert not t
+        p = M.Post.query.get(_id=p._id)
+        assert not p
+
+        assert not M.BaseAttachment.query.get(filename='discussion.txt')
+        assert not M.BaseAttachment.query.get(filename='thread.txt')
+        assert not M.BaseAttachment.query.get(filename='post.txt')
+
+    def test_delete_thread(self):
+        d = M.Discussion(shortname='test', name='test')
+        t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
+        p = t.post('This is a post')  # type: M.Post
+        d.attach('discussion.txt', BytesIO(b'Hello, discussion!'),
+                 discussion_id=d._id)
+        t.attach('thread.txt', BytesIO(b'Hello, thread!'),
+                 discussion_id=d._id,
+                 thread_id=t._id)
+        p.attach('post.txt', BytesIO(b'Hello, world!'),
+                 discussion_id=d._id,
+                 thread_id=t._id,
+                 post_id=p._id)
+        ThreadLocalODMSession.flush_all()
+
+        assert M.BaseAttachment.query.get(filename='discussion.txt')
+        assert M.BaseAttachment.query.get(filename='thread.txt')
+        assert M.BaseAttachment.query.get(filename='post.txt')
+
+        t.delete()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
+
+        # discussion is higher in hierarchy than thread, so should still exist
+        d = M.Discussion.query.get(_id=d._id)
+        assert d
+
+        # post 'belongs to' thread, so should be deleted
+        t = M.Thread.query.get(_id=t._id)
+        assert not t
+        p = M.Post.query.get(_id=p._id)
+        assert not p
+
+        assert M.BaseAttachment.query.get(filename='discussion.txt')
+        assert not M.BaseAttachment.query.get(filename='thread.txt')
+        assert not M.BaseAttachment.query.get(filename='post.txt')
+
+    def test_delete_post(self):
+        d = M.Discussion(shortname='test', name='test')
+        t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
+        p = t.post('This is a post')  # type: M.Post
+        d.attach('discussion.txt', BytesIO(b'Hello, discussion!'),
+                 discussion_id=d._id)
+        t.attach('thread.txt', BytesIO(b'Hello, thread!'),
+                 discussion_id=d._id,
+                 thread_id=t._id)
+        p.attach('post.txt', BytesIO(b'Hello, world!'),
+                 discussion_id=d._id,
+                 thread_id=t._id,
+                 post_id=p._id)
+        ThreadLocalODMSession.flush_all()
+
+        assert M.BaseAttachment.query.get(filename='discussion.txt')
+        assert M.BaseAttachment.query.get(filename='thread.txt')
+        assert M.BaseAttachment.query.get(filename='post.txt')
+
+        p.delete()
+
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
+
+        # discussion is higher in hierarchy than thread, so should still exist
+        d = M.Discussion.query.get(_id=d._id)
+        assert d
+        # post 'belongs to' thread, so should be deleted
+        t = M.Thread.query.get(_id=t._id)
+        assert t
+        p = M.Post.query.get(_id=p._id)
+        assert not p
+
+        assert M.BaseAttachment.query.get(filename='discussion.txt')
+        assert M.BaseAttachment.query.get(filename='thread.txt')
+        assert not M.BaseAttachment.query.get(filename='post.txt')

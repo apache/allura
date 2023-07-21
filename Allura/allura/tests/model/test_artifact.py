@@ -127,7 +127,6 @@ class TestArtifact:
         assert not M.Shortlink.lookup('[Wiki:TestPage2]')
         assert not M.Shortlink.lookup('[TestPage2_no_such_page]')
 
-        pg.delete()
         c.project.uninstall_app('wiki')
         assert not M.Shortlink.lookup('[wiki:TestPage2]')
         assert q_shortlink.count() == 0
