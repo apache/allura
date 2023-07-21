@@ -370,8 +370,8 @@ The wiki uses [Markdown](%s) syntax.
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
-        WM.WikiAttachment.query.remove(dict(app_config_id=self.config._id))
-        WM.Page.query.remove(dict(app_config_id=self.config._id))
+        for page in WM.Page.query.find(dict(app_config_id=self.config._id)):
+            page.delete()
         WM.Globals.query.remove(dict(app_config_id=self.config._id))
         super().uninstall(project)
 
