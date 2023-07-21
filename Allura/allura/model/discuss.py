@@ -458,7 +458,6 @@ class Thread(Artifact, ActivityObject):
     def delete(self):
         for p in self.post_class().query.find(dict(thread_id=self._id)):
             p.delete()
-        self.attachment_class().remove(dict(thread_id=self._id))
         super().delete()
 
     def spam(self):

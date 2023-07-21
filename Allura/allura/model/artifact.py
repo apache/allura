@@ -464,12 +464,26 @@ class Artifact(MappedClass, SearchIndexable):
 
     @LazyProperty
     def attachments(self):
+        return self._get_attachments()
+
+    def _get_attachments(self, unique_files_only=True, include_thumbnails=False):
         if hasattr(self, '_attachments'):
             atts = self._attachments
         else:
-            atts = self.attachment_class().query.find(dict(
-                app_config_id=self.app_config_id, artifact_id=self._id, type='attachment')).all()
-        return utils.unique_attachments(atts)
+            try:
+                atts = self.attachment_class().query.find({
+                    'app_config_id': self.app_config_id,
+                    'artifact_id': {
+                        # some artifact_ids are ObjectIds and some are strings
+                        '$in': [self._id, str(self._id)]
+                    },
+                    'type': {'$in': ['attachment'] + (['thumbnail'] if include_thumbnails else [])}
+                }).all()
+            except NotImplementedError:
+                atts = []
+        if unique_files_only:
+            atts = utils.unique_attachments(atts)
+        return atts
 
     def delete(self):
         """Delete this Artifact.
@@ -478,6 +492,9 @@ class Artifact(MappedClass, SearchIndexable):
         thread = self._get_discussion_thread()
         if thread:
             thread.delete()
+        for att in self._get_attachments(unique_files_only=False, include_thumbnails=True):
+            att.delete()
+            session(att).flush(att)
         ArtifactReference.query.remove(dict(_id=self.index_id()))
         super().delete()
         session(self).flush(self)
