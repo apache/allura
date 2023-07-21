@@ -127,11 +127,26 @@ class Discussion(Artifact, ActivityObject):
             text=self.description)
         return result
 
+    def attach(self, filename, fp, **kw):
+        """Attach a file to this Artifact.
+
+        :param filename: file name
+        :param fp: a file-like object (implements ``read()``)
+        :param kw: passed through to Attachment class constructor
+
+        Override's Artifact.attach to use a str artifact_id
+        """
+        att = self.attachment_class().save_attachment(
+            filename=filename,
+            fp=fp, artifact_id=str(self._id), **kw)
+        return att
+
     def delete(self):
-        # Delete all the threads, posts, and artifacts
-        self.thread_class().query.remove(dict(discussion_id=self._id))
-        self.post_class().query.remove(dict(discussion_id=self._id))
-        self.attachment_class().remove(dict(discussion_id=self._id))
+        # Delete all the threads
+        for thread in self.threads:
+            thread.delete()
+        # threads handle deleting posts
+        # super() handles artifacts, attachments, etc.
         super().delete()
 
     def find_posts(self, **kw):
