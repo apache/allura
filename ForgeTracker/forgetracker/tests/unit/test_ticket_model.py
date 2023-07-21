@@ -17,6 +17,8 @@
 
 from tg import tmpl_context as c
 from datetime import datetime
+from io import BytesIO
+import os
 import six.moves.urllib.parse
 import six.moves.urllib.request
 import six.moves.urllib.error
@@ -29,6 +31,7 @@ from ming import schema
 from forgetracker.model import Ticket, TicketAttachment
 from forgetracker.tests.unit import TrackerTestWithModel
 from forgetracker.import_support import ResettableStream
+import allura
 from allura.model import Feed, Post, User
 from allura.lib import helpers as h
 from allura.tests import decorators as td
@@ -106,6 +109,39 @@ class TestTicketModel(TrackerTestWithModel):
         p.status = 'ok'
         p.deleted = True
         assert not p.has_activity_access('read', c.user, 'activity')
+
+    def test_delete_ticket(self):
+        att_path = os.path.join(allura.__path__[0], 'tests', 'data', 'user.png')
+
+        ticket = Ticket(summary='ticket', ticket_num=666)
+        with open(att_path, 'rb') as fp:
+            ticket.attach('ticket.png', fp,
+                          discussion_id=ticket.discussion_thread.discussion._id,
+                          thread_id=ticket.discussion_thread._id)
+
+        post = ticket.discussion_thread.add_post(text='test post')
+        with open(att_path, 'rb') as fp:
+            post.attach('post.png', fp,
+                        discussion_id=ticket.discussion_thread.discussion._id,
+                        thread_id=ticket.discussion_thread._id,
+                        post_id=post._id)
+
+        ThreadLocalODMSession.flush_all()
+
+        assert Ticket.query.get(ticket_num=666)
+        assert Post.query.get(_id=post._id)
+        assert len(Ticket.attachment_class().query.find(dict(filename='ticket.png')).all()) == 2
+        assert len(Post.attachment_class().query.find(dict(filename='post.png')).all()) == 2
+
+        ticket.delete()
+
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
+
+        assert not Ticket.query.get(ticket_num=666)
+        assert not Post.query.get(_id=post._id)
+        assert not Ticket.attachment_class().query.find(dict(filename='ticket.png')).all()
+        assert not Post.attachment_class().query.find(dict(filename='post.png')).all()
 
     def test_private_ticket(self):
         from allura.model import ProjectRole

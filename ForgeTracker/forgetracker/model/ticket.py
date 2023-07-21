@@ -1375,6 +1375,11 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             self.app.config.options.get('AllowEmailPosting', True),
             discussion_disabled=self.discussion_disabled)
 
+    def delete(self):
+        Shortlink.query.remove(dict(ref_id=self.index_id()))
+        super().delete()
+        self.globals.invalidate_bin_counts()
+
     def soft_delete(self):
         require_access(self, 'delete')
         Shortlink.query.remove(dict(ref_id=self.index_id()))
