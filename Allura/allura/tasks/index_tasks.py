@@ -105,8 +105,11 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
                 artifact = ref.artifact
                 if artifact is None:
                     continue
-                # c.app is normally set, so keep using it.  During a reindex its not though, so set it from artifact
-                with h.push_config(c, app=getattr(c, 'app', None) or artifact.app):
+                # c.project and .app are normally set, so keep using them
+                # During a reindex or other batch jobs, they are not though, so set it from artifact
+                app = getattr(c, 'app', None) or artifact.app
+                project = getattr(c, 'project', None) or artifact.project
+                with h.push_config(c, project=project, app=app):
                     s = artifact.solarize()
                     if s is None:
                         continue
