@@ -206,7 +206,7 @@ soupsieve==2.4.1
     # via beautifulsoup4
 sxsdiff==0.3.0
     # via -r requirements.in
-termcolor==2.2.0
+termcolor==2.3.0
     # via pytest-sugar
 testfixtures==7.1.0
     # via -r requirements.in
