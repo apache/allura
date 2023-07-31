@@ -58,7 +58,7 @@ gitdb==4.0.10
     # via gitpython
 gitpython==3.1.32
     # via -r requirements.in
-gunicorn==20.1.0
+gunicorn==21.2.0
     # via -r requirements.in
 html5lib==1.1
     # via
@@ -105,6 +105,7 @@ oauthlib==3.2.2
     #   requests-oauthlib
 packaging==23.1
     # via
+    #   gunicorn
     #   pytest
     #   pytest-sugar
 paginate==0.5.6
