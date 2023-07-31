@@ -40,7 +40,7 @@ emoji==2.7.0
     # via -r requirements.in
 exceptiongroup==1.1.1
     # via pytest
-execnet==1.9.0
+execnet==2.0.2
     # via pytest-xdist
 faust-cchardet==2.1.18
     # via -r requirements.in
@@ -148,7 +148,7 @@ pytest==7.4.0
     #   pytest-xdist
 pytest-sugar==0.9.7
     # via -r requirements.in
-pytest-xdist==3.2.1
+pytest-xdist==3.3.1
     # via -r requirements.in
 python-dateutil==2.8.2
     # via
