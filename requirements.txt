@@ -36,7 +36,7 @@ docutils==0.19
     # via pypeline
 easywidgets==0.4.1
     # via -r requirements.in
-emoji==2.2.0
+emoji==2.7.0
     # via -r requirements.in
 exceptiongroup==1.1.1
     # via pytest
