@@ -40,7 +40,7 @@ from allura.lib.search import SearchIndexable
 from .session import main_orm_session
 from .session import project_orm_session
 from .session import artifact_orm_session
-from .index import ArtifactReference
+from .index import ArtifactReference, Shortlink
 from .types import ACL, MarkdownCache
 from .project import AppConfig
 from .notification import MailFooter
@@ -495,7 +495,9 @@ class Artifact(MappedClass, SearchIndexable):
         for att in self._get_attachments(unique_files_only=False, include_thumbnails=True):
             att.delete()
             session(att).flush(att)
-        ArtifactReference.query.remove(dict(_id=self.index_id()))
+        idx_id = self.index_id()
+        ArtifactReference.query.remove(dict(_id=idx_id))
+        Shortlink.query.remove(dict(ref_id=idx_id))
         super().delete()
         session(self).flush(self)
         session(self).imap.expunge(self)

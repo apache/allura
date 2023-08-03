@@ -1376,7 +1376,6 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             discussion_disabled=self.discussion_disabled)
 
     def delete(self):
-        Shortlink.query.remove(dict(ref_id=self.index_id()))
         super().delete()
         self.globals.invalidate_bin_counts()
 
