@@ -14,6 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+from __future__ import annotations
 
 import logging
 from collections import defaultdict
@@ -50,6 +51,7 @@ import six
 
 if typing.TYPE_CHECKING:
     from ming.odm.mapper import Query
+    from allura.model import BaseAttachment
 
 log = logging.getLogger(__name__)
 
@@ -466,7 +468,7 @@ class Artifact(MappedClass, SearchIndexable):
     def attachments(self):
         return self._get_attachments()
 
-    def _get_attachments(self, unique_files_only=True, include_thumbnails=False):
+    def _get_attachments(self, unique_files_only=True, include_thumbnails=False) -> list[BaseAttachment]:
         if hasattr(self, '_attachments'):
             atts = self._attachments
         else:

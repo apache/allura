@@ -171,8 +171,8 @@ class ThreadsController(BaseController, metaclass=h.ProxiedAttrMeta):
 
 
 class ThreadController(BaseController, FeedController, metaclass=h.ProxiedAttrMeta):
-    M = h.attrproxy('_discussion_controller', 'M')
-    W = h.attrproxy('_discussion_controller', 'W')
+    M: ModelConfig = h.attrproxy('_discussion_controller', 'M')
+    W: WidgetConfig = h.attrproxy('_discussion_controller', 'W')
     ThreadController = h.attrproxy(
         '_discussion_controller', 'ThreadController')
     PostController = h.attrproxy('_discussion_controller', 'PostController')

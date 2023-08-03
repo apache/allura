@@ -14,7 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
+from __future__ import annotations
 import os
 import logging
 from datetime import datetime
@@ -87,11 +87,11 @@ class Discussion(Artifact, ActivityObject):
         return 'discussion %s' % self.name
 
     @classmethod
-    def thread_class(cls):
+    def thread_class(cls) -> Thread:
         return cls.threads.related
 
     @classmethod
-    def post_class(cls):
+    def post_class(cls) -> Post:
         return cls.posts.related
 
     @classmethod
@@ -256,11 +256,11 @@ class Thread(Artifact, ActivityObject):
                 continue
 
     @classmethod
-    def discussion_class(cls):
+    def discussion_class(cls) -> Discussion:
         return cls.discussion.related
 
     @classmethod
-    def post_class(cls):
+    def post_class(cls) -> Post:
         return cls.posts.related
 
     @classmethod
@@ -491,7 +491,7 @@ class PostHistory(Snapshot):
     artifact_id = ForeignIdProperty('Post')
 
     @classmethod
-    def post_class(cls):
+    def post_class(cls) -> Post:
         return cls.artifact_id.related
 
     def original(self):
@@ -623,11 +623,11 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
         return result
 
     @classmethod
-    def discussion_class(cls):
+    def discussion_class(cls) -> Discussion:
         return cls.discussion.related
 
     @classmethod
-    def thread_class(cls):
+    def thread_class(cls) -> Thread:
         return cls.thread.related
 
     @classmethod

@@ -33,6 +33,7 @@ from allura import model as M
 from allura.lib.security import has_access, require_access
 from allura.lib.decorators import require_post
 from allura.controllers import DiscussionController, ThreadController, PostController, ModerationController
+from allura.controllers import discuss as controllers_discuss
 from allura.lib.widgets import discuss as DW
 from allura.lib.widgets.subscriptions import SubscribeForm
 
@@ -51,14 +52,14 @@ class pass_validator:
 pass_validator = pass_validator()
 
 
-class ModelConfig:
+class ModelConfig(controllers_discuss.ModelConfig):
     Discussion = DM.Forum
     Thread = DM.ForumThread
     Post = DM.ForumPost
     Attachment = M.DiscussionAttachment
 
 
-class WidgetConfig:
+class WidgetConfig(controllers_discuss.WidgetConfig):
     # Forms
     subscription_form = DW.SubscriptionForm()
     subscribe_form = SubscribeForm()

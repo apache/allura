@@ -375,7 +375,7 @@ class BlogAttachmentsController(AttachmentsController):
 
 class PostController(BaseController, FeedController):
 
-    def __init__(self, post):
+    def __init__(self, post: BM.BlogPost):
         self.post = post
         self.attachment = BlogAttachmentsController(self.post)
 
