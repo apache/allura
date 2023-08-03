@@ -572,9 +572,7 @@ class Application(ActivityObject):
         # De-index all the artifacts belonging to this tool in one fell swoop
         index_tasks.solr_del_tool.post(project_id, self.config.options['mount_point'])
 
-        for d in model.Discussion.query.find({
-                'project_id': project_id,
-                'app_config_id': self.config._id}):
+        for d in model.Discussion.query.find({'app_config_id': self.config._id}):
             d.delete()
         self.config.delete()
         session(self.config).flush()
