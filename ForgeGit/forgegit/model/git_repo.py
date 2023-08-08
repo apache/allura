@@ -636,6 +636,7 @@ class GitImplementation(M.RepositoryImplementation):
         if not name:
             return
         self._repo.default_branch_name = name
+        self._git.head.reference = name
         session(self._repo).flush(self._repo)
 
     def _get_last_commit(self, commit_id, paths):
