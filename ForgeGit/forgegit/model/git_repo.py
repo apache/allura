@@ -43,6 +43,7 @@ from ming.utils import LazyProperty
 from allura.lib import helpers as h
 from allura.model.repository import topological_sort, prefix_paths_union
 from allura import model as M
+import allura.tasks
 
 if typing.TYPE_CHECKING:
     from ming.odm.mapper import Query
@@ -636,6 +637,7 @@ class GitImplementation(M.RepositoryImplementation):
         if not name:
             return
         self._repo.default_branch_name = name
+        allura.tasks.repo_tasks.update_head_reference.post(self._repo.full_fs_path, name)
         session(self._repo).flush(self._repo)
 
     def _get_last_commit(self, commit_id, paths):

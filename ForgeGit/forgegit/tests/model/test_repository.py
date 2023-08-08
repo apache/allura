@@ -33,7 +33,7 @@ from testfixtures import TempDirectory
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
-from allura.tasks.repo_tasks import tarball
+from allura.tasks.repo_tasks import tarball, update_head_reference
 from allura.tests import decorators as td
 from allura.tests.model.test_repo import RepoImplTestBase
 from allura import model as M
@@ -604,6 +604,18 @@ By Dave Brondsema''' in text_body
     def test_default_branch_set(self):
         self.repo.default_branch_name = 'zz'
         assert self.repo.get_default_branch(('main', 'master')) == 'zz'
+
+    def test_update_default_branch(self):
+        repo_dir = pkg_resources.resource_filename('forgegit', 'tests/data/testgit.git')
+        repo = mock.Mock(full_fs_path=repo_dir)
+        repo.__ming__ = mock.Mock()
+        impl = GM.git_repo.GitImplementation(repo)
+        try:
+            update_head_reference(self.repo.full_fs_path, 'zz')
+            assert impl._git.head.reference.name == 'zz'
+        finally:
+            update_head_reference(self.repo.full_fs_path, 'master')
+            assert impl._git.head.reference.name == 'master'
 
     def test_default_branch_non_standard_unset(self):
         with mock.patch.object(self.repo, 'get_branches') as gb,\
