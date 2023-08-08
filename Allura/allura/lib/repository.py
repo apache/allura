@@ -295,7 +295,9 @@ class RepoAdminController(DefaultAdminController):
     def set_default_branch_name(self, branch_name=None, **kw):
         if (request.method == 'POST') and branch_name:
             self.repo.set_default_branch(branch_name)
-            redirect(six.ensure_text(request.referer or '/'))
+            project_url = self.repo.default_url_path(c.project, self.app.config.tool_name)
+            mount_point = self.app.config.options.mount_point
+            redirect(six.ensure_text(f'{project_url}{mount_point}/' or '/'))
         else:
             return dict(app=self.app,
                         default_branch_name=self.app.default_branch_name)
