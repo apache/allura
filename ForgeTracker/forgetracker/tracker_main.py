@@ -1397,6 +1397,8 @@ class TicketController(BaseController, FeedController):
         Overrides :meth:`allura.controllers.feed.FeedController.get_feed`.
 
         """
+        if not self.ticket:
+            return None
         title = 'Recent changes to %d: %s' % (
             self.ticket.ticket_num, self.ticket.summary)
         return FeedArgs(

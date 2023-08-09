@@ -1624,6 +1624,8 @@ class TestFunctionalController(TrackerTestController):
         assert 'Tis a reply' in r
         assert 'ticket discussion post content' in r
 
+        self.app.get('/bugs/9999/feed.rss', status=404)
+
     def test_bulk_edit_index(self):
         self.new_ticket(summary='test first ticket', status='open')
         self.new_ticket(summary='test second ticket', status='accepted')
