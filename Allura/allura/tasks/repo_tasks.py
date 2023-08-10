@@ -25,6 +25,7 @@ from ming.odm import session
 from allura.lib.decorators import task
 from allura.lib.repository import RepositoryApp
 from allura.lib.utils import skip_mod_date
+import git
 
 
 @task
@@ -178,3 +179,10 @@ def determine_mr_commits(merge_request_id):
     from allura import model as M
     mr = M.MergeRequest.query.get(_id=merge_request_id)
     mr.commits  # build & cache the commits
+
+
+@task
+def update_head_reference(fs_path, branch_name):
+    git = git.Repo(fs_path, odbt=git.GitCmdObjectDB)
+    git.head.reference = branch_name
+
