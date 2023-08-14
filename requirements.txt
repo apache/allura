@@ -121,7 +121,7 @@ pastedeploy==2.1.1
     #   pastescript
 pastescript==3.3.0
     # via -r requirements.in
-pillow==10.0.0
+pillow==9.5.0
     # via -r requirements.in
 pluggy==1.2.0
     # via pytest
