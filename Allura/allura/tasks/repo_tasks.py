@@ -183,6 +183,6 @@ def determine_mr_commits(merge_request_id):
 
 @task
 def update_head_reference(fs_path, branch_name):
-    git = git.Repo(fs_path, odbt=git.GitCmdObjectDB)
-    git.head.reference = branch_name
+    _git = git.Repo(fs_path, odbt=git.GitCmdObjectDB)
+    _git.head.reference = branch_name
 
