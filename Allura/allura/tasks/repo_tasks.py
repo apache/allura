@@ -26,6 +26,7 @@ from allura.lib.decorators import task
 from allura.lib.repository import RepositoryApp
 from allura.lib.utils import skip_mod_date
 import git
+from git import SymbolicReference
 
 
 @task
@@ -183,6 +184,16 @@ def determine_mr_commits(merge_request_id):
 
 @task
 def update_head_reference(fs_path, branch_name):
-    _git = git.Repo(fs_path, odbt=git.GitCmdObjectDB)
-    _git.head.reference = branch_name
+    repo = git.Repo(fs_path, odbt=git.GitCmdObjectDB)
+    if not repo.head.is_detached:
+        new_branch = [ref for ref in repo.refs if ref.name == branch_name]
+        _ref = SymbolicReference.create(repo, 'HEAD', repo.head.reference)
+        _ref.reference = new_branch[0]
+    else:
+        # it is detached there's no refs in repo.refs default to first
+        repo.head.reference = repo.refs[0]
+        #lookup for new default branch
+        new_branch = [ref for ref in repo.refs if ref.name == branch_name]
+        _ref = SymbolicReference.create(repo, 'HEAD', repo.head.reference)
+        _ref.reference = new_branch[0]
 
