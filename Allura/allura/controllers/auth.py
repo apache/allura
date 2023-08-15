@@ -168,14 +168,14 @@ class AuthController(BaseController):
             {'tool_data.AuthPasswordReset.hash': hash}).first()
         if not user_record:
             log.info(f'Reset hash not found: {hash}')
-            flash('Unable to process reset, please try again')
-            redirect(login_url)
+            flash('Unable to process password reset', 'error', sticky=True)
+            redirect('/')
         hash_expiry = user_record.get_tool_data(
             'AuthPasswordReset', 'hash_expiry')
         if not hash_expiry or hash_expiry < datetime.utcnow():
             log.info(f'Reset hash expired: {hash} {hash_expiry}')
-            flash('Unable to process reset, please try again')
-            redirect(login_url)
+            flash('Password reset link is invalid or expired', 'error', sticky=True)
+            redirect('/')
         return user_record
 
     @expose('jinja:allura:templates/forgotten_password.html')

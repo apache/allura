@@ -1780,17 +1780,17 @@ To update your password on %s, please visit the following URL:
         hash = user.get_tool_data('AuthPasswordReset', 'hash')
         user.set_tool_data('AuthPasswordReset',
                            hash_expiry=datetime(2000, 10, 10))
-        r = self.app.get('/auth/forgotten_password/%s' % hash.encode('utf-8'))
-        assert 'Unable to process reset, please try again' in r.follow().text
+        r = self.app.get('/auth/forgotten_password/%s' % hash)
+        assert 'Password reset link is invalid or expired' in r.follow().follow().text
         r = self.app.post('/auth/set_new_password/%s' %
                           hash.encode('utf-8'), {'pw': '154321', 'pw2': '154321',
                                                  '_session_id': self.app.cookies['_session_id'],
                                                  })
-        assert 'Unable to process reset, please try again' in r.follow().text
+        assert 'Unable to process password reset' in r.follow().follow().text
 
     def test_hash_invalid(self):
         r = self.app.get('/auth/forgotten_password/123412341234', status=302)
-        assert 'Unable to process reset, please try again' in r.follow().text
+        assert 'Unable to process password reset' in r.follow().follow().text
 
     @patch('allura.lib.plugin.AuthenticationProvider')
     def test_provider_disabled(self, AP):
