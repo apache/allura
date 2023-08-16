@@ -1,0 +1,109 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+default_stages: [commit]
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.1.0
+    hooks:
+    # general checks
+    -   id: check-xml
+    -   id: check-yaml
+    -   id: check-json
+        exclude: '.babelrc'
+    -   id: check-merge-conflict
+        fail_fast: true
+    # python checks
+    -   id: debug-statements
+        exclude: '^Allura/allura/lib/utils.py$'
+    # other checks
+    -   id: check-docstring-first
+        exclude: |
+            (?x)^(
+                Allura/allura/eventslistener.py|
+                Allura/allura/lib/.*|
+                scripts/teamforge-import.py
+            )$
+
+
+-   repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.9.0
+    hooks:
+    -   id: python-check-blanket-noqa
+        exclude: '^Allura/setup.py$'
+    -   id: python-check-mock-methods
+        exclude: '^Allura/allura/tests/test_tasks.py$'
+    -   id: python-no-log-warn
+    -   id: rst-backticks
+        exclude:
+          (?x)^(
+                Allura/docs/.*|
+                ForgeImporters/docs/.*
+          )$
+    -   id: rst-directive-colons
+    -   id: rst-inline-touching-normal
+
+# https://pre-commit.com/#pygrep
+# mirrors test_syntax.py tests.  TODO have test_syntax.py run `pre-commit run --all-files utcnow` etc
+-   repo: local
+    hooks:
+      # Use
+      # .utcnow() rather than .now()
+      # .utcfromtimestamp() rather than .fromtimestamp()
+      # calendar.timegm() rather than mktime()
+      - id: tz-functions
+        name: don't use local tz functions
+        language: pygrep
+        types: [python]
+        entry: '\.now\(|\.fromtimestamp\(|\.mktime\('
+      - id: noprint
+        name: check for print statements
+        language: pygrep
+        types: [python]
+        entry: '\bprint\('
+        exclude: |
+            (?x)^(
+                /tests/.*|
+                Allura/allura/command/.*|
+                Allura/ldap-setup.py|
+                scripts/.*|
+                Allura/ldap-userconfig.py|
+                /scripts/.*|
+                ForgeSVN/setup.py|
+                Allura/allura/scripts/.*|
+                Allura/allura/tests/.*|
+                AlluraTest/alluratest/.*|
+                ForgeGit/forgegit/tests/.*|
+                fuse/.*|
+                run_tests|
+                ForgeSVN/forgesvn/tests/.*|
+                ForgeWiki/forgewiki/tests/.*|
+                ForgeImporters/forgeimporters/tests/.*
+            )$
+      - id: notab
+        name: check for tabs
+        language: pygrep
+        types: [python]
+        entry: '	'
+# SCSS Syntax: could use placeholders instead of extending a class or tag directly
+      - id: scss_extend_pattern
+        name: search for scss invalid extend patterns in class elements
+        language: pygrep
+        types: [file, scss]
+        entry: '@extend [^%]((?![\/\/]\stest_scss_extend_pattern allow).)*$'
+        exclude: 'node_modules'
+
+
+- repo:  https://github.com/milin/giticket
+  rev: v1.3
+  hooks:
+  - id:  giticket
+    args: ['--mode=regex_match', '--format=[#{ticket}] {commit_msg}', '--regex=[0-9]{4,}']
+
+
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  # Ruff version.
+  rev: v0.0.283
+  hooks:
+    - id: ruff
+      types: [python]
