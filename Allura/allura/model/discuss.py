@@ -227,7 +227,9 @@ class Thread(Artifact, ActivityObject):
                         author_icon_url=h.absurl(p.author().icon_url()),
                         timestamp=p.timestamp,
                         last_edited=p.last_edit_date,
-                        attachments=self.attachment_for_export(p) if is_export else self.attachments_for_json(p))
+                        attachments=self.attachment_for_export(p) if is_export else self.attachments_for_json(p),
+                        is_meta=p.is_meta,
+                        )
                    for p in self.query_posts(status='ok', style='chronological', limit=limit, page=page)
                    ]
         )
