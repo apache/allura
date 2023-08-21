@@ -187,7 +187,7 @@ class ThreadController(BaseController, FeedController, metaclass=h.ProxiedAttrMe
     def __init__(self, discussion_controller, thread_id):
         self._discussion_controller = discussion_controller
         self.discussion = discussion_controller.discussion
-        self.thread = self.M.Thread.query.get(_id=thread_id)
+        self.thread = self.M.Thread.query.get(_id=thread_id, app_config_id=c.app.config._id)
         if not self.thread:
             url = f'/p/{c.project.shortname}/discussion/{c.forum.shortname}/'
             utils.permanent_redirect(url)
