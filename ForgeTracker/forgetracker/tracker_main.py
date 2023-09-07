@@ -485,6 +485,7 @@ class ForgeTrackerApp(Application):
         app_config_id = {'app_config_id': c.app.config._id}
         TM.TicketAttachment.query.remove(app_config_id)
         TM.Ticket.query.remove(app_config_id)
+        TM.Ticket.__mongometa__.history_class.query.remove(app_config_id)
         TM.Bin.query.remove(app_config_id)
         TM.Globals.query.remove(app_config_id)
         super().uninstall(project)
