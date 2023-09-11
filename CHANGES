@@ -1,12 +1,124 @@
-Next Version
+Version 1.15.0  (September 2023)
 
 Upgrade Instructions
 
-  More to come!
+  To install updated dependencies, run:
+    pip install -r requirements.txt --no-deps --upgrade --upgrade-strategy=only-if-needed
+  Run: `paster ensure_index development.ini` in Allura dir
+
+  If switching to a new version of Python, you will need to make a completely new python virtual environment,
+  and run `pip install ...` in it, and then use it to run Allura.
+
+  If using docker, rebuild the allura image and restart containers.
+
+Major New Features
+ * added support for Python 3.8 through 3.11
+ * introduced Content-Security-Policy headers
+
+Security
+ * Allow csp_form_actions environ override; more obvious warning if github oauth .ini settings missing
+ * better defaults for CSP to avoid warnings when developing
+ * [#8470] Add CSP Headers
+ * [#8479] CSP Headers Add Support For script-src
+ * [#8510] Add HTTP Header Add Permissions-Policy
+ * [#8511] Add HTTP Header Referrer-Policy
+ * [#8504] CSP Headers Add Support For script-src-attr
+
+SEO
+ * noindex,follow for ticket milestone pages
+ * h1 title improvement for wiki sections browse pages and browse labels
+ * Make canonical tag on activities pages overridable
+ * [#8492] Update noindex Logic for User Profiles
+ * [#8464] Add noindex, follow on List Tools
+ * [#8469] Add Missing Canonical Tag
+ * [#8477] More Canonical Urls
+
+Performance
+ * chunked_find: avoid redundant query at end
+ * performance optimizations related to anonymous()
+ * speedup: private_project for anonymous
+ * [#8497] ForgeMarkdown speedup
+
+Tickets
+ * fix error on feed url for non-existant ticket
+ * remove ticket history records when uninstalling a ticket tool
+
+Wikis
+ * fix failing trac wiki tests that were previously unused and apparently wrong
+ * [#8471] check for comments when setting wiki noindex
 
 General
- * [#8445] Switched all tests from nose to pytest
+ * Move GA snippet down slightly
+ * added noindex meta tag to new tickets page
+ * use error template for 410 Gone statuses too
+ * ignore a pure reformatting change
+ * add @ to url autolink pattern
+ * avoid unhandled error on bad input to /nf/markdown_to_html
+ * improve artifact_feed.author_link index by including field it is sorted on
+ * add indexes to Post for update_stats() queries
+ * make oauth api_key unique, to match child class that has it unique
+ * add --rm to single-use docker-compose commands, so container is cleaned up after
+ * remove .travis.yml since ASF isn't using travis any more; we could make a GitHub action instead
+ * Escape colons in the registration_ip field for IPv6 addresses
+ * Add the r prefix to escape sequence for search fields
+ * set c.project during add_artifacts task, like c.app already has been
+ * Make sure filenames are interpreted as utf8
+ * when a password reset link doesn't work, make the error more obvious and don't show them a login form since that's confusing
+ * task command: add another filter option for days
+ * fix weird HTTPError issue; details at https://github.com/agronholm/exceptiongroup/issues/39
+ * further fix for latin1 in etag headers
+ * [#8508] Generate unique id for screenshots
+ * [#8484] Add Support For Fediverse Addresses
+ * [#8489] support python 3.8
+ * [#8483] Markdown: image target URL fails when reaches 100 chars + FIX(?)
+ * [#8486] Git should look for 'main' branch
+ * [#8475] Return 404 on "Awaiting Moderation" Threads
+ * [#8473] use jinja's tojson instead of h.escape_json
+ * [#8487] Enable Analytics In Debug Mode
+ * [#8481] Commit Activity More Context
+ * [#8463] Commit Statuses For Repositories
+ * [#8467] support defopt with ScriptTasks
+ * [#8498] PEP8 Cleanup
+ * [#8482] saved comments (memorable) race condition
+ * [#8488] Incorrect name of web docker image in compose files
+ * [#8493] Make tracking snippet more self-contained
+ * [#8472] Project Activity Delete Issue
+ * [#8496] Trove Category Skip Limit for Admins
+ * [#8499] Update Deprecated Method Form Validation
 
+For Developers
+ * Fix phone.attempts_limit check, if user had surpassed it already
+ * autopep8 -i --max-line-length 9999 on many files
+ * type hint for chunked_find
+ * change [pep8] to [pycodestyle]
+ * first substantial test file mostly passing under pytest
+ * [#8455] Convert from nosetests to pytest
+ * All tests in ./Allura collecting, and test_auth completely passing
+ * pytest: ignore other package's namespace warnings
+ * update deprecated html unescape function
+ * upgrade regex-as-re-globally for py3.11 issue
+ * fixes for Python 3.10 & 3.11
+ * run pyupgrade (targeting 3.7 still)
+ * Fix getiterator() deprecated in Python 3.9
+ * restore scripts/ApacheAccessHandler.py to py2 compatible
+ * with recent versions of pip but no wheel pkg, "pip install -e .." needs setuptools, so --no-index is a problem.  Remove that, and update folder paths to be clearly folders to ensure they don't get installed from PyPI
+ * pytest: short (normal) tracebacks
+ * fix "reindex" cmd help string
+ * Update copyright year
+ * fix rebuild-all.bash SVN replacement to match updated format
+ * Add a helper method to TroveCategory to find by fullpath(s)
+ * [#8500] upgrade TurboGears
+ * [#8501] remove twemoji
+ * [#8502] Replace pyflake with ruff
+ * [#8490] Fix Failing Parallel Tests
+ * [#8461] replace python-oauth2 with oauthlib
+ * [#8494] Python Package Upgrades
+ * [#8476] Upgrade Underscore Library
+ * [#8491] JS Libraries Tablesorter and Sylvester
+ * [#8495] fix DeprecationWarnings
+ * [#6556] Error on undefined template vars, during development
+ * [#8505] python 3.11 - jenkins setup
+ * [#8513] Jenkins Buikd Docker Error
 
 
 
