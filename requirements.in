@@ -59,4 +59,4 @@ pytest-sugar
 
 # deployment
 gunicorn
-pre-commit==2.21.0 # Supports Python 3.7 and 3.11
+pre-commit
