@@ -133,7 +133,7 @@ class ScreenshotAdmin(ff.ForgeFormResponsive):
     def fields(self):
         fields = [
             ew.InputField(name='screenshot', field_type='file',
-                          label='New Screenshot',
+                          label='New Screenshot (JPG or PNG)',
                           attrs={
                               'accept': 'image/*',
                               'required': 'true',
