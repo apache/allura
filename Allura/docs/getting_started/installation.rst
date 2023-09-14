@@ -67,7 +67,7 @@ Build/fetch all required images:
 
 .. note::
 
-   You can override the python version by adding :code:`--build-arg PY_VERSION=3.8` for example.
+   You can override the python version by adding :code:`--build-arg PY_VERSION=3.11` for example.
 
 Python and JS package setup (and first containers started):
 
@@ -282,7 +282,7 @@ If you'd like to use another webserver, here are a few options:
 .. code-block:: bash
 
     ~$ pip install mod_wsgi  # requires httpd2 devel libraries installed in the system
-    ~$ mod_wsgi-express start-server development.ini --application-type paste --user allura --group allura --port 8080  --python-path /PATH/TO/VIRTUALENV/lib/python3.7/site-packages/
+    ~$ mod_wsgi-express start-server development.ini --application-type paste --user allura --group allura --port 8080  --python-path /PATH/TO/VIRTUALENV/lib/python3.11/site-packages/
 
 For any other wsgi server (e.g. mod_wsgi with Apache, or waitress) you will need a wsgi callable set up like this:
 

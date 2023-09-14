@@ -17,8 +17,9 @@
 
 FROM ubuntu:22.04
 
-ARG PY_VERSION=3.7
+ARG PY_VERSION=3.11
 
+# FIXME: change this?
 # Ubunutu 18.04's latest python is 3.6 (and Ubuntu 20.04's is 3.8)
 # In order to get a different python, we must add the deadsnakes apt repo, and install a specific version
 RUN apt-get update \

@@ -1089,7 +1089,7 @@ def plain2markdown(txt, preserve_multiple_spaces=False, has_html_entities=False)
     return txt
 
 
-OrderedDefaultDict = defaultdict  # py3.7 dicts are always ordered
+OrderedDefaultDict = defaultdict  # py3.7+ dicts are always ordered
 
 
 def iter_entry_points(group, *a, **kw):

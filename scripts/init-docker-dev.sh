@@ -40,7 +40,7 @@ cp /allura/Allura/allura/public/nf/favicon.ico /allura-data/www-misc/favicon.ico
 rm -rf /allura-data/virtualenv
 if [ ! -e /allura-data/virtualenv ]; then
     echo -e "Creating virtualenv\n"
-    PYTHON_EXE="${PYTHON_EXE:-python3.7}"  # should always be set from Dockerfile, but set default value just in case
+    PYTHON_EXE="${PYTHON_EXE:-python3.11}"  # should always be set from Dockerfile, but set default value just in case
     $PYTHON_EXE -m venv /allura-data/virtualenv
     /allura-data/virtualenv/bin/pip install -U pip
     /allura-data/virtualenv/bin/pip install -U wheel

@@ -22,6 +22,7 @@ from allura.lib.decorators import task
 from allura.lib.exceptions import CompoundError
 
 
+# TODO: [#8520] migrate from pkg_resources to importlib.resources
 class ThemeProviderTestApp(Application):
     """
     If this test class is added directly to a test module, pkg_resources internals

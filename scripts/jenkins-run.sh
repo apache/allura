@@ -19,7 +19,7 @@
 #       under the License.
 
 IMAGE_TAG=allura
-PY_VERSION="${PY_VERSION:-3.7}"
+PY_VERSION="${PY_VERSION:-3.11}"
 
 echo
 echo "============================================================================="

@@ -1,3 +1,9 @@
+NEXT RELEASE (future)
+
+General
+ * [#8519] Drop support for Python 3.7. Python 3.8 or Python 3.11 are officially supported.
+
+
 Version 1.15.0  (September 2023)
 
 Upgrade Instructions
