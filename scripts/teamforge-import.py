@@ -883,13 +883,13 @@ def _dir_sql(created_on, project, dir_name, rel_path):
         parent_directory = "(SELECT pfs_path FROM pfs_path WHERE path_name = '%s/')" % rel_path
     sql = """
     UPDATE pfs
-      SET file_crtime = '%s'
-      WHERE source_pk = (SELECT project.project FROM project WHERE project.project_name = '%s.%s')
+      SET file_crtime = '{}'
+      WHERE source_pk = (SELECT project.project FROM project WHERE project.project_name = '{}.{}')
       AND source_table = 'project'
       AND pfs_type = 'd'
-      AND pfs_name = '%s'
-      AND parent_directory = %s;
-    """ % (created_on, convert_project_shortname(project.path), options.neighborhood_shortname,
+      AND pfs_name = '{}'
+      AND parent_directory = {};
+    """.format(created_on, convert_project_shortname(project.path), options.neighborhood_shortname,
            dir_name, parent_directory)
     return sql
 
