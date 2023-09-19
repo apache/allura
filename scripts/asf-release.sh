@@ -45,7 +45,7 @@ RELEASE_FILENAME=$RELEASE_BASE.tar.gz
 RELEASE_FILE_EXTRACTED=$RELEASE_DIR/$RELEASE_BASE
 RELEASE_FILE=$RELEASE_DIR/$RELEASE_FILENAME
 RELEASE_TAG=rel/$VERSION
-CLOSE_DATE=`date -d '+72 hours' -R --utc | sed -e 's/+0000/UTC/'`
+CLOSE_DATE=`date -d '+72 hours' -R --utc | sed -e 's/+0000/UTC/'`  # will be run later, but make sure it works (macos `date` will error out)
 YEAR=`date +%Y`
 
 sed -i -e "s/2012-[0-9]\{4\} /2012-$YEAR /" NOTICE */NOTICE */docs/conf.py
@@ -64,7 +64,7 @@ if [[ -z "$DEFAULT_KEY" ]]; then
 fi
 prompt KEY "PGP Key to sign with" "$DEFAULT_KEY"
 
-prompt RAT_LOG_PASTEBIN_URL "URL for RAT log pastebin (see scripts/src-license-check to create RAT report)"
+prompt RAT_LOG_PASTEBIN_URL "URL for RAT log pastebin (see scripts/src-license-check to create RAT report, or go to https://ci-builds.apache.org/job/Allura/job/Allura-licensing-check/lastBuild/consoleFull and copy all [rat:report] lines and save at https://forge-allura.apache.org/p/allura/pastebin/)"
 
 git tag $RELEASE_TAG
 COMMIT_SHA=`git rev-parse $RELEASE_TAG`
@@ -87,6 +87,7 @@ rm -rf $RELEASE_FILE_EXTRACTED
 gpg --default-key $KEY --armor --output $RELEASE_FILE.asc --detach-sig $RELEASE_FILE
 SHA512_CHECKSUM=`cd $RELEASE_DIR ; shasum -a512 $RELEASE_FILENAME` ; echo "$SHA512_CHECKSUM" > $RELEASE_FILE.sha512
 
+CLOSE_DATE=`date -d '+72 hours' -R --utc | sed -e 's/+0000/UTC/'`  # re-run to make sure its current
 echo
 echo
 echo
