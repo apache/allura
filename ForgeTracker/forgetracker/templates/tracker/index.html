@@ -23,6 +23,9 @@
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}{% endblock %}
 
 {% block head %}
+   {% if count == 0 %}
+    <meta name="robots" content="noindex, follow">
+  {%  endif %}
   <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
   <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
   {{ lib.canonical_tag(page) }}
