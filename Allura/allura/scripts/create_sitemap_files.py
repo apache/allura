@@ -166,7 +166,7 @@ class CreateSitemapFiles(ScriptTask):
                             default=None, nargs='*', metavar='N')
         parser.add_argument('--exclude-tools', dest='exclude_tools',
                             help="URL prefix of excluded neighborhood(s)",
-                            default=['link', 'git', 'hg', 'svn'],
+                            default=['link', 'git', 'hg', 'svn', 'tickets'],
                             nargs='*', metavar='TOOL')
         parser.add_argument('--url-dir', dest='url_dir',
                             default='/allura_sitemap',
