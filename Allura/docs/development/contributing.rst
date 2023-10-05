@@ -198,10 +198,10 @@ as ``pudb`` are also available.
 
    To do this with docker, the commands are::
 
-       docker-compose run --rm web pip install ipdb
-       docker-compose stop web taskd
-       docker-compose run --rm --service-ports web gunicorn --reload --paste Allura/docker-dev.ini -b :8088
-       docker-compose run --rm taskd paster taskd docker-dev.ini --nocapture
+       docker compose run --rm web pip install ipdb
+       docker compose stop web taskd
+       docker compose run --rm --service-ports web gunicorn --reload --paste Allura/docker-dev.ini -b :8088
+       docker compose run --rm taskd paster taskd docker-dev.ini --nocapture
 
 
 Testing

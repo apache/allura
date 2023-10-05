@@ -34,7 +34,7 @@ First run
 
 `Download the latest release <http://www.apache.org/dyn/closer.cgi/allura/>`_ of Allura, or `clone from git <https://forge-allura.apache.org/p/allura/git/ci/master/tree/>`_ for the bleeding edge.
 
-Install `Docker <http://docs.docker.com/installation/>`_ and the latest version of `Docker Compose <https://docs.docker.com/compose/install/>`_.
+Install `Docker <http://docs.docker.com/installation/>`_.
 On Linux, you may need to `create a docker group <https://docs.docker.com/engine/install/linux-postinstall/>`_.
 
 .. note::
@@ -54,7 +54,7 @@ On Linux, you may need to `create a docker group <https://docs.docker.com/engine
       base_url = http://hostname-or-ip:8080
 
    Replace :kbd:`hostname-or-ip` with the actual hostname or external IP address.  If you change this setting later,
-   just run :kbd:`docker-compose restart web`
+   just run :kbd:`docker compose restart web`
 
 
 Run the following commands in your allura directory:
@@ -63,7 +63,7 @@ Build/fetch all required images:
 
 .. code-block:: bash
 
-    docker-compose build
+    docker compose build
 
 .. note::
 
@@ -73,29 +73,29 @@ Python and JS package setup (and first containers started):
 
 .. code-block:: bash
 
-    docker-compose run --rm web scripts/init-docker-dev.sh
+    docker compose run --rm web scripts/init-docker-dev.sh
 
 Restart SOLR container, so it will see changes from the command above and create index:
 
 .. code-block:: bash
 
-    docker-compose restart solr
+    docker compose restart solr
 
 Initialize database with test data:
 
 .. code-block:: bash
 
-    docker-compose run --rm taskd paster setup-app docker-dev.ini
+    docker compose run --rm taskd paster setup-app docker-dev.ini
 
 .. note::
 
-   If you want to skip test data creation you can instead run: :code:`docker-compose run --rm -e ALLURA_TEST_DATA=False taskd paster setup-app docker-dev.ini`
+   If you want to skip test data creation you can instead run: :code:`docker compose run --rm -e ALLURA_TEST_DATA=False taskd paster setup-app docker-dev.ini`
 
 Start containers in the background:
 
 .. code-block:: bash
 
-    docker-compose up -d
+    docker compose up -d
 
 You're up and running!  Visit localhost:8080 (or whatever IP address you're running Docker on).  Then
 see our :ref:`post-setup-instructions` and read more below about the Docker environment for Allura.
@@ -159,48 +159,48 @@ Restarting all containers:
 
 .. code-block:: bash
 
-    docker-compose up -d
+    docker compose up -d
 
 View logs from all services:
 
 .. code-block:: bash
 
-    docker-compose logs -f
+    docker compose logs -f
 
 You can specify one or more services to view logs only from them, e.g. to see
 outgoing mail:
 
 .. code-block:: bash
 
-    docker-compose logs -f outmail
+    docker compose logs -f outmail
 
 Update requirements and reinstall apps:
 
 .. code-block:: bash
 
-    docker-compose run --rm web pip install -r requirements.txt
-    docker-compose run --rm web ./rebuild-all.bash
+    docker compose run --rm web pip install -r requirements.txt
+    docker compose run --rm web ./rebuild-all.bash
 
 You may want to restart at least "taskd" container after that in order for it to
-pick up changes.  Run :code:`docker-compose restart taskd`
+pick up changes.  Run :code:`docker compose restart taskd`
 
 Run all tests:
 
 .. code-block:: bash
 
-    docker-compose run --rm web ./run_tests
+    docker compose run --rm web ./run_tests
 
 Running subset of tests:
 
 .. code-block:: bash
 
-    docker-compose run --rm web bash -c 'cd ForgeGit && pytest forgegit/tests/functional/test_controllers.py::TestFork'
+    docker compose run --rm web bash -c 'cd ForgeGit && pytest forgegit/tests/functional/test_controllers.py::TestFork'
 
 Connecting to mongo using a container:
 
 .. code-block:: bash
 
-    docker-compose run --rm mongo mongo --host mongo
+    docker compose run --rm mongo mongo --host mongo
 
 
 .. _post-setup-instructions:
@@ -337,7 +337,7 @@ The following command can be used for quick and easy monitoring of outgoing emai
 
 .. code-block:: bash
 
-    docker-compose logs -f outmail
+    docker compose logs -f outmail
 
 If you are running locally without docker, run this command.  Be sure the port matches the :samp:`smtp_port` from
 your :file:`development.ini` (8826 by default).

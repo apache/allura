@@ -112,13 +112,13 @@ Scripts are in the :file:`scripts/` directory and run slightly differently, via 
 
      paster script development.ini ../scripts/add_user_to_group.py -- --nbhd /u/ johndoe Admin
 
-To run these when using docker, prefix with :code:`docker-compose run taskd` and use :file:`docker-dev.ini` like::
+To run these when using docker, prefix with :code:`docker compose run taskd` and use :file:`docker-dev.ini` like::
 
-    docker-compose run --rm taskd paster create-neighborhood docker-dev.ini myneighborhood myuser ...
+    docker compose run --rm taskd paster create-neighborhood docker-dev.ini myneighborhood myuser ...
 
 Or with the docker *production* setup::
 
-    docker-compose run --rm oneoff paster create-neighborhood /allura-data/production.ini myneighborhood myuser ...
+    docker compose run --rm oneoff paster create-neighborhood /allura-data/production.ini myneighborhood myuser ...
 
 
 Tasks can be run via the web interface at http://MYSITE/nf/admin/task_manager  You must know
