@@ -124,7 +124,7 @@ pastedeploy==2.1.1
     #   pastescript
 pastescript==3.3.0
     # via -r requirements.in
-pillow==10.0.1
+pillow==10.1.0
     # via -r requirements.in
 platformdirs==3.10.0
     # via virtualenv
