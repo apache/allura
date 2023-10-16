@@ -44,7 +44,7 @@ emoji==2.8.0
     # via -r requirements.in
 execnet==2.0.2
     # via pytest-xdist
-faust-cchardet==2.1.18
+faust-cchardet==2.1.19
     # via -r requirements.in
 feedgenerator==2.1.0
     # via -r requirements.in
