@@ -12,7 +12,7 @@ beautifulsoup4==4.12.2
     # via
     #   -r requirements.in
     #   webtest
-bleach[css]==6.0.0
+bleach[css]==6.1.0
     # via pypeline
 certifi==2023.7.22
     # via requests
@@ -36,7 +36,7 @@ diff-match-patch==20230430
     # via sxsdiff
 distlib==0.3.7
     # via virtualenv
-docutils==0.19
+docutils==0.20.1
     # via pypeline
 easywidgets==0.4.1
     # via -r requirements.in
@@ -175,7 +175,7 @@ pyyaml==6.0.1
     # via pre-commit
 qrcode==7.4.2
     # via -r requirements.in
-regex==2022.10.31
+regex==2023.10.3
     # via
     #   regex-as-re-globally
     #   textile
