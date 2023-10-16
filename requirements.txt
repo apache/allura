@@ -166,7 +166,7 @@ python-magic==0.4.27
     # via -r requirements.in
 python-oembed==0.2.4
     # via -r requirements.in
-pytz==2023.3
+pytz==2023.3.post1
     # via
     #   -r requirements.in
     #   feedgenerator
