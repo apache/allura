@@ -113,7 +113,7 @@ packaging==23.1
     #   pytest-sugar
 paginate==0.5.6
     # via -r requirements.in
-paste==3.5.3
+paste==3.6.1
     # via
     #   -r requirements.in
     #   easywidgets
