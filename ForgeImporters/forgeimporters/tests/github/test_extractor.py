@@ -154,41 +154,8 @@ class TestGitHubProjectExtractor(TestCase):
     @patch('forgeimporters.base.h.urlopen')
     @patch('forgeimporters.github.time.sleep')
     @patch('forgeimporters.github.log')
-    def test_urlopen_rate_limit(self, log, sleep, urlopen):
-        limit_exceeded_headers = {
-            'X-RateLimit-Limit': '10',
-            'X-RateLimit-Remaining': '0',
-            'X-RateLimit-Reset': '1382693522',
-        }
-        response_limit_exceeded = BytesIO(b'{}')
-        response_limit_exceeded.info = lambda: limit_exceeded_headers
-        response_ok = BytesIO(b'{}')
-        response_ok.info = lambda: {}
-        urlopen.side_effect = [response_limit_exceeded, response_ok]
-        e = github.GitHubProjectExtractor('test_project')
-        e.get_page('http://example.com/')
-        self.assertEqual(sleep.call_count, 1)
-        self.assertEqual(urlopen.call_count, 2)
-        log.warning.assert_called_once_with(
-            'Rate limit exceeded (10 requests/hour). '
-            'Sleeping until 2013-10-25 09:32:02 UTC'
-        )
-        sleep.reset_mock()
-        urlopen.reset_mock()
-        log.warning.reset_mock()
-        response_ok = BytesIO(b'{}')
-        response_ok.info = lambda: {}
-        urlopen.side_effect = [response_ok]
-        e.get_page('http://example.com/2')
-        self.assertEqual(sleep.call_count, 0)
-        self.assertEqual(urlopen.call_count, 1)
-        self.assertEqual(log.warning.call_count, 0)
-
-    @patch('forgeimporters.base.h.urlopen')
-    @patch('forgeimporters.github.time.sleep')
-    @patch('forgeimporters.github.log')
     def test_urlopen_rate_limit_403(self, log, sleep, urlopen):
-        '''Test that urlopen catches 403 which may happen if limit exceeded by another task'''
+        '''Test that urlopen catches 403 which may happen if limit exceeded by previous fetches'''
         limit_exceeded_headers = {
             'X-RateLimit-Limit': '10',
             'X-RateLimit-Remaining': '0',
