@@ -149,7 +149,7 @@ class TestGitHubProjectExtractor(TestCase):
         request = urlopen.call_args[0][0]
         self.assertEqual(request.get_full_url(), url)
         assert request.headers['User-agent']
-        self.assertEqual(request.unredirected_hdrs['Authorization'], 'Bearer abc')
+        self.assertEqual(request.headers['Authorization'], 'Bearer abc')
 
     @patch('forgeimporters.base.h.urlopen')
     @patch('forgeimporters.github.time.sleep')
