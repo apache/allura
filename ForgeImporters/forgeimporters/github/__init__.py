@@ -97,6 +97,7 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         limit = headers.get('X-RateLimit-Limit')
         reset = datetime.utcfromtimestamp(int(reset))
         now = datetime.utcnow()
+        # 60/hour is for GitHub unauthenticated users.  If you get that, check your auth tokens
         log.warning('Rate limit exceeded (%s requests/hour). '
                  'Sleeping until %s UTC' % (limit, reset))
         time.sleep((reset - now).total_seconds() + 2)
@@ -117,23 +118,16 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         else:
             unredirected_hdrs = auth_headers
         try:
-            resp = super().urlopen(url, headers=headers, unredirected_hdrs=unredirected_hdrs, **kw)
+            return super().urlopen(url, headers=headers, unredirected_hdrs=unredirected_hdrs, **kw)
         except six.moves.urllib.error.HTTPError as e:
             # GitHub will return 403 if rate limit exceeded.
-            # We're checking for limit on every request below, but we still
-            # can get 403 if other import task exceeds the limit before.
             if e.code == 403 and e.info().get('X-RateLimit-Remaining') == '0':
                 self.wait_for_limit_reset(e.info())
                 # call ourselves to try again:
                 return self.urlopen(url, headers=headers, use_auth_headers_on_redirects=use_auth_headers_on_redirects,
                                     **kw)
             else:
-                raise e
-        remain = resp.info().get('X-RateLimit-Remaining')
-        if remain and int(remain) == 0:
-            self.wait_for_limit_reset(resp.info())
-            return self.urlopen(url, **kw)
-        return resp
+                raise
 
     def check_readable(self):
         url, headers = self.add_token(self.get_page_url('project_info'))
