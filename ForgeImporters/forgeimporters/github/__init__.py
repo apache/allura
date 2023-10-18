@@ -89,7 +89,7 @@ class GitHubProjectExtractor(base.ProjectExtractor):
     def add_token(self, url):
         headers = {}
         if self.token:
-            headers['Authorization'] = f'token {self.token}'
+            headers['Authorization'] = f'Bearer {self.token}'
         return url, headers
 
     def wait_for_limit_reset(self, headers):
