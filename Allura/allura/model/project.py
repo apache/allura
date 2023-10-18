@@ -71,6 +71,7 @@ import six
 if typing.TYPE_CHECKING:
     from ming.odm.mapper import Query
     from allura.model import AppConfig
+    from allura.app import Application
 
 
 log = logging.getLogger(__name__)
@@ -1440,7 +1441,7 @@ class AppConfig(MappedClass, ActivityObject):
         '''ACL processing should terminate at the AppConfig'''
         return None
 
-    def load(self):
+    def load(self) -> typing.Type[Application]:
         """
         :returns: the related :class:`Application <allura.app.Application>` class
         """
