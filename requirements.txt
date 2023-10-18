@@ -238,7 +238,7 @@ turbogears2==2.4.3
     # via -r requirements.in
 typing-extensions==4.7.1
     # via qrcode
-urllib3==2.0.6
+urllib3==2.0.7
     # via requests
 virtualenv==20.24.5
     # via pre-commit
