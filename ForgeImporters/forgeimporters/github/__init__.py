@@ -101,22 +101,32 @@ class GitHubProjectExtractor(base.ProjectExtractor):
                  'Sleeping until %s UTC' % (limit, reset))
         time.sleep((reset - now).total_seconds() + 2)
 
-    def urlopen(self, url, headers=None, **kw):
+    def urlopen(self, url, headers=None, use_auth_headers_on_redirects=True, **kw):
+        """
+        :param url: the URL
+        :param headers: dict of headers
+        :param use_auth_headers_on_redirects: in some cases (assets on AWS) you need to set this to False
+        :param kw: extra args to urlopen
+        """
         if headers is None:
             headers = {}
+        url, auth_headers = self.add_token(url)
+        if use_auth_headers_on_redirects:
+            headers.update(auth_headers)
+            unredirected_hdrs = {}
+        else:
+            unredirected_hdrs = auth_headers
         try:
-            url, auth_headers = self.add_token(url)
-            # need to use unredirected_hdrs for Authorization for APIs that redirect to an AWS file asset which has
-            # separate authentication added automatically
-            resp = super().urlopen(url,
-                                                               headers=headers, unredirected_hdrs=auth_headers, **kw)
+            resp = super().urlopen(url, headers=headers, unredirected_hdrs=unredirected_hdrs, **kw)
         except six.moves.urllib.error.HTTPError as e:
             # GitHub will return 403 if rate limit exceeded.
             # We're checking for limit on every request below, but we still
             # can get 403 if other import task exceeds the limit before.
             if e.code == 403 and e.info().get('X-RateLimit-Remaining') == '0':
                 self.wait_for_limit_reset(e.info())
-                return self.urlopen(url, **kw)
+                # call ourselves to try again:
+                return self.urlopen(url, headers=headers, use_auth_headers_on_redirects=use_auth_headers_on_redirects,
+                                    **kw)
             else:
                 raise e
         remain = resp.info().get('X-RateLimit-Remaining')
