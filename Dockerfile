@@ -56,7 +56,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
 ENV PYTHON_EXE=python$PY_VERSION
 
 # up-to-date version of node & npm
-RUN curl --silent --location https://deb.nodesource.com/setup_14.x | sudo bash - && \
+RUN curl --silent --location https://deb.nodesource.com/setup_16.x | sudo bash - && \
     DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends nodejs
 
 # Snapshot generation for SVN (and maybe other SCMs) might fail without this
