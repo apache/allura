@@ -18,7 +18,7 @@
 import logging
 
 from tg import tmpl_context as c, app_globals as g
-from tg import expose, redirect, config
+from tg import expose, redirect, config, request
 from itertools import islice
 from ming.odm import session
 
@@ -92,8 +92,8 @@ class TicketsSection(DashboardSectionBase):
         page = 0
         limit = 25
 
-        page_string = context['c'].form_values.get('page')
-        limit_string = context['c'].form_values.get('limit')
+        page_string = request.validation.values.get('page')
+        limit_string = request.validation.values.get('limit')
         if page_string is not None:
             page = int(page_string)
         if limit_string is not None:
