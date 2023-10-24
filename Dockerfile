@@ -19,6 +19,8 @@ FROM ubuntu:22.04
 
 ARG PY_VERSION=3.11
 
+ARG NODE_MAJOR=16
+
 # FIXME: change this?
 # Ubunutu 18.04's latest python is 3.6 (and Ubuntu 20.04's is 3.8)
 # In order to get a different python, we must add the deadsnakes apt repo, and install a specific version
@@ -56,8 +58,12 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
 ENV PYTHON_EXE=python$PY_VERSION
 
 # up-to-date version of node & npm
-RUN curl --silent --location https://deb.nodesource.com/setup_16.x | sudo bash - && \
-    DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends nodejs
+RUN apt-get install -y ca-certificates curl gpg
+RUN mkdir -p /etc/apt/keyrings
+RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
+RUN apt-get update
+RUN apt-get install nodejs -y
 
 # Snapshot generation for SVN (and maybe other SCMs) might fail without this
 RUN locale-gen en_US.UTF-8
