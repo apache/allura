@@ -14,19 +14,25 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+from __future__ import annotations
 
 import sys
 import logging
 from contextlib import contextmanager
+import typing
 
 from tg import app_globals as g
 from tg import tmpl_context as c
+from webob.exc import HTTPRequestEntityTooLarge
 
 from allura.lib import helpers as h
 from allura.lib.decorators import task
 from allura.lib.exceptions import CompoundError
 from allura.lib.solr import make_solr_from_config
 import six
+
+if typing.TYPE_CHECKING:
+    import pysolr
 
 
 log = logging.getLogger(__name__)
@@ -126,7 +132,20 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
             except Exception:
                 log.error('Error indexing artifact %s', ref._id)
                 exceptions.append(sys.exc_info())
-        __get_solr(solr_hosts).add(solr_updates)
+
+        def _add_artifact(solr: pysolr.Solr, artifacts: list):
+            try:
+                solr.add(artifacts)
+            except HTTPRequestEntityTooLarge:
+                if len(artifacts) > 1:
+                    log.warning(f"Solr.add raised HTTPRequestEntityTooLarge. Splitting {len(artifacts)} updates into two batches.")
+                    _add_artifact(solr, artifacts[:len(artifacts) // 2])
+                    _add_artifact(solr, artifacts[len(artifacts) // 2:])
+                else:
+                    log.info("Solr.add raised HTTPRequestEntityTooLarge but there is only one artifact. Raising exception.")
+                    raise
+
+        _add_artifact(__get_solr(solr_hosts), solr_updates)
 
     if len(exceptions) == 1:
         raise exceptions[0][1].with_traceback(exceptions[0][2])

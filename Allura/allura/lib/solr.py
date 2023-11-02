@@ -20,8 +20,10 @@ import json
 import logging
 
 from tg import config
+from webob.exc import HTTPRequestEntityTooLarge
 from paste.deploy.converters import asbool
 import pysolr
+from pysolr import SolrError
 import six
 
 from allura.lib.helpers import shlex_split
@@ -102,7 +104,13 @@ class Solr:
             kw['commitWithin'] = self.commitWithin
         responses = []
         for solr in self.push_pool:
-            responses.append(solr.add(*args, **kw))
+            try:
+                responses.append(solr.add(*args, **kw))
+            except SolrError as e:
+                if '(HTTP 413)' in str(e):
+                    raise HTTPRequestEntityTooLarge() from e
+                else:
+                    raise
         return responses
 
     def delete(self, *args, **kw):

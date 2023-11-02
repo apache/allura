@@ -19,6 +19,9 @@ import unittest
 
 import mock
 from markupsafe import Markup
+from pysolr import SolrError
+import pytest
+from webob.exc import HTTPRequestEntityTooLarge
 
 from allura.lib import helpers as h
 from allura.tests import decorators as td
@@ -60,6 +63,15 @@ class TestSolr(unittest.TestCase):
         calls = [mock.call('bar', commit=False,
                            commitWithin='10000', somekw='value')] * 2
         pysolr.Solr().add.assert_has_calls(calls)
+
+    @mock.patch('allura.lib.solr.pysolr')
+    def test_add_too_big(self, pysolr):
+        pysolr.Solr.return_value.add.side_effect = \
+            SolrError("Solr responded with an error (HTTP 413): [Reason: None]")
+        servers = ['server1', 'server2']
+        solr = Solr(servers, commit=False, commitWithin='10000')
+        with pytest.raises(HTTPRequestEntityTooLarge):
+            solr.add('foo', commit=True, commitWithin=None)
 
     @mock.patch('allura.lib.solr.pysolr')
     def test_delete(self, pysolr):
