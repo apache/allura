@@ -1,7 +1,31 @@
-NEXT RELEASE (future)
+Version 1.16.0  (November 2023)
+
+Upgrade Instructions
+
+  To install updated dependencies, run:
+    pip install -r requirements.txt --no-deps --upgrade --upgrade-strategy=only-if-needed
+
+  If switching to a new version of Python, you will need to make a completely new python virtual environment,
+  and run `pip install ...` in it, and then use it to run Allura.
+
+  If using docker, rebuild the allura image and restart containers.
+
+Major Changes
+ * [#8519] Drop support for Python 3.7. Python 3.8 through Python 3.11 are officially supported.
+
+SEO
+ * [#8521] Do not index empty ticket pages
 
 General
- * [#8519] Drop support for Python 3.7. Python 3.8 or Python 3.11 are officially supported.
+ * package upgrades
+ * specify formats supported for screenshots (BMP or GIF could work too, but not recommended)
+ * replace deprecated "docker-compose" cmd with "docker compose"
+ * fix solr 413 request too big for big batches
+
+For Developers
+ * minor improvements to release script
+ * update build status icon on readme
+ * ignore warnings from inside other pkgs, fix a few warnings
 
 
 Version 1.15.0  (September 2023)
