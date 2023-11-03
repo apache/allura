@@ -454,13 +454,13 @@ back\\\-slash escaped
 
 class TestUrlOpen(TestCase):
 
-    @patch('six.moves.urllib.request.urlopen')
+    @patch('urllib.request.urlopen')
     def test_no_error(self, urlopen):
-        r = h.urlopen('myurl')
+        r = h.urlopen('http://example.com')
         self.assertEqual(r, urlopen.return_value)
-        urlopen.assert_called_once_with('myurl', timeout=None)
+        urlopen.assert_called_once_with('http://example.com', timeout=None)
 
-    @patch('six.moves.urllib.request.urlopen')
+    @patch('urllib.request.urlopen')
     def test_socket_timeout(self, urlopen):
         import socket
 
@@ -468,10 +468,10 @@ class TestUrlOpen(TestCase):
             raise socket.timeout()
 
         urlopen.side_effect = side_effect
-        self.assertRaises(socket.timeout, h.urlopen, 'myurl')
+        self.assertRaises(socket.timeout, h.urlopen, 'http://example.com')
         self.assertEqual(urlopen.call_count, 4)
 
-    @patch('six.moves.urllib.request.urlopen')
+    @patch('urllib.request.urlopen')
     def test_socket_reset(self, urlopen):
         import socket
         import errno
@@ -480,10 +480,10 @@ class TestUrlOpen(TestCase):
             raise OSError(errno.ECONNRESET, 'Connection reset by peer')
 
         urlopen.side_effect = side_effect
-        self.assertRaises(socket.error, h.urlopen, 'myurl')
+        self.assertRaises(socket.error, h.urlopen, 'http://example.com')
         self.assertEqual(urlopen.call_count, 4)
 
-    @patch('six.moves.urllib.request.urlopen')
+    @patch('urllib.request.urlopen')
     def test_handled_http_error(self, urlopen):
         from urllib.error import HTTPError
 
@@ -491,10 +491,10 @@ class TestUrlOpen(TestCase):
             raise HTTPError('url', 408, 'timeout', None, io.BytesIO())
 
         urlopen.side_effect = side_effect
-        self.assertRaises(HTTPError, h.urlopen, 'myurl')
+        self.assertRaises(HTTPError, h.urlopen, 'http://example.com')
         self.assertEqual(urlopen.call_count, 4)
 
-    @patch('six.moves.urllib.request.urlopen')
+    @patch('urllib.request.urlopen')
     def test_unhandled_http_error(self, urlopen):
         from urllib.error import HTTPError
 
@@ -502,7 +502,7 @@ class TestUrlOpen(TestCase):
             raise HTTPError('url', 404, 'timeout', None, io.BytesIO())
 
         urlopen.side_effect = side_effect
-        self.assertRaises(HTTPError, h.urlopen, 'myurl')
+        self.assertRaises(HTTPError, h.urlopen, 'http://example.com')
         self.assertEqual(urlopen.call_count, 1)
 
 

@@ -34,15 +34,43 @@ from forgeimporters import base
 class TestProjectExtractor(TestCase):
 
     @mock.patch('forgeimporters.base.h.urlopen')
-    @mock.patch('six.moves.urllib.request.Request')
+    @mock.patch('urllib.request.Request')
     def test_urlopen(self, Request, urlopen):
-        r = base.ProjectExtractor.urlopen('myurl', data='foo')
-        Request.assert_called_once_with('myurl', data='foo')
+        r = base.ProjectExtractor.urlopen('https://example.com/asdf', data='foo')
+        Request.assert_called_once_with('https://example.com/asdf', data='foo')
         req = Request.return_value
         req.add_header.assert_called_once_with(
             'User-Agent', 'Allura Data Importer (https://allura.apache.org/)')
         urlopen.assert_called_once_with(req, retries=3, codes=(408, 500, 502, 503, 504), timeout=120)
         self.assertEqual(r, urlopen.return_value)
+
+    def test_urlopen_invalid(self):
+        with pytest.raises(ValueError):
+            base.ProjectExtractor.urlopen('myurl', data='foo')
+        with pytest.raises(ValueError):
+            base.ProjectExtractor.urlopen('file:///etc/passwd', data='foo')
+        with pytest.raises(ValueError):
+            base.ProjectExtractor.urlopen('ftp://something.com', data='foo')
+
+    def test_urlopen_internal_blocked(self):
+        # by default this is invalid
+        with pytest.raises(Invalid):
+            base.ProjectExtractor.urlopen('http://localhost:1234/blah', data='foo')
+
+        # redirect to external site ok
+        base.ProjectExtractor.urlopen('https://httpbin.org/redirect-to?url=http%3A%2F%2Fexample.com%2F')
+
+        # redirect to internal is blocked
+        with pytest.raises(Invalid):
+            base.ProjectExtractor.urlopen('https://httpbin.org/redirect-to?url=http%3A%2F%2Flocalhost%2F')
+
+    @mock.patch('forgeimporters.base.h.urlopen')
+    @mock.patch('urllib.request.Request')
+    def test_urlopen_internal_ok(self, Request, urlopen):
+        # does NOT raise Invalid
+        with mock.patch.dict(base.config, {'urlopen_allow_internal_hostnames': 'true'}):
+            base.ProjectExtractor.urlopen('http://localhost:1234/blah', data='foo')
+        Request.assert_called_once_with('http://localhost:1234/blah', data='foo')
 
 
 @mock.patch.object(base, 'datetime')

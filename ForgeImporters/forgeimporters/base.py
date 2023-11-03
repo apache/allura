@@ -20,15 +20,13 @@ import errno
 import logging
 from io import BytesIO
 
-import six.moves.urllib.request
-import six.moves.urllib.parse
-import six.moves.urllib.error
+import urllib.request
+import urllib.parse
 from collections import defaultdict
 import traceback
 from urllib.parse import urlparse
 from urllib.parse import unquote
 from datetime import datetime
-import six
 
 from bs4 import BeautifulSoup
 from tg import expose, validate, flash, redirect, config
@@ -159,17 +157,17 @@ class ProjectExtractor:
 
     PAGE_MAP = {}
 
-    def __init__(self, project_name, page_name=None, **kw):
+    def __init__(self, project_name, page_name_or_url=None, **kw):
         self.project_name = project_name
         self._page_cache = {}
         self.url = None
         self.page = None
-        if page_name:
-            self.get_page(page_name, **kw)
+        if page_name_or_url:
+            self.get_page(page_name_or_url, **kw)
 
     @staticmethod
     def urlopen(url, retries=3, codes=(408, 500, 502, 503, 504), timeout=120, unredirected_hdrs=None, **kw):
-        req = six.moves.urllib.request.Request(url, **kw)
+        req = urllib.request.Request(url, **kw)
         if unredirected_hdrs:
             for key, val in unredirected_hdrs.items():
                 req.add_unredirected_header(key, val)
@@ -211,7 +209,7 @@ class ProjectExtractor:
 
         """
         return self.PAGE_MAP[page_name].format(
-            project_name=six.moves.urllib.parse.quote(self.project_name), **kw)
+            project_name=urllib.parse.quote(self.project_name), **kw)
 
     def parse_page(self, page):
         """Transforms the result of a `urlopen` call before returning it from

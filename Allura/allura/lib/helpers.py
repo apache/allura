@@ -14,6 +14,8 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+from __future__ import annotations
+
 import base64
 import sys
 import os
@@ -21,9 +23,9 @@ import os.path
 import difflib
 import jinja2
 
-import six.moves.urllib.request
-import six.moves.urllib.parse
-import six.moves.urllib.error
+import urllib.request
+import urllib.parse
+import urllib.error
 import re
 import unicodedata
 import json
@@ -65,6 +67,7 @@ from webob.exc import HTTPUnauthorized
 
 from allura.lib import exceptions as exc
 from allura.lib import utils
+from allura.lib import validators
 import urllib.parse as urlparse
 from urllib.parse import urlencode
 import math
@@ -201,16 +204,16 @@ def monkeypatch(*objs):
 
 def urlquote(url, safe=b"/"):
     try:
-        return six.moves.urllib.parse.quote(str(url), safe=safe)
+        return urllib.parse.quote(str(url), safe=safe)
     except UnicodeEncodeError:
-        return six.moves.urllib.parse.quote(url.encode('utf-8'), safe=safe)
+        return urllib.parse.quote(url.encode('utf-8'), safe=safe)
 
 
 def urlquoteplus(url, safe=b""):
     try:
-        return six.moves.urllib.parse.quote_plus(str(url), safe=safe)
+        return urllib.parse.quote_plus(str(url), safe=safe)
     except UnicodeEncodeError:
-        return six.moves.urllib.parse.quote_plus(url.encode('utf-8'), safe=safe)
+        return urllib.parse.quote_plus(url.encode('utf-8'), safe=safe)
 
 
 def urlquote_path_only(url):
@@ -1027,7 +1030,18 @@ class exceptionless:
         return inner
 
 
-def urlopen(url, retries=3, codes=(408, 500, 502, 503, 504), timeout=None):
+class NoRedirectToInternal(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req: urllib.request.Request, fp, code, msg, headers, newurl: str):
+        if not asbool(tg.config.get('urlopen_allow_internal_hostnames', 'false')):
+            validators.URLIsPrivate().to_python(newurl, None)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+opener = urllib.request.build_opener(NoRedirectToInternal)
+urllib.request.install_opener(opener)
+
+
+def urlopen(url: str | urllib.request.Request, retries=3, codes=(408, 500, 502, 503, 504), timeout=None):
     """Open url, optionally retrying if an error is encountered.
 
     Socket and other IO errors will always be retried if retries > 0.
@@ -1037,12 +1051,22 @@ def urlopen(url, retries=3, codes=(408, 500, 502, 503, 504), timeout=None):
     :param codes: HTTP error codes that should be retried.
 
     """
+    if isinstance(url, urllib.request.Request):
+        url_str =  url.full_url
+    else:
+        url_str = url
+    if not url_str.startswith(('http://', 'https://')):
+        raise ValueError(f'URL must be http(s), got {url_str}')
+    if not asbool(tg.config.get('urlopen_allow_internal_hostnames', 'false')):
+        # will raise error if hostname resolves to private address space:
+        validators.URLIsPrivate().to_python(url_str, None)
+
     attempts = 0
     while True:
         try:
-            return six.moves.urllib.request.urlopen(url, timeout=timeout)
+            return urllib.request.urlopen(url, timeout=timeout)
         except OSError as e:
-            no_retry = isinstance(e, six.moves.urllib.error.HTTPError) and e.code not in codes
+            no_retry = isinstance(e, urllib.error.HTTPError) and e.code not in codes
             if attempts < retries and not no_retry:
                 attempts += 1
                 continue
