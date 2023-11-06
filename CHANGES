@@ -10,6 +10,9 @@ Upgrade Instructions
 
   If using docker, rebuild the allura image and restart containers.
 
+Critical Security Fix
+ * [#8525] CVE-2023-46851 import mechanisms allow local file access
+
 Major Changes
  * [#8519] Drop support for Python 3.7. Python 3.8 through Python 3.11 are officially supported.
 
@@ -26,6 +29,8 @@ For Developers
  * minor improvements to release script
  * update build status icon on readme
  * ignore warnings from inside other pkgs, fix a few warnings
+ * [#8524] update node version
+ * [#8523] github api improvements
 
 
 Version 1.15.0  (September 2023)
