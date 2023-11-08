@@ -33,7 +33,7 @@ import pkg_resources
 import six
 
 import webtest
-from webtest import TestApp
+from webtest import TestApp, TestResponse
 from ming.utils import LazyProperty
 import requests
 
@@ -214,7 +214,7 @@ def validate_page(html_or_response):
 
 class AntiSpamTestApp(TestApp):
 
-    def post(self, *args, **kwargs):
+    def post(self, *args, **kwargs) -> TestResponse:
         antispam = utils.AntiSpam()
         if kwargs.pop('antispam', False):
             params = {
@@ -274,7 +274,7 @@ class PostParamCheckingTestApp(AntiSpamTestApp):
                 '%s key %s has value %s of type %s, not str. ' %
                 (method, k, v, type(v)))
 
-    def get(self, *args, **kwargs):
+    def get(self, *args, **kwargs) -> TestResponse:
         params = None
         if 'params' in kwargs:
             params = kwargs['params']
@@ -283,7 +283,7 @@ class PostParamCheckingTestApp(AntiSpamTestApp):
         self._validate_params(params, 'get')
         return super().get(*args, **kwargs)
 
-    def post(self, *args, **kwargs):
+    def post(self, *args, **kwargs) -> TestResponse:
         params = None
         if 'params' in kwargs:
             params = kwargs['params']
@@ -333,37 +333,28 @@ class ValidatingTestApp(PostParamCheckingTestApp):
             params[k] = kw.pop(k, False)
         return params, kw
 
-    def get(self, *args, **kw):
-        '''
-        :rtype: webtest.app.TestResponse
-        '''
+    def get(self, *args, **kw) -> TestResponse:
         val_params, kw = self._get_validation_params(kw)
         resp = super().get(*args, **kw)
         if not self.validate_skip and not val_params['validate_skip']:
             self._validate(resp, 'get', val_params)
         return resp
 
-    def post(self, *args, **kw):
-        '''
-        :rtype: webtest.app.TestResponse
-        '''
+    def post(self, *args, **kw) -> TestResponse:
         val_params, kw = self._get_validation_params(kw)
         resp = super().post(*args, **kw)
         if not self.validate_skip and not val_params['validate_skip']:
             self._validate(resp, 'post', val_params)
         return resp
 
-    def delete(self, *args, **kw):
-        '''
-        :rtype: webtest.app.TestResponse
-        '''
+    def delete(self, *args, **kw) -> TestResponse:
         val_params, kw = self._get_validation_params(kw)
         resp = super().delete(*args, **kw)
         if not self.validate_skip and not val_params['validate_skip']:
             self._validate(resp, 'delete', val_params)
         return resp
 
-    def do_request(self, *args, **kwargs):
+    def do_request(self, *args, **kwargs) -> TestResponse:
         # middleware should do this already, but be sure that no global c/config/request etc remains between tests
         resp = super().do_request(*args, **kwargs)
         tgGlobalsRegistry = resp.request.environ['paste.registry']
