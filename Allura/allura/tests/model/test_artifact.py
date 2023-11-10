@@ -21,8 +21,8 @@ Model tests for artifact
 import re
 from datetime import datetime
 
-from tg import tmpl_context as c
-from mock import patch
+from tg import tmpl_context as c, app_globals as g
+from mock import patch, Mock
 import pytest
 from ming.odm.odmsession import ThreadLocalODMSession
 from ming.odm import Mapper
@@ -145,6 +145,7 @@ class TestArtifact:
         assert re.match(r'%s.wiki@test.p.localhost' %
                         str(p._id), p.message_id())
 
+    @patch('allura.tasks.mail_tasks.sendmail', Mock())
     def test_versioning(self):
         pg = WM.Page(title='TestPage3')
         with patch('allura.model.artifact.request', Request.blank('/', remote_addr='1.1.1.1')):
@@ -170,6 +171,24 @@ class TestArtifact:
         ThreadLocalODMSession.flush_all()
         assert ss.text != pg.text
         assert pg.history().count() == 3
+
+        _id = pg._id
+        M.MonQTask.run_ready()
+        assert g.solr.search('id:' + pg.index_id()).hits == 1
+        ph = WM.PageHistory.query.find({'artifact_id': _id, 'version': 2}).first()
+        assert ph
+        ph_index = ph.index_id()
+        solr_hist = g.solr.search('id:' + ph_index)
+        if not solr_hist:  # sometimes history doesn't get added to solr
+            g.solr.add([ph.solarize()])
+            g.solr.commit()
+        assert g.solr.search('id:' + ph_index).hits == 1
+        pg.delete()
+        ThreadLocalODMSession.flush_all()
+        M.MonQTask.run_ready()
+        WM.PageHistory.query.find({'artifact_id': _id}).count() == 0
+        # history should be deleted from solr
+        assert g.solr.search('id:' + ph_index).hits == 0
 
     def test_messages_unknown_lookup(self):
         from bson import ObjectId
