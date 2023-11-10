@@ -705,9 +705,10 @@ class VersionedArtifact(Artifact):
 
     def delete(self):
         # remove history so that the snapshots aren't left orphaned
-        super().delete()
         HC = self.__mongometa__.history_class
-        HC.query.remove(dict(artifact_id=self._id))
+        for version in HC.query.find(dict(artifact_id=self._id)):
+            version.delete()
+        super().delete()
 
     @classmethod
     def is_limit_exceeded(cls, *args, **kwargs):
