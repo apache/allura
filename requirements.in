@@ -1,6 +1,7 @@
 ActivityStream
 beautifulsoup4
 Beaker
+beaker-session-jwt
 colander
 cryptography
 decorator

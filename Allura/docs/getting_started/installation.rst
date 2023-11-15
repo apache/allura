@@ -246,20 +246,17 @@ Change `[handler_console]` section, so that logs go to a file and will include b
 
 Add write permissions to the :file:`/path/to/allura.log` for the user you use to run allura proccess.
 
-Change "secrets".
+Change the secret key used for signing session cookies.
 
 .. code-block:: ini
 
-    beaker.session.secret = <your-secret-key>
-    beaker.session.validate_key = <yet-another-secret-key>
-
-The first one is used for simple cookies, the latter is used for encrypted cookies.
+    beaker.session.jwt_secret_keys = <secret-key>
 
 You can use the following command to generate a good key:
 
 .. code-block:: bash
 
-    ~$ python -c 'import secrets; print(secrets.token_hex(20));'
+    ~$ python -c 'import secrets; print(secrets.token_hex());'
 
 Production-quality web server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -7,7 +7,10 @@
 activitystream==0.4.0
     # via -r requirements.in
 beaker==1.12.1
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   beaker-session-jwt
+beaker-session-jwt==1.0.1
 beautifulsoup4==4.12.2
     # via
     #   -r requirements.in
@@ -29,7 +32,9 @@ crank==0.8.1
 creoleparser==0.7.5
     # via pypeline
 cryptography==41.0.4
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   joserfc
 decorator==5.1.1
     # via -r requirements.in
 diff-match-patch==20230430
@@ -85,6 +90,8 @@ iso8601==1.1.0
     # via colander
 jinja2==3.1.2
     # via -r requirements.in
+joserfc==0.9.0
+    # via beaker-session-jwt
 markdown==3.5
     # via
     #   -r requirements.in
@@ -146,6 +153,7 @@ pymongo==3.13.0
     # via
     #   -r requirements.in
     #   activitystream
+    #   beaker-session-jwt
     #   ming
 pypeline[creole,markdown,rst,textile]==0.6.1
     # via -r requirements.in

@@ -21,6 +21,9 @@ import ast
 import importlib
 import mimetypes
 import pickle
+import re
+import warnings
+
 import six
 import tg
 import pkg_resources
@@ -37,6 +40,7 @@ import ew
 import formencode
 import ming
 from ming.odm.middleware import MingMiddleware
+from beaker_session_jwt import JWTCookieSession
 
 # Must apply patches before other Allura imports to ensure all the patches are effective.
 # This file gets imported from paste/deploy/loadwsgi.py pretty early in the app execution
@@ -135,7 +139,14 @@ def _make_core_app(root, global_conf: dict, **app_conf):
     # broswer permissions policy
     app = SetHeadersMiddleware(app, config)
     # Required for sessions
-    app = SessionMiddleware(app, config, data_serializer=BeakerPickleSerializerWithLatin1())
+    with warnings.catch_warnings():
+        # the session_class= arg triggers this warning but is the only way it works, so suppress warning
+        warnings.filterwarnings('ignore',
+                                re.escape('Session options should start with session. instead of session_.'),
+                                DeprecationWarning)
+        app = SessionMiddleware(app, config,
+                                original_format_data_serializer=BeakerPickleSerializerWithLatin1(),
+                                session_class=JWTCookieSession)
     # Handle "Remember me" functionality
     app = RememberLoginMiddleware(app, config)
     # Redirect 401 to the login page
