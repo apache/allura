@@ -170,6 +170,11 @@ class TestArtifact:
         ThreadLocalODMSession.flush_all()
         assert ss.text != pg.text
         assert pg.history().count() == 3
+        _id = pg._id
+        WM.PageHistory.query.find({'artifact_id': _id}).count() == 3
+        pg.delete()
+        ThreadLocalODMSession.flush_all()
+        WM.PageHistory.query.find({'artifact_id': _id}).count() == 0
 
     def test_messages_unknown_lookup(self):
         from bson import ObjectId
