@@ -14,9 +14,10 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
+from __future__ import annotations
 import bson
 import logging
+import typing
 
 from ming.odm import Mapper
 from tg import tmpl_context as c
@@ -27,6 +28,10 @@ from activitystream.managers import Aggregator as BaseAggregator
 
 from allura.lib import security
 from allura.tasks.activity_tasks import create_timelines
+
+if typing.TYPE_CHECKING:
+    import allura.model as M
+    from activitystream.storage.mingstorage import Activity
 
 log = logging.getLogger(__name__)
 
@@ -45,9 +50,9 @@ class Director(ActivityDirector):
 
         from allura.model.project import Project
         super().create_activity(actor, verb, obj,
-                                              target=target,
-                                              related_nodes=related_nodes,
-                                              tags=tags)
+                                target=target,
+                                related_nodes=related_nodes,
+                                tags=tags)
         # aggregate actor and follower's timelines
         if actor.node_id:
             create_timelines.post(actor.node_id)
@@ -115,15 +120,22 @@ class TransientActor(NodeBase, ActivityObjectBase):
         self.activity_name = activity_name
 
 
+def get_allura_id(activity_object_dict):
+    extras_dict = activity_object_dict.activity_extras
+    if not extras_dict:
+        return None
+    allura_id = extras_dict.get('allura_id')
+    if not allura_id:
+        return None
+    return allura_id
+
+
 def get_activity_object(activity_object_dict):
     """Given a BSON-serialized activity object (e.g. activity.obj dict in a
     timeline), return the corresponding :class:`ActivityObject`.
 
     """
-    extras_dict = activity_object_dict.activity_extras
-    if not extras_dict:
-        return None
-    allura_id = extras_dict.get('allura_id')
+    allura_id = get_allura_id(activity_object_dict)
     if not allura_id:
         return None
     classname, _id = allura_id.split(':', 1)
@@ -132,15 +144,23 @@ def get_activity_object(activity_object_dict):
         _id = bson.ObjectId(_id)
     except bson.errors.InvalidId:
         pass
-    return cls.query.get(_id=_id)
+    obj = cls.query.get(_id=_id)
+    return obj
 
 
-def perm_check(user):
+def perm_check(user: M.User):
     """
     Return a function that returns True if ``user`` has 'read' access to a given activity,
     otherwise returns False.
     """
-    def _perm_check(activity):
+    def _perm_check(activity: Activity):
+        if not get_allura_id(activity.obj):
+            # include activity records that do not have an allura object
+            return True
         obj = get_activity_object(activity.obj)
-        return obj is None or obj.has_activity_access('read', user, activity)
+        if obj is None:
+            # Do not include if there's supposed to be an allura object, but it's missing
+            return False
+        # Finally, if there's an allura object, perform a permission check
+        return obj.has_activity_access('read', user, activity)
     return _perm_check
