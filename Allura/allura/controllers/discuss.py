@@ -204,6 +204,7 @@ class ThreadController(BaseController, FeedController, metaclass=h.ProxiedAttrMe
         c.thread_header = self.W.thread_header
         limit, page, start = g.handle_paging(limit, page)
         self.thread.num_views += 1
+        h1_text = f'{(self.thread.subject or c.app.config.options.mount_label)[:100]}'
         # the update to num_views shouldn't affect it
         M.session.artifact_orm_session._get().skip_mod_date = True
         M.session.artifact_orm_session._get().skip_last_updated = True
@@ -216,7 +217,7 @@ class ThreadController(BaseController, FeedController, metaclass=h.ProxiedAttrMe
                     thread=self.thread,
                     page=int(page),
                     count=int(count),
-                    limit=int(limit),
+                    limit=int(limit), h1_text=h1_text,
                     show_moderate=kw.get('show_moderate'))
 
     def error_handler(self, *args, **kwargs):
