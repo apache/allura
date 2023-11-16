@@ -48,6 +48,7 @@ from allura.model.artifact import ArtifactReference
 from .attachments import AttachmentsController, AttachmentController
 from .feed import FeedArgs, FeedController
 import six
+from jinja2.filters import do_truncate as truncate
 
 log = logging.getLogger(__name__)
 
@@ -204,6 +205,8 @@ class ThreadController(BaseController, FeedController, metaclass=h.ProxiedAttrMe
         c.thread_header = self.W.thread_header
         limit, page, start = g.handle_paging(limit, page)
         self.thread.num_views += 1
+        h1_text = self.thread.subject or c.app.config.options.mount_label
+        h1_text = truncate(None, h1_text, 80, end="...", leeway=3)
         # the update to num_views shouldn't affect it
         M.session.artifact_orm_session._get().skip_mod_date = True
         M.session.artifact_orm_session._get().skip_last_updated = True
@@ -216,7 +219,7 @@ class ThreadController(BaseController, FeedController, metaclass=h.ProxiedAttrMe
                     thread=self.thread,
                     page=int(page),
                     count=int(count),
-                    limit=int(limit),
+                    limit=int(limit), h1_text=h1_text,
                     show_moderate=kw.get('show_moderate'))
 
     def error_handler(self, *args, **kwargs):
