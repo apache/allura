@@ -112,7 +112,10 @@ class Command(command.Command, metaclass=MetaParserDocstring):
             # Probably being called from another script (websetup, perhaps?)
             log = logging.getLogger('allura.command')
             conf = tg.config
+
         self.tools = list(tg.app_globals.entry_points['tool'].values())
+
+        conf['allura_command'] = self
         for ep in h.iter_entry_points('allura.command_init'):
             log.info('Running command_init for %s', ep.name)
             ep.load()(conf)
