@@ -31,7 +31,7 @@ crank==0.8.1
     # via turbogears2
 creoleparser==0.7.5
     # via pypeline
-cryptography==41.0.4
+cryptography==41.0.7
     # via
     #   -r requirements.in
     #   joserfc
