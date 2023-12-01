@@ -45,7 +45,7 @@ try:
     from ldap import modlist
 except ImportError:
     ldap = modlist = None
-import pkg_resources
+import importlib.resources
 import tg
 from tg import config, request, redirect, response
 from tg import tmpl_context as c, app_globals as g
@@ -1471,9 +1471,7 @@ class ThemeProvider:
     def register_ew_resources(cls, manager, name):
         manager.register_directory(
             'theme/%s' % name,
-            pkg_resources.resource_filename(
-                'allura',
-                os.path.join('nf', name)))
+            str(importlib.resources.files('allura')) + '/nf/' + name)
 
     def href(self, href, theme_name=None):
         '''

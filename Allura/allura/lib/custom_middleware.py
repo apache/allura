@@ -21,6 +21,7 @@ import logging
 
 import tg
 import pkg_resources
+import importlib.resources
 from paste import fileapp
 from paste.deploy.converters import aslist, asbool
 from tg import tmpl_context as c
@@ -81,7 +82,7 @@ class StaticFilesMiddleware:
                     file_path = pkg_resources.resource_filename(resource_cls.__module__, resource_path)
                     return fileapp.FileApp(file_path, [('Access-Control-Allow-Origin', '*')])
         filename = environ['PATH_INFO'][len(self.script_name):]
-        file_path = pkg_resources.resource_filename('allura', os.path.join('public', 'nf', filename))
+        file_path = str(importlib.resources.files('allura')) + '/public/nf/' + filename
         return fileapp.FileApp(file_path, [('Access-Control-Allow-Origin', '*')])
 
 

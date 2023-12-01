@@ -17,7 +17,7 @@
 
 import logging
 
-import pkg_resources
+import importlib.resources
 from tg import tmpl_context as c
 from tg import expose, redirect
 from tg.decorators import with_trailing_slash
@@ -46,8 +46,7 @@ class ProjectHomeApp(Application):
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = ProjectHomeController()
-        self.templates = pkg_resources.resource_filename(
-            'allura.ext.project_home', 'templates')
+        self.templates = str(importlib.resources.files('allura.ext.project_home') / 'templates')
 
     def is_visible_to(self, user):
         '''Whether the user can view the app.'''

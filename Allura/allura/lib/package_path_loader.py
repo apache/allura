@@ -123,6 +123,7 @@ The positioners are:
 
 """
 import pkg_resources
+import importlib.resources
 import os
 
 import jinja2

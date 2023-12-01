@@ -15,9 +15,9 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import pkg_resources
+import importlib.resources
 
 
 def register_ew_resources(manager):
     manager.register_directory(
-        'activity_js', pkg_resources.resource_filename('forgeactivity', 'widgets/resources/js'))
+        'activity_js', importlib.resources.files('forgeactivity') / 'widgets/resources/js')

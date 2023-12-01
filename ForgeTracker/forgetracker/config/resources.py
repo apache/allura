@@ -15,11 +15,11 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import pkg_resources
+import importlib.resources
 
 
 def register_ew_resources(manager):
     manager.register_directory(
-        'tracker_js', pkg_resources.resource_filename('forgetracker', 'widgets/resources/js'))
+        'tracker_js', str(importlib.resources.files('forgetracker').joinpath('widgets/resources/js')))
     manager.register_directory(
-        'tracker_css', pkg_resources.resource_filename('forgetracker', 'widgets/resources/css'))
+        'tracker_css', str(importlib.resources.files('forgetracker').joinpath('widgets/resources/css')))

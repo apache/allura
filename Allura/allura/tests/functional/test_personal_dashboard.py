@@ -14,8 +14,8 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+import importlib.resources
 
-import pkg_resources
 import mock
 import tg
 
@@ -95,8 +95,7 @@ class TestMergeRequestsSection(TestController):
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test2', 'src-git', neighborhood='Projects')
-        repo_dir = pkg_resources.resource_filename(
-            'forgegit', 'tests/data')
+        repo_dir = str(importlib.resources.files('forgegit') / 'tests/data')
         c.app.repo.fs_path = repo_dir
         c.app.repo.name = 'testgit.git'
         self.repo = c.app.repo

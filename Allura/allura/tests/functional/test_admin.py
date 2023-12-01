@@ -17,7 +17,7 @@
 
 import os
 from datetime import datetime
-import pkg_resources
+import importlib.metadata
 from io import BytesIO
 import logging
 
@@ -298,7 +298,7 @@ class TestProjectAdmin(TestController):
                         'shorturl', 'svn', 'tickets', 'userstats', 'wiki']
         self.app.get('/admin/')
         project = M.Project.query.get(shortname='test')
-        for i, ep in enumerate(pkg_resources.iter_entry_points('allura')):
+        for i, ep in enumerate(importlib.metadata.entry_points(group='allura')):
             App = ep.load()
             tool = ep.name
             cfg = M.AppConfig(

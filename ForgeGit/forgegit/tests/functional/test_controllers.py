@@ -14,7 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
+import importlib.resources
 import json
 import re
 import os
@@ -22,7 +22,7 @@ import shutil
 import tempfile
 import textwrap
 
-import pkg_resources
+import importlib.resources
 from alluratest.tools import assert_regexp_matches
 from tg import tmpl_context as c
 import tg
@@ -49,7 +49,7 @@ class _TestCase(TestController):
     @with_git
     def setup_with_tools(self):
         h.set_context('test', 'src-git', neighborhood='Projects')
-        repo_dir = pkg_resources.resource_filename('forgegit', 'tests/data')
+        repo_dir = str(importlib.resources.files('forgegit') / 'tests/data')
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'testgit.git'
@@ -65,7 +65,7 @@ class _TestCase(TestController):
     @with_tool('test', 'Git', 'testgit-index', 'Git', type='git')
     def setup_testgit_index_repo(self):
         h.set_context('test', 'testgit-index', neighborhood='Projects')
-        repo_dir = pkg_resources.resource_filename('forgegit', 'tests/data')
+        repo_dir = str(importlib.resources.files('forgegit') / 'tests/data')
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'testgit_index.git'
@@ -83,7 +83,7 @@ class TestUIController(TestController):
     @with_git
     def setup_with_tools(self):
         h.set_context('test', 'src-git', neighborhood='Projects')
-        repo_dir = pkg_resources.resource_filename('forgegit', 'tests/data')
+        repo_dir = str(importlib.resources.files('forgegit') / 'tests/data')
         c.app.repo.fs_path = repo_dir
         c.app.repo.name = 'testui2.git'
         c.app.repo.status = 'ready'
@@ -114,7 +114,7 @@ class TestRootController(_TestCase):
     @with_tool('test', 'Git', 'weird-chars', 'WeirdChars', type='git')
     def _setup_weird_chars_repo(self):
         h.set_context('test', 'weird-chars', neighborhood='Projects')
-        repo_dir = pkg_resources.resource_filename('forgegit', 'tests/data')
+        repo_dir = str(importlib.resources.files('forgegit') / 'tests/data')
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'weird-chars.git'
@@ -978,7 +978,7 @@ class TestDiff(TestController):
     @with_git
     def setup_with_tools(self):
         h.set_context('test', 'src-git', neighborhood='Projects')
-        repo_dir = pkg_resources.resource_filename('forgegit', 'tests/data')
+        repo_dir = str(importlib.resources.files('forgegit') / 'tests/data')
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'testmime.git'
@@ -1007,7 +1007,7 @@ class TestGitRename(TestController):
     @with_git
     def setup_with_tools(self):
         h.set_context('test', 'src-git', neighborhood='Projects')
-        repo_dir = pkg_resources.resource_filename('forgegit', 'tests/data')
+        repo_dir = str(importlib.resources.files('forgegit') / 'tests/data')
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'testrename.git'
@@ -1075,7 +1075,7 @@ class TestGitBranch(TestController):
     @with_git
     def setup_with_tools(self):
         h.set_context('test', 'src-git', neighborhood='Projects')
-        repo_dir = pkg_resources.resource_filename('forgegit', 'tests/data')
+        repo_dir = str(importlib.resources.files('forgegit') / 'tests/data')
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'test_branch.git'

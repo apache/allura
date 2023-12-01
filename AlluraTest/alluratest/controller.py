@@ -18,6 +18,7 @@
 """Unit and functional test suite for allura."""
 from __future__ import annotations
 
+
 import os
 import six.moves.urllib.request
 import six.moves.urllib.parse
@@ -36,7 +37,7 @@ from webob import Response, Request
 import ew
 from ming.odm import ThreadLocalODMSession
 import ming.odm
-import pkg_resources
+import importlib.resources
 import requests
 import requests_oauthlib
 
@@ -63,13 +64,13 @@ def get_config_file(config=None, current_pkg=None):
     if not current_pkg:
         current_pkg = 'allura'
 
-    conf_dir = pkg_resources.resource_filename(current_pkg, '..')
+    conf_dir = str(importlib.resources.files(current_pkg) / '..')
     conf_file = os.path.join(conf_dir, config)
 
     # split on "#" since it could be foo.ini#main
     if not os.path.exists(conf_file.split('#')[0]) and current_pkg != 'allura':
         # if there isn't a forgewiki/test.ini for example, then fall back to regular allura
-        conf_dir = pkg_resources.resource_filename('allura', '..')
+        conf_dir = str(importlib.resources.files('allura') / '..')
         conf_file = os.path.join(conf_dir, config)
 
     if not os.path.exists(conf_file.split('#')[0]):
