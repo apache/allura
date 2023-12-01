@@ -2894,7 +2894,7 @@ class TestCustomUserField(TrackerTestController):
         kw = {'custom_fields._code_review': ''}
         ticket_view = self.new_ticket(summary='test custom fields', **kw).follow()
         # summary header shows 'nobody'
-        assert (squish_spaces(ticket_view.html.find_all('label', 'simple', text='Code Review:')[0].parent.text) ==
+        assert (squish_spaces(ticket_view.html.find_all('label', 'simple', string='Code Review:')[0].parent.text) ==
                 ' Code Review: nobody ')
         # form input is blank
         select = ticket_view.html.find('select',
@@ -2909,7 +2909,7 @@ class TestCustomUserField(TrackerTestController):
         kw = {'custom_fields._code_review': 'test-admin'}
         ticket_view = self.new_ticket(summary='test custom fields', **kw).follow()
         # summary header shows 'Test Admin'
-        assert (squish_spaces(ticket_view.html.find_all('label', 'simple', text='Code Review:')[0].parent.text) ==
+        assert (squish_spaces(ticket_view.html.find_all('label', 'simple', string='Code Review:')[0].parent.text) ==
                 ' Code Review: Test Admin ')
         # form input is blank
         select = ticket_view.html.find('select',

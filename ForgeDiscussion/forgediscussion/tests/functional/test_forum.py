@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import os
 import mock
 import pytest
 import random
@@ -23,7 +24,7 @@ from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 
-import pkg_resources
+import importlib.resources
 import pymongo
 
 from ming.odm import ThreadLocalODMSession
@@ -103,8 +104,7 @@ class TestForumEmail(TestController):
             ],
             policy=email_policy
         )
-        with open(pkg_resources.resource_filename(
-                'forgediscussion', 'tests/data/python-logo.png'), 'rb') as fp:
+        with open(str(importlib.resources.files('forgediscussion')) + '/tests/data/python-logo.png', 'rb') as fp:
             img = MIMEImage(fp.read(), policy=email_policy)
             img.add_header('Content-Disposition', 'attachment',
                            filename='python-logo.png')

@@ -24,7 +24,6 @@ import pickle
 import re
 import warnings
 
-import pkg_resources
 from tg import config
 from paste.deploy.converters import asbool, aslist, asint
 from tg.support.registry import RegistryManager
@@ -109,7 +108,7 @@ def _make_core_app(root, global_conf: dict, **app_conf):
     under ``[app:main]``.
     """
     # Run all the initialization code here
-    mimetypes.init([pkg_resources.resource_filename('allura', 'etc/mime.types')] + mimetypes.knownfiles)
+    mimetypes.init([str(importlib.resources.files('allura')), 'etc/mime.types'] + mimetypes.knownfiles)
 
     # Configure MongoDB
     configure_ming(app_conf)

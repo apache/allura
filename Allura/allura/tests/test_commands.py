@@ -25,7 +25,8 @@ from ming.odm import ThreadLocalODMSession
 from mock import Mock, call, patch
 import pytest
 import pymongo
-import pkg_resources
+import os
+import importlib.resources
 
 from alluratest.controller import setup_basic_test, setup_global_objects, setup_unit_test
 from allura.command import base, script, set_neighborhood_features, \
@@ -35,8 +36,7 @@ from allura.lib.exceptions import InvalidNBFeatureValueError
 from allura.tests import decorators as td
 
 
-test_config = pkg_resources.resource_filename(
-    'allura', '../test.ini') + '#main'
+test_config = str(importlib.resources.files('allura')) + '/../test.ini#main'
 
 
 class EmptyClass:
@@ -52,9 +52,9 @@ def setup_module():
 def test_script():
     cmd = script.ScriptCommand('script')
     cmd.run(
-        [test_config, pkg_resources.resource_filename('allura', 'tests/tscript.py')])
+        [test_config, str(importlib.resources.files('allura') / 'tests/tscript.py')])
     with pytest.raises(ValueError):
-        cmd.run([test_config, pkg_resources.resource_filename('allura', 'tests/tscript_error.py')])
+        cmd.run([test_config, str(importlib.resources.files('allura') / 'tests/tscript_error.py')])
 
 
 def test_set_neighborhood_max_projects():

@@ -14,12 +14,11 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
 import os
 import shutil
 from unittest import skipUnless
 
-import pkg_resources
+import importlib.resources
 from itertools import count, product
 from datetime import datetime
 from zipfile import ZipFile
@@ -58,8 +57,7 @@ class TestNewRepo:
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src', neighborhood='Projects')
-        repo_dir = pkg_resources.resource_filename(
-            'forgesvn', 'tests/data/')
+        repo_dir = str(importlib.resources.files('forgesvn')) + '/tests/data/'
         c.app.repo.name = 'testsvn'
         c.app.repo.fs_path = repo_dir
         self.repo = c.app.repo
@@ -113,8 +111,7 @@ class TestSVNRepo(RepoImplTestBase):
     @with_tool('test', 'SVN', 'svn-tags', 'SVN with tags')
     def setup_with_tools(self):
         setup_global_objects()
-        repo_dir = pkg_resources.resource_filename(
-            'forgesvn', 'tests/data/')
+        repo_dir = str(importlib.resources.files('forgesvn')) + '/tests/data/'
         with h.push_context('test', 'src', neighborhood='Projects'):
             c.app.repo.name = 'testsvn'
             c.app.repo.fs_path = repo_dir
@@ -151,8 +148,7 @@ class TestSVNRepo(RepoImplTestBase):
             url_path='/test/',
             tool='svn',
             status='creating')
-        repo_path = pkg_resources.resource_filename(
-            'forgesvn', 'tests/data/testsvn')
+        repo_path = str(importlib.resources.files('forgesvn')) + '/tests/data/testsvn'
         dirname = os.path.join(repo.fs_path, repo.name)
         if os.path.exists(dirname):
             shutil.rmtree(dirname)
@@ -202,8 +198,7 @@ class TestSVNRepo(RepoImplTestBase):
             url_path='/test/',
             tool='svn',
             status='creating')
-        repo_path = pkg_resources.resource_filename(
-            'forgesvn', 'tests/data/testsvn')
+        repo_path = str(importlib.resources.files('forgesvn')) + '/tests/data/testsvn'
         dirname = os.path.join(repo.fs_path, repo.name)
         if os.path.exists(dirname):
             shutil.rmtree(dirname)
@@ -413,8 +408,7 @@ class TestSVNRepo(RepoImplTestBase):
         assert entry.message
 
     def test_svn_path_exists(self):
-        repo_path = pkg_resources.resource_filename(
-            'forgesvn', 'tests/data/testsvn')
+        repo_path = str(importlib.resources.files('forgesvn')) + '/tests/data/testsvn'
         assert svn_path_exists("file://%s/a" % repo_path)
         assert svn_path_exists("file://%s" % repo_path)
         assert not svn_path_exists("file://%s/badpath" % repo_path)
@@ -577,8 +571,7 @@ class TestSVNRev:
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src', neighborhood='Projects')
-        repo_dir = pkg_resources.resource_filename(
-            'forgesvn', 'tests/data/')
+        repo_dir = str(importlib.resources.files('forgesvn')) + '/tests/data/'
         c.app.repo.name = 'testsvn'
         c.app.repo.fs_path = repo_dir
         self.repo = c.app.repo
@@ -625,8 +618,7 @@ class TestSVNRev:
     def test_notification_email(self):
         setup_global_objects()
         h.set_context('test', 'src', neighborhood='Projects')
-        repo_dir = pkg_resources.resource_filename(
-            'forgesvn', 'tests/data/')
+        repo_dir = str(importlib.resources.files('forgesvn')) + '/tests/data/'
         self.repo = SM.Repository(
             name='testsvn',
             fs_path=repo_dir,
@@ -1025,8 +1017,7 @@ class TestRename:
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src', neighborhood='Projects')
-        repo_dir = pkg_resources.resource_filename(
-            'forgesvn', 'tests/data/')
+        repo_dir = str(importlib.resources.files('forgesvn')) + '/tests/data/'
         c.app.repo.name = 'testsvn-rename'
         c.app.repo.fs_path = repo_dir
         self.repo = c.app.repo
@@ -1061,8 +1052,7 @@ class TestDirectRepoAccess:
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src', neighborhood='Projects')
-        repo_dir = pkg_resources.resource_filename(
-            'forgesvn', 'tests/data/')
+        repo_dir = str(importlib.resources.files('forgesvn')) + '/tests/data/'
         c.app.repo.name = 'testsvn'
         c.app.repo.fs_path = repo_dir
         self.repo = c.app.repo

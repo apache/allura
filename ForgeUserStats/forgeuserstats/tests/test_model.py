@@ -15,7 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import pkg_resources
+import importlib.resources
 from datetime import datetime, timedelta
 
 from tg import tmpl_context as c
@@ -373,8 +373,7 @@ class TestUserStats:
         addr = M.EmailAddress.get(email='rcopeland@geek.net')
         addr.confirmed = True
 
-        repo_dir = pkg_resources.resource_filename(
-            'forgeuserstats', 'tests/data')
+        repo_dir = str(importlib.resources.files('forgeuserstats') / 'tests/data')
 
         c.app.repo.fs_path = repo_dir
         c.app.repo.name = 'testgit.git'

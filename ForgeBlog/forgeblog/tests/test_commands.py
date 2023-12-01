@@ -17,7 +17,7 @@
 import html
 from io import BytesIO
 from unittest import skipIf
-import pkg_resources
+import importlib.resources
 from mock import patch
 
 from ming.odm.odmsession import ThreadLocalODMSession
@@ -27,8 +27,7 @@ from alluratest.tools import module_not_available
 from allura import model as M
 from forgeblog import model as BM
 
-test_config = pkg_resources.resource_filename(
-    'allura', '../test.ini') + '#main'
+test_config = importlib.resources.files('allura').joinpath('../test.ini#main')
 
 
 def setup_module(module):

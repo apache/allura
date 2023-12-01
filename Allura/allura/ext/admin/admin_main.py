@@ -23,7 +23,7 @@ from datetime import datetime
 from urllib.parse import urlparse
 import json
 from operator import itemgetter, attrgetter
-import pkg_resources
+import importlib.resources
 
 from tg import tmpl_context as c, app_globals as g
 from tg import request
@@ -89,8 +89,7 @@ class AdminApp(Application):
         self.root = ProjectAdminController()
         self.api_root = ProjectAdminRestController()
         self.admin = AdminAppAdminController(self)
-        self.templates = pkg_resources.resource_filename(
-            'allura.ext.admin', 'templates')
+        self.templates = str(importlib.resources.files('allura.ext.admin')) + '/templates'
         self.sitemap = [SitemapEntry('Admin', '.')]
 
     def is_visible_to(self, user):

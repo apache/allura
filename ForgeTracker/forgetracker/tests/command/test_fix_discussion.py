@@ -15,8 +15,9 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+
 from ming.odm import session
-import pkg_resources
+import importlib.resources
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from forgetracker.command import fix_discussion
@@ -25,8 +26,7 @@ from allura import model as M
 from forgetracker import model as TM
 
 
-test_config = pkg_resources.resource_filename(
-    'allura', '../test.ini') + '#main'
+test_config = str(importlib.resources.files('allura').joinpath('../test.ini')) + '#main'
 
 
 def setup_module(self):
