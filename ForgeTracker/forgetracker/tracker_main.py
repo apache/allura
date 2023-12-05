@@ -82,6 +82,7 @@ from forgetracker.widgets.bin_form import BinForm
 from forgetracker.widgets.ticket_search import TicketSearchResults, MassEdit, MassEditForm, MassMoveForm
 from forgetracker.widgets.admin_custom_fields import TrackerFieldAdmin, TrackerFieldDisplay
 import six
+from jinja2.filters import do_truncate as truncate
 
 log = logging.getLogger(__name__)
 
@@ -1384,10 +1385,13 @@ class TicketController(BaseController, FeedController):
             limit, page, _ = g.handle_paging(limit, page)
             limit, page = h.paging_sanitizer(limit, page, post_count)
             voting_enabled = self.ticket.app.config.options.get('EnableVoting')
+            default_title = f'{c.project.name} {c.app.config.options.mount_label}'
+            h1_text = (self.ticket.summary or default_title)
+            h1_text = truncate(None, h1_text, 80, end="...", leeway=3)
             return dict(ticket=self.ticket, globals=c.app.globals,
                         allow_edit=has_access(self.ticket, 'update')(),
                         subscribed=subscribed, voting_enabled=voting_enabled,
-                        page=page, limit=limit, count=post_count)
+                        page=page, limit=limit, count=post_count, h1_text=h1_text)
         else:
             raise exc.HTTPNotFound('Ticket #%s does not exist.' % self.ticket_num)
 
