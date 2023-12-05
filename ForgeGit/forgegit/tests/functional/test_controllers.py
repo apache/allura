@@ -525,6 +525,12 @@ class TestRootController(_TestCase):
         assert 'bad</a>' not in r
         assert 'README</a>' in r
 
+    def test_index_branch_unicode(self):
+        # more realistic case is the default branch having unicode, but passing the branch name is easier
+        resp = self.app.get('/p/test/src-git/', params={'branch':'ƒ∂ß'})
+        assert resp.location == 'http://localhost/p/test/src-git/ref/%C6%92%E2%88%82%C3%9F/'
+        # further testing needs a real branch in our test repo
+
     def test_set_checkout_url(self):
         r = self.app.get('/p/test/admin/src-git/checkout_url')
         r.form['external_checkout_url'].value = 'http://foo.bar/baz'

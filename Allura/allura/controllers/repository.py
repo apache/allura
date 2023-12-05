@@ -91,7 +91,7 @@ class RepoRootController(BaseController, FeedController):
     def index(self, offset=0, branch=None, **kw):
         if branch is None:
             branch = c.app.default_branch_name
-        permanent_redirect(c.app.repo.url_for_commit(branch, url_type='ref'))
+        permanent_redirect(h.urlquote(c.app.repo.url_for_commit(branch, url_type='ref')))
 
     @with_trailing_slash
     @expose('jinja:allura:templates/repo/forks.html')
@@ -628,6 +628,7 @@ class RefsController:
     def _lookup(self, ref=None, *remainder):
         if ref is None:
             raise exc.HTTPNotFound
+        ref = unquote(ref)
         EOR = c.app.END_OF_REF_ESCAPE
         if EOR in remainder:
             i = remainder.index(EOR)

@@ -21,6 +21,7 @@ from tg import expose, redirect
 from tg.decorators import with_trailing_slash
 from tg import tmpl_context as c
 
+from allura.lib import helpers as h
 from allura.controllers import repository
 from allura.controllers.feed import FeedController
 
@@ -40,8 +41,7 @@ class BranchBrowser(repository.BranchBrowser, FeedController):
         latest = c.app.repo.latest(branch=self._branch)
         if is_empty or not latest:
             return dict(allow_fork=False, log=[], is_empty=is_empty)
-        permanent_redirect(c.app.repo.url_for_commit(c.app.default_branch_name)
-                 + 'tree/')
+        permanent_redirect(h.urlquote(c.app.repo.url_for_commit(c.app.default_branch_name) + 'tree/'))
 
     @expose()
     def _lookup(self, rev, *remainder):
