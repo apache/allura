@@ -76,8 +76,8 @@
                     } else if (data.username) {
                         flash('User blocked', 'success');
                         // full page form submit
-                        $('<form method="POST" action="' + $this.data('discussion-url')+'moderate/save_moderation_bulk_user?username=' + $this.attr('data-user') + '&spam=1">' +
-                            '<input name="_session_id" type="hidden" value="'+cval+'"></form>')
+                        $('<form method="POST" action="' + escape_html($this.data('discussion-url'))+'moderate/save_moderation_bulk_user?username=' + escape_html($this.attr('data-user')) + '&spam=1">' +
+                            '<input name="_session_id" type="hidden" value="'+escape_html(cval)+'"></form>')
                             .appendTo('body')
                             .submit();
                     } else {

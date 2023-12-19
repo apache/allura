@@ -19,10 +19,10 @@
 
 $(function(){
     $form = $('#update-values');
-    if ($form.length == 0) {
+    if ($form.length === 0) {
         $form = $('.editbox > form');
     }
-    if ($('#id_search').length == 0) {
+    if ($('#id_search').length === 0) {
         $form.append('<input type="hidden" name="__search" id="id_search">');
     }
     $('#id_search').val(window.location.search);

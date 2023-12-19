@@ -46,7 +46,7 @@
                           '&filter=' + encodeURIComponent(JSON.stringify(filter));
         // preserve displayed columns, when filter changes
         $('#col_list_form input').each(function() {
-            if (this.name.indexOf('columns-') == 0) {
+            if (this.name.indexOf('columns-') === 0) {
                 var inp = $(this);
                 var val = inp.val();
                 if (inp.is(':checkbox') && !inp.is(':checked')) { val = ''; }

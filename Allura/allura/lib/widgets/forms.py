@@ -16,7 +16,7 @@
 #       under the License.
 
 import logging
-import warnings
+from html import escape as html_escape
 
 from tg import app_globals as g, tmpl_context as c
 from formencode import validators as fev
@@ -35,8 +35,6 @@ from allura.lib import plugin
 from allura.lib.widgets import form_fields as ffw
 from allura.lib import exceptions as forge_exc
 from allura import model as M
-import six
-from functools import reduce
 
 
 log = logging.getLogger(__name__)
@@ -104,8 +102,7 @@ class ForgeForm(ew.SimpleForm):
             or ctx.get('label')
             or getattr(field, 'label', None)
             or ctx['name'])
-        html = '<label for="{}">{}</label>'.format(
-            ctx['id'], label_text)
+        html = '<label for="{}">{}</label>'.format(html_escape(ctx['id']), html_escape(label_text))
         return Markup(html)
 
     def context_for(self, field):

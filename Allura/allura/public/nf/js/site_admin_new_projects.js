@@ -35,7 +35,7 @@ $(document).ready(function() {
   $('.js-select-project').change(function() {
     var shortname = $(this).attr('data-shortname');
     if ($(this).is(':checked')) {
-      $('#selected-projects').append(' ' + shortname);
+      $('#selected-projects').append(' ' + escape_html(shortname));
     } else {
       var shortnames = $('#selected-projects').text().split(' ');
       for (var i = 0; i < shortnames.length; i++) {
