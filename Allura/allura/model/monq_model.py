@@ -33,7 +33,7 @@ from ming import schema as S
 from ming.odm import session, FieldProperty
 from ming.odm.declarative import MappedClass
 
-from allura.lib.helpers import log_output, null_contextmanager
+from allura.lib.helpers import log_output, null_contextmanager, notifications_disabled
 from .session import task_orm_session
 
 if typing.TYPE_CHECKING:
@@ -165,8 +165,7 @@ class MonQTask(MappedClass):
             notifications_disabled=False)
         if getattr(c, 'project', None):
             context['project_id'] = c.project._id
-            context[
-                'notifications_disabled'] = c.project.notifications_disabled
+            context['notifications_disabled'] = c.project.notifications_disabled
         if getattr(c, 'app', None):
             context['app_config_id'] = c.app.config._id
         if getattr(c, 'user', None):
@@ -246,15 +245,16 @@ class MonQTask(MappedClass):
             func = self.function
             c.project = M.Project.query.get(_id=self.context.project_id)
             c.app = None
+            maybe_notif_disabled = null_contextmanager()
             if c.project:
-                c.project.notifications_disabled = self.context.get(
-                    'notifications_disabled', False)
-                app_config = M.AppConfig.query.get(
-                    _id=self.context.app_config_id)
+                maybe_notif_disabled = notifications_disabled(c.project,
+                                                              self.context.get('notifications_disabled', False))
+                app_config = M.AppConfig.query.get(_id=self.context.app_config_id)
                 if app_config:
                     c.app = c.project.app_instance(app_config)
             c.user = M.User.query.get(_id=self.context.user_id)
-            with null_contextmanager() if nocapture else log_output(log):
+            with null_contextmanager() if nocapture else log_output(log), \
+                    maybe_notif_disabled:
                 self.result = func(*self.args, **self.kwargs)
             self.state = 'complete'
             return self.result
