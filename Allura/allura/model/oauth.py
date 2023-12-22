@@ -47,6 +47,9 @@ class OAuthToken(MappedClass):
         session = main_orm_session
         name = 'oauth_token'
         unique_indexes = ['api_key']
+        indexes = [
+            ('user_id'),
+        ]
         polymorphic_on = 'type'
         polymorphic_identity = None
 
