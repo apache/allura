@@ -18,7 +18,7 @@
 default_stages: [commit]
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.1.0
+    rev: v4.5.0
     hooks:
     # general checks
     -   id: check-xml
@@ -41,7 +41,7 @@ repos:
 
 
 -   repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.9.0
+    rev: v1.10.0
     hooks:
     -   id: python-check-blanket-noqa
         exclude: '^Allura/setup.py$'
@@ -109,7 +109,7 @@ repos:
 
 
 - repo:  https://github.com/milin/giticket
-  rev: v1.3
+  rev: v1.4
   hooks:
   - id:  giticket
     args: ['--mode=regex_match', '--format=[#{ticket}] {commit_msg}', '--regex=[0-9]{4,}']
@@ -117,7 +117,7 @@ repos:
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
   # Ruff version.
-  rev: v0.0.283
+  rev: v0.1.11
   hooks:
     - id: ruff
       types: [python]
