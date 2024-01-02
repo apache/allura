@@ -286,7 +286,8 @@ class SetRequestHostFromConfig:
         #   'HTTP_X_FORWARDED_PROTO' == 'https'
         req = Request(environ)
         try:
-            req.params  # check for malformed unicode or POSTs, this is the first middleware that might trip over it.
+            # check for malformed unicode or POSTs, this is the first middleware that might trip over it:
+            req.params  # noqa: B018
             resp = self.app
         except (UnicodeError, ValueError):
             resp = exc.HTTPBadRequest()
@@ -456,7 +457,7 @@ class MingTaskSessionSetupMiddleware:
 
     def __call__(self, environ, start_response):
         # this is sufficient to ensure an ODM session is always established
-        session(M.MonQTask).impl
+        session(M.MonQTask).impl  # noqa: B018
         return self.app(environ, start_response)
 
 

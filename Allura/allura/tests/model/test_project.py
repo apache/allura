@@ -41,12 +41,12 @@ class TestProjectModel:
         setup_global_objects()
 
     def test_project(self):
-        assert type(c.project.sidebar_menu()) == list
+        assert isinstance(c.project.sidebar_menu(), list)
         assert c.project.script_name in c.project.url()
         old_proj = c.project
         h.set_context('test/sub1', neighborhood='Projects')
-        assert type(c.project.sidebar_menu()) == list
-        assert type(c.project.sitemap()) == list
+        assert isinstance(c.project.sidebar_menu(), list)
+        assert isinstance(c.project.sitemap(), list)
         assert c.project.sitemap()[1].label == 'Admin'
         assert old_proj in list(c.project.parent_iter())
         h.set_context('test', 'wiki', neighborhood='Projects')

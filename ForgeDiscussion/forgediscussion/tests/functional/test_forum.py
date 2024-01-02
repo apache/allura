@@ -496,7 +496,7 @@ class TestForum(TestController):
             self.test_posting()
 
             # second should fail
-            with pytest.raises(Exception):
+            with pytest.raises(AssertionError, match='Message posted'):
                 self.test_posting()
 
     def test_notifications_escaping(self):

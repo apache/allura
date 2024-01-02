@@ -68,8 +68,8 @@ class TestNewGit(unittest.TestCase):
     def test_commit(self):
         assert self.rev.primary() is self.rev
         assert self.rev.index_id().startswith('allura/model/repo/Commit#')
-        self.rev.author_url
-        self.rev.committer_url
+        assert self.rev.author_url is None
+        assert self.rev.committer_url is None
         assert self.rev.tree._id == self.rev.tree_id
         assert self.rev.summary == self.rev.message.splitlines()[0]
         assert self.rev.shorthand_id() == '[1e146e]'
@@ -90,7 +90,7 @@ class TestNewGit(unittest.TestCase):
             '/p/test/src-git/ci/'
             '1e146e67985dcd71c74de79613719bef7bddca4a/'
             'tree/')
-        self.rev.tree.by_name['README']
+        assert self.rev.tree.by_name['README']
         assert self.rev.tree.is_blob('README') is True
         ThreadLocalODMSession.close_all()
         c.app = None
@@ -789,8 +789,8 @@ By Dave Brondsema''' in text_body
     @mock.patch('forgegit.model.git_repo.git', autospec=True)
     def test_merge_raise_exception(self, git, shutil, tempfile):
         self.repo._impl._git.git = mock.Mock()
-        git.Repo.clone_from.side_effect = Exception
-        with self.assertRaises(Exception):
+        git.Repo.clone_from.side_effect = ConnectionError
+        with self.assertRaises(ConnectionError):
             self.repo.merge(mock.Mock())
         assert shutil.rmtree.called
 

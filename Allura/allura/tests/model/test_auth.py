@@ -236,7 +236,7 @@ class TestAuth:
         roles = M.ProjectRole.query.find({'_id': {'$in': roles_ids}})
         for pr in roles:
             assert pr.display()
-            pr.special
+            assert pr.special
             assert pr.user in (c.user, None, M.User.anonymous())
 
     def test_default_project_roles(self):

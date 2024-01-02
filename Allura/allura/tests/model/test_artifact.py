@@ -186,7 +186,7 @@ class TestArtifact:
         pg.delete()
         ThreadLocalODMSession.flush_all()
         M.MonQTask.run_ready()
-        WM.PageHistory.query.find({'artifact_id': _id}).count() == 0
+        assert WM.PageHistory.query.find({'artifact_id': _id}).count() == 0
         # history should be deleted from solr
         assert g.solr.search('id:' + ph_index).hits == 0
 

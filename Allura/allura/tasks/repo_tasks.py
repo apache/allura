@@ -179,7 +179,7 @@ def can_merge(merge_request_id):
 def determine_mr_commits(merge_request_id):
     from allura import model as M
     mr = M.MergeRequest.query.get(_id=merge_request_id)
-    mr.commits  # build & cache the commits
+    mr.commits  # noqa: B018.  build & cache the commits
 
 
 @task

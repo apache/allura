@@ -15,8 +15,20 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-per-file-ignores = {'__init__.py' = ['F403']}
-select = ['E', 'F', 'RUF100', 'W6', 'ISC001']
+line-length = 119
+
+
+select = [
+    # all flake8 & pep8 (except 'ignore' below)
+    "F",
+    "E",
+    "W6",  # some deprecation checks
+    "RUF100",  # unncessary noqa
+    "RUF013",  # implicit Optional (=None)
+    "ISC001",  # NIC001 in flake8 codes
+    "B",
+]
+
 ignore = [
     'F401', # Imported but unused,
     'F811', # Redefinition of unused
@@ -25,12 +37,12 @@ ignore = [
     'E731', # Do not assign a lambda expression, use a def
     'E741', # Ambiguous variable name: I,
     'E501', # Line too long
-    # REMOVE THESE AND FIX THE ISSUES
-    'F541', # f-string without any placeholders
-    'E401', # Multiple imports on one line
-    'E721', # Do not compare types, use `isinstance()`
-    'E713', # Test for membership should be `not in`
-    'E701'  # Multiple statements on one line (colon)
+    'B006', # Do not use mutable data structures for argument defaults
+    'B007', # Loop control variable not used within the loop body
+    'B904', # use raise from
 ]
-line-length = 119
 
+
+[per-file-ignores]
+'__init__.py' = ['F403']  # import *
+'**/{alluratest,tests}/*' = ['B011']  # assert False

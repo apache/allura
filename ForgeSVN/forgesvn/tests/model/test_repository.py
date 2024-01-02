@@ -77,8 +77,8 @@ class TestNewRepo(unittest.TestCase):
         latest_rev = 7
         assert self.rev.primary() is self.rev
         assert self.rev.index_id().startswith('allura/model/repo/Commit#')
-        self.rev.author_url
-        self.rev.committer_url
+        assert self.rev.author_url is None
+        assert self.rev.committer_url is None
         assert self.rev.tree._id == self.rev.tree_id
         assert self.rev.shorthand_id() == f'[r{latest_rev}]'
         assert self.rev.symbolic_ids == ([], [])
@@ -89,7 +89,7 @@ class TestNewRepo(unittest.TestCase):
         assert self.rev.tree.readme() == ('README', 'This is readme\nAnother Line\n')
         assert self.rev.tree.path() == '/'
         assert self.rev.tree.url() == f'/p/test/src/{latest_rev}/tree/'
-        self.rev.tree.by_name['README']
+        assert self.rev.tree.by_name['README']
         assert self.rev.tree.is_blob('README') is True
         assert self.rev.tree['a']['b']['c'].ls() == []
         self.assertRaises(KeyError, lambda: self.rev.tree['a']['b']['d'])

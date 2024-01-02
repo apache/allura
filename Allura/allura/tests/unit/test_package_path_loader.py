@@ -50,7 +50,7 @@ class TestPackagePathLoader(TestCase):
             ['ep2', 'path:eps.ep2'],
             ['allura', '/'],
         ]
-        assert type(paths[0]) == list
+        assert isinstance(paths[0], list)
         assert resource_filename.call_args_list == [
             mock.call('eps.ep0', ''),
             mock.call('eps.ep1', ''),

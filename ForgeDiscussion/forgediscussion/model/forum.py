@@ -163,7 +163,7 @@ class ForumThread(M.Thread):
 
     discussion = RelationProperty(Forum)
     posts = RelationProperty('ForumPost', via='thread_id')
-    first_post = RelationProperty('ForumPost', via='first_post_id')
+    first_post: 'ForumPost' = RelationProperty('ForumPost', via='first_post_id')
 
     @property
     def type_name(self):

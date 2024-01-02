@@ -67,7 +67,7 @@ class macro:
     Decorator to declare a function is a custom markdown macro
     """
 
-    def __init__(self, context: str = None, cacheable: bool = False):
+    def __init__(self, context: str | None = None, cacheable: bool = False):
         """
         :param context: either "neighborhood-wiki" or "userproject-wiki" to limit the macro to be used in those contexts
         :param cacheable: indicates if its ok to cache the macro's output permanently

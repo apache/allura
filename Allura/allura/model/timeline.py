@@ -43,7 +43,7 @@ class Director(ActivityDirector):
 
     """
 
-    def create_activity(self, actor, verb, obj, target=None,
+    def create_activity(self, actor: ActivityNode, verb: str, obj: ActivityObject, target=None,
                         related_nodes=None, tags=None):
         if c.project and c.project.notifications_disabled:
             return

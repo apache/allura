@@ -431,7 +431,7 @@ class Globals(MappedClass):
                         getattr(ticket, k))
                 setattr(ticket, k, v)
             for k, v in sorted(custom_values.items()):
-                def cf_val(cf):
+                def cf_val(cf, ticket=ticket):
                     return ticket.get_custom_user(cf.name) \
                         if cf.type == 'user' \
                         else ticket.custom_fields.get(cf.name)
