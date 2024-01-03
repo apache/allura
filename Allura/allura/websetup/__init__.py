@@ -15,18 +15,15 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-"""Setup the allura application"""
-
 import logging
-
 from allura.config.app_cfg import base_config
+from .schema import setup_schema
+from . import bootstrap
+
 __all__ = ['setup_app']
 
 
 log = logging.getLogger(__name__)
-
-from .schema import setup_schema
-from . import bootstrap
 
 
 def setup_app(command, conf, vars):

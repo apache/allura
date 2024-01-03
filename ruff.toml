@@ -33,7 +33,6 @@ ignore = [
     'F401', # Imported but unused,
     'F811', # Redefinition of unused
     'F841', # Assigned to but never used
-    'E402', # Module level import not at top of file
     'E731', # Do not assign a lambda expression, use a def
     'E741', # Ambiguous variable name: I,
     'E501', # Line too long

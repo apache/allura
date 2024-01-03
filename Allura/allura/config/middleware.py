@@ -44,6 +44,7 @@ from beaker_session_jwt import JWTCookieSession
 
 # Must apply patches before other Allura imports to ensure all the patches are effective.
 # This file gets imported from paste/deploy/loadwsgi.py pretty early in the app execution
+# ruff: noqa: E402
 from allura.lib import patches
 patches.apply()
 try:

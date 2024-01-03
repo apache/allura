@@ -17,9 +17,6 @@
 from __future__ import annotations
 
 import re
-
-"""The application's Globals object"""
-
 import logging
 import html
 import hashlib
@@ -68,6 +65,8 @@ from allura.lib.security import Credentials
 from allura.lib.solr import MockSOLR, make_solr_from_config
 from allura.model.session import artifact_orm_session
 import six
+
+"""The application's Globals object"""
 
 __all__ = ['Globals']
 
