@@ -26,7 +26,7 @@ lists, wiki pages, blogs and more for any number of individual projects.
 '''
 setup(
     name='Allura',
-    version=__version__, # noqa
+    version=__version__, # noqa: F821
     description='Base distribution of the Allura development platform',
     long_description=PROJECT_DESCRIPTION,
     author='Allura Team',

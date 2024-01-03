@@ -26,7 +26,11 @@ import grp
 def main():
     command = sys.argv[1]
     uname = sys.argv[2]
-    eval(command)(uname, *sys.argv[3:])
+    fn = {
+        'init': init,
+        'upload': upload,
+    }[command]
+    fn(uname, *sys.argv[3:])
 
 
 def init(uname):

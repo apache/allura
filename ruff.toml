@@ -16,7 +16,7 @@
 #       under the License.
 
 line-length = 119
-
+show-source = true
 
 select = [
     # all flake8 & pep8 (except 'ignore' below)
@@ -27,6 +27,9 @@ select = [
     "RUF013",  # implicit Optional (=None)
     "ISC001",  # NIC001 in flake8 codes
     "B",
+    "PGH",  # https://github.com/pre-commit/pygrep-hooks
+    "T10",  # debugger breakpoints
+    "T20",  # print()
 ]
 
 ignore = [
@@ -41,7 +44,11 @@ ignore = [
     'B904', # use raise from
 ]
 
-
 [per-file-ignores]
 '__init__.py' = ['F403']  # import *
-'**/{alluratest,tests}/*' = ['B011']  # assert False
+'**/{alluratest,tests}/*' = [
+    'B011',  # assert False
+    'T20',  # print
+]
+'{scripts,Allura/allura/scripts,Allura/allura/command}/*' = ['T20']  # print
+'{run_tests,fuse/accessfs.py,ForgeSVN/setup.py}' = ['T20']  # print

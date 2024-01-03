@@ -16,6 +16,7 @@
 #       under the License.
 
 import logging
+from ast import literal_eval
 from getpass import getpass
 from optparse import OptionParser
 from tg import tmpl_context as c
@@ -89,7 +90,7 @@ def main():
         config = ConfigParser()
         config.read(options.config_file)
         defaults.update(
-            (k, eval(v)) for k, v in config.items('teamforge-import'))
+            (k, literal_eval(v)) for k, v in config.items('teamforge-import'))
         optparser = get_parser(defaults)
         options, project_ids = optparser.parse_args()
 

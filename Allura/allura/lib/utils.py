@@ -461,7 +461,7 @@ class CaseInsensitiveDict(TransformedDict):
 
 def postmortem_hook(etype, value, tb):  # pragma no cover
     import sys
-    import pdb
+    import pdb  # noqa: T100
     import traceback
     sys.stderr.write('Entering post-mortem PDB shell\n')
     traceback.print_exception(etype, value, tb)
