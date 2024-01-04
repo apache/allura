@@ -37,10 +37,7 @@
     <span class="votes-percent">{{ artifact.votes_up_percent }}</span>%
   </div>
   <div class="fright vote-text">
-      {% trans num_comments = artifact.discussion_thread.num_replies %}
-        {{ num_comments }} comment
-        {% pluralize %}{{ num_comments}} comments
-      {% endtrans %}
+      {{ h.text.plural(artifact.discussion_thread.num_replies, 'comment', 'comments') }}
   </div>
   <div style="clear:both;"></div>
   {% if can_vote %}
