@@ -48,25 +48,28 @@ EMAIL_VALIDATOR = fev.Email(not_empty=True)
 # http://www.jebriggs.com/blog/2010/07/smtp-maximum-line-lengths/
 MAX_MAIL_LINE_OCTETS = 990
 
+email_policy = email.policy.SMTP + email.policy.strict
 
-def Header(text, *more_text):
-    '''Helper to make sure we encode headers properly'''
+def Header(text, *more_text) -> str:
+    '''
+    Helper to make sure we encode headers properly
+    This used to return an email.header.Header instance
+    But needs to be a plain str now that we're using email.policy.SMTP
+    '''
     if isinstance(text, header.Header):
-        return text
-    # email.header.Header handles str vs unicode differently
-    # see
-    # http://docs.python.org/library/email.header.html#email.header.Header.append
+        return str(text)
+
     if not isinstance(text, str):
         raise TypeError('This must be unicode: %r' % text)
-    head = header.Header(text)
+
+    hdr_text = text
     for m in more_text:
         if not isinstance(m, str):
             raise TypeError('This must be unicode: %r' % text)
-        head.append(m)
-    return head
+        hdr_text += ' ' + m
+    return hdr_text
 
-
-def AddrHeader(fromaddr):
+def AddrHeader(fromaddr) -> str:
     '''Accepts any of:
         Header() instance
         foo@bar.com
@@ -201,7 +204,7 @@ def encode_email_part(content, content_type):
             # switch to Quoted-Printable encoding to avoid too-long lines
             # we could always Quoted-Printabl, but it makes the output a little messier and less human-readable
             # the particular order of all these operations seems to be very important for everything to end up right
-            msg = MIMEText('', content_type)
+            msg = MIMEText('', content_type, policy=email_policy)
             msg.replace_header('content-transfer-encoding', 'quoted-printable')
             cs = email.charset.Charset('utf-8')
             cs.header_encoding = email.charset.QP
@@ -210,13 +213,13 @@ def encode_email_part(content, content_type):
             msg.set_payload(payload, 'utf-8')
             return msg
     else:
-        return MIMEText(encoded_content, content_type, encoding)
+        return MIMEText(encoded_content, content_type, encoding, policy=email_policy)
 
 
 def make_multipart_message(*parts):
-    msg = MIMEMultipart('related')
+    msg = MIMEMultipart('related', policy=email_policy)
     msg.preamble = 'This is a multi-part message in MIME format.'
-    alt = MIMEMultipart('alternative')
+    alt = MIMEMultipart('alternative', policy=email_policy)
     msg.attach(alt)
     for part in parts:
         alt.attach(part)

@@ -38,7 +38,7 @@ from alluratest.controller import setup_basic_test, setup_global_objects, TestCo
 from allura import model as M
 from allura.command.taskd import TaskdCommand
 from allura.lib import helpers as h
-from allura.lib.mail_util import MAX_MAIL_LINE_OCTETS
+from allura.lib.mail_util import MAX_MAIL_LINE_OCTETS, email_policy
 from allura.tasks import event_tasks
 from allura.tasks import index_tasks
 from allura.tasks import mail_tasks
@@ -265,7 +265,7 @@ class TestMailTasks(unittest.TestCase):
                 message_id=h.gen_message_id())
             assert _client.sendmail.call_count == 1
             return_path, rcpts, body = _client.sendmail.call_args[0]
-            body = body.split('\n')
+            body = body.split(email_policy.linesep)
 
             assert rcpts == [c.user.get_pref('email_address')]
             assert 'Reply-To: %s' % g.noreply in body
@@ -288,14 +288,13 @@ class TestMailTasks(unittest.TestCase):
                 message_id=h.gen_message_id())
             assert _client.sendmail.call_count == 1
             return_path, rcpts, body = _client.sendmail.call_args[0]
-            body = body.split('\n')
+            body = body.split(email_policy.linesep)
 
             assert rcpts == ['blah@blah.com']
             assert 'Reply-To: %s' % g.noreply in body
 
             # The address portion must not be encoded, only the name portion can be.
-            # Also py2 and py3 vary in handling of double-quote separators when the name portion is encoded
-            unquoted_cyrillic_No = '=?utf-8?b?0J/Qvg==?='  # По
+            unquoted_cyrillic_No = '=?utf-8?q?=D0=9F=D0=BE?='  # По
             quoted_cyrillic_No = '=?utf-8?b?ItCf0L4i?='  # "По"
             assert (f'From: {quoted_cyrillic_No} <foo@bar.com>' in body or
                     f'From: {unquoted_cyrillic_No} <foo@bar.com>' in body), body
@@ -321,7 +320,7 @@ class TestMailTasks(unittest.TestCase):
                 message_id=h.gen_message_id())
             assert _client.sendmail.call_count == 1
             return_path, rcpts, body = _client.sendmail.call_args[0]
-            body = body.split('\n')
+            body = body.split(email_policy.linesep)
             assert 'From: %s' % g.noreply in body
 
     def test_send_email_with_disabled_destination_user(self):
@@ -352,7 +351,7 @@ class TestMailTasks(unittest.TestCase):
                 message_id=h.gen_message_id())
             assert _client.sendmail.call_count == 1
             return_path, rcpts, body = _client.sendmail.call_args[0]
-            body = body.split('\n')
+            body = body.split(email_policy.linesep)
             assert 'From: "Test Admin" <test-admin@users.localhost>' in body
 
             c.user.disabled = True
@@ -366,7 +365,7 @@ class TestMailTasks(unittest.TestCase):
                 message_id=h.gen_message_id())
             assert _client.sendmail.call_count == 2
             return_path, rcpts, body = _client.sendmail.call_args[0]
-            body = body.split('\n')
+            body = body.split(email_policy.linesep)
             assert 'From: %s' % g.noreply in body
 
     def test_email_sender_to_headers(self):
@@ -382,7 +381,7 @@ class TestMailTasks(unittest.TestCase):
                 message_id=h.gen_message_id())
             assert _client.sendmail.call_count == 1
             return_path, rcpts, body = _client.sendmail.call_args[0]
-            body = body.split('\n')
+            body = body.split(email_policy.linesep)
             assert 'From: "Test Admin" <test-admin@users.localhost>' in body
             assert 'Sender: tickets@test.p.domain.net' in body
             assert 'To: test@mail.com' in body
@@ -398,7 +397,7 @@ class TestMailTasks(unittest.TestCase):
                 message_id=h.gen_message_id())
             assert _client.sendmail.call_count == 1
             return_path, rcpts, body = _client.sendmail.call_args[0]
-            body = body.split('\n')
+            body = body.split(email_policy.linesep)
             assert 'From: "Test Admin" <test-admin@users.localhost>' in body
             assert 'Sender: tickets@test.p.domain.net' in body
             assert 'To: 123@tickets.test.p.domain.net' in body
@@ -416,7 +415,7 @@ class TestMailTasks(unittest.TestCase):
                 message_id=h.gen_message_id())
             assert _client.sendmail.call_count == 1
             return_path, rcpts, body = _client.sendmail.call_args[0]
-            body = body.split('\n')
+            body = body.split(email_policy.linesep)
             assert 'From: "Test Admin" <test-admin@users.localhost>' in body
             assert 'References: <a> <b> <c>' in body
 
@@ -431,7 +430,7 @@ class TestMailTasks(unittest.TestCase):
                 message_id=h.gen_message_id())
             assert _client.sendmail.call_count == 1
             return_path, rcpts, body = _client.sendmail.call_args[0]
-            body = body.split('\n')
+            body = body.split(email_policy.linesep)
             assert 'From: "Test Admin" <test-admin@users.localhost>' in body
             assert 'References: <ref>' in body
 
@@ -472,11 +471,11 @@ class TestMailTasks(unittest.TestCase):
                 toaddr='blah@blah.com',
                 text=('0123456789' * 100) + '\n\n' + ('Громады стро ' * 100),
                 reply_to=g.noreply,
-                subject='По оживлённым берегам',
+                subject='123451234512345' * 100,
                 references=['foo@example.com'] * 100,  # needs to handle really long headers as well
                 message_id=h.gen_message_id())
             return_path, rcpts, body = _client.sendmail.call_args[0]
-            body = body.split('\n')
+            body = body.split(email_policy.linesep)
 
             for line in body:
                 assert len(line) <= MAX_MAIL_LINE_OCTETS
