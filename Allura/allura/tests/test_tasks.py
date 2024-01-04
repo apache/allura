@@ -480,12 +480,13 @@ class TestMailTasks(unittest.TestCase):
             for line in body:
                 assert len(line) <= MAX_MAIL_LINE_OCTETS
 
+            bodystr = ''.join(body)
             # plain text
-            assert '012345678901234567890123456789012345678901234567890123456789012345678901234=' in body
-            assert '=D0=93=D1=80=D0=BE=D0=BC=D0=B0=D0=B4=D1=8B =D1=81=D1=82=D1=80=D0=BE =D0=93=' in body
+            assert b64encode(b'012345678901234567890123').decode('utf8') in bodystr
+            assert b64encode('Громады стро '.encode('utf8')).decode('utf8') in bodystr
             # html
-            assert '<div class=3D"markdown_content"><p>0123456789012345678901234567890123456789=' in body
-            assert '<p>=D0=93=D1=80=D0=BE=D0=BC=D0=B0=D0=B4=D1=8B =D1=81=D1=82=D1=80=D0=BE =D0=' in body
+            assert b64encode(b'<div class="markdown_content"><p>012345678901234567890123').decode('utf8') in bodystr
+            assert b64encode('<p>Громады стро '.encode('utf8')).decode('utf8') in bodystr
 
     @td.with_wiki
     def test_receive_email_ok(self):
