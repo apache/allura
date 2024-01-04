@@ -34,6 +34,7 @@ from tg import config
 import feedparser
 
 from allura import model as M
+from allura.lib.mail_util import email_policy
 from allura.tasks import mail_tasks
 from alluratest.controller import TestController
 from allura.lib import helpers as h
@@ -61,7 +62,7 @@ class TestForumEmail(TestController):
         self.forum = FM.Forum.query.get(shortname='testforum')
 
     def test_simple_email(self):
-        msg = MIMEText('This is a test message')
+        msg = MIMEText('This is a test message', policy=email_policy)
         self._post_email(
             self.email_address,
             [self.forum.email_address],
@@ -74,8 +75,9 @@ class TestForumEmail(TestController):
         msg = MIMEMultipart(
             'alternative',
             _subparts=[
-                MIMEText('This is a test message'),
-                MIMEText('This is a <em>test</em> message', 'html')])
+                MIMEText('This is a test message', policy=email_policy),
+                MIMEText('This is a <em>test</em> message', 'html', policy=email_policy)],
+            policy=email_policy)
         self._post_email(
             self.email_address,
             [self.forum.email_address],
@@ -94,13 +96,17 @@ class TestForumEmail(TestController):
                 MIMEMultipart(
                     'alternative',
                     _subparts=[
-                        MIMEText('This is a test message'),
-                        MIMEText('This is a <em>test</em> message', 'html')
-                    ])
-            ])
+                        MIMEText('This is a test message', policy=email_policy),
+                        MIMEText('This is a <em>test</em> message', 'html', policy=email_policy)
+                    ],
+                    policy=email_policy
+                ),
+            ],
+            policy=email_policy
+        )
         with open(pkg_resources.resource_filename(
                 'forgediscussion', 'tests/data/python-logo.png'), 'rb') as fp:
-            img = MIMEImage(fp.read())
+            img = MIMEImage(fp.read(), policy=email_policy)
             img.add_header('Content-Disposition', 'attachment',
                            filename='python-logo.png')
             msg.attach(img)

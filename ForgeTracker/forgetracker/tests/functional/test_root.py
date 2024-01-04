@@ -33,6 +33,7 @@ from tg import tmpl_context as c
 from tg import app_globals as g
 from tg import config
 
+from allura.lib.mail_util import email_policy
 from allura.tests.decorators import assert_equivalent_urls
 from allura.tests.test_globals import squish_spaces
 from alluratest.controller import TestController, setup_basic_test
@@ -2526,7 +2527,7 @@ class TestFunctionalController(TrackerTestController):
                 message_id=h.gen_message_id())
             assert _client.sendmail.call_count == 1
             return_path, rcpts, body = _client.sendmail.call_args[0]
-            body = body.split('\n')
+            body = body.split(email_policy.linesep)
             # check subject
             assert 'Subject: [test:bugs] #1 test <h2> ticket' in body
             # check html, need tags escaped

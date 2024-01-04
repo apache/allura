@@ -35,6 +35,7 @@ from allura.lib.mail_util import (
     is_autoreply,
     identify_sender,
     _parse_message_id,
+    email_policy,
 )
 from allura.lib.exceptions import AddressException
 from allura.tests import decorators as td
@@ -91,7 +92,8 @@ class TestReactor(unittest.TestCase):
 Толпой со всех концов земли
 К богатым пристаням стремятся;'''.encode(charset),
                         'plain',
-                        charset)
+                        charset,
+                        policy=email_policy)
         msg1['Message-ID'] = '<foo@bar.com>'
         s_msg = msg1.as_string()
         msg2 = parse_message(s_msg)
@@ -189,15 +191,17 @@ Content-Type: text/html; charset="utf-8"
 Толпой со всех концов земли
 К богатым пристаням стремятся;'''.encode(charset),
                       'plain',
-                      charset)
+                      charset,
+                      policy=email_policy)
         p2 = MIMEText('''<p>По оживлённым берегам
 Громады стройные теснятся
 Дворцов и башен; корабли
 Толпой со всех концов земли
 К богатым пристаням стремятся;</p>'''.encode(charset),
                       'plain',
-                      charset)
-        msg1 = MIMEMultipart()
+                      charset,
+                      policy=email_policy)
+        msg1 = MIMEMultipart(policy=email_policy)
         msg1['Message-ID'] = '<foo@bar.com>'
         msg1.attach(p1)
         msg1.attach(p2)
@@ -214,20 +218,19 @@ class TestHeader:
     def test_bytestring(self):
         with pytest.raises(TypeError):
             our_header = Header(b'[asdf2:wiki] Discussion for Home page')
-            assert our_header.encode() == '[asdf2:wiki] Discussion for Home page'
+            assert our_header == '[asdf2:wiki] Discussion for Home page'
 
     def test_ascii(self):
         our_header = Header('[asdf2:wiki] Discussion for Home page')
-        assert our_header.encode() == '[asdf2:wiki] Discussion for Home page'
+        assert our_header == '[asdf2:wiki] Discussion for Home page'
 
     def test_utf8(self):
         our_header = Header('теснятся')
-        assert our_header.encode() == '=?utf-8?b?0YLQtdGB0L3Rj9GC0YHRjw==?='
+        assert our_header == 'теснятся'
 
     def test_name_addr(self):
         our_header = Header('"теснятся"', '<dave@b.com>')
-        assert (our_header.encode() ==
-                     '=?utf-8?b?ItGC0LXRgdC90Y/RgtGB0Y8i?= <dave@b.com>')
+        assert our_header == '"теснятся" <dave@b.com>'
 
 
 class TestIsAutoreply:
