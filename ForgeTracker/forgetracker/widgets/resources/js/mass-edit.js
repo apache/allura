@@ -44,7 +44,7 @@ $(function(){
         }
 
         $checked.each(function() {
-            $form.append('<input type="hidden" name="__ticket_ids" value="'+$(this).val()+'"/>');
+            $form.append('<input type="hidden" name="__ticket_ids" value="'+escape_html($(this).val())+'"/>');
         });
     });
 });
