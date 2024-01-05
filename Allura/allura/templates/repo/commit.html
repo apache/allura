@@ -49,9 +49,10 @@ Commit <a href="{{commit.url()}}" rel="nofollow">{{commit.shorthand_id()}}</a> {
 {{ super() }}
   <script type="text/javascript">
     function color_diff(selector) {
-      var overflow = $(selector).find("pre").get(0);
+      var $selected = $('body').find(selector);
+      var overflow = $selected.find("pre").get(0);
       var len = overflow.scrollWidth - 5;
-      $(selector).find(".gi, .gd, .gu").width(len);
+      $selected.find(".gi, .gd, .gu").width(len);
     }
 
     function ld(diff, callback) {
