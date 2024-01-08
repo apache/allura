@@ -38,6 +38,8 @@ class ScriptCommand(base.Command):
     parser = base.Command.standard_parser(verbose=True)
     parser.add_option('--profile', action='store_true', dest='profile',
                       help='Dump profiling data to <script>.profile')
+    parser.add_option('--profile-output', dest='profile_output',
+                      help='full path to store profiling results')
     parser.add_option('--pdb', action='store_true', dest='pdb',
                       help='Drop to a debugger on error')
 
@@ -60,11 +62,22 @@ class ScriptCommand(base.Command):
             with open(filename) as fp:
                 ns = dict(__name__='__main__')
                 sys.argv = self.args[1:]
+                code = compile(fp.read(), filename, 'exec')
+
                 if self.options.profile:
-                    cProfile.run(fp.read(), '%s.profile' %
-                                 os.path.basename(filename))
-                else:
-                    exec(compile(fp.read(), filename, 'exec'), ns)
+                    profile_output_file = self.options.profile_output or '%s.profile' % os.path.basename(filename)
+                    if not os.access(os.path.dirname(profile_output_file), os.W_OK):
+                        raise OSError(f'no write permission to dir for {profile_output_file}. '
+                                      f'Specify a different path with --profile-output')
+                    # https://stackoverflow.com/a/48622889
+                    pr = cProfile.Profile()
+                    pr.enable()
+
+                exec(code, ns)
+
+                if self.options.profile:
+                    pr.disable()
+                    pr.dump_stats(profile_output_file)
 
 
 class SetToolAccessCommand(base.Command):
