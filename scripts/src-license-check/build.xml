@@ -22,13 +22,10 @@
 	xmlns:rat="antlib:org.apache.rat.anttasks">
 	<target name="license-report" 
 		description="outputs report about license(s) found in source code">
-		<rat:report format="styled">
+		<rat:report>
 			<fileset dir="../../">
 				<excludesfile name="../../rat-excludes.txt" />
 			</fileset>
-			<stylesheet>
-				<file file="report_stylesheet.xsl" />
-			</stylesheet>
 		</rat:report>
 	</target>
 </project>
