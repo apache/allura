@@ -15,6 +15,7 @@
 .eslintrc-es6
 .jscsrc
 .jshintrc
+.ruff_cache/
 allura-data/
 Allura/allura/etc/mime.types
 Allura/allura/lib/widgets/resources/css/autocomplete.css
@@ -80,5 +81,3 @@ solr_config/allura/core.properties
 # tmp can have tons of files from the broccoli build process
 tmp/**
 Allura/allura/public/nf/js/checklist.js
-Allura/allura/templates_responsive/override/allura/templates/README.md
-
