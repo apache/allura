@@ -91,7 +91,7 @@ def make_app(global_conf: dict, **app_conf):
 class BeakerPickleSerializerWithLatin1(PickleSerializer):
     def loads(self, data_string):
         # need latin1 to decode py2 timestamps in py  https://docs.python.org/3/library/pickle.html#pickle.Unpickler
-        return pickle.loads(data_string, **{'encoding': 'latin1'} if six.PY3 else {})
+        return pickle.loads(data_string, encoding='latin1')
 
 
 def _make_core_app(root, global_conf: dict, **app_conf):

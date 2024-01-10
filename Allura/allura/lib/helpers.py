@@ -239,7 +239,7 @@ def _attempt_encodings(s, encodings):
     for enc in encodings:
         try:
             if enc is None:
-                if six.PY3 and isinstance(s, bytes):
+                if isinstance(s, bytes):
                     # special handling for bytes (avoid b'asdf' turning into "b'asfd'")
                     return s.decode('utf-8')
                 return str(s)  # try default encoding, and handle other types like int, etc

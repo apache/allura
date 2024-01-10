@@ -277,8 +277,7 @@ class TestZipDir(unittest.TestCase):
         emsg = str(cm.exception)
         self.assertIn(
             "Command: " +
-            ("['/bin/zip', '-y', '-q', '-r', '/fake/zip/file.tmp', b'repo'] " if six.PY3 else
-             "[u'/bin/zip', u'-y', u'-q', u'-r', u'/fake/zip/file.tmp', 'repo'] ") +
+            "['/bin/zip', '-y', '-q', '-r', '/fake/zip/file.tmp', b'repo'] " +
             "returned non-zero exit code 1", emsg)
         self.assertTrue("STDOUT: 1" in emsg)
         self.assertTrue("STDERR: 2" in emsg)
