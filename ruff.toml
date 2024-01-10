@@ -17,6 +17,7 @@
 
 line-length = 119
 show-source = true
+target-version = "py38"
 
 select = [
     # all flake8 & pep8 (except 'ignore' below)
@@ -42,6 +43,7 @@ ignore = [
     'B006', # Do not use mutable data structures for argument defaults
     'B007', # Loop control variable not used within the loop body
     'B904', # use raise from
+    'B905', # zip(strict=True) would be good, but need to closely evaluate all existing cases first
 ]
 
 [per-file-ignores]
