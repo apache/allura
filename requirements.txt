@@ -240,7 +240,7 @@ translationstring==1.4
     # via colander
 turbogears2==2.4.3
     # via -r requirements.in
-typing-extensions==4.7.1
+typing-extensions==4.9.0
     # via qrcode
 urllib3==2.1.0
     # via requests
