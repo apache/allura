@@ -22,7 +22,7 @@ bleach[css]==6.1.0
     #   pypeline
 certifi==2023.7.22
     # via requests
-cffi==1.15.1
+cffi==1.16.0
     # via cryptography
 cfgv==3.4.0
     # via pre-commit
