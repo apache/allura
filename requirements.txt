@@ -160,7 +160,7 @@ pypng==0.20220715.0
     # via qrcode
 pysolr==3.9.0
     # via -r requirements.in
-pytest==7.4.2
+pytest==7.4.4
     # via
     #   -r requirements.in
     #   pytest-sugar
