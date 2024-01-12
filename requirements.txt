@@ -266,7 +266,7 @@ webtest==3.0.0
     # via -r requirements.in
 werkzeug==3.0.1
     # via -r requirements.in
-wrapt==1.15.0
+wrapt==1.16.0
     # via -r requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:
