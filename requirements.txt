@@ -60,7 +60,7 @@ feedparser==6.0.10
     # via -r requirements.in
 filelock==3.12.4
     # via virtualenv
-formencode==2.0.1
+formencode==2.1.0
     # via
     #   -r requirements.in
     #   easywidgets
@@ -123,7 +123,7 @@ packaging==23.2
     #   pytest-sugar
 paginate==0.5.6
     # via -r requirements.in
-paste==3.6.1
+paste==3.7.1
     # via
     #   -r requirements.in
     #   easywidgets
@@ -213,7 +213,6 @@ six==1.16.0
     #   bleach
     #   creoleparser
     #   easywidgets
-    #   formencode
     #   genshi
     #   html5lib
     #   paste
