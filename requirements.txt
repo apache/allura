@@ -20,13 +20,13 @@ bleach[css]==6.1.0
     # via
     #   bleach
     #   pypeline
-certifi==2023.7.22
+certifi==2023.11.17
     # via requests
 cffi==1.16.0
     # via cryptography
 cfgv==3.4.0
     # via pre-commit
-charset-normalizer==3.3.0
+charset-normalizer==3.3.2
     # via requests
 colander==1.8.3
     # via -r requirements.in
@@ -79,7 +79,7 @@ html5lib==1.1
     #   textile
 identify==2.5.30
     # via pre-commit
-idna==3.4
+idna==3.6
     # via requests
 inflection==0.5.1
     # via profanityfilter
@@ -242,7 +242,7 @@ turbogears2==2.4.3
     # via -r requirements.in
 typing-extensions==4.7.1
     # via qrcode
-urllib3==2.0.7
+urllib3==2.1.0
     # via requests
 virtualenv==20.24.5
     # via pre-commit
