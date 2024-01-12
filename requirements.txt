@@ -66,9 +66,9 @@ formencode==2.1.0
     #   easywidgets
 genshi==0.7.7
     # via creoleparser
-gitdb==4.0.10
+gitdb==4.0.11
     # via gitpython
-gitpython==3.1.37
+gitpython==3.1.41
     # via -r requirements.in
 gunicorn==21.2.0
     # via -r requirements.in
@@ -220,7 +220,7 @@ six==1.16.0
     #   python-dateutil
     #   sxsdiff
     #   webhelpers2
-smmap==5.0.0
+smmap==5.0.1
     # via gitdb
 soupsieve==2.4.1
     # via beautifulsoup4
