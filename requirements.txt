@@ -17,9 +17,7 @@ beautifulsoup4==4.12.2
     #   -r requirements.in
     #   webtest
 bleach[css]==6.1.0
-    # via
-    #   bleach
-    #   pypeline
+    # via pypeline
 certifi==2023.11.17
     # via requests
 cffi==1.16.0
@@ -128,11 +126,11 @@ paste==3.7.1
     #   -r requirements.in
     #   easywidgets
     #   pastescript
-pastedeploy==2.1.1
+pastedeploy==3.1.0
     # via
     #   -r requirements.in
     #   pastescript
-pastescript==3.3.0
+pastescript==3.4.0
     # via -r requirements.in
 pillow==10.2.0
     # via -r requirements.in
