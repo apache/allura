@@ -6,7 +6,6 @@ colander
 cryptography
 decorator
 EasyWidgets
-# https://github.com/carpedm20/emoji/issues/191
 emoji
 faust-cchardet
 feedgenerator
@@ -22,7 +21,7 @@ Ming
 oauthlib
 paginate
 Paste
-PasteDeploy<3
+PasteDeploy
 PasteScript
 Pillow
 # profanity filter for feedback
