@@ -223,6 +223,11 @@ class AuthController(BaseController):
             redirect('/')
 
         user_record = M.User.by_email_address(email, only_confirmed=False)
+        if not user_record and email != email.lower():
+            # try again lowercase
+            email = email.lower()
+            user_record = M.User.by_email_address(email, only_confirmed=False)
+
         allow_non_primary_email_reset = asbool(config.get('auth.allow_non_primary_email_password_reset', True))
 
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):

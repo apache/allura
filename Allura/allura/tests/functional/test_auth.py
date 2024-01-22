@@ -1764,6 +1764,25 @@ To update your password on %s, please visit the following URL:
         r = r.follow().follow()
         assert 'Log Out' in r, r
 
+
+    @patch('allura.tasks.mail_tasks.sendsimplemail')
+    @patch('allura.lib.helpers.gen_message_id')
+    def test_capitalized_email_entered(self, gen_message_id, sendmail):
+        self.app.get('/').follow()  # establish session
+        user = M.User.query.get(username='test-admin')
+        email = M.EmailAddress.find({'claimed_by_user_id': user._id}).first()
+        email.confirmed = True
+        ThreadLocalODMSession.flush_all()
+
+        # request a reset
+        with td.audits('Password recovery link sent to: ' + email.email, user=True):
+            r = self.app.post('/auth/password_recovery_hash', {'email': email.email.capitalize(),  # NOTE THIS
+                                                               '_session_id': self.app.cookies['_session_id'],
+                                                               })
+        # confirm it worked
+        hash = user.get_tool_data('AuthPasswordReset', 'hash')
+        assert hash is not None
+
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
     def test_hash_expired(self, gen_message_id, sendmail):
