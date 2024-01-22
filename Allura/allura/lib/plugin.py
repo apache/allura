@@ -25,6 +25,7 @@ import subprocess
 import string
 import crypt
 import random
+from contextlib import contextmanager
 from urllib.request import urlopen
 from urllib.parse import urlparse
 from io import BytesIO
@@ -628,16 +629,26 @@ class LocalAuthenticationProvider(AuthenticationProvider):
             d = self.user_registration_date(user)
         return d
 
-
-def ldap_conn(who=None, cred=None):
+def ldap_conn_staysopen(who=None, cred=None):
     '''
-    Init & bind a connection with the given creds, or the admin creds if not
-    specified. Remember to unbind the connection when done.
+    You must call .unbind_s() when done with this
     '''
     con = ldap.initialize(config['auth.ldap.server'])
     con.simple_bind_s(who or config['auth.ldap.admin_dn'],
                       cred or config['auth.ldap.admin_password'])
     return con
+
+@contextmanager
+def ldap_conn(who=None, cred=None):
+    '''
+    Init & bind a connection with the given creds, or the admin creds if not
+    specified.
+    '''
+    con = ldap_conn_staysopen(who, cred)
+    try:
+        yield con
+    finally:
+        con.unbind_s()
 
 
 def ldap_user_dn(username):
@@ -667,7 +678,6 @@ class LdapAuthenticationProvider(AuthenticationProvider):
 
         # full registration into LDAP
         uid = str(M.AuthGlobals.get_next_uid()).encode('utf-8')
-        con = ldap_conn()
         uname = user_doc['username'].encode('utf-8')
         display_name = user_doc['display_name'].encode('utf-8')
         ldif_u = modlist.addModlist(dict(
@@ -681,12 +691,12 @@ class LdapAuthenticationProvider(AuthenticationProvider):
             loginShell=b'/bin/bash',
             gecos=uname,
             description=b'SCM user account'))
-        try:
-            con.add_s(ldap_user_dn(user_doc['username']), ldif_u)
-        except ldap.ALREADY_EXISTS:
-            log.exception('Trying to create existing user %s', uname)
-            raise
-        con.unbind_s()
+        with ldap_conn() as con:
+            try:
+                con.add_s(ldap_user_dn(user_doc['username']), ldif_u)
+            except ldap.ALREADY_EXISTS:
+                log.exception('Trying to create existing user %s', uname)
+                raise
 
         if asbool(config.get('auth.ldap.use_schroot', True)):
             argv = ('schroot -d / -c {} -u root /ldap-userconfig.py init {}'.format(
@@ -742,11 +752,10 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         else:
             ldap_ident = ldap_pass = None
         try:
-            con = ldap_conn(ldap_ident, ldap_pass)
             new_password = self._encode_password(new_password)
-            con.modify_s(
-                dn, [(ldap.MOD_REPLACE, 'userPassword', new_password)])
-            con.unbind_s()
+            with ldap_conn(ldap_ident, ldap_pass) as con:
+                con.modify_s(
+                    dn, [(ldap.MOD_REPLACE, 'userPassword', new_password)])
             user.last_password_updated = datetime.utcnow()
             session(user).flush(user)
         except ldap.INVALID_CREDENTIALS:
@@ -792,8 +801,8 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         except ValueError:
             return False
         try:
-            con = ldap_conn(ldap_user, password)
-            con.unbind_s()
+            with ldap_conn(ldap_user, password):
+                pass
             return True
         except (ldap.INVALID_CREDENTIALS, ldap.UNWILLING_TO_PERFORM, ldap.NO_SUCH_OBJECT):
             log.debug(f'LdapAuth: could not authenticate {username}', exc_info=True)
@@ -1740,13 +1749,11 @@ class LdapUserPreferencesProvider(UserPreferencesProvider):
             return LocalUserPreferencesProvider().get_pref(user, pref_name)
 
     def _get_pref(self, username, pref_name, multi=False):
-        con = ldap_conn()
-        try:
-            rs = con.search_s(ldap_user_dn(username), ldap.SCOPE_BASE)
-        except ldap.NO_SUCH_OBJECT:
-            rs = []
-        else:
-            con.unbind_s()
+        with ldap_conn() as con:
+            try:
+                rs = con.search_s(ldap_user_dn(username), ldap.SCOPE_BASE)
+            except ldap.NO_SUCH_OBJECT:
+                rs = []
         if not rs:
             log.warning(f'LdapUserPref: No user record found for: {username}')
             return ''
@@ -1767,10 +1774,9 @@ class LdapUserPreferencesProvider(UserPreferencesProvider):
                 ldap_val = [v.encode('utf-8', errors='replace') for v in pref_value]
             else:
                 ldap_val = pref_value.encode('utf-8', errors='replace')
-            con = ldap_conn()
-            con.modify_s(ldap_user_dn(user.username),
-                         [(ldap.MOD_REPLACE, ldap_attr, ldap_val)])
-            con.unbind_s()
+            with ldap_conn() as con:
+                con.modify_s(ldap_user_dn(user.username),
+                             [(ldap.MOD_REPLACE, ldap_attr, ldap_val)])
         else:
             return LocalUserPreferencesProvider().set_pref(user, pref_name, pref_value)
 
