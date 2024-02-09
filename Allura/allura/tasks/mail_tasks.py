@@ -48,7 +48,7 @@ def mail_meta_content(metalink):
       <meta itemprop="name" content="View"></meta>
     </div>
     <meta itemprop="description" content="View"></meta>
-    </div>""" % metalink)
+    </div>""") % metalink
 
 
 @task

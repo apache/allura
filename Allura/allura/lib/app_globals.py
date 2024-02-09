@@ -99,17 +99,14 @@ class ForgeMarkdown:
             # if text is too big, markdown can take a long time to process it,
             # so we return it as a plain text
             log.info('Text is too big. Skipping markdown processing')
-            escaped = html.escape(h.really_unicode(source))
-            return Markup('<pre>%s</pre>' % escaped)
+            return Markup('<pre>{}</pre>').format(h.really_unicode(source))
         try:
             return self.make_markdown_instance(**self.forge_ext_kwargs).convert(source)
         except Exception:
             log.info('Invalid markdown: %s  Upwards trace is %s', source,
                      ''.join(traceback.format_stack()), exc_info=True)
-            escaped = h.really_unicode(source)
-            escaped = html.escape(escaped)
             return Markup("""<p><strong>ERROR!</strong> The markdown supplied could not be parsed correctly.
-            Did you forget to surround a code snippet with "~~~~"?</p><pre>%s</pre>""" % escaped)
+            Did you forget to surround a code snippet with "~~~~"?</p><pre>%s</pre>""") % h.really_unicode(source)
 
     @LazyProperty
     def uncacheable_macro_regex(self):
@@ -471,10 +468,8 @@ class Globals:
             lexer = pygments.lexers.get_lexer_by_name(lexer, encoding='chardet')
 
         if lexer is None or len(text) >= asint(config.get('scm.view.max_syntax_highlight_bytes', 500000)):
-            # no highlighting, but we should escape, encode, and wrap it in
-            # a <pre>
-            text = html.escape(text)
-            return Markup('<pre>' + text + '</pre>')
+            # no highlighting, but we should wrap it in a <pre> safely
+            return Markup('<pre>{}</pre>').format(text)
         else:
             return Markup(pygments.highlight(text, lexer, formatter))
 
@@ -686,7 +681,7 @@ class Icon:
         if tag == 'a':
             attrs['href'] = '#'
         attrs.update(kw)
-        attrs = ew._Jinja2Widget().j2_attrs(attrs)
+        attrs = ew._Jinja2Widget().j2_attrs(attrs)  # this escapes them
         visible_title = ''
         if show_title:
             visible_title = f'&nbsp;{Markup.escape(title)}'

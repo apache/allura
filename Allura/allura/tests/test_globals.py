@@ -441,6 +441,7 @@ class Test():
         text = 'a' * 40001
         assert g.markdown.convert(text) == '<pre>%s</pre>' % text
         assert g.markdown_wiki.convert(text) == '<pre>%s</pre>' % text
+        assert g.markdown.convert('<b>' + text) == '<pre>&lt;b&gt;%s</pre>' % text
 
     def test_markdown_basics(self):
         with h.push_context('test', 'wiki', neighborhood='Projects'):

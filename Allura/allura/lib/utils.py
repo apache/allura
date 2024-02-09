@@ -211,10 +211,10 @@ def chunked_iter(iterable, max_size):
 class AntiSpam:
 
     '''Helper class for bot-protecting forms'''
-    honey_field_template = string.Template('''<p class="$honey_class">
-    <label for="$fld_id">You seem to have CSS turned off.
+    honey_field_template = '''<p class="{honey_class}">
+    <label for="{fld_id}">You seem to have CSS turned off.
         Please don't fill out this field.</label><br>
-    <input id="$fld_id" name="$fld_name" type="text"><br></p>''')
+    <input id="{fld_id}" name="{fld_name}" type="text"><br></p>'''
 
     def __init__(self, request=None, num_honey=2, timestamp=None, spinner=None):
         self.num_honey = num_honey
@@ -307,10 +307,10 @@ class AntiSpam:
         for fldno in range(self.num_honey):
             fld_name = self.enc('honey%d' % (fldno))
             fld_id = self.enc('honey%d%d' % (self.counter, fldno))
-            yield Markup(self.honey_field_template.substitute(
+            yield Markup(self.honey_field_template).format(
                 honey_class=self.honey_class,
                 fld_id=fld_id,
-                fld_name=fld_name))
+                fld_name=fld_name)
         self.counter += 1
 
     def make_spinner(self, timestamp=None):
