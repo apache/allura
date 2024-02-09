@@ -24,6 +24,7 @@ from collections.abc import Iterable, Generator
 import sxsdiff
 from diff_match_patch import diff_match_patch
 import six
+from markupsafe import Markup
 from sxsdiff.calculator import LineChange, ElementsHolder, PlainElement, AdditionElement, DeletionElement
 
 log = logging.getLogger(__name__)
@@ -67,7 +68,7 @@ class SxsOutputGenerator(sxsdiff.BaseGenerator):
     def run(self, diff_result: Iterable[LineChange | None]):
         self.out = ''
         super().run(diff_result)
-        return self.out
+        return Markup(self.out)  # "safe" because we use html.escape in a few key places below
 
     def visit_row(self, line_change: LineChange | None):
         if line_change is None:

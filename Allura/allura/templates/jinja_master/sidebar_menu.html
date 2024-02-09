@@ -95,7 +95,7 @@
     {% endif %}
     {% if c.app and c.app.sidebar_menu_js() %}
       <script>
-        {{c.app.sidebar_menu_js()|safe}}
+        {{c.app.sidebar_menu_js()}}
       </script>
     {% endif %}
 </div>

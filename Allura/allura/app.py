@@ -24,6 +24,7 @@ from xml.etree import ElementTree as ET
 from copy import copy
 
 import pkg_resources
+from markupsafe import Markup
 from tg import expose, redirect, flash, validate
 from tg.decorators import without_trailing_slash
 from tg import config as tg_config
@@ -619,13 +620,13 @@ class Application(ActivityObject):
         """
         return []
 
-    def sidebar_menu_js(self):
+    def sidebar_menu_js(self) -> Markup:
         """Return Javascript needed by the sidebar menu of this Application.
 
-        :return: a string of Javascript code
+        :return: Markup string of Javascript code
 
         """
-        return ""
+        return Markup("")
 
     @LazyProperty
     def _webhooks(self):

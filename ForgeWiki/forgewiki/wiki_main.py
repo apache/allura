@@ -23,6 +23,7 @@ from pprint import pformat
 import six
 from urllib.parse import unquote, urlencode
 
+from markupsafe import Markup
 # Non-stdlib imports
 from tg import expose, validate, redirect, flash, jsonify
 from tg.decorators import with_trailing_slash, without_trailing_slash
@@ -305,7 +306,7 @@ The wiki uses [Markdown](%s) syntax.
         return self.create_common_wiki_menu(has_create_access=has_access(self, 'create'))
 
     def sidebar_menu_js(self):
-        return '''
+        return Markup('''
         $('#sidebar').on('click', 'a[href$="#toggle-subscribe"]', function(e) {
             e.preventDefault();
             var link = this;
@@ -332,7 +333,7 @@ The wiki uses [Markdown](%s) syntax.
                 $(link).attr('href', $(link).attr('href').replace('-unsubscribe','-subscribe'));
             });
         });
-        '''
+        ''')
 
     def install(self, project):
         'Set up any default permissions and roles here'

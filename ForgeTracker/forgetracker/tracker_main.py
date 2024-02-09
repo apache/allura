@@ -19,6 +19,8 @@ import logging
 import re
 from datetime import datetime, timedelta
 from urllib.parse import urlencode, unquote
+
+from markupsafe import Markup
 from webob import exc
 import json
 import os
@@ -396,7 +398,7 @@ class ForgeTrackerApp(Application):
         return links
 
     def sidebar_menu_js(self):
-        return """\
+        return Markup("""\
         $(function() {
             $.ajax({
                 url:'%(app_url)sbin_counts',
@@ -426,7 +428,7 @@ class ForgeTrackerApp(Application):
                     }
                 });
             }
-        });""" % {'app_url': c.app.url}
+        });""") % {'app_url': c.app.url}
 
     def has_custom_field(self, field):
         """Checks if given custom field is defined.

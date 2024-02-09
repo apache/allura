@@ -63,7 +63,7 @@
         <a rel="nofollow" href="{{ switch_url }}">Switch to {{ switch_text }} view</a>
       </h3>
     {% if session.diformat == 'sidebyside' %}
-      {{diff|safe}}
+      {{diff}}
     {% else %}
       {{g.highlight(diff, lexer='diff')}}
     {% endif %}
