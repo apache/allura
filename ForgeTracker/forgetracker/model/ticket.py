@@ -679,7 +679,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
     def link_text(self):
         text = super().link_text()
         if self.is_closed:
-            return markupsafe.Markup('<s>') + text + markupsafe.Markup('</s>')
+            return markupsafe.Markup('<s>{}</s>').format(text)
         return text
 
     @property

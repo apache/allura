@@ -79,7 +79,7 @@ class GenericTicketForm(ew.SimpleForm):
 
         display = field.display(**ctx)
         if ctx['errors'] and field.show_errors and not ignore_errors:
-            display += Markup("<div class='error'>") + ctx['errors'] + Markup("</div>")
+            display += Markup("<div class='error'>{}</div>").format(ctx['errors'])
         return display
 
     def _add_current_value_to_user_field(self, field, user):

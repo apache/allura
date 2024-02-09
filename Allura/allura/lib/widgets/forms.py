@@ -102,8 +102,7 @@ class ForgeForm(ew.SimpleForm):
             or ctx.get('label')
             or getattr(field, 'label', None)
             or ctx['name'])
-        html = '<label for="{}">{}</label>'.format(html_escape(ctx['id']), html_escape(label_text))
-        return Markup(html)
+        return Markup('<label for="{}">{}</label>').format(ctx['id'], label_text)
 
     def context_for(self, field):
         ctx = super().context_for(field)
@@ -115,9 +114,8 @@ class ForgeForm(ew.SimpleForm):
         ctx = self.context_for(field)
         display = field.display(**ctx)
         if ctx['errors'] and field.show_errors and not ignore_errors:
-            display = "{}<div class='error'>{}</div>".format(display,
-                                                             ctx['errors'])
-        return Markup(display)
+            display += Markup("<div class='error'>{}</div>").format(ctx['errors'])
+        return display
 
 
 class ForgeFormResponsive(ForgeForm):
@@ -852,18 +850,18 @@ class NeighborhoodOverviewForm(ForgeForm):
 
     def display_field(self, field, ignore_errors=False):
         if field.name == "css" and self.list_color_inputs:
-            display = '<table class="table_class">'
+            display = Markup('<table class="table_class">')
             ctx = self.context_for(field)
             for inp in self.color_inputs:
                 additional_inputs = inp.get('additional', '')
                 empty_val = False
                 if inp['value'] is None or inp['value'] == '':
                     empty_val = True
-                display += '<tr><td class="left"><label>%(label)s</label></td>' \
-                           '<td><input type="checkbox" name="%(ctx_name)s-%(inp_name)s-def" %(def_checked)s>default</td>' \
-                           '<td class="right"><div class="%(ctx_name)s-%(inp_name)s-inp"><table class="input_inner">' \
-                           '<tr><td><input type="text" class="%(inp_type)s" name="%(ctx_name)s-%(inp_name)s" ' \
-                           'value="%(inp_value)s"></td><td>%(inp_additional)s</td></tr></table></div></td></tr>\n' % {
+                display += Markup('<tr><td class="left"><label>%(label)s</label></td>'
+                           '<td><input type="checkbox" name="%(ctx_name)s-%(inp_name)s-def" %(def_checked)s>default</td>'
+                           '<td class="right"><div class="%(ctx_name)s-%(inp_name)s-inp"><table class="input_inner">'
+                           '<tr><td><input type="text" class="%(inp_type)s" name="%(ctx_name)s-%(inp_name)s" '
+                           'value="%(inp_value)s"></td><td>%(inp_additional)s</td></tr></table></div></td></tr>\n') % {
                                'ctx_name': ctx['name'],
                                'inp_name': inp['name'],
                                'inp_value': inp['value'],
@@ -871,13 +869,12 @@ class NeighborhoodOverviewForm(ForgeForm):
                                'inp_type': inp['type'],
                                'def_checked': 'checked="checked"' if empty_val else '',
                                'inp_additional': additional_inputs}
-            display += '</table>'
+            display += Markup('</table>')
 
             if ctx['errors'] and field.show_errors and not ignore_errors:
-                display = "{}<div class='error'>{}</div>".format(display,
-                                                                 ctx['errors'])
+                display += Markup("<div class='error'>{}</div>").format(ctx['errors'])
 
-            return Markup(display)
+            return display
         else:
             return super().display_field(field, ignore_errors)
 
