@@ -18,6 +18,7 @@
 import logging
 from html import escape as html_escape
 
+import html
 from tg import app_globals as g, tmpl_context as c
 from formencode import validators as fev
 import formencode
@@ -616,7 +617,7 @@ class RemoveTroveCategoryForm(ForgeForm):
                         text=cat.fullname,
                         href="/categories/%s" % cat.trove_cat_id),
                     ew.HTMLField(
-                        text=cat.shortname,
+                        text=html.escape(cat.shortname),
                         attrs={'disabled': True, 'value': cat.shortname}),
                     ew.SubmitButton(
                         show_errors=False,
