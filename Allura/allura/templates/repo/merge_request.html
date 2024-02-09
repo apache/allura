@@ -135,7 +135,7 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
         To merge the commits, please execute the following commands in your working copy:
       </div>
       <div class="grid-19">
-        <textarea class="merge-instructions" readonly>{{ c.app.repo.merge_command(req) | safe }}</textarea>
+        <textarea class="merge-instructions" readonly>{{ c.app.repo.merge_command(req) }}</textarea>
       </div>
       {% if merge_status not in ('ready', 'busy') %}
         {{ c.mr_dispose_form.display(action="save", value=dict(status=req.status)) }}

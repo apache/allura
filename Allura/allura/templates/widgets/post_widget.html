@@ -94,7 +94,7 @@
                 <b>{{value.subject or '(no subject)'}}<br/></b>
             {% endif %}
 
-            <div{% if can_moderate_post %} class="active-md" data-markdownlink="{{value.url()}}" {% endif %}>{{g.markdown.cached_convert(value, 'text')|safe}}</div>&nbsp;
+            <div{% if can_moderate_post %} class="active-md" data-markdownlink="{{value.url()}}" {% endif %}>{{g.markdown.cached_convert(value, 'text')}}</div>&nbsp;
             <div class='reactions{% if not c.user.is_anonymous() %} reactions-active{% endif %}' style='user-select: none; cursor: default'>
               {% for reaction in value.react_counts %}<div class="reaction{% if current_reaction == reaction %} reaction-current{% endif %}" data-react="{{ reaction }}"><div class="emoj">{{ h.emojize(reaction) }}</div><div class="emoj-count">{{ value.react_counts[reaction] }}</div></div>{% endfor %}
             </div>

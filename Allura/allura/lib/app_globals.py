@@ -94,7 +94,7 @@ class ForgeMarkdown:
                         'markdown_checklist.extension'],
             output_format='html')
 
-    def convert(self, source, render_limit=True):
+    def convert(self, source, render_limit=True) -> Markup:
         if render_limit and len(source) > asint(config.get('markdown_render_max_length', 80000)):
             # if text is too big, markdown can take a long time to process it,
             # so we return it as a plain text
@@ -113,7 +113,7 @@ class ForgeMarkdown:
         regex_names = '|'.join(uncacheable_macros_names())
         return re.compile(rf"\[\[\s*({regex_names})\b")
 
-    def cached_convert(self, artifact: MappedClass, field_name: str) -> str:
+    def cached_convert(self, artifact: MappedClass, field_name: str) -> Markup:
         """
         Convert ``artifact.field_name`` markdown source to html, caching
         the result if the render time is greater than the defined threshold.

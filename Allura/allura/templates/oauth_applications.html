@@ -83,7 +83,7 @@
             <th>Name:</th><td>{{access_token.consumer_token.name}}</td>
         </tr>
         <tr class="description">
-            <th>Description:</th><td>{{access_token.consumer_token.description_html | safe}}</td>
+            <th>Description:</th><td>{{access_token.consumer_token.description_html }}</td>
         </tr>
         {% if access_token.is_bearer %}
         <tr class="bearer_token">
@@ -117,7 +117,7 @@
     {% for consumer_token in consumer_tokens %}
     <table class="registered_app">
         <tr><th>Name:</th><td>{{consumer_token.name}}</td></tr>
-        <tr class="description"><th>Description:</th><td>{{consumer_token.description_html | safe}}</td></tr>
+        <tr class="description"><th>Description:</th><td>{{consumer_token.description_html }}</td></tr>
         <tr class="consumer_key"><th>Consumer Key:</th><td>{{consumer_token.api_key}}</td></tr>
         <tr class="consumer_secret"><th>Consumer Secret:</th><td>{{consumer_token.secret_key}}</td></tr>
         <tr class="controls">

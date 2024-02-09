@@ -130,4 +130,4 @@ class ProjectBrowseController(BaseController):
         projects, count = self._find_projects()
         title = self._build_title()
         c.custom_sidebar_menu = self._build_nav()
-        return dict(projects=projects, title=title, text=None)
+        return dict(projects=projects, title=title)

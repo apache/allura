@@ -18,28 +18,28 @@
 -#}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <form method="POST" action="{{action}}" enctype="multipart/form-data" id="ticket-form">
-  {{widget.display_field_by_name('ticket_num')|safe}}
+  {{widget.display_field_by_name('ticket_num')}}
   {% if help_msg %}
     <div id="new-ticket-help-msg" class="grid-19 info">{{g.markdown.convert(help_msg)}}</div>
   {% endif %}
   <div class="grid-18">
     <div class="new-ticket-title">
-      <label>Create Ticket:</label>{{widget.display_field_by_name('summary')|safe}}
+      <label>Create Ticket:</label>{{widget.display_field_by_name('summary')}}
     </div>
   </div>
     {% if widget.fields['_milestone'] %}
       <div class="grid-6">
         <label class="cr">Milestone:</label>
-        {{widget.display_field_by_name('_milestone')|safe}}
+        {{widget.display_field_by_name('_milestone')}}
       </div>
     {% endif %}
     <div class="grid-6">
       <label class="cr">Status:</label>
-      {{widget.display_field_by_name('status')|safe}}
+      {{widget.display_field_by_name('status')}}
     </div>
     <div class="grid-6">
       <label class="cr">Owner:</label>
-      {{widget.display_field_by_name('assigned_to')|safe}}
+      {{widget.display_field_by_name('assigned_to')}}
     </div>
   <div style="clear:both">&nbsp;</div>
   {% set min_c_fields = widget.fields['_milestone'] and 1 or 0 %}
@@ -49,7 +49,7 @@
   {% endif %}
   <div class="grid-12">
     <label class="cr">Labels:</label>
-    {{widget.display_field_by_name('labels')|safe}}
+    {{widget.display_field_by_name('labels')}}
   </div>
     <div class="grid-6">
         {{widget.display_field_by_name('private')}}
@@ -86,7 +86,7 @@
   </div>
   <div style="clear:both">&nbsp;</div>
   <div class="grid-18">
-    {{widget.display_field_by_name('description')|safe}}
+    {{widget.display_field_by_name('description')}}
   </div>
   <div style="clear:both">&nbsp;</div>
   <div class="grid-18">
@@ -106,7 +106,7 @@
       {% endfor %}
       </div>
     {% endif %}
-      {{widget.display_field_by_name('attachment')|safe}}
+      {{widget.display_field_by_name('attachment')}}
   </div>
   <div style="clear:both">&nbsp;</div>
   <div class="reply" style="position:relative;{% if not show_comment %} display:none{% endif %}">
@@ -119,13 +119,13 @@
       </p>
     </div>
     <div class="grid-16">
-      {{widget.display_field_by_name('comment')|safe}}
+      {{widget.display_field_by_name('comment')}}
       <span class="arw"><span></span></span>
     </div>
   </div>
   <div style="clear:both">&nbsp;</div>
   <div class="grid-18">
-    {{widget.display_field_by_name('submit')|safe}}
+    {{widget.display_field_by_name('submit')}}
     {% if c.user and c.user != c.user.anonymous() and not ticket and not subscribed_to_tool|default %}
         <label class="subscribe">
           <input type="checkbox" checked name="ticket_form.subscribe" class="subscribe-checkbox">Subscribe to this ticket
