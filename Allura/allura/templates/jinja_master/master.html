@@ -173,7 +173,7 @@
 {{ theme_macros.custom_js() }}
 
 {% if flash %}
-    <script type="text/javascript">{{ flash | safe }}</script>
+    <script type="text/javascript">{{ flash | safe }}</script>{# comes from flash.static_template in root.py and escaped by tg.flash allow_html setting #}
 {% endif %}
 <script>
     $(document).ready(function () {
