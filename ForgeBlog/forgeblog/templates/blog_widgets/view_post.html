@@ -18,7 +18,7 @@
 -#}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 
-<div{% if h.has_access(value, 'edit') %} class="active-md" data-markdownlink="" {% endif %}>{{value.html_text|safe}}</div>
+<div{% if h.has_access(value, 'edit') %} class="active-md" data-markdownlink="" {% endif %}>{{value.html_text}}</div>
 {{lib.related_artifacts(value, c.user)}}
 <em class="grid-19">
   Posted by {{lib.user_link(base_post.author(), avatar=True)}} {{lib.abbr_date(value.timestamp)}}
