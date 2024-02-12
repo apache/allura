@@ -18,6 +18,7 @@
 import ew as ew_core
 import ew.jinja2_ew as ew
 import jinja2
+from markupsafe import Markup
 
 from allura.lib.widgets import form_fields as ffw
 
@@ -53,8 +54,8 @@ class SearchHelp(ffw.Lightbox):
         # can't use g.jinja2_env since this widget gets imported too early :(
         jinja2_env = jinja2.Environment(
             loader=jinja2.PackageLoader('allura', 'templates/widgets'))
-        self.content = jinja2_env.get_template('search_help.html').render(dict(
+        self.content = Markup(jinja2_env.get_template('search_help.html').render(dict(
             comments=comments,
             history=history,
             fields=fields,
-        ))
+        )))
