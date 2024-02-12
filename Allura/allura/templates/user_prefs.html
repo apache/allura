@@ -85,7 +85,7 @@
           </p>
         </div>
       </form>
-      {{c.enter_password.display(content='<h1>Enter password</h1>')}}
+      {{c.enter_password.display(content='<h1>Enter password</h1>'|safe)}}
       <!-- end popup -->
 
       {% endif %}  {# allow_edit_prefs #}
