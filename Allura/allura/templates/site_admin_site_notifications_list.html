@@ -41,7 +41,7 @@
       </tr>
     </thead>
     {% for note in notifications %}
-    <tr>
+    <tr {% if note.active %}class="active"{% endif %}>
       <td><small>{{ note.active }}</small></td>
       <td><small>{{ note.impressions}}</small></td>
       <td><small class="tooltip" title="{{ note.content }}">{{ note.content|truncate(50) }}</small></td>
@@ -67,6 +67,10 @@
     }
     td {
         max-width: 200px;
+    }
+    #site_notifications tr.active {
+        font-weight: bold;
+        background: lightcyan;
     }
 </style>
 {% endblock %}
