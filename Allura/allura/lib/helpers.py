@@ -809,7 +809,7 @@ def subrender_jinja_filter(context, html_tmpl: str) -> Markup:
             log.exception(f'Could not replace {var} in jinja "subrender" for site notification')
             continue
         html_tmpl = html_tmpl.replace(var, val)
-    return Markup(html_tmpl)
+    return clean_html(html_tmpl)
 
 
 def nl2br_jinja_filter(value):
@@ -1378,3 +1378,10 @@ def pluralize_tool_name(tool_name: string, count: int):
 def parse_fediverse_address(username: str):
     pieces = username.split('@')
     return f'https://{pieces[-1]}/@{pieces[1]}'
+
+
+def clean_html(value: str) -> Markup:
+    from allura.lib.markdown_extensions import HTMLSanitizer
+    return Markup(
+        HTMLSanitizer().run(value)
+    )

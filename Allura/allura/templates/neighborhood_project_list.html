@@ -45,7 +45,7 @@
       {{ text }}
     {% endif %}
     {% if neighborhood.homepage %}
-      {{neighborhood.homepage|safe}}
+      {{neighborhood.homepage|safe_html}}
     {% endif %}
     {% if neighborhood.allow_browse %}
       {% if not projects %}

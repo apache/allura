@@ -58,11 +58,11 @@
 
     {% if c.project and c.project.neighborhood.css %}
         <style type="text/css">
-            {{c.project.neighborhood.get_custom_css()|safe}}
+            {{ c.project.neighborhood.get_custom_css()|safe_html }}
         </style>
     {% elif neighborhood|default and neighborhood.css %}
         <style type="text/css">
-            {{neighborhood.get_custom_css()}}
+            {{ neighborhood.get_custom_css()|safe_html }}
         </style>
     {% endif %}
     {% block extra_css %}{% endblock %}
