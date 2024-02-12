@@ -27,7 +27,7 @@
   {% set help_text = config.get('trovecategories.admin.help.'+base.shortname, '') %}
   {% if help_text %}
     <div class="grid-19">
-      {{ help_text|safe }}
+      {{ help_text|safe_html }}
       <br><br>
     </div>
   {% endif %}
