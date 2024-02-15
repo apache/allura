@@ -195,7 +195,7 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
     {% if note %}
         <div id="site-notification">
             <section class="callout primary" data-notification-id="{{note._id}}">
-                {{note.content|safe}}
+                {{ note.content|subrender }}
                 <button class="close-button btn-close" aria-label="Dismiss alert" type="button">
                   {#  .btn-close instead of data-close, since allura-base.js handles closing it, not Foundation #}
                   <span aria-hidden="true">&times;</span>

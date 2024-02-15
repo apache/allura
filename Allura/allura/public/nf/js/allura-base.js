@@ -209,7 +209,7 @@ $(function(){
     });
 
     $('#site-notification .btn-close').click(function(e) {
-        var $note = $(this).parent();
+        var $note = $(this).parents('section:first');
         $note.hide();
         var note_id = $note.attr('data-notification-id');
         var cookie = $.cookie('site-notification');

@@ -790,10 +790,26 @@ def render_any_markup(name, txt, code_mode=False, linenumbers_style=TABLE):
 
 
 @pass_context
-def subrender_jinja_filter(context, value):
-    _template = context.eval_ctx.environment.from_string(value)
-    result = _template.render(**context)
-    return result
+def subrender_jinja_filter(context, html_tmpl: str) -> Markup:
+    # jinja templates can execute potentially dangerous things
+    #   _template = context.eval_ctx.environment.from_string(html_tmpl)
+    #   return _template.render(**context)
+
+    # so instead, support just a few things
+
+    limited_vars = {
+        '{{ c.project.url() }}': lambda: c.project.url(),
+    }
+    for var, fn in limited_vars.items():
+        if var not in html_tmpl:
+            continue
+        try:
+            val = fn()
+        except Exception:
+            log.exception(f'Could not replace {var} in jinja "subrender" for site notification')
+            continue
+        html_tmpl = html_tmpl.replace(var, val)
+    return Markup(html_tmpl)
 
 
 def nl2br_jinja_filter(value):

@@ -24,6 +24,8 @@ import time
 import PIL
 from mock import Mock, patch
 from tg import tmpl_context as c
+from tg import config
+
 from alluratest.tools import module_not_available
 from webob import Request
 from webob.exc import HTTPUnauthorized
@@ -344,6 +346,23 @@ def test_datetimeformat():
 def test_nl2br_jinja_filter():
     assert (h.nl2br_jinja_filter('foo<script>alert(1)</script>\nbar\nbaz') ==
             Markup('foo&lt;script&gt;alert(1)&lt;/script&gt;<br>\nbar<br>\nbaz'))
+
+
+def test_subrender_jinja_filter():
+    # if we need a real ctx, have to do all this which probably isn't even quite right
+    # from allura.config.app_cfg import AlluraJinjaRenderer
+    # j2env = AlluraJinjaRenderer.create(config, None)['jinja'].jinja2_env
+    # from jinja2.runtime import new_context
+    # j_ctx = new_context(j2env, template_name=None, blocks={})
+    j_ctx = None
+
+    # HTML, but no jinja:
+    assert h.subrender_jinja_filter(j_ctx, '<b>hi</b>{% foo %}') == '<b>hi</b>{% foo %}'
+    # var does not error if no `c.project`
+    assert h.subrender_jinja_filter(j_ctx, '<a href="{{ c.project.url() }}"></a>') == '<a href="{{ c.project.url() }}"></a>'
+    # with `c.project` set, replacement of this var works:
+    with h.push_context('test', neighborhood='Projects'):
+        assert h.subrender_jinja_filter(j_ctx, '<a href="{{ c.project.url() }}"></a>') == '<a href="/p/test/"></a>'
 
 
 def test_split_select_field_options():
