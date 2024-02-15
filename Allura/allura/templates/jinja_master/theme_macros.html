@@ -178,7 +178,7 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
     {% if note %}
         <div id="site-notification">
             <section class="site-message info" data-notification-id="{{note._id}}">
-                {{ note.content|subrender|safe }}
+                {{ note.content|subrender }}
                 <a href="" class="btn btn-close">Close</a>
             </section>
         </div>

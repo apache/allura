@@ -53,6 +53,7 @@ class SearchHelp(ffw.Lightbox):
         super().__init__()
         # can't use g.jinja2_env since this widget gets imported too early :(
         jinja2_env = jinja2.Environment(
+            autoescape=True,
             loader=jinja2.PackageLoader('allura', 'templates/widgets'))
         self.content = Markup(jinja2_env.get_template('search_help.html').render(dict(
             comments=comments,
