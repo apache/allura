@@ -919,13 +919,13 @@ class TestUserMentions(unittest.TestCase):
         ThreadLocalODMSession.flush_all()
         output = g.markdown.convert('Hello.. @admin1, how are you?')
         assert 'class="user-mention"' in output
-        assert ('href="%s"' % u1.url()) in output
+        assert 'href="/u/admin1/profile/"' in output
         u2 = M.User.register(dict(username='admin-2'), make_project=True)
         ThreadLocalODMSession.flush_all()
         output = g.markdown.convert('Do you know @ab? @admin-2 has solved it!')
         assert 'Do you know @ab?' in output
         assert 'class="user-mention"' in output
-        assert ('href="%s"' % u2.url()) in output
+        assert 'href="/u/admin-2/profile/"' in output
         output = g.markdown.convert('test@admin1.com Hey!')
         assert 'test@admin1.com Hey!' in output
 

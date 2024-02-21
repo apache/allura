@@ -343,7 +343,7 @@ class UserMentionInlinePattern(markdown.inlinepatterns.Pattern):
         if user and not user.pending and not user.disabled:
             result = etree.Element('a')
             result.text = "@%s" % user_name
-            result.set('href', user.url())
+            result.set('href', h.username_project_url(user))
             result.set('class', 'user-mention')
         else:
             result = "@%s" % user_name
