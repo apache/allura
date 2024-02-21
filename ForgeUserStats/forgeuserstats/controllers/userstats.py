@@ -38,7 +38,7 @@ class ForgeUserStatsCatController(BaseController):
 
     @expose()
     def _lookup(self, category, *remainder):
-        cat = M.TroveCategory.query.get(shortname=category, fullpath=re.compile(r'^Topic :: '))
+        cat = M.TroveCategory.query.get(shortname=category, fullpath={'$regex': r'^Topic :: '})
         if not cat:
             raise exc.HTTPNotFound
         return ForgeUserStatsCatController(category=cat), remainder

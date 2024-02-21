@@ -161,7 +161,7 @@ class TroveCategory(MappedClass):
 
     @property
     def children(self):
-        return sorted(self.query.find({'fullpath': re.compile('^' + re.escape(self.fullpath) + ' ::')}).all(),
+        return sorted(self.query.find({'fullpath': {'$regex': '^' + re.escape(self.fullpath) + ' ::'}}).all(),
                       key=lambda t: t.fullpath.lower())
 
     @property

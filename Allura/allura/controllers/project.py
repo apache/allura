@@ -687,7 +687,7 @@ class NeighborhoodAdminController:
         if icon is not None and icon != b'':
             if self.neighborhood.icon:
                 self.neighborhood.icon.delete()
-                M.ProjectFile.query.remove(dict(project_id=c.project._id, category=re.compile(r'^icon')))
+                M.ProjectFile.query.remove(dict(project_id=c.project._id, category={'$regex': r'^icon'}))
             save_icon = c.project.save_icon(icon.filename, icon.file, content_type=icon.type)
             if save_icon:
                 M.AuditLog.log('update neighborhood icon')

@@ -567,8 +567,8 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         escaped_underscore = re.escape('_')  # changes in py3.x versions # https://docs.python.org/3/library/re.html#re.escape
         un = un.replace(escaped_underscore, '[-_]')
         un = un.replace(r'\-', '[-_]')
-        rex = re.compile('^' + un + '$')
-        return M.User.query.get(username=rex, disabled=False, pending=False)
+        rex = r'^' + un + '$'
+        return M.User.query.get(username={'$regex': rex}, disabled=False, pending=False)
 
     def set_password(self, user, old_password, new_password):
         if old_password is not None and not self.validate_password(user, old_password):

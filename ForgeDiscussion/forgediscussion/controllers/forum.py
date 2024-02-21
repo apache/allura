@@ -136,7 +136,7 @@ class ForumController(DiscussionController):
                 user_id=c.user._id,
                 project_id=c.project._id,
                 app_config_id=c.app.config._id,
-                artifact_index_id=re.compile('^' + re.escape(forumthread_index_prefix)),
+                artifact_index_id={'$regex': '^' + re.escape(forumthread_index_prefix)},
             )).all()
             # get the ForumThread objects from the subscriptions
             thread_index_ids = [mbox.artifact_index_id for mbox in thread_mboxes]

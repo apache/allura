@@ -542,9 +542,9 @@ class TaskManagerController:
         if state:
             query['state'] = state
         if task_name:
-            query['task_name'] = re.compile(re.escape(task_name))
+            query['task_name'] = {'$regex': re.escape(task_name)}
         if host:
-            query['process'] = re.compile(re.escape(host))
+            query['process'] = {'$regex': re.escape(host)}
 
         tasks = list(M.monq_model.MonQTask.query.find(query).sort('_id', -1))
         for task in tasks:

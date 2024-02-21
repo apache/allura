@@ -131,11 +131,11 @@ class TroveCategoryController(BaseController):
 
         if upper:
             trove_type = upper.fullpath.split(' :: ')[0]
-            fullpath_re = re.compile(fr'^{re.escape(trove_type)} :: ')  # e.g. scope within "Topic :: "
+            fullpath_re = fr'^{re.escape(trove_type)} :: '  # e.g. scope within "Topic :: "
         else:
             # no parent, so making a top-level.  Don't limit fullpath_re, so enforcing global uniqueness
-            fullpath_re = re.compile(r'')
-        oldcat = M.TroveCategory.query.get(shortname=shortname, fullpath=fullpath_re)
+            fullpath_re = r''
+        oldcat = M.TroveCategory.query.get(shortname=shortname, fullpath={'$regex': fullpath_re})
 
         if oldcat:
             raise TroveAdminException(

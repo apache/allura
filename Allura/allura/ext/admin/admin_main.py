@@ -336,7 +336,7 @@ class ProjectAdminController(BaseController):
             c.project.removal = removal
             c.project.removal_changed_date = datetime.utcnow()
         if 'delete_icon' in kw:
-            M.ProjectFile.query.remove(dict(project_id=c.project._id, category=re.compile(r'^icon')))
+            M.ProjectFile.query.remove(dict(project_id=c.project._id, category={'$regex': r'^icon'}))
             c.project.set_tool_data('allura', icon_original_size=None, icon_sha256=None)
             M.AuditLog.log('remove project icon')
             g.post_event('project_updated')
@@ -415,7 +415,7 @@ class ProjectAdminController(BaseController):
 
         if icon is not None and icon != b'':
             if c.project.icon:
-                M.ProjectFile.query.remove(dict(project_id=c.project._id, category=re.compile(r'^icon')))
+                M.ProjectFile.query.remove(dict(project_id=c.project._id, category={'$regex': r'^icon'}))
             save_icon = c.project.save_icon(icon.filename, icon.file, content_type=icon.type)
             if not save_icon:
                 M.AuditLog.log('could not update project icon')
