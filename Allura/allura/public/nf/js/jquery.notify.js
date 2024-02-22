@@ -107,7 +107,10 @@
                 });
             }
             $('.' + o.messageClass, self).addClass(o.newClass);
-            scanMessages(self, o);
+            var selector = '.' + o.newClass + '.' + o.messageClass;
+            $('body').on("click", selector, function(e) {
+              closer(this, o);
+            });
         });
     };
 

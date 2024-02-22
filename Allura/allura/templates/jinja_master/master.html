@@ -72,7 +72,6 @@
     {% endblock %}
     {% block head_bottom -%}
     {% endblock %}
-    {{ g.analytics.display() }}
 </head>
 
 <body{% block body_attrs %}{% endblock %} class="{% block body_css_class %}{% endblock %}" id="forge">
@@ -197,5 +196,6 @@
         });
     });
 </script>
+{{ g.analytics.display() }}
 </body>
 </html>

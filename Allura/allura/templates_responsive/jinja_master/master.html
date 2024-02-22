@@ -72,7 +72,6 @@
 
     {% block head %}
     {% endblock %}
-    {{ g.analytics.display() }}
     {% block head_bottom -%}
     {% endblock %}
 </head>
@@ -163,5 +162,7 @@
 {% if flash %}
     <script type="text/javascript">{{ flash | safe }}</script>{# comes from flash.static_template in root.py and escaped by tg.flash allow_html setting #}
 {% endif %}
+{{ g.analytics.display() }}
+
 </body>
 </html>
