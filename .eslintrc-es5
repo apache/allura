@@ -18,7 +18,7 @@
     // disallow use of eval()-like methods
     "no-implied-eval": 2,
     // disallow this keywords outside of classes or class-like objects
-    "no-invalid-this": 2,
+    "no-invalid-this": 0,
     // disallow creation of functions within loops
     "no-loop-func": 2,
     // disallow declaring the same variable more then once
