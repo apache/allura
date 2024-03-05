@@ -111,6 +111,13 @@
             $('body').on("click", selector, function(e) {
               closer(this, o);
             });
+            $(selector).fadeIn(500);
+            if (!$(selector).hasClass(o.persistentClass)) {
+                var timer = $(selector).attr('data-timer') || o.timer;
+                setTimeout(function() {
+                    closer($(selector), o);
+                }, timer);
+            }
         });
     };
 
