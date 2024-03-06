@@ -611,6 +611,7 @@ class ImportAdminExtension(AdminExtension):
         base_url = c.project.url() + 'admin/ext/'
         link = SitemapEntry('Import', base_url + 'import/')
         sidebar_links.append(link)
+        return sidebar_links
 
 
 def bytesio_parser(page):

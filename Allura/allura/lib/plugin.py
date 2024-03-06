@@ -33,6 +33,7 @@ from random import randint
 from hashlib import sha256
 from base64 import b64encode
 from datetime import datetime, timedelta
+import typing
 import calendar
 import six
 
@@ -59,6 +60,9 @@ from allura.lib import exceptions as forge_exc
 from allura.lib import utils
 from allura.tasks import activity_tasks
 from allura.tasks.index_tasks import solr_del_project_artifacts
+
+if typing.TYPE_CHECKING:
+    from allura.app import SitemapEntry
 
 log = logging.getLogger(__name__)
 
@@ -1800,7 +1804,7 @@ class AdminExtension:
 
     project_admin_controllers = {}
 
-    def update_project_sidebar_menu(self, sidebar_links):
+    def update_project_sidebar_menu(self, sidebar_links: list['SitemapEntry']) -> list['SitemapEntry']:
         """
         Implement this function to modify the project sidebar.
         Check `c.project` if you want to limit when this displays
@@ -1811,7 +1815,7 @@ class AdminExtension:
 
         :rtype: ``None``
         """
-        pass
+        return sidebar_links
 
 
 class SiteAdminExtension:

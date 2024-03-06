@@ -172,7 +172,7 @@ class AdminApp(Application):
 
         for ep_name in sorted(g.entry_points['admin'].keys()):
             admin_extension = g.entry_points['admin'][ep_name]
-            admin_extension().update_project_sidebar_menu(links)
+            links = (admin_extension().update_project_sidebar_menu(links) or links)
 
         return links
 
