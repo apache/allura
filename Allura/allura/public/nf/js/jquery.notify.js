@@ -55,45 +55,19 @@
         $(message).animate({ opacity: 0 }, { duration: 250, queue: false, complete: fadeComplete });
     }
 
-    function scanMessages(container, o) {
-        function helper() {
-            var selector = '.' + o.newClass + '.' + o.messageClass,
-                $msg;
-            // Special support for persistent messages, such as sitewide
-            // notifications; note that this requires the cookie plugin.
-            // Persistent messages are assumed sticky.
-            if ($.cookie && $.cookie(o.persistentCookie)){
-                $msg = $(selector, container).not(o.persistentClass);
-            } else {
-                $msg = $(selector, container);
-            }
-            if ($msg.length) {
-                $msg.prepend(o.closeIcon);
-                $msg.click(function(e) {
-                    if ($.cookie && $msg.hasClass(o.persistentClass)) {
-                        $.cookie(o.persistentCookie, 1, { path: '/' });
-                    }
-                    closer(this, o);
-                });
-                $msg.removeClass(o.newClass).addClass(o.activeClass);
-                $msg.each(function() {
-                    var self = this;
-                    if (!$(self).hasClass(o.stickyClass) && !$(self).hasClass(o.persistentClass)) {
-                        var timer = $(self).attr('data-timer') || o.timer;
-                        setTimeout(function() {
-                            closer($(self), o);
-                        }, timer);
-                    }
-                    $(self).fadeIn(500);
-                });
-            }
-            setTimeout(helper, o.interval);
-        }
-        helper();
-    }
-
     function sanitize(str) {
         return str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function displayNotification(el, o){
+        var selector = '.' + o.newClass + '.' + o.messageClass;
+        $(selector).fadeIn(500);
+        if (!$(selector).hasClass(o.persistentClass)) {
+            var timer = $(selector).attr('data-timer') || o.timer;
+            setTimeout(function() {
+                closer(el, o);
+            }, timer);
+        }
     }
 
     $.fn.notifier = function(options){
@@ -107,7 +81,11 @@
                 });
             }
             $('.' + o.messageClass, self).addClass(o.newClass);
-            scanMessages(self, o);
+            var selector = '.' + o.newClass + '.' + o.messageClass;
+            $('body').on("click", selector, function(e) {
+              closer(this, o);
+            });
+            displayNotification($(selector).get(0), o);
         });
     };
 
@@ -136,6 +114,8 @@
                 }
                 var html = tmpl(o.tmpl, o);
                 $(this).append(html);
+                var newMsgEl = $('.message:last-child', this).get(0);
+                displayNotification(newMsgEl, o);
             } else {
                 if (window.console) {
                     //#JSCOVERAGE_IF window.console
