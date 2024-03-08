@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import annotations
 import re
 import logging
 from typing import List

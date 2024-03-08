@@ -31,6 +31,7 @@ select = [
     "PGH",  # https://github.com/pre-commit/pygrep-hooks
     "T10",  # debugger breakpoints
     "T20",  # print()
+    "FA",   # future annotations (to ensure compatibility with `target-version`)
 ]
 
 ignore = [
