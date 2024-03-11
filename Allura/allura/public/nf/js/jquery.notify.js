@@ -61,7 +61,7 @@
 
     function displayNotification(el, o){
         var selector = '.' + o.newClass + '.' + o.messageClass;
-        $(selector).removeClass(o.newClass).addClass(o.activeClass);
+        $(selector).addClass(o.activeClass);
         $(selector).fadeIn(500);
         if (!$(selector).hasClass(o.persistentClass)) {
             var timer = $(selector).attr('data-timer') || o.timer;
