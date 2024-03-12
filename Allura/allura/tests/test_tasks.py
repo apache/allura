@@ -51,7 +51,7 @@ from allura.tests.exclude_from_rewrite_hook import raise_compound_exception
 from allura.lib.decorators import event_handler, task
 
 
-class TestRepoTasks(unittest.TestCase):
+class TestRepoTasks:
 
     def setup_method(self, method):
         setup_basic_test()
@@ -100,7 +100,7 @@ def _task_that_creates_event(event_name,):
     assert not M.MonQTask.query.get(task_name='allura.tasks.event_tasks.event', args=[event_name])
 
 
-class TestEventTasks(unittest.TestCase):
+class TestEventTasks:
 
     def setup_method(self, method):
         setup_basic_test()
@@ -158,7 +158,7 @@ class TestEventTasks(unittest.TestCase):
             assert ('assert %d' % x) in t.result
 
 
-class TestIndexTasks(unittest.TestCase):
+class TestIndexTasks:
 
     def setup_method(self, method):
         setup_basic_test()
@@ -243,7 +243,7 @@ class TestIndexTasks(unittest.TestCase):
         solr.delete.assert_called_once_with(q=solr_query)
 
 
-class TestMailTasks(unittest.TestCase):
+class TestMailTasks:
 
     def setup_method(self, method):
         setup_basic_test()
@@ -570,7 +570,7 @@ class TestUserNotificationTasks(TestController):
         assert 'auth/subscriptions#notifications' in text
 
 
-class TestNotificationTasks(unittest.TestCase):
+class TestNotificationTasks:
 
     def setup_method(self, method):
         setup_basic_test()
@@ -605,7 +605,7 @@ class _TestArtifact(M.Artifact):
             text=self.text)
 
 
-class TestExportTasks(unittest.TestCase):
+class TestExportTasks:
 
     def setup_method(self, method):
         setup_basic_test()
@@ -621,13 +621,11 @@ class TestExportTasks(unittest.TestCase):
         exportable = mock.Mock(exportable=True)
         not_exportable = mock.Mock(exportable=False)
         BE = export_tasks.BulkExport()
-        self.assertEqual(
-            BE.filter_exportable([None, exportable, not_exportable]), [exportable])
+        assert BE.filter_exportable([None, exportable, not_exportable]) == [exportable]
 
     def test_bulk_export_filter_successful(self):
         BE = export_tasks.BulkExport()
-        self.assertEqual(
-            BE.filter_successful(['foo', None, '0']), ['foo', '0'])
+        assert BE.filter_successful(['foo', None, '0']) == ['foo', '0']
 
     @mock.patch('allura.tasks.export_tasks.shutil')
     @mock.patch('allura.tasks.export_tasks.zipdir')
@@ -659,7 +657,7 @@ class TestExportTasks(unittest.TestCase):
         assert c.project.bulk_export_status() == 'busy'
 
 
-class TestAdminTasks(unittest.TestCase):
+class TestAdminTasks:
 
     def test_install_app_docstring(self):
         assert 'ep_name, mount_point=None' in admin_tasks.install_app.__doc__
