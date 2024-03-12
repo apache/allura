@@ -999,6 +999,12 @@ class TestProjectAdmin(TestController):
         resp = self.app.post('/admin/update', params={'fediverse_address': 'https://indieweb.social/@test'})
         assert resp.status_int == 302
 
+    @td.with_tool('test', 'Wiki', 'groups')
+    def test_overlapping_url_paths(self):
+        # the wiki installed at "groups" overlaps its admin pages with normal /admin/groups but is still usable
+        r = self.app.get('/p/test/admin/groups/edit_label')
+        r.mustcontain('<form method="post" action="/p/test/admin/groups/update_label">')
+
 
 class TestExport(TestController):
 

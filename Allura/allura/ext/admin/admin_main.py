@@ -300,11 +300,6 @@ class ProjectAdminController(BaseController):
             raise exc.HTTPNotFound(name)
         return app.admin, remainder
 
-    @without_trailing_slash
-    @expose('jinja:allura.ext.admin:templates/project_permissions.html')
-    def groups(self, **kw):
-        return dict()
-
     @expose()
     @require_post()
     @validate(W.metadata_admin, error_handler=overview)
@@ -1088,6 +1083,14 @@ class PermissionsController(BaseController):
 class GroupsController(BaseController):
     def _check_security(self):
         require_access(c.project, 'admin')
+
+    @expose()
+    def _lookup(self, *remainder):
+        # if a forum/wiki/etc is installed at mount_point 'groups', this allows its tool admin pages to still work
+        # could expand this to other ProjectAdminController paths too.
+        app = c.project.app_instance('groups')
+        if app:
+            return app.admin, remainder
 
     def _index_permissions(self):
         permissions = {
