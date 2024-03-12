@@ -194,6 +194,11 @@ def encode_email_part(content, content_type):
         # simplest email - plain ascii
         encoded_content = content.encode('ascii')
         encoding = 'ascii'
+        for line in encoded_content.splitlines():
+            if len(line) > MAX_MAIL_LINE_OCTETS:
+                # force base64 content-encoding to make lines shorter
+                encoding = 'utf-8'
+                break
     except Exception:
         # utf8 will get base64 encoded so we only do it if ascii fails
         encoded_content = content.encode('utf-8')

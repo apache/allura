@@ -14,7 +14,8 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
+import email.parser
+import email.iterators
 import operator
 import shutil
 from textwrap import dedent
@@ -28,6 +29,7 @@ import pkg_resources
 import tg
 import mock
 from tg import tmpl_context as c, app_globals as g
+import pytest
 
 from ming.odm import FieldProperty, Mapper
 from ming.odm import ThreadLocalODMSession
@@ -464,29 +466,34 @@ class TestMailTasks:
             return_path, rcpts, body = _client.sendmail.call_args[0]
             assert 'From: "Test Admin" <test-admin@users.localhost>' in body
 
-    def test_send_email_long_lines_use_quoted_printable(self):
+    @pytest.mark.parametrize('bodychars', [
+        '0123456789',  # plain ascii is handled different since it doesn't necessarily need to be encoded
+        'Громады стро ',
+    ])
+    def test_send_email_long_lines(self, bodychars):
         with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
             mail_tasks.sendsimplemail(
                 fromaddr='"По" <foo@bar.com>',
                 toaddr='blah@blah.com',
-                text=('0123456789' * 100) + '\n\n' + ('Громады стро ' * 100),
+                text=bodychars * 100,
                 reply_to=g.noreply,
                 subject='123451234512345' * 100,
                 references=['foo@example.com'] * 100,  # needs to handle really long headers as well
                 message_id=h.gen_message_id())
             return_path, rcpts, body = _client.sendmail.call_args[0]
-            body = body.split(email_policy.linesep)
+            body_lines = body.split(email_policy.linesep)
 
-            for line in body:
+            for line in body_lines:
                 assert len(line) <= MAX_MAIL_LINE_OCTETS
 
-            bodystr = ''.join(body)
-            # plain text
-            assert b64encode(b'012345678901234567890123').decode('utf8') in bodystr
-            assert b64encode('Громады стро '.encode('utf8')).decode('utf8') in bodystr
-            # html
-            assert b64encode(b'<div class="markdown_content"><p>012345678901234567890123').decode('utf8') in bodystr
-            assert b64encode('<p>Громады стро '.encode('utf8')).decode('utf8') in bodystr
+            msg = email.parser.Parser().parsestr(body)
+            plain_subpart = next(email.iterators.typed_subpart_iterator(msg, 'text', 'plain'))
+            plain = plain_subpart.get_payload(decode=True).decode('utf-8')
+            html_subpart = next(email.iterators.typed_subpart_iterator(msg, 'text', 'html')).get_payload(decode=True)
+            html = html_subpart.decode('utf-8')
+
+            assert (bodychars + bodychars) in plain
+            assert f'<div class="markdown_content"><p>{bodychars}{bodychars}' in html
 
     @td.with_wiki
     def test_receive_email_ok(self):
