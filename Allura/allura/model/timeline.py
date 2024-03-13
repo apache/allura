@@ -138,7 +138,11 @@ def get_activity_object(activity_object_dict):
     allura_id = get_allura_id(activity_object_dict)
     if not allura_id:
         return None
-    classname, _id = allura_id.split(':', 1)
+    return get_object_from_id(allura_id)
+
+
+def get_object_from_id(node_id):
+    classname, _id = node_id.split(':', 1)
     cls = Mapper.by_classname(classname).mapped_class
     try:
         _id = bson.ObjectId(_id)
