@@ -626,7 +626,7 @@ img.nav-logo {
   border: 2px solid #000;
   margin-bottom: 1em;
   color: #fff;
-  cursor: pointer;
+  position: relative;
 }
 .message a {
   color: white;
@@ -653,6 +653,16 @@ img.nav-logo {
 }
 .message.warning header {
   text-shadow: none;
+}
+#messages .message-closer {
+  position: absolute;
+  top: 0;
+  right: 3px;
+  font-size: 30px;
+  line-height: 1;
+  width: 21px;
+  text-align: center;
+  cursor: pointer;
 }
 
 .no-js #messages {

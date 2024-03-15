@@ -60,11 +60,12 @@
     }
 
     function displayNotification(el, o){
-        var selector = '.' + o.newClass + '.' + o.messageClass;
-        $(selector).addClass(o.activeClass);
-        $(selector).fadeIn(500);
-        if (!$(selector).hasClass(o.persistentClass)) {
-            var timer = $(selector).attr('data-timer') || o.timer;
+        var $el = $(el);
+        $el.addClass(o.activeClass);
+        $el.prepend('<div class="message-closer" aria-label="Close">&times;</div>');
+        $el.fadeIn(500);
+        if (!$el.hasClass(o.persistentClass) && !$el.hasClass(o.stickyClass) && !$el.hasClass('error')) {
+            var timer = $el.attr('data-timer') || o.timer;
             setTimeout(function() {
                 closer(el, o);
             }, timer);
@@ -83,8 +84,8 @@
             }
             $('.' + o.messageClass, self).addClass(o.newClass);
             var selector = '.' + o.newClass + '.' + o.messageClass;
-            $('body').on("click", selector, function(e) {
-              closer(this, o);
+            $('body').on("click", selector + ' .message-closer', function(e) {
+              closer(this.parentNode, o);
             });
             displayNotification($(selector).get(0), o);
         });
@@ -142,7 +143,6 @@
         activeClass: 'notify-active',
         inactiveClass: 'notify-inactive',
         messageClass: 'message',
-        closeIcon: '<b title="Close" class="fa fa-close" style="float:right;"></b>'
     };
 
 }(jQuery));
