@@ -16,10 +16,10 @@
 #       under the License.
 
 line-length = 119
-show-source = true
+output-format = "full"
 target-version = "py38"
 
-select = [
+lint.select = [
     # all flake8 & pep8 (except 'ignore' below)
     "F",
     "E",
@@ -29,12 +29,14 @@ select = [
     "ISC001",  # NIC001 in flake8 codes
     "B",
     "PGH",  # https://github.com/pre-commit/pygrep-hooks
+    "S307", # eval
+    "G010", # logging.warn
     "T10",  # debugger breakpoints
     "T20",  # print()
     "FA",   # future annotations (to ensure compatibility with `target-version`)
 ]
 
-ignore = [
+lint.ignore = [
     'F401', # Imported but unused,
     'F811', # Redefinition of unused
     'F841', # Assigned to but never used
@@ -47,7 +49,7 @@ ignore = [
     'B905', # zip(strict=True) would be good, but need to closely evaluate all existing cases first
 ]
 
-[per-file-ignores]
+[lint.per-file-ignores]
 '__init__.py' = ['F403']  # import *
 '**/{alluratest,tests}/*' = [
     'B011',  # assert False
