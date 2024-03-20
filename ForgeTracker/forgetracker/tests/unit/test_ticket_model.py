@@ -349,7 +349,7 @@ class TestTicketModel(TrackerTestWithModel):
             ticket.summary = 'test ticket'
             ticket.description = 'test description'
         assert len(ticket.attachments) == 0
-        f = six.moves.urllib.request.urlopen('file://%s' % __file__)
+        f = six.moves.urllib.request.urlopen('file://%s' % __file__)  # noqa: S310
         TicketAttachment.save_attachment(
             'test_ticket_model.py', ResettableStream(f),
             artifact_id=ticket._id)

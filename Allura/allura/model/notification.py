@@ -109,7 +109,7 @@ class Notification(MappedClass):
 
     ref = RelationProperty('ArtifactReference')
 
-    view = jinja2.Environment(
+    view = jinja2.Environment(  # noqa: S701
         loader=jinja2.PackageLoader('allura', 'templates'),
         auto_reload=asbool(config.get('auto_reload_templates', True)),
     )
@@ -688,7 +688,7 @@ class Mailbox(MappedClass):
 
 
 class MailFooter:
-    view = jinja2.Environment(
+    view = jinja2.Environment(  # noqa: S701
         loader=jinja2.PackageLoader('allura', 'templates'),
         auto_reload=asbool(config.get('auto_reload_templates', True)),
     )

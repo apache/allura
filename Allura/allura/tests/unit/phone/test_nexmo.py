@@ -95,7 +95,9 @@ class TestPhoneService:
         req.post.assert_called_once_with(
             'https://api.nexmo.com/verify/json',
             data=data,
-            headers=headers)
+            headers=headers,
+            timeout=30,
+        )
 
         req.post.reset_mock()
         req.post.return_value.json.return_value = {
@@ -108,7 +110,9 @@ class TestPhoneService:
         req.post.assert_called_once_with(
             'https://api.nexmo.com/verify/json',
             data=data,
-            headers=headers)
+            headers=headers,
+            timeout=30,
+        )
 
     @patch('allura.lib.phone.nexmo.requests', autospec=True)
     def test_verify_exception(self, req):
@@ -138,7 +142,9 @@ class TestPhoneService:
         req.post.assert_called_once_with(
             'https://api.nexmo.com/verify/check/json',
             data=data,
-            headers=headers)
+            headers=headers,
+            timeout=30,
+        )
 
         req.post.reset_mock()
         req.post.return_value.json.return_value = {
@@ -151,7 +157,9 @@ class TestPhoneService:
         req.post.assert_called_once_with(
             'https://api.nexmo.com/verify/check/json',
             data=data,
-            headers=headers)
+            headers=headers,
+            timeout=30,
+        )
 
     @patch('allura.lib.phone.nexmo.requests', autospec=True)
     def test_check_exception(self, req):

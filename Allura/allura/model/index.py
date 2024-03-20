@@ -93,7 +93,7 @@ class ArtifactReference(MappedClass):
         '''Look up the artifact referenced'''
         aref = self.artifact_reference
         try:
-            cls = loads(bytes(aref.cls))
+            cls = loads(bytes(aref.cls))  # noqa: S301
             with h.push_context(aref.project_id):
                 return cls.query.get(_id=aref.artifact_id)
         except Exception:

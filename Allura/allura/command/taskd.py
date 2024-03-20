@@ -160,7 +160,7 @@ class TaskdCommand(base.Command):
 
         if self.restart_when_done:
             base.log.info('taskd pid %s restarting itself' % os.getpid())
-            os.execv(sys.argv[0], sys.argv)
+            os.execv(sys.argv[0], sys.argv)  # noqa: S606
 
 
 class TaskCommand(base.Command):

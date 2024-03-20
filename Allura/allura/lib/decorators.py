@@ -142,7 +142,7 @@ def reconfirm_auth(func, *args, **kwargs):
             session.save()
             kwargs.pop('password', None)
         else:
-            request.validation.errors['password'] = 'Invalid password.'
+            request.validation.errors['password'] = 'Invalid password.'  # noqa: S105
 
     allowed_timedelta = timedelta(seconds=asint(config.get('auth.reconfirm.seconds', 60)))
     last_reconfirm = session.get('auth-reconfirmed', datetime.min)

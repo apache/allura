@@ -251,7 +251,7 @@ class OAuthNegotiator:
         return AlluraOauth1Server(Oauth1Validator())
 
     def _authenticate(self):
-        bearer_token_prefix = 'Bearer '
+        bearer_token_prefix = 'Bearer '  # noqa: S105
         auth = request.headers.get('Authorization')
         if auth and auth.startswith(bearer_token_prefix):
             access_token = auth[len(bearer_token_prefix):]

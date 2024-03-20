@@ -51,7 +51,7 @@ if __name__ == '__main__':
         'access_token': access_token,
         'ticket_form.summary': summary,
         'ticket_form.description': description,
-    })
+    }, timeout=30)
     if r.status_code == 200:
         print('Ticket created at: %s' % r.url)
         pprint(r.json())

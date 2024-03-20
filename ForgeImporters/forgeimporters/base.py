@@ -167,7 +167,7 @@ class ProjectExtractor:
 
     @staticmethod
     def urlopen(url, retries=3, codes=(408, 500, 502, 503, 504), timeout=120, unredirected_hdrs=None, **kw):
-        req = urllib.request.Request(url, **kw)
+        req = urllib.request.Request(url, **kw)  # noqa: S310
         if unredirected_hdrs:
             for key, val in unredirected_hdrs.items():
                 req.add_unredirected_header(key, val)

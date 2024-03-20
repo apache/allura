@@ -309,7 +309,7 @@ def create_project_with_attrs(p, nbhd, update=False, ensure_tools=False):
                      granted_by_neighborhood_id=nbhd._id)
 
     if p.icon_url:
-        req = requests.get(p.icon_url)
+        req = requests.get(p.icon_url, timeout=30)
         req.raise_for_status()
         project.save_icon(urlparse(p.icon_url).path,
                           BytesIO(req.content),

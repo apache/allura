@@ -47,7 +47,7 @@ class AlluraImportApiClient:
 
         while True:
             try:
-                result = six.moves.urllib.request.urlopen(url, six.ensure_binary(urlencode(params)))
+                result = six.moves.urllib.request.urlopen(url, six.ensure_binary(urlencode(params)))  # noqa: S310
                 resp = result.read()
                 return json.loads(resp)
             except six.moves.urllib.error.HTTPError as e:
