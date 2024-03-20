@@ -49,7 +49,7 @@ def load_requests_lib(req):
     if virtualenv_path:
         activate_this = '%s/bin/activate_this.py' % virtualenv_path
         try:
-            exec(compile(open(activate_this, "rb").read(), activate_this, 'exec'), {'__file__': activate_this})
+            exec(compile(open(activate_this, "rb").read(), activate_this, 'exec'), {'__file__': activate_this})  # noqa: S102
         except Exception as e:
             log(req, "Couldn't activate venv via {}: {}".format(activate_this, repr(e)))
     global requests

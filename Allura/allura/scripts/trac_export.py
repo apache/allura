@@ -143,7 +143,7 @@ class TracExport:
 
     def csvopen(self, url):
         self.log_url(url)
-        f = urlopen(url)
+        f = urlopen(url)  # noqa: S310
         # Trac doesn't throw 403 error, just shows normal 200 HTML page
         # telling that access denied. So, we'll emulate 403 ourselves.
         # TODO: currently, any non-csv result treated as 403.
@@ -166,7 +166,7 @@ class TracExport:
         html2text.BODY_WIDTH = 0
         url = self.full_url(self.TICKET_URL % id)
         self.log_url(url)
-        d = BeautifulSoup(urlopen(url))
+        d = BeautifulSoup(urlopen(url))  # noqa: S310
         self.clean_missing_wiki_links(d)
         desc = d.find('div', 'description').find('div', 'searchable')
         ticket['description'] = html2text.html2text(
@@ -195,7 +195,7 @@ class TracExport:
         # Scrape HTML to get ticket attachments
         url = self.full_url(self.ATTACHMENT_LIST_URL % id)
         self.log_url(url)
-        f = urlopen(url)
+        f = urlopen(url)  # noqa: S310
         soup = BeautifulSoup(f)
         attach = soup.find('div', id='attachments')
         list = []

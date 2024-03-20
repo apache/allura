@@ -73,7 +73,7 @@ class ScriptCommand(base.Command):
                     pr = cProfile.Profile()
                     pr.enable()
 
-                exec(code, ns)
+                exec(code, ns)  # noqa: S102
 
                 if self.options.profile:
                     pr.disable()

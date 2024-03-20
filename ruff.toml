@@ -29,7 +29,7 @@ lint.select = [
     "ISC001",  # NIC001 in flake8 codes
     "B",
     "PGH",  # https://github.com/pre-commit/pygrep-hooks
-    "S307", # eval
+    "S", # bandit
     "G010", # logging.warn
     "T10",  # debugger breakpoints
     "T20",  # print()
@@ -47,13 +47,29 @@ lint.ignore = [
     'B007', # Loop control variable not used within the loop body
     'B904', # use raise from
     'B905', # zip(strict=True) would be good, but need to closely evaluate all existing cases first
+    'S101', # assert
+    'S103', # permissive filesystem mask
+    'S104', # network binding, which doesn't apply to our code, and gives false-positive on test IPs
+    'S108', # temp files
+    'S110', # try-except-pass, too many exist already
+    'S303', # md5 & sha1
+    'S311', # random
+    'S324', # md5 & sha1
+    'S603', # subprocess
+    'S607', # partial path
 ]
 
 [lint.per-file-ignores]
 '__init__.py' = ['F403']  # import *
-'**/{alluratest,tests}/*' = [
+'{**/alluratest/*,**/tests/*,run_tests}' = [
     'B011',  # assert False
     'T20',  # print
+    'S105',  # hard-coded secrets
+    'S106',  # hard-coded secrets
+    'S107',  # hard-coded password
+    'S314',  # XML parsing
+    'S602',  # subprocess shell=True
+    'S604',  # other shell=True
 ]
 '{scripts,Allura/allura/scripts,Allura/allura/command}/*' = ['T20']  # print
-'{run_tests,fuse/accessfs.py,ForgeSVN/setup.py}' = ['T20']  # print
+'{fuse/accessfs.py,ForgeSVN/setup.py}' = ['T20']  # print

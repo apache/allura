@@ -27,7 +27,6 @@ import string
 import crypt
 import random
 from contextlib import contextmanager
-from urllib.request import urlopen
 from urllib.parse import urlparse
 from io import BytesIO
 from random import randint
@@ -36,6 +35,8 @@ from base64 import b64encode
 from datetime import datetime, timedelta
 import typing
 import calendar
+
+import requests
 import six
 
 try:
@@ -1129,7 +1130,7 @@ class ProjectRegistrationProvider:
                     troves.append(
                         M.TroveCategory.query.get(trove_cat_id=trove_id)._id)
         if 'icon' in project_template:
-            icon_file = BytesIO(urlopen(project_template['icon']['url']).read())
+            icon_file = BytesIO(requests.get(project_template['icon']['url'], timeout=30).content)
             p.save_icon(project_template['icon']['filename'], icon_file)
 
         if user_project:

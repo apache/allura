@@ -95,7 +95,7 @@ def get_value(key, default):
 
 
 def run(command):
-    rc = os.system(command)
+    rc = os.system(command)  # noqa: S605
     if rc != 0:
         log.error('Error running %s', command)
     assert rc == 0

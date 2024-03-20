@@ -41,12 +41,12 @@ def main():
     base_url = options.to_wiki.split('/rest/')[0]
     oauth_client = make_oauth_client(base_url)
 
-    wiki_json = requests.get(options.from_wiki).json()['pages']
+    wiki_json = requests.get(options.from_wiki, timeout=30).json()['pages']
     for p in wiki_json:
         from_url = options.from_wiki.rstrip('/') + '/' + p
         to_url = options.to_wiki.rstrip('/') + '/' + p
         try:
-            page_json = requests.get(from_url).json()
+            page_json = requests.get(from_url, timeout=30).json()
             if options.debug:
                 print(page_json['text'])
                 break

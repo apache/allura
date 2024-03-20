@@ -75,13 +75,13 @@ class NexmoPhoneService(PhoneService):
         url = urljoin(url, 'json')
         headers = {'Content-Type': 'application/json'}
         params = self.add_common_params(params)
-        log_params = dict(params, api_key='...', api_secret='...')
+        log_params = dict(params, api_key='...', api_secret='...')  # noqa: S106
         if 'number' in log_params:
             log_params['number'] = phone_number_hash(log_params['number'])
         post_params = json.dumps(params, sort_keys=True)
         log.info('PhoneService (nexmo) request: %s %s', url, log_params)
         try:
-            resp = requests.post(url, data=post_params, headers=headers)
+            resp = requests.post(url, data=post_params, headers=headers, timeout=30)
             log.info('PhoneService (nexmo) response: %s', resp.content)
             resp = resp.json()
         except Exception:

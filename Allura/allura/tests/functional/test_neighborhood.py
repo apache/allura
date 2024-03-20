@@ -670,9 +670,6 @@ class TestNeighborhood(TestController):
 
     def test_project_template(self):
         setup_trove_categories()
-        icon_url = 'file://' + \
-                   os.path.join(allura.__path__[0], 'nf', 'allura',
-                                'images', 'neo-icon-set-454545-256x350.png')
         test_groups = [{
             "name": "Viewer",  # group will be created, all params are valid
             "permissions": ["read"],
@@ -699,7 +696,7 @@ class TestNeighborhood(TestController):
                                                               project_template="""{
                 "private":true,
                 "icon":{
-                    "url":"%s",
+                    "url":"https://httpbin.org/image/png",
                     "filename":"icon.png"
                 },
                 "tools":{
@@ -727,7 +724,7 @@ class TestNeighborhood(TestController):
                     "developmentstatus":[11]
                 },
                 "groups": %s
-                }""" % (icon_url, json.dumps(test_groups))),
+                }""" % (json.dumps(test_groups))),
             extra_environ=dict(username='root'))
         r = self.app.post(
             '/adobe/register',

@@ -56,7 +56,7 @@ def get_tickets(from_ref, to_ref):
 
 def get_ticket_summaries(tickets):
     summaries = {}
-    r = requests.get(API_URL.format(' '.join(tickets)))
+    r = requests.get(API_URL.format(' '.join(tickets)), timeout=30)
     if r.status_code != 200:
         raise ValueError(f'Unexpected response code: {r.status_code}')
     for ticket in r.json()['tickets']:

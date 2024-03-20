@@ -1080,7 +1080,7 @@ def urlopen(url: str | urllib.request.Request, retries=3, codes=(408, 500, 502, 
     attempts = 0
     while True:
         try:
-            return urllib.request.urlopen(url, timeout=timeout)
+            return urllib.request.urlopen(url, timeout=timeout)  # noqa: S310
         except OSError as e:
             no_retry = isinstance(e, urllib.error.HTTPError) and e.code not in codes
             if attempts < retries and not no_retry:

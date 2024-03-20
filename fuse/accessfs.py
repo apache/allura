@@ -341,7 +341,7 @@ class PermissionCache:
                 repo_path=path,
                 username=uname)))
         print(f'Checking access for {uname} at {url} ({path})')
-        fp = six.moves.urllib.request.urlopen(url)
+        fp = six.moves.urllib.request.urlopen(url)  # noqa: S310
         result = json.load(fp)
         print(result)
         entry = 0

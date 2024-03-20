@@ -307,7 +307,7 @@ def clear_all_database_tables():
             db.drop_collection(coll)
 
 
-def create_user(display_name, username=None, password='foo', make_project=False):
+def create_user(display_name, username=None, password='foo', make_project=False):  # noqa: S107
     if not username:
         username = display_name.lower().replace(' ', '-')
     user = M.User.register(dict(username=username,
