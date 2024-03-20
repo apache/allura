@@ -87,7 +87,7 @@ class Command(command.Command, metaclass=MetaParserDocstring):
         return tg.config
 
     def basic_setup(self):
-        global log, M
+        global log, M  # noqa: PLW0603
         if self.args[0]:
             # Probably being called from the command line - load the config
             # file

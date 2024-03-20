@@ -56,7 +56,7 @@ def bootstrap(command, conf, vars):
         REGISTRY.register(ew.widget_context,
                           ew.core.WidgetContext('http', ew.ResourceManager()))
 
-    create_test_data = asbool(os.getenv('ALLURA_TEST_DATA', True))
+    create_test_data = asbool(os.getenv('ALLURA_TEST_DATA', 'true'))
 
     # if this is a test_run, skip user project creation to save time
     make_user_projects = not test_run

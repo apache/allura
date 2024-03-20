@@ -426,8 +426,7 @@ class TestAttachment(TestDiscussBase):
             if 'attachment' in alink['href']:
                 alink = str(alink['href'])
                 return alink
-        else:
-            assert False, 'attachment link not found'
+        assert False, 'attachment link not found'
 
     def test_attach(self):
         r = self.app.post(self.post_link + 'attach',

@@ -29,7 +29,7 @@ import six
 
 _patched = False
 def apply():
-    global _patched
+    global _patched  # noqa: PLW0603
     if _patched:
         return
     _patched = True

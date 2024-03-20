@@ -32,7 +32,7 @@ import json
 import logging
 import string
 import random
-import pickle as pickle
+import pickle
 from hashlib import sha1
 from datetime import datetime, timedelta
 from collections import defaultdict, OrderedDict

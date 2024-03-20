@@ -52,7 +52,7 @@ def load_requests_lib(req):
             exec(compile(open(activate_this, "rb").read(), activate_this, 'exec'), {'__file__': activate_this})  # noqa: S102
         except Exception as e:
             log(req, "Couldn't activate venv via {}: {}".format(activate_this, repr(e)))
-    global requests
+    global requests  # noqa: PLW0603
     import requests as requests_lib
     requests = requests_lib
 
