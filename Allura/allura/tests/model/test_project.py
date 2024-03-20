@@ -120,12 +120,11 @@ class TestProjectModel:
 
     def test_subproject(self):
         project = M.Project.query.get(shortname='test')
-        with td.raises(ToolError):
-            with patch('allura.lib.plugin.ProjectRegistrationProvider') as Provider:
-                Provider.get().shortname_validator.to_python.side_effect = Invalid(
-                    'name', 'value', {})
-                # name doesn't validate
-                sp = project.new_subproject('test-proj-nose')
+        with td.raises(ToolError), patch('allura.lib.plugin.ProjectRegistrationProvider') as Provider:
+            Provider.get().shortname_validator.to_python.side_effect = Invalid(
+                'name', 'value', {})
+            # name doesn't validate
+            sp = project.new_subproject('test-proj-nose')
         sp = project.new_subproject('test-proj-nose')
         spp = sp.new_subproject('spp')
         ThreadLocalODMSession.flush_all()

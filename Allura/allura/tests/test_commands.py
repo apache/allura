@@ -435,14 +435,14 @@ def test_status_log_retries():
     cmd._taskd_status.return_value = ''
     cmd.options = Mock(num_retry=10)
     cmd._check_taskd_status(123)
-    expected_calls = [call(123, False if i == 0 else True) for i in range(10)]
+    expected_calls = [call(123, i != 0) for i in range(10)]
     assert cmd._taskd_status.mock_calls == expected_calls
 
     cmd._taskd_status = Mock()
     cmd._taskd_status.return_value = ''
     cmd.options = Mock(num_retry=3)
     cmd._check_task(123, Mock())
-    expected_calls = [call(123, False if i == 0 else True) for i in range(3)]
+    expected_calls = [call(123, i != 0) for i in range(3)]
     assert cmd._taskd_status.mock_calls == expected_calls
 
 

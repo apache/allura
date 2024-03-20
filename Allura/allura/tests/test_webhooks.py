@@ -564,9 +564,8 @@ class TestRepoPushWebhookSender(TestWebhookBase):
     def test_get_payload(self):
         sender = RepoPushWebhookSender()
         _ci = lambda x: MagicMock(webhook_info={'id': str(x)}, parent_ids=['0'])
-        with patch.object(self.git.repo, 'commit', new=_ci):
-            with h.push_config(c, app=self.git):
-                result = sender.get_payload(commit_ids=['1', '2', '3'], ref='ref')
+        with patch.object(self.git.repo, 'commit', new=_ci), h.push_config(c, app=self.git):
+            result = sender.get_payload(commit_ids=['1', '2', '3'], ref='ref')
         expected_result = {
             'size': 3,
             'commits': [{'id': '1'}, {'id': '2'}, {'id': '3'}],

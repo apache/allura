@@ -584,11 +584,11 @@ class TestNotificationTasks:
         setup_global_objects()
 
     def test_delivers_messages(self):
-        with mock.patch.object(M.Mailbox, 'deliver') as deliver:
-            with mock.patch.object(M.Mailbox, 'fire_ready') as fire_ready:
-                notification_tasks.notify('42', ['52'], 'none')
-                deliver.assert_called_with('42', ['52'], 'none')
-                fire_ready.assert_called_with()
+        with mock.patch.object(M.Mailbox, 'deliver') as deliver, \
+                mock.patch.object(M.Mailbox, 'fire_ready') as fire_ready:
+            notification_tasks.notify('42', ['52'], 'none')
+            deliver.assert_called_with('42', ['52'], 'none')
+            fire_ready.assert_called_with()
 
 
 @event_handler('my_event')

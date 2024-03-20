@@ -35,10 +35,10 @@ class TestFeedbackApp(FeedbackTestWithModel):
 
     def test_index(self):
         reviews = feedback_main.RootController().index()
-        assert True if not reviews['user_has_already_reviewed'] else False
+        assert bool(not reviews['user_has_already_reviewed'])
         create_feedbacks()
         reviews = feedback_main.RootController().index()
-        assert True if reviews['user_has_already_reviewed'] else False
+        assert bool(reviews['user_has_already_reviewed'])
 
     def test_feedback(self):
         create_feedbacks()

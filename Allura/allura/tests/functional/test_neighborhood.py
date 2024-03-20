@@ -342,7 +342,7 @@ class TestNeighborhood(TestController):
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.features['css'] = 'picker'
         r = self.app.get('/adobe/')
-        while isinstance(r.response, HTTPFound) or isinstance(r.response, HTTPMovedPermanently):
+        while isinstance(r.response, (HTTPFound, HTTPMovedPermanently)):
             r = r.follow()
         assert test_css in r
         r = self.app.get('/adobe/_admin/overview',
@@ -352,7 +352,7 @@ class TestNeighborhood(TestController):
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.features['css'] = 'custom'
         r = self.app.get('/adobe/')
-        while isinstance(r.response, HTTPFound) or isinstance(r.response, HTTPMovedPermanently):
+        while isinstance(r.response, (HTTPFound, HTTPMovedPermanently)):
             r = r.follow()
         assert test_css in r
         r = self.app.get('/adobe/_admin/overview',
