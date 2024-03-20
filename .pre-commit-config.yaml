@@ -33,7 +33,6 @@ repos:
             (?x)^(
                 Allura/allura/eventslistener.py|
                 Allura/allura/lib/.*|
-                scripts/teamforge-import.py
             )$
 
 
