@@ -314,17 +314,6 @@ scrub-allura-data.py
     :prog: paster script development.ini ../scripts/scrub-allura-data.py --
 
 
-teamforge-import.py
--------------------
-
-*Cannot currently be run as a background task.*
-
-Extract data from a TeamForge site (via its web API), and import directly into Allura.  There are some hard-coded
-and extra functions in this script, which should be removed or updated before being used again.
-Requires running: :command:`pip install suds` first. ::
-
-    usage: paster script development.ini ../scripts/teamforge-import.py -- --help
-
 .. _site-notifications:
 
 Site Notifications
