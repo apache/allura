@@ -36,6 +36,11 @@ lint.select = [
     "PLC",
     "PLE",
     "PLW",
+    "SIM101",
+    "SIM103",
+    "SIM117",
+    "SIM2",
+    "SIM401",
     "FA",   # future annotations (to ensure compatibility with `target-version`)
 ]
 

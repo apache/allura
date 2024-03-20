@@ -50,21 +50,20 @@ class TestPersonalDashboard(TestController):
             return m
         eps = list(map(ep, ['a', 'b', 'c', 'd']))
         order = {'personal_dashboard_sections.order': 'b, d,c , f '}
-        with mock.patch('allura.lib.helpers.iter_entry_points') as iep:
-            with mock.patch.dict(tg.config, order):
-                iep.return_value = eps
-                sections = SectionsUtil.load_sections('personal_dashboard')
-                assert sections == [
-                    eps[1].load(),
-                    eps[3].load(),
-                    eps[2].load(),
-                    eps[0].load()]
-                r = self.app.get('/dashboard')
-                assert 'Section a' in r.text
-                assert 'Section b' in r.text
-                assert 'Section c' in r.text
-                assert 'Section d' in r.text
-                assert 'Section f' not in r.text
+        with mock.patch('allura.lib.helpers.iter_entry_points') as iep, mock.patch.dict(tg.config, order):
+            iep.return_value = eps
+            sections = SectionsUtil.load_sections('personal_dashboard')
+            assert sections == [
+                eps[1].load(),
+                eps[3].load(),
+                eps[2].load(),
+                eps[0].load()]
+            r = self.app.get('/dashboard')
+            assert 'Section a' in r.text
+            assert 'Section b' in r.text
+            assert 'Section c' in r.text
+            assert 'Section d' in r.text
+            assert 'Section f' not in r.text
 
 
 class TestTicketsSection(TrackerTestController):

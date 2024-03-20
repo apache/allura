@@ -154,7 +154,7 @@ class TaskdCleanupCommand(base.Command):
 
     def _check_taskd_status(self, pid):
         for i in range(self.options.num_retry):
-            retry = False if i == 0 else True
+            retry = i != 0
             status = self._taskd_status(pid, retry)
             if ('taskd pid %s' % pid) in status:
                 return 'OK'
@@ -164,7 +164,7 @@ class TaskdCleanupCommand(base.Command):
 
     def _check_task(self, taskd_pid, task):
         for i in range(self.options.num_retry):
-            retry = False if i == 0 else True
+            retry = i != 0
             status = self._taskd_status(taskd_pid, retry)
             line = 'taskd pid {} is currently handling task {}'.format(
                 taskd_pid, task)

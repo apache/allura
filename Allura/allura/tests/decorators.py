@@ -109,12 +109,8 @@ class raises:
     def __exit__(self, exc_type, exc_val, exc_t):
         if exc_type:
             self.exc = exc_val
-            if issubclass(exc_type, self.ExcType):
-                # ok
-                return True
-            else:
-                # root exception will be raised, untouched
-                return False
+            # otherwise root exception will be raised, untouched
+            return issubclass(exc_type, self.ExcType)
         else:
             raise AssertionError('Did not raise %s' % self.ExcType)
 

@@ -564,7 +564,7 @@ class NeighborhoodAdminController:
         set_nav(self.neighborhood)
         c.overview_form = W.neighborhood_overview_form
         allow_undelete = asbool(config.get('allow_project_undelete', True))
-        allow_wiki_as_root = True if get_default_wiki_page() else False
+        allow_wiki_as_root = bool(get_default_wiki_page())
 
         return dict(
             neighborhood=self.neighborhood,

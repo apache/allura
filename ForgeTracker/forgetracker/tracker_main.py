@@ -1329,7 +1329,7 @@ class changelog:
             if key in self.originals:
                 orig_value = self.originals[key]
                 curr_value = self.data[key]
-                if not orig_value == curr_value:
+                if orig_value != curr_value:
                     t.append((key, (orig_value, curr_value)))
         return t
 

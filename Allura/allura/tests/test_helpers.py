@@ -542,9 +542,8 @@ def test_login_overlay():
         raise HTTPUnauthorized()
     with h.login_overlay(exceptions=['foo']):
         raise HTTPUnauthorized()
-    with td.raises(HTTPUnauthorized):
-        with h.login_overlay(exceptions=['foobar']):
-            raise HTTPUnauthorized()
+    with td.raises(HTTPUnauthorized), h.login_overlay(exceptions=['foobar']):
+        raise HTTPUnauthorized()
 
 
 class TestIterEntryPoints(TestCase):

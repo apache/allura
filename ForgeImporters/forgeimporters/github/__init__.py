@@ -208,7 +208,7 @@ def oauth_app_basic_auth(config):
 
 def valid_access_token(access_token, scopes_required=None):
     tok_details = access_token_details(access_token)
-    if not tok_details.status_code == 200:
+    if tok_details.status_code != 200:
         return False
     if scopes_required and not all(scope_req in tok_details.json()['scopes']
                                    for scope_req in scopes_required):

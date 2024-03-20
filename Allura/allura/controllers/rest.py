@@ -189,7 +189,7 @@ class Oauth1Validator(oauthlib.oauth1.RequestValidator):
         if request.environ.get('paste.testing'):
             # test suite is running
             return False
-        elif asbool(config.get('debug')) and config['base_url'].startswith('http://'):
+        elif asbool(config.get('debug')) and config['base_url'].startswith('http://'):  # noqa: SIM103
             # development w/o https
             return False
         else:

@@ -46,14 +46,13 @@ def test_extensions_cm():
 def test_extensions_cm_raises():
     session = mock.Mock(_kwargs=dict(extensions=[]))
     extension = mock.Mock()
-    with td.raises(ValueError):
-        with substitute_extensions(session, [extension]) as sess:
-            session.flush.side_effect = AttributeError
-            assert session.flush.call_count == 1
-            assert session.close.call_count == 1
-            assert sess == session
-            assert sess._kwargs['extensions'] == [extension]
-            raise ValueError('test')
+    with td.raises(ValueError), substitute_extensions(session, [extension]) as sess:
+        session.flush.side_effect = AttributeError
+        assert session.flush.call_count == 1
+        assert session.close.call_count == 1
+        assert sess == session
+        assert sess._kwargs['extensions'] == [extension]
+        raise ValueError('test')
     assert session.flush.call_count == 1
     assert session.close.call_count == 1
     assert session._kwargs['extensions'] == []
@@ -62,13 +61,12 @@ def test_extensions_cm_raises():
 def test_extensions_cm_flush_raises():
     session = mock.Mock(_kwargs=dict(extensions=[]))
     extension = mock.Mock()
-    with td.raises(AttributeError):
-        with substitute_extensions(session, [extension]) as sess:
-            session.flush.side_effect = AttributeError
-            assert session.flush.call_count == 1
-            assert session.close.call_count == 1
-            assert sess == session
-            assert sess._kwargs['extensions'] == [extension]
+    with td.raises(AttributeError), substitute_extensions(session, [extension]) as sess:
+        session.flush.side_effect = AttributeError
+        assert session.flush.call_count == 1
+        assert session.close.call_count == 1
+        assert sess == session
+        assert sess._kwargs['extensions'] == [extension]
     assert session.flush.call_count == 2
     assert session.close.call_count == 1
     assert session._kwargs['extensions'] == []

@@ -168,7 +168,7 @@ class ForgeActivityController(BaseController):
             followee=followee,
             following=following,
             timeline=filtered_timeline,
-            noindex=False if filtered_timeline else True,
+            noindex=not filtered_timeline,
             page=page,
             limit=limit,
             has_more=has_more,

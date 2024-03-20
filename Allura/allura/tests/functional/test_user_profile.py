@@ -48,15 +48,14 @@ class TestUserProfileSections(TestController):
         order = {'user_profile_sections.order': 'b, d,c , f '}
         if hasattr(type(app), '_sections'):
             delattr(type(app), '_sections')
-        with mock.patch('allura.lib.helpers.iter_entry_points') as iep:
-            with mock.patch.dict(tg.config, order):
-                iep.return_value = eps
-                sections = app.profile_sections
-                assert sections == [
-                    eps[1].load(),
-                    eps[3].load(),
-                    eps[2].load(),
-                    eps[0].load()]
+        with mock.patch('allura.lib.helpers.iter_entry_points') as iep, mock.patch.dict(tg.config, order):
+            iep.return_value = eps
+            sections = app.profile_sections
+            assert sections == [
+                eps[1].load(),
+                eps[3].load(),
+                eps[2].load(),
+                eps[0].load()]
         r = self.app.get('/u/test-user/profile')
         assert 'Section a' in r.text
         assert 'Section b' in r.text

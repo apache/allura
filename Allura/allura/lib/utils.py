@@ -337,7 +337,7 @@ class AntiSpam:
         if params is None:
             params = request.params
         new_params = dict(params)
-        if not request.method == 'GET':
+        if request.method != 'GET':
             obj = None
             try:
                 new_params.pop('timestamp', None)
