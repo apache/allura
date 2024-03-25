@@ -18,9 +18,11 @@
 """REST Controller"""
 import json
 import logging
+from datetime import datetime, timedelta
 from urllib.parse import unquote, urlparse, parse_qs
 
 import oauthlib.oauth1
+import oauthlib.oauth2
 import oauthlib.common
 from paste.util.converters import asbool
 from webob import exc
@@ -41,7 +43,7 @@ from allura.lib.decorators import require_post
 from allura.lib.project_create_helpers import make_newproject_schema, deserialize_project, create_project_with_attrs
 from allura.lib.security import has_access
 import six
-from datetime import datetime
+
 
 log = logging.getLogger(__name__)
 
@@ -50,6 +52,7 @@ class RestController:
 
     def __init__(self):
         self.oauth = OAuthNegotiator()
+        self.oauth2 = Oauth2Negotiator()
         self.auth = AuthRestController()
 
     def _check_security(self):
@@ -234,6 +237,70 @@ class Oauth1Validator(oauthlib.oauth1.RequestValidator):
         return 'dummy-access-token-for-oauthlib'
 
 
+class Oauth2Validator(oauthlib.oauth2.RequestValidator):
+    def validate_client_id(self, client_id: str, request: oauthlib.common.Request) -> bool:
+        return M.OAuth2Client.query.get(client_id=client_id) is not None
+
+    def validate_redirect_uri(self, client_id, redirect_uri, request, *args, **kwargs):
+        return True
+
+    def validate_response_type(self, client_id: str, response_type: str, client: oauthlib.oauth2.Client, request: oauthlib.common.Request, *args, **kwargs) -> bool:
+        res_type = M.OAuth2Client.query.get(client_id=client_id).response_type
+        return res_type == response_type
+
+    def validate_scopes(self, client_id: str, scopes, client: oauthlib.oauth2.Client, request: oauthlib.common.Request, *args, **kwargs) -> bool:
+        return True
+
+    def validate_grant_type(self, client_id: str, grant_type: str, client: oauthlib.oauth2.Client, request: oauthlib.common.Request, *args, **kwargs) -> bool:
+        return True
+
+    def get_default_scopes(self, client_id: str, request: oauthlib.common.Request, *args, **kwargs):
+        return []
+
+    def get_default_redirect_uri(self, client_id: str, request: oauthlib.common.Request, *args, **kwargs) -> str:
+        return request.uri
+
+    def invalidate_authorization_code(self, client_id: str, code: str, request: oauthlib.common.Request, *args, **kwargs) -> None:
+        return
+
+    def authenticate_client(self, request: oauthlib.common.Request, *args, **kwargs) -> bool:
+        client_id = request.body['client_id']
+        client = M.OAuth2Client.query.get(client_id=client_id)
+        if not client:
+            return False
+
+        request.client = client
+        return True
+
+    def validate_code(self, client_id: str, code: str, client: oauthlib.oauth2.Client, request: oauthlib.common.Request, *args, **kwargs) -> bool:
+        return True
+
+    def confirm_redirect_uri(self, client_id: str, code: str, redirect_uri: str, client: oauthlib.oauth2.Client, request: oauthlib.common.Request, *args, **kwargs) -> bool:
+        return True
+
+    def save_authorization_code(self, client_id: str, code, request: oauthlib.common.Request, *args, **kwargs) -> None:
+        auth_code = M.OAuth2AuthorizationCode(
+            client_id = client_id,
+            authorization_code = code['code'],
+            expires_at = datetime.utcnow() + timedelta(minutes=10)
+        )
+        request.client_id = client_id
+        session(auth_code).flush()
+        log.info(f'Saving new authorization code for client: {request.client_id}')
+
+    def save_bearer_token(self, token, request: oauthlib.common.Request, *args, **kwargs) -> object:
+        bearer_token = M.OAuth2Token(
+            client_id = request.client_id,
+            scopes = token.get('scope', []),
+            access_token = token.get('access_token'),
+            refresh_token = token.get('refresh_token'),
+            expires_at = datetime.utcfromtimestamp(token.get('expires_in'))
+        )
+
+        session(bearer_token).flush()
+        log.info(f'Saving new bearer token for client: {request.client_id}')
+
+
 class AlluraOauth1Server(oauthlib.oauth1.WebApplicationServer):
     def validate_request_token_request(self, request):
         # this is NOT standard OAuth1 (spec requires the param)
@@ -368,6 +435,42 @@ class OAuthNegotiator:
         response.headers = headers
         response.status_int = status
         return body
+
+
+class Oauth2Negotiator:
+    @property
+    def server(self):
+        return oauthlib.oauth2.WebApplicationServer(Oauth2Validator())
+
+    @expose('json:')
+    def authorize(self, **kwargs):
+        security.require_authenticated()
+        json_body = None
+
+        if request.body:
+            # We need to decode the request body and convert it to a dict because Turbogears creates it as bytes
+            # and oauthlib will treat it as x-www-form-urlencoded format.
+            decoded_body = str(request.body, 'utf-8')
+            json_body = json.loads(decoded_body)
+
+        try:
+            scopes, credentials = self.server.validate_authorization_request(uri=request.url, http_method=request.method, headers=request.headers, body=json_body)
+            headers, body, status = self.server.create_authorization_response(
+                uri=request.url, http_method=request.method, body=json_body, headers=request.headers, scopes=[], credentials=credentials
+            )
+        except Exception as e:
+            log.exception(e)
+
+    @expose('json:')
+    @require_post()
+    def token(self, **kwargs):
+        try:
+            decoded_body = str(request.body, 'utf-8')
+            json_body = json.loads(decoded_body)
+            headers, body, status = self.server.create_token_response(uri=request.url, http_method=request.method, body=json_body, headers=request.headers)
+            return body
+        except Exception as e:
+            log.exception(e)
 
 
 def rest_has_access(obj, user, perm):

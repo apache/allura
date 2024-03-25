@@ -154,6 +154,56 @@ class OAuthAccessToken(OAuthToken):
         return False
 
 
+class OAuth2Client(MappedClass):
+    class __mongometa__:
+        session = main_orm_session
+        name = 'oauth2_client'
+
+    query: 'Query[OAuth2Client]'
+
+    _id = FieldProperty(S.ObjectId)
+    client_id = FieldProperty(str)
+    user_id: ObjectId = AlluraUserProperty(if_missing=lambda: c.user._id)
+    grant_type = FieldProperty(str)
+    response_type = FieldProperty(str)
+    scopes = FieldProperty([str])
+    redirect_uris = FieldProperty([str])
+
+class OAuth2AuthorizationCode(MappedClass):
+    class __mongometa__:
+        session = main_orm_session
+        name = 'oauth2_authorization_code'
+
+    query: 'Query[OAuth2AuthorizationCode]'
+
+    _id = FieldProperty(S.ObjectId)
+    client_id = FieldProperty(str)
+    user_id: ObjectId = AlluraUserProperty(if_missing=lambda: c.user._id)
+    scopes = FieldProperty([str])
+    redirect_uri = FieldProperty(str)
+    authorization_code = FieldProperty(str)
+    expires_at = FieldProperty(S.DateTime)
+    # For PKCE support
+    challenge = FieldProperty(str)
+    challenge_method = FieldProperty(str)
+
+
+class OAuth2Token(MappedClass):
+    class __mongometa__:
+        session = main_orm_session
+        name = 'oauth2_token'
+
+    query: 'Query[OAuth2Token]'
+
+    _id = FieldProperty(S.ObjectId)
+    client_id = FieldProperty(str)
+    user_id: ObjectId = AlluraUserProperty(if_missing=lambda: c.user._id)
+    scopes = FieldProperty([str])
+    access_token = FieldProperty(str)
+    refresh_token = FieldProperty(str)
+    expires_at = FieldProperty(S.DateTime)
+
+
 def dummy_oauths():
     from allura.controllers.rest import Oauth1Validator
     # oauthlib implementation NEEDS these "dummy" values.  If a request comes in with an invalid param, it runs
