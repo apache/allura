@@ -52,11 +52,7 @@
         {% else %}
           <td></td>
         {% endif %}
-        {% if 'updated' in page %}
-          <td>{{abbr_date(page['updated'])}}</td>
-        {% else %}
-          <td></td>
-        {% endif %}
+        <td>{{abbr_date(page['mod_date'])}}</td>
       </tr>
     {% endfor %}
   </tbody>

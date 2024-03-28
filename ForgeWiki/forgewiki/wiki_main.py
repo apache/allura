@@ -477,24 +477,16 @@ class RootController(BaseController, DispatchIndex, FeedController):
         q = WM.Page.query.find(criteria)
         if sort == 'alpha':
             q = q.sort('title')
+        elif sort == 'recent':
+            q = q.sort('mod_date', -1)
         count = q.count()
         q = q.skip(start).limit(int(limit))
         for page in q:
             recent_edit = page.history().first()
-            p = dict(title=page.title, url=page.url(), deleted=page.deleted)
+            p = dict(title=page.title, url=page.url(), deleted=page.deleted, mod_date=page.mod_date)
             if recent_edit:
-                p['updated'] = recent_edit.timestamp
-                p['user_label'] = recent_edit.author.display_name
                 p['user_name'] = recent_edit.author.username
-                pages.append(p)
-            else:
-                if sort == 'recent':
-                    uv_pages.append(p)
-                else:
-                    pages.append(p)
-        if sort == 'recent':
-            pages.sort(reverse=True, key=lambda x: (x['updated']))
-            pages = pages + uv_pages
+            pages.append(p)
         h1_text = f"{c.project.name} {c.app.config.options.mount_label} - Browse Pages"
         return dict(
             pages=pages, can_delete=can_delete, show_deleted=show_deleted,
