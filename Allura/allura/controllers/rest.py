@@ -19,7 +19,7 @@
 import json
 import logging
 from datetime import datetime, timedelta
-from urllib.parse import unquote, urlparse, parse_qs
+from urllib.parse import unquote, urlparse, parse_qs, parse_qsl
 
 import oauthlib.oauth1
 import oauthlib.oauth2
@@ -261,7 +261,7 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
         return request.uri
 
     def invalidate_authorization_code(self, client_id: str, code: str, request: oauthlib.common.Request, *args, **kwargs) -> None:
-        return
+        M.OAuth2AuthorizationCode.query.remove({'client_id': client_id})
 
     def authenticate_client(self, request: oauthlib.common.Request, *args, **kwargs) -> bool:
         client_id = request.body['client_id']
@@ -273,32 +273,51 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
         return True
 
     def validate_code(self, client_id: str, code: str, client: oauthlib.oauth2.Client, request: oauthlib.common.Request, *args, **kwargs) -> bool:
-        return True
+        authorization = M.OAuth2AuthorizationCode.query.get({'client_id': client_id})
+        return authorization.expires_at <= datetime.utcnow()
 
     def confirm_redirect_uri(self, client_id: str, code: str, redirect_uri: str, client: oauthlib.oauth2.Client, request: oauthlib.common.Request, *args, **kwargs) -> bool:
         return True
 
     def save_authorization_code(self, client_id: str, code, request: oauthlib.common.Request, *args, **kwargs) -> None:
-        auth_code = M.OAuth2AuthorizationCode(
-            client_id = client_id,
-            authorization_code = code['code'],
-            expires_at = datetime.utcnow() + timedelta(minutes=10)
-        )
-        request.client_id = client_id
-        session(auth_code).flush()
-        log.info(f'Saving new authorization code for client: {request.client_id}')
+        authorization = M.OAuth2AuthorizationCode.query.get(client_id=client_id)
+
+        if not authorization:
+            auth_code = M.OAuth2AuthorizationCode(
+                client_id = client_id,
+                authorization_code = code['code'],
+                expires_at = datetime.utcnow() + timedelta(minutes=10)
+            )
+            session(auth_code).flush()
+            log.info(f'Saving new authorization code for client: {client_id}')
+        else:
+            log.info(f'Updating authorization code for {client_id}')
+            log.info(f'Current authorization code: {authorization.authorization_code}')
+            log.info(f'New authorization code: {code["code"]}')
+            M.OAuth2AuthorizationCode.query.update(
+                {'client_id': client_id},
+                {'$set': {'authorization_code': code['code'], 'expires_at': datetime.utcnow() + timedelta(minutes=10)}})
+            log.info(f'Updating authorization code for client: {client_id}')
 
     def save_bearer_token(self, token, request: oauthlib.common.Request, *args, **kwargs) -> object:
-        bearer_token = M.OAuth2Token(
-            client_id = request.client_id,
-            scopes = token.get('scope', []),
-            access_token = token.get('access_token'),
-            refresh_token = token.get('refresh_token'),
-            expires_at = datetime.utcfromtimestamp(token.get('expires_in'))
-        )
+        current_token = M.OAuth2Token.query.get(client_id=request.client_id)
 
-        session(bearer_token).flush()
-        log.info(f'Saving new bearer token for client: {request.client_id}')
+        if not current_token:
+            bearer_token = M.OAuth2Token(
+                client_id = request.client_id,
+                scopes = token.get('scope', []),
+                access_token = token.get('access_token'),
+                refresh_token = token.get('refresh_token'),
+                expires_at = datetime.utcfromtimestamp(token.get('expires_in'))
+            )
+
+            session(bearer_token).flush()
+            log.info(f'Saving new bearer token for client: {request.client_id}')
+        else:
+            M.OAuth2Token.query.update(
+                {'client_id': request.client_id},
+                {'$set': {'access_token': token.get('access_token'), 'expires_at': datetime.utcfromtimestamp(token.get('expires_in')), 'refresh_token': token.get('refresh_token')}})
+            log.info(f'Updating bearer token for client: {request.client_id}')
 
 
 class AlluraOauth1Server(oauthlib.oauth1.WebApplicationServer):
@@ -442,7 +461,7 @@ class Oauth2Negotiator:
     def server(self):
         return oauthlib.oauth2.WebApplicationServer(Oauth2Validator())
 
-    @expose('json:')
+    @expose('jinja:allura:templates/oauth2_authorize.html')
     def authorize(self, **kwargs):
         security.require_authenticated()
         json_body = None
@@ -455,11 +474,44 @@ class Oauth2Negotiator:
 
         try:
             scopes, credentials = self.server.validate_authorization_request(uri=request.url, http_method=request.method, headers=request.headers, body=json_body)
-            headers, body, status = self.server.create_authorization_response(
-                uri=request.url, http_method=request.method, body=json_body, headers=request.headers, scopes=[], credentials=credentials
+            client_id = request.params.get('client_id')
+            client = M.OAuth2Client.query.get(client_id=client_id)
+
+            # We need to save the credentials to the current session so we can use it later in the POST request.
+            # We also need to use __dict__ because the internal oauthlib request object cannot be directly serialized
+            # and saved to Ming
+            credentials['request'] = credentials['request'].__dict__
+            M.OAuth2Client.set_credentials(client_id, credentials)
+
+            return dict(
+                credentials=credentials,
+                client=client
             )
         except Exception as e:
             log.exception(e)
+
+    @expose('jinja:allura:templates/oauth2_authorize_ok.html')
+    @require_post()
+    def do_authorize(self, yes=None, no=None):
+        security.require_authenticated()
+
+        client_id = request.params['client_id']
+        client = M.OAuth2Client.query.get(client_id=client_id)
+
+        if no:
+            flash(f'{client.name} NOT AUTHORIZED', 'error')
+            redirect('/auth/oauth2/')
+
+        try:
+            headers, body, status = self.server.create_authorization_response(
+                uri=request.url, http_method=request.method, body=request.body, headers=request.headers, scopes=[], credentials=client.credentials
+            )
+
+            qs_params = dict(parse_qsl(headers['Location']))
+            return dict(client=client, authorization_code=qs_params.get('code', ''))
+        except Exception as ex:
+            log.exception(ex)
+
 
     @expose('json:')
     @require_post()

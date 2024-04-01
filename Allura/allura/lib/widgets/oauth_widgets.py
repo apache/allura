@@ -41,3 +41,14 @@ class OAuthRevocationForm(ForgeForm):
 
     class fields(ew_core.NameList):
         _id = ew.HiddenField()
+
+
+class OAuth2ApplicationForm(ForgeForm):
+    submit_text = 'Register new Application'
+    style = 'wide'
+
+    class fields(ew_core.NameList):
+        application_name = ew.TextField(label='Application Name',
+                                        validator=V.UniqueOAuthApplicationName())
+        application_description = AutoResizeTextarea(label='Application Description')
+        redirect_url = ew.TextField(label='Redirect URL')

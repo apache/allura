@@ -50,6 +50,7 @@ from allura.lib.security import HIBPClient, HIBPCompromisedCredentials, HIBPClie
 from allura.lib.widgets import (
     SubscriptionForm,
     OAuthApplicationForm,
+    OAuth2ApplicationForm,
     OAuthRevocationForm,
     LoginForm,
     ForgottenPasswordForm,
@@ -74,6 +75,7 @@ class F:
     subscription_form = SubscriptionForm()
     registration_form = forms.RegistrationForm(action='/auth/save_new')
     oauth_application_form = OAuthApplicationForm(action='register')
+    oauth2_application_form = OAuth2ApplicationForm(action='register')
     oauth_revocation_form = OAuthRevocationForm(
         action='/auth/preferences/revoke_oauth')
     change_personal_data_form = forms.PersonalDataForm()
@@ -112,6 +114,7 @@ class AuthController(BaseController):
         self.user_info = UserInfoController()
         self.subscriptions = SubscriptionsController()
         self.oauth = OAuthController()
+        self.oauth2 = OAuth2Controller()
         if asbool(config.get('auth.allow_user_to_disable_account', False)):
             self.disable = DisableAccountController()
 
@@ -1401,6 +1404,61 @@ class OAuthController(BaseController):
             redirect('.')
         access_token.delete()
         flash('Token revoked')
+        redirect('.')
+
+
+class OAuth2Controller(BaseController):
+    def _check_security(self):
+        require_authenticated()
+
+    def _revoke_all(self, client_id):
+        M.OAuth2AuthorizationCode.query.remove({'client_id': client_id})
+        M.OAuth2Token.query.remove({'client_id': client_id})
+
+    @with_trailing_slash
+    @expose('jinja:allura:templates/oauth2_applications.html')
+    def index(self, **kw):
+        c.form = F.oauth2_application_form
+        provider = plugin.AuthenticationProvider.get(request)
+        clients = M.OAuth2Client.for_user(c.user)
+        model = []
+
+        for client in clients:
+            authorization = M.OAuth2AuthorizationCode.query.get(client_id=client.client_id)
+            token = M.OAuth2Token.query.get(client_id=client.client_id)
+            model.append(dict(client=client, authorization=authorization, token=token))
+
+        return dict(
+            menu=provider.account_navigation(),
+            model=model
+        )
+
+    @expose()
+    @require_post()
+    @validate(F.oauth2_application_form, error_handler=index)
+    def register(self, application_name=None, application_description=None, redirect_url=None, **kw):
+        M.OAuth2Client(name=application_name,
+                       description=application_description,
+                       redirect_uris=[redirect_url])
+        flash('Oauth2 Client registered')
+        redirect('.')
+
+    @expose()
+    @require_post()
+    def do_client_action(self, _id=None, deregister=None, revoke=None):
+        client = M.OAuth2Client.query.get(client_id=_id)
+        if client is None or client.user_id != c.user._id:
+            flash('Invalid client ID', 'error')
+            redirect('.')
+
+        if deregister:
+            self._revoke_all(_id)
+            client.delete()
+            flash('Client deleted and access tokens revoked.')
+
+        if revoke:
+            self._revoke_all(_id)
+            flash('Access tokens revoked.')
         redirect('.')
 
 

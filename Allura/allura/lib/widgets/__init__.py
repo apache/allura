@@ -17,10 +17,10 @@
 
 from .discuss import Post, Thread
 from .subscriptions import SubscriptionForm
-from .oauth_widgets import OAuthApplicationForm, OAuthRevocationForm
+from .oauth_widgets import OAuthApplicationForm, OAuth2ApplicationForm, OAuthRevocationForm
 from .auth_widgets import LoginForm, ForgottenPasswordForm, DisableAccountForm
 from .vote import VoteForm
 
 __all__ = [
-    'Post', 'Thread', 'SubscriptionForm', 'OAuthApplicationForm', 'OAuthRevocationForm', 'LoginForm',
-    'ForgottenPasswordForm', 'DisableAccountForm', 'VoteForm']
+    'Post', 'Thread', 'SubscriptionForm', 'OAuthApplicationForm', 'OAuth2ApplicationForm',
+    'OAuthRevocationForm', 'LoginForm', 'ForgottenPasswordForm', 'DisableAccountForm', 'VoteForm']

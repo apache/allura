@@ -162,12 +162,30 @@ class OAuth2Client(MappedClass):
     query: 'Query[OAuth2Client]'
 
     _id = FieldProperty(S.ObjectId)
-    client_id = FieldProperty(str)
+    client_id = FieldProperty(str, if_missing=lambda: h.nonce(20))
+    credentials = FieldProperty(S.Anything)
+    name = FieldProperty(str)
+    description = FieldProperty(str, if_missing='')
     user_id: ObjectId = AlluraUserProperty(if_missing=lambda: c.user._id)
-    grant_type = FieldProperty(str)
-    response_type = FieldProperty(str)
+    grant_type = FieldProperty(str, if_missing='authorization_code')
+    response_type = FieldProperty(str, if_missing='code')
     scopes = FieldProperty([str])
     redirect_uris = FieldProperty([str])
+
+    @classmethod
+    def for_user(cls, user=None):
+        if user is None:
+            user = c.user
+        return cls.query.find(dict(user_id=user._id)).all()
+
+    @classmethod
+    def set_credentials(cls, client_id, credentials):
+        cls.query.update({'client_id': client_id }, {'$set': {'credentials': credentials}})
+
+    @property
+    def description_html(self):
+        return g.markdown.cached_convert(self, 'description')
+
 
 class OAuth2AuthorizationCode(MappedClass):
     class __mongometa__:
