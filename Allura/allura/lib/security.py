@@ -293,6 +293,17 @@ def is_denied(obj, permission: str, user: M.User, project: M.Project) -> bool:
 
     return False
 
+def debug_obj(obj) -> str:
+    if hasattr(obj, 'url'):
+        url = obj.url
+        if callable(url):
+            try:
+                url = url()
+            except Exception:
+                url = obj._id
+        return f'{obj.__class__.__name__} {url}'
+    return str(obj)
+
 
 def has_access(obj, permission: str, user: M.User | None = None, project: M.Project | None = None):
     '''Return whether the given user has the permission name on the given object.
@@ -335,8 +346,12 @@ def has_access(obj, permission: str, user: M.User | None = None, project: M.Proj
     '''
     from allura import model as M
 
+    DEBUG = False
+
     def predicate(obj=obj, user=user, project=project, roles=None):
         if obj is None:
+            if DEBUG:
+                log.debug(f'{user} denied {permission} on {debug_obj(obj)} ({debug_obj(project)})')
             return False
         if roles is None:
             if user is None:
@@ -354,27 +369,31 @@ def has_access(obj, permission: str, user: M.User | None = None, project: M.Proj
                 else:
                     project = getattr(obj, 'project', None) or c.project
                     project = project.root_project
-            roles = cred.user_roles(
-                user_id=user._id, project_id=project._id).reaching_ids
+            roles: RoleCache = cred.user_roles(user_id=user._id, project_id=project._id).reaching_roles
 
         # TODO: move deny logic into loop below; see ticket [#6715]
         if is_denied(obj, permission, user, project):
+            if DEBUG:
+                log.debug(f"{user.username} '{permission}' denied on {debug_obj(obj)} ({debug_obj(project)})")
             return False
 
         chainable_roles = []
-        for rid in roles:
+        for role in roles:
             for ace in obj.acl:
-                if M.ACE.match(ace, rid, permission):
+                if M.ACE.match(ace, role['_id'], permission):
                     if ace.access == M.ACE.ALLOW:
                         # access is allowed
-                        # log.info('%s: True', txt)
+                        if DEBUG:
+                            log.debug(f"{user.username} '{permission}' granted on {debug_obj(obj)} ({debug_obj(project)})")
                         return True
                     else:
-                        # access is denied for this role
+                        # access is denied for this particular role
+                        if DEBUG:
+                            log.debug(f"{user.username} '{permission}' denied for role={role['name'] or role['_id']} (BUT continuing to see if other roles permit) on {debug_obj(obj)} ({debug_obj(project)})")
                         break
             else:
                 # access neither allowed or denied, may chain to parent context
-                chainable_roles.append(rid)
+                chainable_roles.append(role)
         parent = obj.parent_security_context()
         if parent and chainable_roles:
             result = has_access(parent, permission, user=user, project=project)(
@@ -385,7 +404,8 @@ def has_access(obj, permission: str, user: M.User | None = None, project: M.Proj
                 result = has_access(project, 'admin', user=user)()
         else:
             result = False
-        # log.info('%s: %s', txt, result)
+        if DEBUG:
+            log.debug(f"{user.username} '{permission}' {result} from parent(s) on {debug_obj(obj)} ({debug_obj(project)})")
         return result
     return TruthyCallable(predicate)
 
