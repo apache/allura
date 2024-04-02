@@ -110,9 +110,13 @@ class RootController(BaseController, DispatchIndex, FeedController):
     @with_trailing_slash
     @expose('jinja:forgediscussion:templates/discussionforums/create_topic.html')
     def create_topic(self, forum_name=None, new_forum=False, **kw):
-        forums = model.Forum.query.find(dict(app_config_id=c.app.config._id,
-                                             parent_id=None,
-                                             deleted=False))
+        # check app-level access to guarantee enforcement of Block Users.  In addition to per-forum checks below
+        if has_access(c.app, 'post'):
+            forums = model.Forum.query.find(dict(app_config_id=c.app.config._id,
+                                                 parent_id=None,
+                                                 deleted=False))
+        else:
+            forums = []
         c.new_topic = self.W.new_topic
         my_forums = []
         forum_name = h.really_unicode(unquote(forum_name)) if forum_name else None

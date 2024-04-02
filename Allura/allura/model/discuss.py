@@ -33,10 +33,11 @@ from ming.odm.property import (FieldProperty, RelationProperty,
                                ForeignIdProperty)
 from ming.utils import LazyProperty
 from bson import ObjectId
+from webob import exc
 
 from allura.lib import helpers as h
 from allura.lib import security
-from allura.lib.security import require_access, has_access
+from allura.lib.security import require_access, has_access, is_denied
 from allura.lib import utils
 from allura.model.notification import Notification, Mailbox
 from .artifact import Artifact, ArtifactReference, VersionedArtifact, Snapshot, Message, Feed, ReactableArtifact
@@ -335,6 +336,9 @@ class Thread(Artifact, ActivityObject):
              is_meta=False, subscribe=False, **kw):
         if not ignore_security:
             require_access(self, 'post')
+            # check app-level for Blocked Users, in addition to the standard `self` check above
+            if is_denied(self.app, 'post', c.user, self.project):
+                raise exc.HTTPForbidden
         if subscribe:
             self.primary().subscribe()
         if message_id is None:

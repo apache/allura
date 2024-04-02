@@ -234,8 +234,7 @@ class TestForumAdmin(TestController):
         form.submit()
         # try to post in the forum and get a 403
         r = self.app.get('/discussion/create_topic/')
-        f = r.html.find(
-            'form', {'action': '/p/test/discussion/save_new_topic'})
+        f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
@@ -271,6 +270,20 @@ class TestForumAdmin(TestController):
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'post topic'
         r = self.app.post('/discussion/save_new_topic', params=params)
         assert 'http://localhost/p/test/discussion/testforum/thread/' in r.location
+
+        # and make sure a blocked user takes priority over anonymous-allowed letting them through
+        r = self.app.post('/admin/discussion/block_user',
+                          params={'username': 'test-user', 'perm': 'post', 'reason': 'They are bad'})
+        # forum not listed on create topic page
+        r = self.app.get('/discussion/create_topic/',
+                         extra_environ=dict(username='test-user'))
+        r.mustcontain('You do not have permission to post in any forums')
+        # if you try to post anyway, not allowed
+        r = self.app.post('/discussion/save_new_topic',
+                          params=params,
+                          extra_environ=dict(username='test-user'),
+                          status=403)
+
 
     def test_footer_monitoring_email(self):
         r = self.app.get('/admin/discussion/forums')

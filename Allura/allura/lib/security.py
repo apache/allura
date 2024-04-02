@@ -19,12 +19,12 @@
 This module provides the security predicates used in decorating various models.
 """
 
-import six
-import sys
+from __future__ import annotations
 import logging
 from collections import defaultdict
 import hashlib
 import requests
+import typing
 
 from tg import tmpl_context as c
 from tg import request
@@ -34,6 +34,9 @@ from ming.utils import LazyProperty
 import tg
 
 from allura.lib.utils import TruthyCallable
+
+if typing.TYPE_CHECKING:
+    from allura.model import M
 
 log = logging.getLogger(__name__)
 
@@ -277,7 +280,21 @@ class RoleCache:
         return set(self.reaching_ids)
 
 
-def has_access(obj, permission, user=None, project=None):
+def is_denied(obj, permission: str, user: M.User, project: M.Project) -> bool:
+    from allura import model as M
+
+    if user != M.User.anonymous():
+        user_roles = Credentials.get().user_roles(user_id=user._id,
+                                                  project_id=project.root_project._id)
+        for r in user_roles:
+            deny_user = M.ACE.deny(r['_id'], permission)
+            if M.ACL.contains(deny_user, obj.acl):
+                return True
+
+    return False
+
+
+def has_access(obj, permission: str, user: M.User | None = None, project: M.Project | None = None):
     '''Return whether the given user has the permission name on the given object.
 
     - First, all the roles for a user in the given project context are computed.
@@ -341,13 +358,8 @@ def has_access(obj, permission, user=None, project=None):
                 user_id=user._id, project_id=project._id).reaching_ids
 
         # TODO: move deny logic into loop below; see ticket [#6715]
-        if user != M.User.anonymous():
-            user_roles = Credentials.get().user_roles(user_id=user._id,
-                                                      project_id=project.root_project._id)
-            for r in user_roles:
-                deny_user = M.ACE.deny(r['_id'], permission)
-                if M.ACL.contains(deny_user, obj.acl):
-                    return False
+        if is_denied(obj, permission, user, project):
+            return False
 
         chainable_roles = []
         for rid in roles:
