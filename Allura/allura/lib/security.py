@@ -305,7 +305,7 @@ def debug_obj(obj) -> str:
     return str(obj)
 
 
-def has_access(obj, permission: str, user: M.User | None = None, project: M.Project | None = None):
+def has_access(obj, permission: str, user: M.User | None = None, project: M.Project | None = None) -> TruthyCallable:
     '''Return whether the given user has the permission name on the given object.
 
     - First, all the roles for a user in the given project context are computed.
@@ -348,7 +348,7 @@ def has_access(obj, permission: str, user: M.User | None = None, project: M.Proj
 
     DEBUG = False
 
-    def predicate(obj=obj, user=user, project=project, roles=None):
+    def predicate(obj=obj, user=user, project=project, roles=None) -> bool:
         if obj is None:
             if DEBUG:
                 log.debug(f'{user} denied {permission} on {debug_obj(obj)} ({debug_obj(project)})')
@@ -404,6 +404,7 @@ def has_access(obj, permission: str, user: M.User | None = None, project: M.Proj
                 result = has_access(project, 'admin', user=user)()
         else:
             result = False
+        result = bool(result)
         if DEBUG:
             log.debug(f"{user.username} '{permission}' {result} from parent(s) on {debug_obj(obj)} ({debug_obj(project)})")
         return result
