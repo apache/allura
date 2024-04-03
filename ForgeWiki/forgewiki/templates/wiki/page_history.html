@@ -62,7 +62,7 @@
           <td><input name="v1" type="radio" value="{{p.version}}"/></td>
           <td><input name="v2" type="radio" value="{{p.version}}"/></td>
           <td class="tright">
-            {% if not loop.first and h.has_access(p, 'edit')() %}
+            {% if not loop.first and h.has_access(p, 'edit') %}
               {{ g.icons['revert'].render(
                   extra_css='post-link',
                   title='Revert to version {}'.format(p.version),

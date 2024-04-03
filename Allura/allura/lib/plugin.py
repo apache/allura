@@ -886,7 +886,7 @@ class ProjectRegistrationProvider:
         limits, and if any are exceeded, raise ProjectRatelimitError.
 
         """
-        if security.has_access(neighborhood, 'admin', user=user)():
+        if security.has_access(neighborhood, 'admin', user=user):
             return
         opt = 'project.rate_limits'
         project_count = len(list(user.my_projects()))
@@ -910,7 +910,7 @@ class ProjectRegistrationProvider:
         """
         if not asbool(config.get('project.verify_phone')):
             return True
-        if security.has_access(neighborhood, 'admin', user=user)():
+        if security.has_access(neighborhood, 'admin', user=user):
             return True
         admin_in = [p for p in user.my_projects_by_role_name('Admin')
                     if p.neighborhood_id == neighborhood._id]

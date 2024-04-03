@@ -176,7 +176,7 @@ class IRCBot(asynchat.async_chat):
 
     def handle_shortlink(self, lnk, sender, rcpt):
         art = lnk.ref.artifact
-        if security.has_access(art, 'read', user=M.User.anonymous())():
+        if security.has_access(art, 'read', user=M.User.anonymous()):
             index = art.index()
             text = index['snippet_s'] or h.get_first(index, 'title')
             url = urljoin(

@@ -30,7 +30,7 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
   {% if c.user and c.user != c.user.anonymous() %}
     {{ c.subscribe_form.display(value=subscribed, action='subscribe', style='icon') }}
   {% endif %}
-  {% if h.has_access(req, 'write')() %}
+  {% if h.has_access(req, 'write') %}
     {{ g.icons['edit'].render(href='edit', show_title=True) }}
   {% endif %}
 {% endblock %}
@@ -130,7 +130,7 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
         {{ c.log_widget.display(value=commits, app=downstream_app) }}
     {% endif %}
 
-    {% if h.has_access(c.app, 'write')() %}
+    {% if h.has_access(c.app, 'write') %}
       <div class="grid-19">
         To merge the commits, please execute the following commands in your working copy:
       </div>
@@ -149,7 +149,7 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
       is deleted
     </p>
     <div>{{g.markdown.convert(req.description)}}</div>
-    {% if h.has_access(c.app, 'write')() %}
+    {% if h.has_access(c.app, 'write') %}
       {{ c.mr_dispose_form.display(action="save", value=dict(status=req.status)) }}
       <br style="clear:both">
     {% endif %}

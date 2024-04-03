@@ -132,7 +132,7 @@ class NeighborhoodController:
         categories = M.ProjectCategory.query.find(
             {'parent_id': None}).sort('name').all()
         c.custom_sidebar_menu = []
-        if h.has_access(self.neighborhood, 'register')() and (nb_max_projects is None or count < nb_max_projects):
+        if h.has_access(self.neighborhood, 'register') and (nb_max_projects is None or count < nb_max_projects):
             c.custom_sidebar_menu += [
                 SitemapEntry('Add a Project', self.neighborhood.url()
                              + 'add_project', ui_icon=g.icons['add']),

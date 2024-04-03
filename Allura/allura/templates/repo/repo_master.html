@@ -33,7 +33,7 @@
     {% set hide_left_bar = True %}
 {% endif %}
 
-{% set clone_categories = repo.clone_command_categories(anon=not h.has_access(c.app, 'write')()) %}
+{% set clone_categories = repo.clone_command_categories(anon=not h.has_access(c.app, 'write')) %}
 
 {% block extra_css %}
     <link rel="alternate" type="application/rss+xml" title="RSS" href="{{c.app.url}}feed.rss"/>

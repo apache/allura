@@ -35,7 +35,7 @@
         {% endif %}
     </li>
   {% endfor %}
-  {% if h.has_access(c.project, 'admin')() %}
+  {% if h.has_access(c.project, 'admin') %}
     <li id="add-tool-container"><a href='#' class="add-tool-toggle">Add New...</a></li>
     <button id="toggle-admin-btn" title="Click to unlock the toolbar and configure your project's tools.">
         <i class="fa fa-lock"></i>
@@ -43,7 +43,7 @@
   {% endif %}
 </ul>
 </div>
-{% if h.has_access(c.project, 'admin')() %}
+{% if h.has_access(c.project, 'admin') %}
     {% do g.register_forge_js('js/underscore-1.13.6.min.js') %}
     {% do g.register_forge_js('js/browser-polyfill.min.js') %}
     {% do lib.register_react_js_files() %}

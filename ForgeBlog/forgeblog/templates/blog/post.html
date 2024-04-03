@@ -28,7 +28,7 @@
 {% block header %}{{post.title}}{% endblock %}
 
 {% block actions %}
-  {% if h.has_access(post, 'write')() %}
+  {% if h.has_access(post, 'write') %}
     {{ g.icons['edit'].render(href='edit') }}
   {% endif %}
   {{ g.icons['history'].render(href='history') }}
@@ -41,7 +41,7 @@
 {% block content %}
     {{c.form.display(value=post, base_post=base_post)}}
     <div class="grid-19">
-        {{c.attachment_list.display(attachments=post.attachments, edit_mode=h.has_access(post, 'edit')())}}
+        {{c.attachment_list.display(attachments=post.attachments, edit_mode=h.has_access(post, 'edit'))}}
     </div>
     {% if post.discussion_thread and c.app.show_discussion %}
     <div style="margin-top: 10px">

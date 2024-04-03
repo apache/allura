@@ -358,7 +358,7 @@ class ForgeTrackerApp(Application):
                         className='milestones'))
 
         links = []
-        if has_access(self, 'create')():
+        if has_access(self, 'create'):
             links.append(SitemapEntry('Create Ticket',
                                       self.config.url() + 'new/', ui_icon=g.icons['add']))
         else:
@@ -368,7 +368,7 @@ class ForgeTrackerApp(Application):
                                       extra_html_attrs=extra_attrs,
                                       className='sidebar-disabled',
                                       ui_icon=g.icons['add']))
-        if has_access(self, 'configure')():
+        if has_access(self, 'configure'):
             links.append(SitemapEntry('Edit Milestones', self.config.url()
                          + 'milestones', ui_icon=g.icons['table']))
             links.append(SitemapEntry('Edit Searches', c.project.url() + 'admin/' +
@@ -381,7 +381,7 @@ class ForgeTrackerApp(Application):
             'status': 'pending',
             'deleted': False,
         }).count()
-        if pending_mod_count and has_access(discussion, 'moderate')():
+        if pending_mod_count and has_access(discussion, 'moderate'):
             links.append(
                 SitemapEntry(
                     'Moderate', discussion.url() + 'moderate', ui_icon=g.icons['moderate'],
@@ -747,8 +747,8 @@ class RootController(BaseController, FeedController):
         result[
             'sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
         result['subscribed'] = M.Mailbox.subscribed()
-        result['allow_edit'] = has_access(c.app, 'update')()
-        result['allow_move'] = has_access(c.app, 'admin')()
+        result['allow_edit'] = has_access(c.app, 'update')
+        result['allow_move'] = has_access(c.app, 'admin')
         result['help_msg'] = c.app.config.options.get(
             'TicketHelpSearch', '').strip()
         result['url_q'] = c.app.globals.not_closed_query
@@ -852,8 +852,8 @@ class RootController(BaseController, FeedController):
         result['columns'] = columns or solr_columns()
         result[
             'sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
-        result['allow_edit'] = has_access(c.app, 'update')()
-        result['allow_move'] = has_access(c.app, 'admin')()
+        result['allow_edit'] = has_access(c.app, 'update')
+        result['allow_move'] = has_access(c.app, 'admin')
         result['bin'] = bin
         result['help_msg'] = c.app.config.options.get(
             'TicketHelpSearch', '').strip()
@@ -1030,7 +1030,7 @@ class RootController(BaseController, FeedController):
         if tracker == c.app.config:
             flash('Ticket already in a selected tracker', 'info')
             redirect('move/' + search)
-        if not has_access(tracker, 'admin')():
+        if not has_access(tracker, 'admin'):
             flash('You should have admin access to destination tracker',
                   'error')
             redirect('move/' + search)
@@ -1391,7 +1391,7 @@ class TicketController(BaseController, FeedController):
             h1_text = (self.ticket.summary or default_title)
             h1_text = truncate(None, h1_text, 80, end="...", leeway=3)
             return dict(ticket=self.ticket, globals=c.app.globals,
-                        allow_edit=has_access(self.ticket, 'update')(),
+                        allow_edit=has_access(self.ticket, 'update'),
                         subscribed=subscribed, voting_enabled=voting_enabled,
                         page=page, limit=limit, count=post_count, h1_text=h1_text)
         else:
@@ -1624,7 +1624,7 @@ class TicketController(BaseController, FeedController):
                 flash('Ticket already in a selected tracker', 'info')
                 redirect(six.ensure_text(request.referer or '/'))
 
-            if not has_access(tracker, 'admin')():
+            if not has_access(tracker, 'admin'):
                 flash('You should have admin access to destination tracker',
                       'error')
                 redirect(six.ensure_text(request.referer or '/'))
@@ -1978,8 +1978,8 @@ class MilestoneController(BaseController):
         result['columns'] = columns or mongo_columns()
         result[
             'sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
-        result['allow_edit'] = has_access(c.app, 'update')()
-        result['allow_move'] = has_access(c.app, 'admin')()
+        result['allow_edit'] = has_access(c.app, 'update')
+        result['allow_move'] = has_access(c.app, 'admin')
         result['help_msg'] = c.app.config.options.get(
             'TicketHelpSearch', '').strip()
         result['deleted'] = deleted

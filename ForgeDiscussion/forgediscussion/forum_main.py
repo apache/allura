@@ -96,7 +96,7 @@ class ForgeDiscussionApp(Application):
     def has_access(self, user, topic):
         f = DM.Forum.query.get(shortname=topic.replace('.', '/'),
                                app_config_id=self.config._id)
-        return has_access(f, 'post', user=user)()
+        return has_access(f, 'post', user=user)
 
     def handle_message(self, topic, message):
         log.info('Message from %s (%s)',
@@ -167,7 +167,7 @@ class ForgeDiscussionApp(Application):
         admin_url = c.project.url() + 'admin/' + \
             self.config.options.mount_point + '/'
         links = []
-        if has_access(self, 'configure')():
+        if has_access(self, 'configure'):
             links.append(SitemapEntry('Forums', admin_url + 'forums'))
         links += super().admin_menu()
         return links
@@ -181,8 +181,8 @@ class ForgeDiscussionApp(Application):
                 app_config_id=c.app.config._id,
                 parent_id=None, deleted=False))
             for f in forums:
-                if has_access(f, 'read')():
-                    if f.url() in request.url and h.has_access(f, 'moderate')():
+                if has_access(f, 'read'):
+                    if f.url() in request.url and h.has_access(f, 'moderate'):
                         num_moderate = DM.ForumPost.query.find({
                             'discussion_id': f._id,
                             'status': {'$ne': 'ok'},
@@ -198,7 +198,7 @@ class ForgeDiscussionApp(Application):
                 url + c.forum.shortname if getattr(c, 'forum', None) and c.forum else url)
             l.append(
                 SitemapEntry('Create Topic', url, ui_icon=g.icons['add']))
-            if has_access(c.app, 'configure')():
+            if has_access(c.app, 'configure'):
                 l.append(SitemapEntry('Add Forum', c.app.url +
                          'new_forum', ui_icon=g.icons['conversation']))
                 l.append(SitemapEntry('Admin Forums', c.project.url() + 'admin/' +
@@ -307,7 +307,7 @@ class ForumAdminController(DefaultAdminController):
     def forums(self, add_forum=None, **kw):
         c.add_forum = W.add_forum
         return dict(app=self.app,
-                    allow_config=has_access(self.app, 'configure')())
+                    allow_config=has_access(self.app, 'configure'))
 
     @h.vardec
     @expose()

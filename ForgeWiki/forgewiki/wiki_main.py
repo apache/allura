@@ -271,7 +271,7 @@ The wiki uses [Markdown](%s) syntax.
             'status': 'pending',
             'deleted': False
         }).count() if discussion else 0
-        if pending_mod_count and h.has_access(discussion, 'moderate')():
+        if pending_mod_count and h.has_access(discussion, 'moderate'):
             links.append(
                 SitemapEntry(
                     'Moderate', discussion.url() + 'moderate', ui_icon=g.icons['moderate'],
@@ -470,7 +470,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
         pages = []
         uv_pages = []
         criteria = dict(app_config_id=c.app.config._id)
-        can_delete = has_access(c.app, 'delete')()
+        can_delete = has_access(c.app, 'delete')
         show_deleted = show_deleted and can_delete
         if not can_delete:
             criteria['deleted'] = False
@@ -874,7 +874,7 @@ class RootRestController(BaseController, AppRestControllerMixin):
         pages = WM.Page.query.find(
             dict(app_config_id=c.app.config._id, deleted=False))
         for page in pages:
-            if has_access(page, 'read')():
+            if has_access(page, 'read'):
                 page_titles.append(page.title)
         return dict(pages=page_titles)
 
@@ -939,13 +939,13 @@ class WikiAdminController(DefaultAdminController):
     def home(self):
         return dict(app=self.app,
                     home=self.app.root_page_name,
-                    allow_config=has_access(self.app, 'configure')())
+                    allow_config=has_access(self.app, 'configure'))
 
     @without_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/admin_options.html')
     def options(self):
         return dict(app=self.app,
-                    allow_config=has_access(self.app, 'configure')())
+                    allow_config=has_access(self.app, 'configure'))
 
     @without_trailing_slash
     @expose()

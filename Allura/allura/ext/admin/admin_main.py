@@ -155,10 +155,10 @@ class AdminApp(Application):
             links.append(SitemapEntry('Tools', admin_url + 'tools_moved'))
         if asbool(config.get('bulk_export_enabled', True)):
             links.append(SitemapEntry('Export', admin_url + 'export'))
-        if c.project.is_root and has_access(c.project, 'admin')():
+        if c.project.is_root and has_access(c.project, 'admin'):
             links.append(
                 SitemapEntry('User Permissions', admin_url + 'groups/', className="admin-nav-user-perms"))
-        if not c.project.is_root and has_access(c.project, 'admin')():
+        if not c.project.is_root and has_access(c.project, 'admin'):
             links.append(
                 SitemapEntry('Permissions', admin_url + 'permissions/'))
         if len(c.project.neighborhood_invitations):

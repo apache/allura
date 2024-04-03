@@ -155,8 +155,8 @@ def neighborhood_blog_posts(max_number=5, sort='timestamp', summary=False):
         ago=h.ago(post.timestamp),
         description=summary and '&nbsp;' or g.markdown.cached_convert(post, 'text')))
         for post in posts if post.app and
-        security.has_access(post, 'read', project=post.app.project)() and
-        security.has_access(post.app.project, 'read', project=post.app.project)())
+        security.has_access(post, 'read', project=post.app.project) and
+        security.has_access(post.app.project, 'read', project=post.app.project))
 
     posts = BlogPosts(posts=output)
     g.resource_manager.register(posts)
@@ -183,8 +183,8 @@ def project_blog_posts(max_number=5, sort='timestamp', summary=False, mount_poin
              author=post.author().display_name,
              ago=h.ago(post.timestamp),
              description=summary and '&nbsp;' or g.markdown.cached_convert(post, 'text'))
-        for post in posts if security.has_access(post, 'read', project=post.app.project)() and
-            security.has_access(post.app.project, 'read', project=post.app.project)()
+        for post in posts if security.has_access(post, 'read', project=post.app.project) and
+            security.has_access(post.app.project, 'read', project=post.app.project)
     ]
     posts = BlogPosts(posts=output)
     g.resource_manager.register(posts)
@@ -287,7 +287,7 @@ def get_projects_for_macro(
         if total is None:
             total = 0
             for p in M.Project.query.find(q):
-                if h.has_access(p, 'read')():
+                if h.has_access(p, 'read'):
                     total = total + 1
         response = '<p class="macro_projects_total">%s Projects</p>%s' % \
             (total, response)
@@ -369,7 +369,7 @@ def include_file(repo, path=None, rev=None, **kw):
     app = parse_repo(repo)
     if not app:
         return '[[include repo %s (not found)]]' % repo
-    if not h.has_access(app.repo, 'read')():
+    if not h.has_access(app.repo, 'read'):
         return "[[include: you don't have a read permission for repo %s]]" % repo
 
     rev = app.repo.head if rev is None else rev
@@ -406,7 +406,7 @@ def include(ref=None, repo=None, **kw):
     artifact = link.ref.artifact
     if artifact is None:
         return '[[include (artifact not found)]]' % ref
-    if not h.has_access(artifact, 'read')():
+    if not h.has_access(artifact, 'read'):
         return "[[include: you don't have a read permission for %s]]" % ref
     included = request.environ.setdefault('allura.macro.included', set())
     if artifact in included:

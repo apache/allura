@@ -662,7 +662,7 @@ class Application(ActivityObject):
         admin_url = c.project.url() + 'admin/' + \
             self.config.options.mount_point + '/'
         links = []
-        if self.permissions and has_access(c.project, 'admin')():
+        if self.permissions and has_access(c.project, 'admin'):
             links.append(
                 SitemapEntry('Permissions', admin_url + 'permissions'))
         if force_options or len(self.config_options) > 3:
@@ -943,7 +943,7 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
                     block_list[ace.permission].append((role.user, ace.reason))
         return dict(
             app=self.app,
-            allow_config=has_access(c.project, 'admin')(),
+            allow_config=has_access(c.project, 'admin'),
             permissions=permissions,
             block_list=block_list)
 
@@ -954,7 +954,7 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
         """
         return dict(
             app=self.app,
-            allow_config=has_access(self.app, 'configure')())
+            allow_config=has_access(self.app, 'configure'))
 
     @expose()
     @require_post()
@@ -979,7 +979,7 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
         """
         return dict(
             app=self.app,
-            allow_config=has_access(self.app, 'configure')())
+            allow_config=has_access(self.app, 'configure'))
 
     @expose('jinja:allura:templates/app_admin_delete.html')
     def delete(self):

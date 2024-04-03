@@ -33,7 +33,7 @@
           </ul>
           {% endfor %}
         {% endif %}
-        {% if h.has_access(value, 'moderate')() %}
+        {% if h.has_access(value, 'moderate') %}
           <div id="allow_moderate"></div>
         {% endif %}
       </div>
@@ -46,7 +46,7 @@
       <div style="clear:both"></div>
   </div>
 </div>
-{% if h.has_access(value, 'post')() %}
+{% if h.has_access(value, 'post') %}
   <div id="new_post_holder">
     <span id="add_comment"></span>
     <div class="comment-row" style="padding-top:10px;">

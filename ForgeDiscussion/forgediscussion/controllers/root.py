@@ -86,7 +86,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
         forums = model.Forum.query.find(dict(
             app_config_id=c.app.config._id,
             parent_id=None, deleted=False)).all()
-        forums = [f for f in forums if h.has_access(f, 'read')()]
+        forums = [f for f in forums if h.has_access(f, 'read')]
         noindex = all([f.num_topics == 0 for f in forums])
         return dict(forums=forums,
                     announcements=announcements,
@@ -124,7 +124,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
         for f in forums:
             if forum_name == f.shortname:
                 current_forum = f
-            if has_access(f, 'post')():
+            if has_access(f, 'post'):
                 my_forums.append(f)
         return dict(forums=my_forums,
                     current_forum=current_forum,
@@ -143,7 +143,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
         discussion = model.Forum.query.get(
             app_config_id=c.app.config._id,
             shortname=forum)
-        if discussion.deleted and not has_access(c.app, 'configure')():
+        if discussion.deleted and not has_access(c.app, 'configure'):
             flash('This forum has been removed.')
             redirect(six.ensure_text(request.referer or '/'))
         require_access(discussion, 'post')

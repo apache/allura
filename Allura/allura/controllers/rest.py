@@ -481,7 +481,7 @@ def rest_has_access(obj, user, perm):
     resp = {'result': False}
     user = M.User.by_username(user)
     if user:
-        resp['result'] = security.has_access(obj, perm, user=user)()
+        resp['result'] = bool(security.has_access(obj, perm, user=user))
     return resp
 
 
@@ -554,7 +554,7 @@ def nbhd_lookup_first_path(nbhd, name, current_user, remainder, api=False):
             project.configure_project(is_user_project=True)
         else:
             raise exc.HTTPNotFound(pname)
-    if project is None or (project.deleted and not has_access(project, 'update')()):
+    if project is None or (project.deleted and not has_access(project, 'update')):
         raise exc.HTTPNotFound(pname)
     return project, remainder
 
