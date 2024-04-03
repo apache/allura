@@ -273,7 +273,7 @@ class ForgeTrackerApp(Application):
         return TM.Globals.query.get(app_config_id=self.config._id)
 
     def has_access(self, user, topic):
-        return has_access(c.app, 'post')(user=user)
+        return has_access(c.app, 'post', user)
 
     def handle_message(self, topic, message):
         log.info('Message from %s (%s)',
@@ -834,7 +834,7 @@ class RootController(BaseController, FeedController):
     @validate(validators=search_validators)
     def search(self, q=None, query=None, project=None, columns=None, page=0, sort=None,
                deleted=False, filter=None, **kw):
-        require(has_access(c.app, 'read'))
+        require_access(c.app, 'read')
 
         if deleted and not has_access(c.app, 'delete'):
             deleted = False
@@ -1961,7 +1961,7 @@ class MilestoneController(BaseController):
         deleted=validators.StringBool(if_empty=False)))
     def index(self, q=None, columns=None, page=0, query=None, sort=None,
               deleted=False, filter=None, **kw):
-        require(has_access(c.app, 'read'))
+        require_access(c.app, 'read')
         show_deleted = [False]
         if deleted and has_access(c.app, 'delete'):
             show_deleted = [False, True]

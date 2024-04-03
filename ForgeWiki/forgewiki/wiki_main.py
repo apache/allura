@@ -130,7 +130,7 @@ class ForgeWikiApp(Application):
         self.admin = WikiAdminController(self)
 
     def has_access(self, user, topic):
-        return has_access(c.app, 'post')(user=user)
+        return has_access(c.app, 'post', user)
 
     def handle_message(self, topic, message):
         log.info('Message from %s (%s)',

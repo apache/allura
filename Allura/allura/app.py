@@ -495,7 +495,7 @@ class Application(ActivityObject):
         :rtype: bool
 
         """
-        return has_access(self, 'read')(user=user)
+        return has_access(self, 'read', user)
 
     def subscribe_admins(self):
         """Subscribe all project Admins (for this Application's project) to the

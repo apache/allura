@@ -97,7 +97,7 @@ class AdminApp(Application):
 
     def is_visible_to(self, user):
         '''Whether the user can view the app.'''
-        return has_access(c.project, 'create')(user=user)
+        return has_access(c.project, 'create', user)
 
     @staticmethod
     def installable_tools_for(project):

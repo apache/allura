@@ -40,8 +40,12 @@ def test_role_assignments():
     anon = M.User.anonymous()
 
     def check_access(perm):
-        pred = security.has_access(c.app, perm)
-        return pred(user=admin), pred(user=user), pred(user=anon)
+        return (
+            security.has_access(c.app, perm, admin),
+            security.has_access(c.app, perm, user),
+            security.has_access(c.app, perm, anon),
+        )
+
     assert check_access('configure') == (True, False, False)
     assert check_access('read') == (True, True, True)
     assert check_access('create') == (True, False, False)
