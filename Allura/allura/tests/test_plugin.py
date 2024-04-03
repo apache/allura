@@ -50,7 +50,7 @@ class TestProjectRegistrationProvider:
 
     @patch('allura.lib.security.has_access')
     def test_validate_project_15char_user(self, has_access):
-        has_access.return_value = TruthyCallable(lambda: True)
+        has_access.return_value = True
         nbhd = M.Neighborhood()
         self.provider.validate_project(
             neighborhood=nbhd,

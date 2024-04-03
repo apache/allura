@@ -85,13 +85,13 @@ class TestArtifact:
         pr = M.ProjectRole.by_user(u, upsert=True)
         ThreadLocalODMSession.flush_all()
         REGISTRY.register(allura.credentials, allura.lib.security.Credentials())
-        assert not security.has_access(pg, 'delete')(user=u)
+        assert not security.has_access(pg, 'delete', u)
         pg.acl.append(M.ACE.allow(pr._id, 'delete'))
         ThreadLocalODMSession.flush_all()
-        assert security.has_access(pg, 'delete')(user=u)
+        assert security.has_access(pg, 'delete', u)
         pg.acl.pop()
         ThreadLocalODMSession.flush_all()
-        assert not security.has_access(pg, 'delete')(user=u)
+        assert not security.has_access(pg, 'delete', u)
 
     def test_artifact_index(self):
         pg = WM.Page(title='TestPage1')
