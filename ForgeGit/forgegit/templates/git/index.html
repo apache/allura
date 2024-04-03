@@ -36,7 +36,7 @@
       <a href="log?page=1">More</a>
     {% endif %}
   {% elif is_empty %}
-    {% if h.has_access(c.app, 'write')() %}
+    {% if h.has_access(c.app, 'write') %}
     <div class="message warning scm-learn-basics">
       <div class="content">
         <img src="{{g.app_static('images/git.png')}}" style="float:left">
@@ -82,7 +82,7 @@ git push -u origin master</pre>
     <p><b>No (more) commits</b></p>
     {% endif %}
   {% elif c.app.repo.status == 'ready' %}
-    {% if h.has_access(c.app, 'write')() %}
+    {% if h.has_access(c.app, 'write') %}
     <p>Browsing this repo on the web is unavailable currently.  To fix, please try a <a href="{{c.app.url}}refresh">Repository Refresh</a>.  Committing and pulling code should still work.</p>
     {% else %}
     <p><b>No (more) commits</b></p>

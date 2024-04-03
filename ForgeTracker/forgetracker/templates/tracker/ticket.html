@@ -181,7 +181,7 @@
 {% endblock %}
 
 {% block extra_js %}
-  {% if h.has_access(ticket, 'update')() %}
+  {% if h.has_access(ticket, 'update') %}
     <script type="text/javascript">
         // Sometimes IE11 is not firing jQuery's "$(document).ready" callbacks
         $(window).on('load', function () {

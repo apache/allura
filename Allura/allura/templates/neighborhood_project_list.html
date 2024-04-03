@@ -56,7 +56,7 @@
         <div style="clear:both"></div>
         {% for project in projects %}
           {% do g.set_project(project) %}
-          {% if h.has_access(project, 'read')() %}
+          {% if h.has_access(project, 'read') %}
             {{c.project_summary.display(value=project)}}
           {% endif %}
         {% endfor %}

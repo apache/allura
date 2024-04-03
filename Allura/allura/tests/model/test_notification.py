@@ -260,14 +260,9 @@ class TestPostNotifications(unittest.TestCase):
         self._subscribe(user=u)
         # Simulate a permission check failure.
 
-        def patched_has_access(*args, **kw):
-            def predicate(*args, **kw):
-                return False
-            return predicate
-        from allura.model.notification import security
-        orig = security.has_access
-        security.has_access = patched_has_access
-        try:
+        with mock.patch('allura.model.notification.security.has_access') as patched_has_access:
+            patched_has_access.return_value = False
+
             # this will create a notification task
             self._post_notification()
             ThreadLocalODMSession.flush_all()
@@ -278,8 +273,6 @@ class TestPostNotifications(unittest.TestCase):
             # ...but in this case it doesn't create a mail task since we
             # forced the perm check to fail
             assert M.MonQTask.get() is None
-        finally:
-            security.has_access = orig
 
     def test_footer(self):
         footer = MailFooter.monitored(

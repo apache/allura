@@ -399,9 +399,9 @@ def has_access(obj, permission: str, user: M.User | None = None, project: M.Proj
             result = has_access(parent, permission, user=user, project=project)(
                 roles=tuple(chainable_roles))
         elif not isinstance(obj, M.Neighborhood):
-            result = has_access(project.neighborhood, 'admin', user=user)()
+            result = has_access(project.neighborhood, 'admin', user=user)
             if not (result or isinstance(obj, M.Project)):
-                result = has_access(project, 'admin', user=user)()
+                result = has_access(project, 'admin', user=user)
         else:
             result = False
         result = bool(result)

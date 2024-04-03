@@ -32,8 +32,8 @@
 
 <div>
   <div id="{{value.slug}}" class="discussion-post{%if value.is_meta %} meta_post{% endif %}">
-    {% set can_moderate_post = h.has_access(value, 'moderate')() %}  {# you might have 'moderate' perm in your on post #}
-    {% set can_moderate_thread = h.has_access(value.thread, 'moderate')() %} {# but not on the whole thread #}
+    {% set can_moderate_post = h.has_access(value, 'moderate') %}  {# you might have 'moderate' perm in your on post #}
+    {% set can_moderate_thread = h.has_access(value.thread, 'moderate') %} {# but not on the whole thread #}
     {% if can_moderate_post %}
     <div class="info grid-15 spam-present">
       <span class="spam-text">Comment has been marked as spam.&nbsp;</span>
@@ -71,7 +71,7 @@
                 <a href="#" id="react_{{value.slug.replace('/','_')}}" data-commentlink="{{value.url()}}" data-currentreact="{{ current_reaction }}" class="reaction-button icon btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"{%if value.status == 'pending'%} style="display:none"{%endif%}>
                     <span><i class="fa fa-smile-o" aria-hidden="true"></i></span></a>
             {% endif %}
-            {% if (h.has_access(value.thread, 'post')() and value.status == 'ok') or can_moderate_post %}
+            {% if (h.has_access(value.thread, 'post') and value.status == 'ok') or can_moderate_post %}
                 <a class="icon reply_post btn" href="#" style="" title="Reply" role="button"><span class="ui-button-text"><i class="fa fa-reply"></i></span></a>
             {% endif %}
             <a href="{{shortlink_url}}" title="Link" class="little_link shortlink icon btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"{%if value.status == 'pending'%} style="display:none"{%endif%}>
@@ -159,7 +159,7 @@
     </div>
     <ul>
       <li>
-        {% if h.has_access(value.thread, 'post')() %}
+        {% if h.has_access(value.thread, 'post') %}
         <div class="comment-row reply_post_form" style="display:none">
           <div class="reply">
             <div class="grid-2 tcenter">

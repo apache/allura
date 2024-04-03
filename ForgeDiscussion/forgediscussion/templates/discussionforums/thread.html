@@ -28,7 +28,7 @@
 {% endblock %}
 {% block header %}{{'subject' in thread and thread.subject or '(no subject)'}}{% endblock %}
 {% block actions %}
-  {% if show_moderate and h.has_access(thread, 'moderate')() %}
+  {% if show_moderate and h.has_access(thread, 'moderate') %}
     {{ g.icons['edit'].render(id='mod_thread_link') }}
   {% endif %}
   {# {{ g.icons['tag'].render(title='Label This', extra_css='thread_tag') }}   these labels aren't used anywhere ... #}

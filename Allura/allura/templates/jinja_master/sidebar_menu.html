@@ -61,7 +61,7 @@
       {% endfor %}
     {% endif %}
     {% if c.app %}
-      {% if h.has_access(c.app, 'admin')() %}
+      {% if h.has_access(c.app, 'admin') %}
         {% if c.app.tool_label.lower() == 'wiki' %}
           {% set admin_menu = c.app.admin_menu(skip_common_menu=True) %}
         {% else %}

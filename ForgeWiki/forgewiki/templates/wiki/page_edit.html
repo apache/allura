@@ -33,7 +33,7 @@
 
 {% block actions %}
   {{ g.icons['eye'].render(href='.', title='View Page') }}
-  {% if page_exists and h.has_access(page, 'delete')() %}
+  {% if page_exists and h.has_access(page, 'delete') %}
     {{ g.icons['delete'].render(extra_css='post-link') }}
     <div class="confirmation_dialog" style="display:none">
         {{ g.icons['close'].render(tag='a', extra_css='close') }}
@@ -79,8 +79,8 @@
     {{lib.csrf_token()}}
 </form>
 <div class="grid-19">
-  {{c.attachment_list.display(attachments=page.attachments, edit_mode=page_exists and h.has_access(page, 'edit')())}}
-  {% if page_exists and h.has_access(page, 'edit')() %}
+  {{c.attachment_list.display(attachments=page.attachments, edit_mode=page_exists and h.has_access(page, 'edit'))}}
+  {% if page_exists and h.has_access(page, 'edit') %}
     {{c.attachment_add.display(name='file_info')}}
   {% endif %}
 </div>

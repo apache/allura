@@ -49,7 +49,7 @@
 {% endif %}
 {% endblock %}
 
-{% if q and h.has_access(c.app, 'save_searches')() %}
+{% if q and h.has_access(c.app, 'save_searches') %}
   {% block edit_box %}
     <div class="editbox" style="display:none">
       {{c.bin_form.display(
@@ -79,7 +79,7 @@
 {% endif %}
 <form method="GET">
   <input type="text" name="q" value="{{q}}" style="width: 280px; float: left; margin-right: .5em" id="bin_terms">
-  {% if bin and h.has_access(c.app, 'save_searches')() %}
+  {% if bin and h.has_access(c.app, 'save_searches') %}
     <input type="button" value="Update Search" id="save_search"/>
   {% endif %}
   <input type="submit" value="Search"/>
@@ -108,7 +108,7 @@
 
 {% block extra_js %}
 
-{% if q and h.has_access(c.app, 'save_searches')() %}
+{% if q and h.has_access(c.app, 'save_searches') %}
     <script type="text/javascript">
       $('#save_search').click(function(){
         $('div.editbox input[name=summary]').val($('#bin_summary').val());

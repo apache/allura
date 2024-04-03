@@ -18,7 +18,7 @@
 -#}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 {% set can_vote = c.user and c.user != c.user.anonymous()
-                  and h.has_access(artifact, 'post')() %}
+                  and h.has_access(artifact, 'post') %}
 {% set voted = artifact.user_voted(c.user) %}
 
 {% if can_vote %}

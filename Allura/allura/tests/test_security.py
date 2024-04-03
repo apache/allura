@@ -131,30 +131,30 @@ class TestSecurity(TestController):
         test_user = M.User.by_username('test-user')
 
         # confirm that *anon has expected access
-        assert has_access(page, 'read', anon_role)()
-        assert has_access(page, 'post', anon_role)()
-        assert has_access(page, 'unmoderated_post', anon_role)()
+        assert has_access(page, 'read', anon_role)
+        assert has_access(page, 'post', anon_role)
+        assert has_access(page, 'unmoderated_post', anon_role)
         assert all_allowed(page, anon_role) == {'read'}
         # as well as an authenticated user
-        assert has_access(page, 'read', test_user)()
-        assert has_access(page, 'post', test_user)()
-        assert has_access(page, 'unmoderated_post', test_user)()
+        assert has_access(page, 'read', test_user)
+        assert has_access(page, 'post', test_user)
+        assert has_access(page, 'unmoderated_post', test_user)
         assert (all_allowed(page, test_user) ==
                 {'read', 'post', 'unmoderated_post'})
 
         _deny(page, auth_role, 'read')
 
         # read granted to *anon should *not* bubble up past the *auth DENY
-        assert not has_access(page, 'read', test_user)()
+        assert not has_access(page, 'read', test_user)
         # but other perms should not be affected
-        assert has_access(page, 'post', test_user)()
-        assert has_access(page, 'unmoderated_post', test_user)()
+        assert has_access(page, 'post', test_user)
+        assert has_access(page, 'unmoderated_post', test_user)
         # FIXME: all_allowed doesn't respect blocked user feature
         #assert_equal(all_allowed(page, test_user), set(['post', 'unmoderated_post']))
 
-        assert has_access(wiki, 'read', test_user)()
-        assert has_access(wiki, 'post', test_user)()
-        assert has_access(wiki, 'unmoderated_post', test_user)()
+        assert has_access(wiki, 'read', test_user)
+        assert has_access(wiki, 'post', test_user)
+        assert has_access(wiki, 'unmoderated_post', test_user)
         assert (all_allowed(wiki, test_user) ==
                 {'read', 'post', 'unmoderated_post'})
 
@@ -163,9 +163,9 @@ class TestSecurity(TestController):
 
         # there isn't a true heiarchy of roles, so any applicable DENY
         # will block a user, even if there's an explicit ALLOW "higher up"
-        assert not has_access(wiki, 'read', test_user)()
-        assert has_access(wiki, 'post', test_user)()
-        assert has_access(wiki, 'unmoderated_post', test_user)()
+        assert not has_access(wiki, 'read', test_user)
+        assert has_access(wiki, 'post', test_user)
+        assert has_access(wiki, 'unmoderated_post', test_user)
         # FIXME: all_allowed doesn't respect blocked user feature
         #assert_equal(all_allowed(wiki, test_user), set(['post', 'unmoderated_post']))
 
@@ -186,16 +186,16 @@ class TestSecurity(TestController):
         test_user = M.User.by_username('test-user')
 
         assert project1.shortname == 'test'
-        assert has_access(page, 'read', test_user)()
+        assert has_access(page, 'read', test_user)
         c.project = project2
-        assert has_access(page, 'read', test_user)()
+        assert has_access(page, 'read', test_user)
 
     @td.with_wiki
     def test_deny_access_for_single_user(self):
         wiki = c.project.app_instance('wiki')
         user = M.User.by_username('test-user')
-        assert has_access(wiki, 'read', user)()
+        assert has_access(wiki, 'read', user)
         wiki.acl.append(
             M.ACE.deny(M.ProjectRole.by_user(user, upsert=True)._id, 'read', 'Spammer'))
         Credentials.get().clear()
-        assert not has_access(wiki, 'read', user)()
+        assert not has_access(wiki, 'read', user)

@@ -167,13 +167,13 @@ class TestProjectRegistrationProviderPhoneVerification:
 
     @patch.object(plugin.security, 'has_access', autospec=True)
     def test_phone_verified_admin(self, has_access):
-        has_access.return_value.return_value = True
+        has_access.return_value = True
         with h.push_config(tg.config, **{'project.verify_phone': 'true'}):
             assert self.p.phone_verified(self.user, self.nbhd)
 
     @patch.object(plugin.security, 'has_access', autospec=True)
     def test_phone_verified_project_admin(self, has_access):
-        has_access.return_value.return_value = False
+        has_access.return_value = False
         with h.push_config(tg.config, **{'project.verify_phone': 'true'}):
             self.user.set_projects([Mock()])
             assert not self.p.phone_verified(self.user, self.nbhd)
@@ -182,7 +182,7 @@ class TestProjectRegistrationProviderPhoneVerification:
 
     @patch.object(plugin.security, 'has_access', autospec=True)
     def test_phone_verified(self, has_access):
-        has_access.return_value.return_value = False
+        has_access.return_value = False
         with h.push_config(tg.config, **{'project.verify_phone': 'true'}):
             assert not self.p.phone_verified(self.user, self.nbhd)
             self.user.set_tool_data('phone_verification', number_hash='123')

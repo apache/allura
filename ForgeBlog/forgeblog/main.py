@@ -196,7 +196,7 @@ class ForgeBlogApp(Application):
         links = [
             SitemapEntry('Home', base),
         ]
-        if has_access(self, 'write')():
+        if has_access(self, 'write'):
             links += [SitemapEntry('New Post', base + 'new')]
         return links
 
@@ -278,7 +278,7 @@ class RootController(BaseController, FeedController):
                    limit=validators.Int(if_empty=None, if_invalid=None)))
     def index(self, page=0, limit=None, **kw):
         query_filter = dict(app_config_id=c.app.config._id)
-        if not has_access(c.app, 'write')():
+        if not has_access(c.app, 'write'):
             query_filter['state'] = 'published'
         q = BM.BlogPost.query.find(query_filter)
         post_count = q.count()
@@ -529,7 +529,7 @@ class BlogAdminController(DefaultAdminController):
     @expose('jinja:forgeblog:templates/blog/admin_options.html')
     def options(self):
         return dict(app=self.app,
-                    allow_config=has_access(self.app, 'configure')())
+                    allow_config=has_access(self.app, 'configure'))
 
     @without_trailing_slash
     @expose()
@@ -560,7 +560,7 @@ class BlogAdminController(DefaultAdminController):
             feeds_list.append(feed)
         return dict(app=self.app,
                     feeds_list=feeds_list,
-                    allow_config=has_access(self.app, 'configure')())
+                    allow_config=has_access(self.app, 'configure'))
 
     @without_trailing_slash
     @expose()
@@ -637,7 +637,7 @@ class RootRestController(BaseController, AppRestControllerMixin):
             posts = result['posts']
             post_titles = []
             for post in posts:
-                if has_access(post, 'read')():
+                if has_access(post, 'read'):
                     post_titles.append(
                         {'title': post.title, 'url': h.absurl('/rest' + post.url())})
             return dict(posts=post_titles, count=result['count'], limit=result['limit'], page=result['page'])

@@ -41,7 +41,7 @@
             <div class="list" style="clear:both">
               {% for p in subprojects %}
                 {% do g.set_project(p) %}
-                {% if h.has_access(p, 'read')() %}
+                {% if h.has_access(p, 'read') %}
                   {{c.project_summary.display(value=p)}}
                 {% endif %}
               {% endfor %}
@@ -63,7 +63,7 @@
               <div class="list">
                 {% for project in projects %}
                   {% do g.set_project(project) %}
-                  {% if h.has_access(project, 'read')() %}
+                  {% if h.has_access(project, 'read') %}
                     {{c.project_summary.display(value=project)}}
                   {% endif %}
                 {% endfor %}

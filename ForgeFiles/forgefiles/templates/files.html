@@ -58,7 +58,7 @@ Files {% if folder_object %} - {{path_links(folder_path.split('/'), urls)}} {% e
 
 <div class="main_div">
 
-     {% if h.has_access(c.project, 'admin')() %}
+     {% if h.has_access(c.project, 'admin') %}
          <div class="upload_buttons" >
             <a {% if folder_object %} href="{{c.app.url}}get_parent_for_create_folder?folder_id={{folder_object._id}}" {% else %} href="{{c.app.url}}get_parent_for_create_folder" {% endif %} class="admin_modal">
              <button id="create_folder" type= "button" class="btn btn-info btn-lg" {% if folder_object.disabled %} disabled {% endif %} >Create Folder</button>
@@ -77,7 +77,7 @@ Files {% if folder_object %} - {{path_links(folder_path.split('/'), urls)}} {% e
                 <col class="date_col">
                 <col class="size_col">
                 <col class="author_col">
-                {% if h.has_access(c.project, 'admin')() %}
+                {% if h.has_access(c.project, 'admin') %}
                 <col class="actions_col">
                 {% endif %}
              </colgroup>
@@ -87,7 +87,7 @@ Files {% if folder_object %} - {{path_links(folder_path.split('/'), urls)}} {% e
                          <th>Date</th>
                          <th>Size</th>
                          <th>Author</th>
-                         {% if h.has_access(c.project, 'admin')() %}
+                         {% if h.has_access(c.project, 'admin') %}
                              <th>Actions</th>
                          {% endif %}
 
@@ -108,7 +108,7 @@ Files {% if folder_object %} - {{path_links(folder_path.split('/'), urls)}} {% e
                  <td>{{lib.abbr_date(folder.created_date)}}</td>
                  <td></td>
                  <td title="{{folder.author.display_name}}">{{folder.author.display_name|truncate(30)}}</td>
-                 {% if h.has_access(c.project, 'admin')() %}
+                 {% if h.has_access(c.project, 'admin') %}
                  <td>
                      <div class="folder_actions">
                         <a data-toggle="tooltip" {% if not folder.disabled %} title="Publish" class="admin_modal" href= "{{c.app.url}}get_publishable_folder?folder_id={{folder._id}}" {% else %} class="disable_object" {% endif %} ><i class= "fa fa-share" {% if folder.disabled %} onClick="return false"{% endif %} ></i></a>
@@ -141,7 +141,7 @@ Files {% if folder_object %} - {{path_links(folder_path.split('/'), urls)}} {% e
                  <td>{{lib.abbr_date(file.created_date)}}</td>
                  <td>{{h.do_filesizeformat(file.length)}}</td>
                  <td title="{{file.author.display_name}}">{{file.author.display_name|truncate(30)}}</td>
-                {% if h.has_access(c.project, 'admin')() %}
+                {% if h.has_access(c.project, 'admin') %}
                  <td>
                      <div class="file_actions">
                          <a data-toggle="tooltip" {% if not file.disabled  %}  href= "#" {% if not file.linked_to_download%} title="Link" {% else %} title="Unlink" {% endif %} class="link_icon confirm-link-file" data-file-id="{{ file._id }}" data-linked-download="{{ file.linked_to_download }}" data-linked-url="{{c.app.url}}link_file" {% else %} class="disable_object" {% endif %} ><i class= "fa fa-link" {% if file.linked_to_download %} id="disable_link" {% endif %}></i></a>

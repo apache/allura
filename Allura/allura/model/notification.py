@@ -299,7 +299,7 @@ class Notification(MappedClass):
             return
         # Don't send if user doesn't have read perms to the artifact
         if user and artifact and \
-                not security.has_access(artifact, 'read', user)():
+                not security.has_access(artifact, 'read', user):
             log.debug("Skipping notification - User %s doesn't have read "
                       "access to artifact %s" % (user_id, str(self.ref_id)))
             log.debug("User roles [%s]; artifact ACL [%s]; PSC ACL [%s]",
@@ -336,7 +336,7 @@ class Notification(MappedClass):
 
         def perm_check(notification):
             return not (user and artifact) or \
-                security.has_access(artifact, 'read', user)()
+                security.has_access(artifact, 'read', user)
         notifications = list(filter(perm_check, notifications))
 
         log.debug('Sending digest of notifications [%s] to user %s', ', '.join(

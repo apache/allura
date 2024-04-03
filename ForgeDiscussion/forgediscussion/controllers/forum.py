@@ -165,7 +165,7 @@ class ForumThreadController(ThreadController):
     @validate(dict(page=validators.Int(if_empty=0, if_invalid=0),
                    limit=validators.Int(if_empty=25, if_invalid=25)))
     def index(self, limit=25, page=0, count=0, **kw):
-        if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
+        if self.thread.discussion.deleted and not has_access(c.app, 'configure'):
             raise exc.HTTPNotFound()
         c.thread_subscription_form = self.W.subscribe_form
         return super().index(limit=limit, page=page, count=count, show_moderate=True, **kw)
@@ -176,7 +176,7 @@ class ForumThreadController(ThreadController):
     @validate(pass_validator, index)
     def moderate(self, **kw):
         require_access(self.thread, 'moderate')
-        if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
+        if self.thread.discussion.deleted and not has_access(c.app, 'configure'):
             raise exc.HTTPNotFound()
         args = self.W.moderate_thread.validate(kw, None)
         tasks.calc_forum_stats.post(self.thread.discussion.shortname)
@@ -218,7 +218,7 @@ class ForumPostController(PostController):
     @validate(pass_validator)
     @utils.AntiSpam.validate('Spambot protection engaged')
     def index(self, **kw):
-        if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
+        if self.thread.discussion.deleted and not has_access(c.app, 'configure'):
             raise exc.HTTPNotFound()
         return super().index(**kw)
 
@@ -227,7 +227,7 @@ class ForumPostController(PostController):
     @validate(pass_validator, error_handler=index)
     def moderate(self, **kw):
         require_access(self.post.thread, 'moderate')
-        if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
+        if self.thread.discussion.deleted and not has_access(c.app, 'configure'):
             raise exc.HTTPNotFound()
         tasks.calc_thread_stats.post(self.post.thread._id)
         tasks.calc_forum_stats(self.post.discussion.shortname)

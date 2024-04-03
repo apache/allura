@@ -35,7 +35,7 @@
   {{ g.icons['feed'].render(href='feed.rss', extra_css='follow', title='Follow', rel='nofollow') }}
 {% endblock %}
 
-{% if h.has_access(c.app, 'configure')() and (not hide_forum) %}
+{% if h.has_access(c.app, 'configure') and (not hide_forum) %}
   {% block edit_box %}
     <div id="add_forum_form"{% if hide_forum %} style="display:none"{% endif %} class="editbox">
       {{c.add_forum.display(method='POST', action=c.project.url() + c.app.config.options.mount_point + '/add_forum_short', app=c.app)}}
@@ -90,7 +90,7 @@
 {% endblock %}
 
 {% block extra_js %}
-  {% if h.has_access(c.app, 'configure')() %}
+  {% if h.has_access(c.app, 'configure') %}
     <script type="text/javascript">
       $(function() {
         $("#add_forum").click(function(){
