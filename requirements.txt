@@ -77,7 +77,7 @@ html5lib==1.1
     #   textile
 identify==2.5.33
     # via pre-commit
-idna==3.6
+idna==3.7
     # via requests
 inflection==0.5.1
     # via profanityfilter
