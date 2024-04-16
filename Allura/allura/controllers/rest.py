@@ -16,6 +16,7 @@
 #       under the License.
 
 """REST Controller"""
+from __future__ import annotations
 import json
 import logging
 from datetime import datetime, timedelta
@@ -52,11 +53,16 @@ class RestController:
 
     def __init__(self):
         self.oauth = OAuthNegotiator()
-        self.oauth2 = Oauth2Negotiator()
         self.auth = AuthRestController()
 
+        if self._is_oauth2_enabled():
+            self.oauth2 = Oauth2Negotiator()
+
+    def _is_oauth2_enabled(self):
+        return asbool(config.get('auth.oauth2.enabled', False))
+
     def _check_security(self):
-        if not request.path.startswith('/rest/oauth/'):  # everything but OAuthNegotiator
+        if not request.path.startswith(('/rest/oauth/', '/rest/oauth2/')):  # everything but OAuthNegotiators
             c.api_token = self._authenticate_request()
             if c.api_token:
                 c.user = c.api_token.user
@@ -67,7 +73,17 @@ class RestController:
         params_auth = 'oauth_token' in request.params
         params_auth = params_auth or 'access_token' in request.params
         if headers_auth or params_auth:
-            return self.oauth._authenticate()
+            try:
+                access_token = self.oauth._authenticate()
+            except exc.HTTPUnauthorized:
+                if not self._is_oauth2_enabled():
+                    raise
+
+                access_token = self.oauth2._authenticate()
+                if not access_token:
+                    raise
+
+            return access_token
         else:
             return None
 
@@ -239,20 +255,21 @@ class Oauth1Validator(oauthlib.oauth1.RequestValidator):
 
 class Oauth2Validator(oauthlib.oauth2.RequestValidator):
     def validate_client_id(self, client_id: str, request: oauthlib.common.Request) -> bool:
-        return M.OAuth2Client.query.get(client_id=client_id) is not None
+        return M.OAuth2ClientApp.query.get(client_id=client_id) is not None
 
     def validate_redirect_uri(self, client_id, redirect_uri, request, *args, **kwargs):
-        return True
+        client = M.OAuth2ClientApp.query.get(client_id=client_id)
+        return redirect_uri in client.redirect_uris
 
     def validate_response_type(self, client_id: str, response_type: str, client: oauthlib.oauth2.Client, request: oauthlib.common.Request, *args, **kwargs) -> bool:
-        res_type = M.OAuth2Client.query.get(client_id=client_id).response_type
+        res_type = M.OAuth2ClientApp.query.get(client_id=client_id).response_type
         return res_type == response_type
 
     def validate_scopes(self, client_id: str, scopes, client: oauthlib.oauth2.Client, request: oauthlib.common.Request, *args, **kwargs) -> bool:
         return True
 
     def validate_grant_type(self, client_id: str, grant_type: str, client: oauthlib.oauth2.Client, request: oauthlib.common.Request, *args, **kwargs) -> bool:
-        return True
+        return grant_type in ['authorization_code', 'refresh_token', 'client_credentials']
 
     def get_default_scopes(self, client_id: str, request: oauthlib.common.Request, *args, **kwargs):
         return []
@@ -261,60 +278,63 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
         return request.uri
 
     def invalidate_authorization_code(self, client_id: str, code: str, request: oauthlib.common.Request, *args, **kwargs) -> None:
-        M.OAuth2AuthorizationCode.query.remove({'client_id': client_id})
+        M.OAuth2AuthorizationCode.query.remove({'client_id': client_id, 'authorization_code': code})
 
     def authenticate_client(self, request: oauthlib.common.Request, *args, **kwargs) -> bool:
         client_id = request.body['client_id']
-        client = M.OAuth2Client.query.get(client_id=client_id)
-        if not client:
-            return False
-
-        request.client = client
-        return True
+        request.client = M.OAuth2ClientApp.query.get(client_id=client_id)
+        return request.client is not None
 
     def validate_code(self, client_id: str, code: str, client: oauthlib.oauth2.Client, request: oauthlib.common.Request, *args, **kwargs) -> bool:
-        authorization = M.OAuth2AuthorizationCode.query.get({'client_id': client_id})
-        return authorization.expires_at <= datetime.utcnow()
+        authorization = M.OAuth2AuthorizationCode.query.get(client_id=client_id, authorization_code=code)
+        return authorization.expires_at >= datetime.utcnow() if authorization else False
+
+    def validate_bearer_token(self, token: str, scopes: list[str], request: oauthlib.common.Request) -> bool:
+        access_token = M.OAuth2AccessToken.query.get(access_token=token)
+        return access_token.expires_at >= datetime.utcnow() if access_token else False
 
     def confirm_redirect_uri(self, client_id: str, code: str, redirect_uri: str, client: oauthlib.oauth2.Client, request: oauthlib.common.Request, *args, **kwargs) -> bool:
         return True
 
     def save_authorization_code(self, client_id: str, code, request: oauthlib.common.Request, *args, **kwargs) -> None:
-        authorization = M.OAuth2AuthorizationCode.query.get(client_id=client_id)
+        authorization = M.OAuth2AuthorizationCode.query.get(client_id=client_id, authorization_code=code['code'])
+        log.info('Saving authorization code for client: %s', client_id)
 
         if not authorization:
             auth_code = M.OAuth2AuthorizationCode(
-                client_id = client_id,
-                authorization_code = code['code'],
-                expires_at = datetime.utcnow() + timedelta(minutes=10)
+                client_id=client_id,
+                authorization_code=code['code'],
+                expires_at=datetime.utcnow() + timedelta(minutes=10),
+                redirect_uri=request.redirect_uri,
+                owner_id=c.user._id
             )
             session(auth_code).flush()
             log.info(f'Saving new authorization code for client: {client_id}')
         else:
             log.info(f'Updating authorization code for {client_id}')
-            log.info(f'Current authorization code: {authorization.authorization_code}')
-            log.info(f'New authorization code: {code["code"]}')
             M.OAuth2AuthorizationCode.query.update(
                 {'client_id': client_id},
                 {'$set': {'authorization_code': code['code'], 'expires_at': datetime.utcnow() + timedelta(minutes=10)}})
             log.info(f'Updating authorization code for client: {client_id}')
 
     def save_bearer_token(self, token, request: oauthlib.common.Request, *args, **kwargs) -> object:
-        current_token = M.OAuth2Token.query.get(client_id=request.client_id)
+        current_token = M.OAuth2AccessToken.query.get(client_id=request.client_id, token=token.get('access_token'))
+        client = M.OAuth2ClientApp.query.get(client_id=request.client_id)
 
         if not current_token:
-            bearer_token = M.OAuth2Token(
+            bearer_token = M.OAuth2AccessToken(
                 client_id = request.client_id,
                 scopes = token.get('scope', []),
                 access_token = token.get('access_token'),
                 refresh_token = token.get('refresh_token'),
-                expires_at = datetime.utcfromtimestamp(token.get('expires_in'))
+                expires_at = datetime.utcfromtimestamp(token.get('expires_in')),
+                owner_id = client.owner_id
             )
 
             session(bearer_token).flush()
             log.info(f'Saving new bearer token for client: {request.client_id}')
         else:
-            M.OAuth2Token.query.update(
+            M.OAuth2AccessToken.query.update(
                 {'client_id': request.client_id},
                 {'$set': {'access_token': token.get('access_token'), 'expires_at': datetime.utcfromtimestamp(token.get('expires_in')), 'refresh_token': token.get('refresh_token')}})
             log.info(f'Updating bearer token for client: {request.client_id}')
@@ -461,11 +481,30 @@ class Oauth2Negotiator:
     def server(self):
         return oauthlib.oauth2.WebApplicationServer(Oauth2Validator())
 
+    def _authenticate(self):
+        bearer_token_prefix = 'Bearer ' # noqa: S105
+        auth_header = request.headers.get('Authorization')
+        if auth_header and auth_header.startswith(bearer_token_prefix):
+            access_token = auth_header[len(bearer_token_prefix):]
+
+        valid, req = self.server.verify_request(
+            request.url,
+            http_method=request.method,
+            body=request.body,
+            headers=request.headers)
+
+        if not valid:
+            raise exc.HTTPUnauthorized
+
+        access_token = M.OAuth2AccessToken.query.get(access_token=req.access_token)
+        access_token.last_access = datetime.utcnow()
+        return access_token
+
+
     @expose('jinja:allura:templates/oauth2_authorize.html')
     def authorize(self, **kwargs):
         security.require_authenticated()
         json_body = None
-
         if request.body:
             # We need to decode the request body and convert it to a dict because Turbogears creates it as bytes
             # and oauthlib will treat it as x-www-form-urlencoded format.
@@ -475,18 +514,15 @@ class Oauth2Negotiator:
         try:
             scopes, credentials = self.server.validate_authorization_request(uri=request.url, http_method=request.method, headers=request.headers, body=json_body)
             client_id = request.params.get('client_id')
-            client = M.OAuth2Client.query.get(client_id=client_id)
+            client = M.OAuth2ClientApp.query.get(client_id=client_id)
 
             # We need to save the credentials to the current session so we can use it later in the POST request.
             # We also need to use __dict__ because the internal oauthlib request object cannot be directly serialized
             # and saved to Ming
             credentials['request'] = credentials['request'].__dict__
-            M.OAuth2Client.set_credentials(client_id, credentials)
+            M.OAuth2ClientApp.set_credentials(client_id, credentials)
 
-            return dict(
-                credentials=credentials,
-                client=client
-            )
+            return dict(client=client)
         except Exception as e:
             log.exception(e)
 
@@ -496,7 +532,7 @@ class Oauth2Negotiator:
         security.require_authenticated()
 
         client_id = request.params['client_id']
-        client = M.OAuth2Client.query.get(client_id=client_id)
+        client = M.OAuth2ClientApp.query.get(client_id=client_id)
 
         if no:
             flash(f'{client.name} NOT AUTHORIZED', 'error')
@@ -507,8 +543,11 @@ class Oauth2Negotiator:
                 uri=request.url, http_method=request.method, body=request.body, headers=request.headers, scopes=[], credentials=client.credentials
             )
 
-            qs_params = dict(parse_qsl(headers['Location']))
-            return dict(client=client, authorization_code=qs_params.get('code', ''))
+            response.status_int = status
+            for k, v in headers.items():
+                response.headers[k] = v
+
+            return body
         except Exception as ex:
             log.exception(ex)
 

@@ -31,7 +31,7 @@ from .notification import Notification, Mailbox, SiteNotification
 from .repository import Repository, RepositoryImplementation, CommitStatus
 from .repository import MergeRequest, GitLikeTree
 from .stats import Stats
-from .oauth import OAuthToken, OAuthConsumerToken, OAuthRequestToken, OAuthAccessToken, OAuth2Client, OAuth2AuthorizationCode, OAuth2Token
+from .oauth import OAuthToken, OAuthConsumerToken, OAuthRequestToken, OAuthAccessToken, OAuth2ClientApp, OAuth2AuthorizationCode, OAuth2AccessToken
 from .monq_model import MonQTask
 from .webhook import Webhook
 from .multifactor import TotpKey
@@ -56,7 +56,7 @@ __all__ = [
     'DiscussionAttachment', 'BaseAttachment', 'AuthGlobals', 'User', 'ProjectRole', 'EmailAddress',
     'AuditLog', 'AlluraUserProperty', 'File', 'Notification', 'Mailbox', 'Repository',
     'RepositoryImplementation', 'CommitStatus', 'MergeRequest', 'GitLikeTree', 'Stats', 'OAuthToken', 'OAuthConsumerToken',
-    'OAuthRequestToken', 'OAuthAccessToken', 'OAuth2Client', 'OAuth2AuthorizationCode', 'OAuth2Token', 'MonQTask', 'Webhook',
+    'OAuthRequestToken', 'OAuthAccessToken', 'OAuth2ClientApp', 'OAuth2AuthorizationCode', 'OAuth2AccessToken', 'MonQTask', 'Webhook',
     'ACE', 'ACL', 'EVERYONE', 'ALL_PERMISSIONS', 'DENY_ALL', 'MarkdownCache', 'main_doc_session', 'main_orm_session',
     'project_doc_session', 'project_orm_session', 'artifact_orm_session', 'repository_orm_session', 'task_orm_session',
     'ArtifactSessionExtension', 'repository', 'repo_refresh', 'SiteNotification', 'TotpKey', 'UserLoginDetails',

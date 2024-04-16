@@ -2067,6 +2067,162 @@ class TestOAuth(TestController):
         assert r.location.startswith(url)
 
 
+class TestOAuth2(TestController):
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_register_deregister_client(self):
+        #register
+        r = self.app.get('/auth/oauth2/')
+        r = self.app.post('/auth/oauth2/register',
+                          params={'application_name': 'testoauth2', 'application_description': 'Oauth2 Test',
+                                    'redirect_url': '', '_session_id': self.app.cookies['_session_id'],
+                                  }).follow()
+
+        assert 'testoauth2' in r
+
+        #deregister
+        assert r.forms[0].action == 'do_client_action'
+        r.forms[0].submit('deregister')
+        r = self.app.get('/auth/oauth2/')
+        assert 'testoauth2' not in r
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_authorize(self):
+        user = M.User.by_username('test-admin')
+        M.OAuth2ClientApp(
+            client_id='client_12345',
+            owner_id=user._id,
+            name='testoauth2',
+            description='test client',
+            response_type='code',
+            redirect_uris=['https://localhost/']
+        )
+        ThreadLocalODMSession.flush_all()
+        r = self.app.get('/rest/oauth2/authorize/', params={'client_id': 'client_12345', 'response_type': 'code'})
+        assert 'testoauth2' in r.text
+        assert 'client_12345' in r.text
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_do_authorize_no(self):
+        user = M.User.by_username('test-admin')
+        M.OAuth2ClientApp(
+            client_id='client_12345',
+            owner_id=user._id,
+            name='testoauth2',
+            description='test client',
+            response_type='code',
+            redirect_uris=['https://localhost/']
+        )
+        ThreadLocalODMSession.flush_all()
+        r = self.app.post('/rest/oauth2/do_authorize', params={'no': '1', 'client_id': 'client_12345', 'response_type': 'code'})
+        assert M.OAuth2AuthorizationCode.query.get(client_id='client_12345') is None
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_do_authorize(self):
+        user = M.User.by_username('test-admin')
+        M.OAuth2ClientApp(
+            client_id='client_12345',
+            owner_id=user._id,
+            name='testoauth2',
+            description='test client',
+            response_type='code',
+            redirect_uris=['https://localhost/']
+        )
+        ThreadLocalODMSession.flush_all()
+
+        # First navigate to the authorization page for the backend to validate the authorization request
+        r = self.app.get('/rest/oauth2/authorize', params={'client_id': 'client_12345', 'response_type': 'code', 'redirect_uri': 'https://localhost/'})
+
+        # The submit authorization for the authorization code to be created
+        r = self.app.post('/rest/oauth2/do_authorize', params={'yes': '1', 'client_id': 'client_12345', 'response_type': 'code', 'redirect_uri': 'https://localhost/'})
+
+        q = M.OAuth2AuthorizationCode.query.get(client_id='client_12345')
+        assert q is not None
+
+        r = self.app.get('/auth/oauth2/')
+        assert 'Authorization Code:' in r
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_create_access_token(self):
+        user = M.User.by_username('test-admin')
+        M.OAuth2ClientApp(
+            client_id='client_12345',
+            owner_id=user._id,
+            name='testoauth2',
+            description='test client',
+            response_type='code',
+            redirect_uris=['https://localhost/']
+        )
+        ThreadLocalODMSession.flush_all()
+
+        # First navigate to the authorization page for the backend to validate the authorization request
+        r = self.app.get('/rest/oauth2/authorize', params={'client_id': 'client_12345', 'response_type': 'code', 'redirect_uri': 'https://localhost/'})
+
+        # The submit authorization for the authorization code to be created
+        r = self.app.post('/rest/oauth2/do_authorize', params={'yes': '1', 'client_id': 'client_12345', 'response_type': 'code', 'redirect_uri': 'https://localhost/'})
+
+        ac = M.OAuth2AuthorizationCode.query.get(client_id='client_12345')
+        assert ac is not None
+
+        r = self.app.get('/auth/oauth2/')
+        assert 'Authorization Code:' in r
+
+        # Create the authorization token
+        oauth2_params = dict(
+            client_id='client_12345',
+            code=ac.authorization_code,
+            grant_type='authorization_code'
+        )
+        r = self.app.post_json('/rest/oauth2/token', oauth2_params)
+        t = M.OAuth2AccessToken.query.get(client_id='client_12345')
+        assert t is not None
+        assert t.access_token is not None and t.refresh_token is not None
+
+        r = self.app.get('/auth/oauth2/')
+        assert 'Access Token:' in r
+        assert 'Refresh Token:' in r
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_revoke_tokens(self):
+        user = M.User.by_username('test-admin')
+        M.OAuth2ClientApp(
+            client_id='client_12345',
+            owner_id=user._id,
+            name='testoauth2',
+            description='test client',
+            response_type='code',
+            redirect_uris=['https://localhost/']
+        )
+
+        M.OAuth2AuthorizationCode(
+            client_id='client_12345',
+            authotization_code='authcode_12345',
+            expires_at=datetime.utcnow() + timedelta(minutes=10),
+            owner_id=user._id,
+        )
+
+        M.OAuth2AccessToken(
+            client_id='client_12345',
+            access_token='12345',
+            refresh_token='54321',
+            expires_at=datetime.utcnow() + timedelta(minutes=20),
+            owner_id=user._id,
+        )
+
+        ThreadLocalODMSession.flush_all()
+
+        r = self.app.get('/auth/oauth2/')
+        assert 'authorization code' in r
+        assert 'access token' in r
+        assert r.forms[0].action == 'do_client_action'
+
+        r.forms[0].submit('revoke')
+
+        r = self.app.get('/auth/oauth2/')
+        assert 'testoauth2' in r
+        assert 'Authorization Code:' not in r
+        assert 'Access Token:' not in r
+
+
 class TestOAuthRequestToken(TestController):
 
     oauth_params = dict(

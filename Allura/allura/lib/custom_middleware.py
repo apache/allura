@@ -495,10 +495,13 @@ class ContentSecurityPolicyMiddleware:
             srcs = self.config['csp.form_action_urls']
             if environ.get('csp_form_actions'):
                 srcs += ' ' + ' '.join(environ['csp_form_actions'])
-            if asbool(self.config.get('csp.form_actions_enforce', False)):
-                rules.add(f"form-action {srcs}")
-            else:
-                report_rules.add(f"form-action {srcs}")
+
+            oauth_endpoints = ('/rest/oauth2/authorize', '/rest/oauth2/do_authorize', '/rest/oauth/authorize', '/rest/oauth/do_authorize')
+            if not req.path.startswith(oauth_endpoints): # Do not enforce CSP for OAuth1 and OAuth2 authorization
+                if asbool(self.config.get('csp.form_actions_enforce', False)):
+                    rules.add(f"form-action {srcs}")
+                else:
+                    report_rules.add(f"form-action {srcs}")
 
         if self.config.get('csp.script_src'):
             script_srcs = self.config['csp.script_src']

@@ -96,14 +96,14 @@
         <tr class="description"><th>Description:</th><td>{{app.client.description }}</td></tr>
         <tr class="client_id"><th>Client ID:</th><td>{{app.client.client_id}}</td></tr>
         <tr class="redirect_url"><th>Redirect URL:</th><td>{{app.client.redirect_uris[0] if app.client.redirect_uris else ''}}</td></tr>
-        <tr class="grant_type"><th>Grant Type:</th><td>{{app.client.grant_type}}</td></tr>
 
         {% if app.authorization %}
+            <tr class="grant_type"><th>Grant Type:</th><td>{{app.client.grant_type}}</td></tr>
             <tr class="authorization_code"><th>Authorization Code:</th><td>{{app.authorization.authorization_code}}</td></tr>
             <tr class="authorization_code_expires"><th>Authorization Code Expires At:</th><td>{{app.authorization.expires_at.strftime('%Y-%m-%d %H:%M:%S')}} UTC</td></tr>
         {% endif %}
 
-        {% if app.access_token %}
+        {% if app.token %}
             <tr class="access_token"><th>Access Token:</th><td>{{app.token.access_token}}</td></tr>
             <tr class="access_token_expires"><th>Access Token Expires At:</th><td>{{app.token.expires_at.strftime('%Y-%m-%d %H:%M:%S')}} UTC</td></tr>
             <tr class="refresh_token"><th>Refresh Token:</th><td>{{app.token.refresh_token}}</td></tr>

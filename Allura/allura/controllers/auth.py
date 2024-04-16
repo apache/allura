@@ -114,7 +114,10 @@ class AuthController(BaseController):
         self.user_info = UserInfoController()
         self.subscriptions = SubscriptionsController()
         self.oauth = OAuthController()
-        self.oauth2 = OAuth2Controller()
+
+        if asbool(config.get('auth.oauth2.enabled', False)):
+            self.oauth2 = OAuth2Controller()
+            
         if asbool(config.get('auth.allow_user_to_disable_account', False)):
             self.disable = DisableAccountController()
 
@@ -1413,19 +1416,19 @@ class OAuth2Controller(BaseController):
 
     def _revoke_all(self, client_id):
         M.OAuth2AuthorizationCode.query.remove({'client_id': client_id})
-        M.OAuth2Token.query.remove({'client_id': client_id})
+        M.OAuth2AccessToken.query.remove({'client_id': client_id})
 
     @with_trailing_slash
     @expose('jinja:allura:templates/oauth2_applications.html')
     def index(self, **kw):
         c.form = F.oauth2_application_form
         provider = plugin.AuthenticationProvider.get(request)
-        clients = M.OAuth2Client.for_user(c.user)
+        clients = M.OAuth2ClientApp.for_owner(c.user)
         model = []
 
         for client in clients:
             authorization = M.OAuth2AuthorizationCode.query.get(client_id=client.client_id)
-            token = M.OAuth2Token.query.get(client_id=client.client_id)
+            token = M.OAuth2AccessToken.query.get(client_id=client.client_id)
             model.append(dict(client=client, authorization=authorization, token=token))
 
         return dict(
@@ -1437,7 +1440,7 @@ class OAuth2Controller(BaseController):
     @require_post()
     @validate(F.oauth2_application_form, error_handler=index)
     def register(self, application_name=None, application_description=None, redirect_url=None, **kw):
-        M.OAuth2Client(name=application_name,
+        M.OAuth2ClientApp(name=application_name,
                        description=application_description,
                        redirect_uris=[redirect_url])
         flash('Oauth2 Client registered')
@@ -1446,8 +1449,8 @@ class OAuth2Controller(BaseController):
     @expose()
     @require_post()
     def do_client_action(self, _id=None, deregister=None, revoke=None):
-        client = M.OAuth2Client.query.get(client_id=_id)
-        if client is None or client.user_id != c.user._id:
+        client = M.OAuth2ClientApp.query.get(client_id=_id)
+        if client is None or client.owner_id != c.user._id:
             flash('Invalid client ID', 'error')
             redirect('.')
 
