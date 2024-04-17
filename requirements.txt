@@ -6,7 +6,7 @@
 #
 activitystream==0.4.2
     # via -r requirements.in
-beaker==1.12.1
+beaker==1.13.0
     # via
     #   -r requirements.in
     #   beaker-session-jwt
