@@ -123,7 +123,7 @@ packaging==23.2
     #   pytest-sugar
 paginate==0.5.6
     # via -r requirements.in
-paste==3.7.1
+paste==3.9.0
     # via
     #   -r requirements.in
     #   easywidgets
@@ -132,7 +132,7 @@ pastedeploy==3.1.0
     # via
     #   -r requirements.in
     #   pastescript
-pastescript==3.4.0
+pastescript==3.5.1
     # via -r requirements.in
 pillow==10.3.0
     # via -r requirements.in
@@ -215,8 +215,6 @@ six==1.16.0
     #   easywidgets
     #   genshi
     #   html5lib
-    #   paste
-    #   pastescript
     #   python-dateutil
     #   sxsdiff
     #   webhelpers2
