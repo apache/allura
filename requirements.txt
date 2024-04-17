@@ -44,7 +44,7 @@ diff-match-patch==20230430
     # via sxsdiff
 distlib==0.3.8
     # via virtualenv
-docutils==0.20.1
+docutils==0.21.1
     # via pypeline
 easywidgets==0.4.1
     # via -r requirements.in
@@ -186,7 +186,7 @@ pyyaml==6.0.1
     # via pre-commit
 qrcode==7.4.2
     # via -r requirements.in
-regex==2023.12.25
+regex==2024.4.16
     # via
     #   regex-as-re-globally
     #   textile
