@@ -12,7 +12,7 @@ beaker==1.12.1
     #   beaker-session-jwt
 beaker-session-jwt==1.0.1
     # via -r requirements.in
-beautifulsoup4==4.12.2
+beautifulsoup4==4.12.3
     # via
     #   -r requirements.in
     #   webtest
@@ -222,7 +222,7 @@ six==1.16.0
     #   webhelpers2
 smmap==5.0.1
     # via gitdb
-soupsieve==2.4.1
+soupsieve==2.5
     # via beautifulsoup4
 sxsdiff==0.3.0
     # via -r requirements.in
