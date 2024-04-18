@@ -165,7 +165,7 @@ pytest==8.1.1
     #   -r requirements.in
     #   pytest-sugar
     #   pytest-xdist
-pytest-sugar==0.9.7
+pytest-sugar==1.0.0
     # via -r requirements.in
 pytest-xdist==3.5.0
     # via -r requirements.in
