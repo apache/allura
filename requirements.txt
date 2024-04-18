@@ -58,7 +58,7 @@ feedgenerator==2.1.0
     # via -r requirements.in
 feedparser==6.0.11
     # via -r requirements.in
-filelock==3.13.1
+filelock==3.13.4
     # via virtualenv
 formencode==2.1.0
     # via
@@ -77,7 +77,7 @@ html5lib==1.1
     #   -r requirements.in
     #   pypeline
     #   textile
-identify==2.5.33
+identify==2.5.35
     # via pre-commit
 idna==3.7
     # via requests
@@ -136,7 +136,7 @@ pastescript==3.5.1
     # via -r requirements.in
 pillow==10.3.0
     # via -r requirements.in
-platformdirs==4.1.0
+platformdirs==4.2.0
     # via virtualenv
 pluggy==1.4.0
     # via pytest
@@ -242,7 +242,7 @@ typing-extensions==4.9.0
     # via qrcode
 urllib3==2.2.1
     # via requests
-virtualenv==20.25.0
+virtualenv==20.25.3
     # via pre-commit
 waitress==2.1.2
     # via webtest
