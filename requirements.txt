@@ -44,8 +44,10 @@ diff-match-patch==20230430
     # via sxsdiff
 distlib==0.3.8
     # via virtualenv
-docutils==0.21.1
-    # via pypeline
+docutils==0.20.1
+    # via
+    #   -r requirements.in
+    #   pypeline
 easywidgets==0.4.1
     # via -r requirements.in
 emoji==2.11.0
@@ -140,8 +142,9 @@ platformdirs==4.2.0
     # via virtualenv
 pluggy==1.4.0
     # via pytest
+pre-commit==3.5.0 ; python_version < "3.9"
+# via -r requirements.in
 pre-commit==3.7.0 ; python_version >= "3.9"
-    # via -r requirements.in
 profanityfilter==2.0.6
     # via -r requirements.in
 pycparser==2.22
