@@ -35,11 +35,16 @@ log = logging.getLogger(__name__)
 
 
 if AKISMET_AVAILABLE:
-    class AkismetWithoutStartupVerify(akismet.Akismet):
+    class AkismetWithoutStartupVerify(akismet.SyncClient):
         def __init__(self, key=None, blog_url=None):
             # avoid possible errors at instantiation time, will encounter them later
             self.api_key = key
             self.blog_url = blog_url
+            self._config = akismet.Config(key=key, url=blog_url)
+            akismet_client = akismet.SyncClient(config=self._config)
+            self._http_client = akismet_client._http_client
+            if not akismet_client.verify_key(self._config.key, self._config.url):
+                raise Exception('Akismet key verification failed')
 
 
 class AkismetSpamFilter(SpamFilter):
