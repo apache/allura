@@ -8,4 +8,4 @@ html2text
 mediawiki2html  # GPL
 
 # for spam checking
-akismet>=1.0.1
+akismet>=1.3
