@@ -44,14 +44,13 @@ class TestTrackerApiBase(TestRestApiBase):
     def create_ticket(self, summary=None, status=None):
         return self.api_post(
             '/rest/p/test/bugs/new',
-            wrap_args='ticket_form',
-            params=dict(
+            params=dict(ticket_form=dict(
                 summary=summary or 'test new ticket',
                 status=self.tracker_globals.open_status_names.split()[0],
                 labels='',
                 description='',
                 assigned_to='',
-                **{'custom_fields._milestone': ''}),
+                **{'custom_fields._milestone': ''})),
             status=status)
 
 
@@ -61,15 +60,14 @@ class TestRestNewTicket(TestTrackerApiBase):
         summary = 'test new ticket'
         ticket_view = self.api_post(
             '/rest/p/test/bugs/new',
-            wrap_args='ticket_form',
-            params=dict(
+            params=dict(ticket_form=dict(
                 summary=summary,
                 status=self.tracker_globals.open_status_names.split()[0],
                 labels='foo,bar',
                 description='descr',
                 assigned_to='',
                 **{'custom_fields._milestone': ''}
-            ))
+            )))
         json = ticket_view.json['ticket']
         assert json['status'] == 'open', json
         assert json['summary'] == 'test new ticket', json
@@ -112,8 +110,7 @@ class TestRestUpdateTicket(TestTrackerApiBase):
             del args[bad_key]
         args['private'] = str(args['private'])
         args['discussion_disabled'] = str(args['discussion_disabled'])
-        ticket_view = self.api_post(
-            '/rest/p/test/bugs/1/save', wrap_args='ticket_form', params=h.encode_keys(args))
+        ticket_view = self.api_post('/rest/p/test/bugs/1/save', params={'ticket_form': args})
         assert ticket_view.status_int == 200, ticket_view.showbrowser()
         json = ticket_view.json['ticket']
         assert int(json['ticket_num']) == 1
@@ -177,14 +174,14 @@ class TestRestDiscussion(TestTrackerApiBase):
         thread_id = r.json['ticket']['discussion_thread']['_id']
         post = self.api_post(
             '/rest/p/test/bugs/_discuss/thread/%s/new' % thread_id,
-            text='This is a comment', wrap_args=None)
+            text='This is a comment')
         thread = self.api_get('/rest/p/test/bugs/_discuss/thread/%s/' % thread_id)
         assert len(thread.json['thread']['posts']) == 1, thread.json
         assert post.json['post']['text'] == 'This is a comment', post.json
         reply = self.api_post(
             '/rest/p/test/bugs/_discuss/thread/{}/{}/reply'.format(thread.json['thread']
                                                                ['_id'], post.json['post']['slug']),
-            text='This is a reply', wrap_args=None)
+            text='This is a reply')
         assert reply.json['post']['text'] == 'This is a reply', reply.json
         thread = self.api_get('/rest/p/test/bugs/_discuss/thread/%s/' % thread_id)
         assert len(thread.json['thread']['posts']) == 2, thread.json

@@ -252,15 +252,13 @@ class TestRestApiBase(TestController):
 
         return self._token_cache[username]
 
-    def _api_call(self, method, path, wrap_args=None, user='test-admin', status=None, **params):
+    def _api_call(self, method, path, user='test-admin', status=None, **params):
         '''
         If you need to use one of the method kwargs as a URL parameter,
         pass params={...} as a dict instead of **kwargs
         '''
         if 'params' in params:
             params = params['params']
-        if wrap_args:
-            params = {wrap_args: params}
         if status is None:
             status = [200, 201, 301, 302]
         if not isinstance(params, str):
@@ -283,14 +281,14 @@ class TestRestApiBase(TestController):
         else:
             return response
 
-    def api_get(self, path, wrap_args=None, user='test-admin', status=None, **params):
-        return self._api_call('GET', path, wrap_args, user, status, **params)
+    def api_get(self, path, user='test-admin', status=None, **params):
+        return self._api_call('GET', path, user, status, **params)
 
-    def api_post(self, path, wrap_args=None, user='test-admin', status=None, **params):
-        return self._api_call('POST', path, wrap_args, user, status, **params)
+    def api_post(self, path, user='test-admin', status=None, **params):
+        return self._api_call('POST', path, user, status, **params)
 
-    def api_delete(self, path, wrap_args=None, user='test-admin', status=None, **params):
-        return self._api_call('DELETE', path, wrap_args, user, status, **params)
+    def api_delete(self, path, user='test-admin', status=None, **params):
+        return self._api_call('DELETE', path, user, status, **params)
 
 
 def oauth1_webtest(url: str, oauth_kwargs: dict, method='GET') -> tuple[str, dict, dict, dict]:
