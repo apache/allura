@@ -272,16 +272,16 @@ documentation:
               body:
                 application/x-www-form-urlencoded:
                   formParameters:
-                    access_token:
-                      description: "The access token provided by the authentication application"
-                      required: true
-                      type: string
                     ticket_form.summary:
                       description: Ticket title
                       type: string
                       required: false
                     ticket_form.description:
                       description: ticket description
+                      type: string
+                      required: false
+                    ticket_form.status:
+                      description: ticket status
                       type: string
                       required: false
                     ticket_form.assigned_to:
@@ -296,8 +296,16 @@ documentation:
                       type: file
                       description:  (optional) attachment
                       required: false
-                    ticket_form.custom-field-name:
-                      description:  custom field value
+                    ticket_form.custom_fields._any-field-name:
+                      description: Starts with underscore, and must conform to the custom fields set up for this tracker.  "true" or "false" values will work for boolean custom fields.
+                      type: string
+                      required: false
+                    ticket_form.private:
+                      description: if the ticket is private or not ("true" or "false")
+                      type: string
+                      required: false
+                    ticket_form.discussion_disabled:
+                      description: if comments may be posted on the ticket ("true" or "false")
                       type: string
                       required: false
 
@@ -320,16 +328,16 @@ documentation:
             body:
               application/x-www-form-urlencoded:
                 formParameters:
-                  access_token:
-                    description: "The access token provided by the authentication application"
-                    required: true
-                    type: string
                   ticket_form.summary:
                     description: Ticket title
                     type: string
                     required: false
                   ticket_form.description:
                     description: ticket description
+                    type: string
+                    required: false
+                  ticket_form.status:
+                    description: ticket status
                     type: string
                     required: false
                   ticket_form.assigned_to:
@@ -344,8 +352,16 @@ documentation:
                     type: file
                     description: (optional) attachment
                     required: false
-                  ticket_form.custom_field_name:
-                    description: custom field value
+                  ticket_form.custom_fields._any-field-name:
+                    description: Starts with underscore, and must conform to the custom fields set up for this tracker.  "true" or "false" values will work for boolean custom fields.
+                    type: string
+                    required: false
+                  ticket_form.private:
+                    description: if the ticket is private or not ("true" or "false")
+                    type: string
+                    required: false
+                  ticket_form.discussion_disabled:
+                    description: if comments may be posted on the ticket ("true" or "false")
                     type: string
                     required: false
 
