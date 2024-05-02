@@ -228,10 +228,11 @@ class UserValidator(fev.FancyValidator):
         return user
 
 
-class AnonymousValidator(fev.FancyValidator):
+class AnonymousValidator(fev.StringBool):
 
     def _convert_to_python(self, value, state):
         from allura.model import User
+        value = super()._convert_to_python(value, state)
         if value:
             if c.user == User.anonymous():
                 raise fe.Invalid('Log in to Mark as Private', value, state)

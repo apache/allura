@@ -115,6 +115,8 @@ class TestRestUpdateTicket(TestTrackerApiBase):
         json = ticket_view.json['ticket']
         assert int(json['ticket_num']) == 1
         assert json['summary'] == 'test update ticket', json
+        assert json['discussion_disabled'] is False
+        assert json['private'] is False
 
 
 class TestRestIndex(TestTrackerApiBase):
