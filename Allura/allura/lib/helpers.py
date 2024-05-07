@@ -1051,7 +1051,7 @@ class NoInternalHTTPSHandler(urllib.request.HTTPSHandler):
     def https_open(self, req):
         if not asbool(tg.config.get('urlopen_allow_internal_hostnames', 'false')):
             # check on every open, covers redirects
-            validators.URLIsPrivate().to_python(req.full_url, None)
+            validators.NonPrivateUrl().to_python(req.full_url, None)
         return super().https_open(req)
 
 class UseKnownIPHTTPConnection(http.client.HTTPConnection):
@@ -1069,7 +1069,7 @@ class NotInternalHTTPHandler(urllib.request.HTTPHandler):
     def http_open(self, req):
         if not asbool(tg.config.get('urlopen_allow_internal_hostnames', 'false')):
             # check on every open, covers redirects
-            ipValidator = validators.URLIsPrivate()
+            ipValidator = validators.NonPrivateUrl()
             ipValidator.to_python(req.full_url, None)
             # and force the open to use the known IP
             return self.do_open(UseKnownIPHTTPConnection, req, known_ip_to_use=str(ipValidator.ip))

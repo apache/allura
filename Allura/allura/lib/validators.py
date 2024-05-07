@@ -48,8 +48,8 @@ class URL(fev.URL):
     ''', re.I | re.VERBOSE)
 
 
-class URLIsPrivate(URL):
-
+class NonPrivateUrl(URL):
+    # prevents private IPs
     def _convert_to_python(self, value, state):
         value = super()._convert_to_python(value, state)
         url_components = urlsplit(value)
@@ -65,6 +65,7 @@ class URLIsPrivate(URL):
 
 
 class NonHttpUrl(URL):
+    # allows other schemes like svn:// since fev.URL only does http(s)
     messages = {
         'noScheme': 'You must start your URL with a scheme',
     }

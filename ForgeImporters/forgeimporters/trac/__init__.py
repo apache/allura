@@ -21,7 +21,7 @@ import requests
 from allura.lib import validators
 
 
-class TracURLValidator(validators.URLIsPrivate):
+class TracURLValidator(validators.NonPrivateUrl):
     not_empty = True
     messages = {
         'unavailable': 'This project is unavailable for import'
