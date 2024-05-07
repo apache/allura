@@ -55,7 +55,7 @@ class TestProjectExtractor(TestCase):
     def test_urlopen_internal_blocked(self):
         # by default this is invalid
         with pytest.raises(Invalid):
-            base.ProjectExtractor.urlopen('http://localhost:1234/blah', data='foo')
+            base.ProjectExtractor.urlopen('http://localhost:1234/blah', data=b'foo')
 
         # redirect to external site ok
         base.ProjectExtractor.urlopen('https://httpbin.org/redirect-to?url=http%3A%2F%2Fexample.com%2F')

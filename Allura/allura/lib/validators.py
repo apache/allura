@@ -54,12 +54,13 @@ class URLIsPrivate(URL):
         value = super()._convert_to_python(value, state)
         url_components = urlsplit(value)
         try:
-            host_ip = socket.gethostbyname(url_components.netloc)
+            host_ip = socket.gethostbyname(url_components.hostname)
         except socket.gaierror:
             raise fev.Invalid("Invalid URL.", value, state)
         parse_ip = ip_address(host_ip)
         if parse_ip and parse_ip.is_private:
             raise fev.Invalid("Invalid URL.", value, state)
+        self.ip = parse_ip
         return value
 
 

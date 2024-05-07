@@ -32,6 +32,7 @@ from webob.exc import HTTPUnauthorized
 from ming.odm import ThreadLocalODMSession
 from markupsafe import Markup
 import pytest
+from formencode import validators as fev
 
 from allura import model as M
 from allura.lib import exceptions as exc
@@ -471,15 +472,38 @@ back\\\-slash escaped
         r'tab before \(stuff\)'
 
 
-class TestUrlOpen(TestCase):
+class TestUrlOpen:
+
+    @pytest.mark.parametrize('url', [
+        'http://127.0.0.1/',
+        'http://::1/',  # ipv6
+        'http://localhost/',
+        'https://localhost/',
+        'http://localhost:8080',
+        'https://httpbin.org/redirect-to?url=http://localhost',
+        'https://httpbin.org/redirect-to?url=https://localhost',
+    ])
+    def test_internal_invalid(self, url):
+        with pytest.raises(fev.Invalid):
+            h.urlopen(url)
+
+    @pytest.mark.parametrize('url', [
+        'http://httpbin.org/status/200',
+        'https://httpbin.org/status/200',
+        'http://httpbin.org:80/status/200',
+    ])
+    def test_ok(self, url):
+        h.urlopen(url)
 
     @patch('urllib.request.urlopen')
+    @patch.dict(config, {'urlopen_allow_internal_hostnames': 'true'})
     def test_no_error(self, urlopen):
         r = h.urlopen('http://example.com')
         assert r == urlopen.return_value
         urlopen.assert_called_once_with('http://example.com', timeout=None)
 
     @patch('urllib.request.urlopen')
+    @patch.dict(config, {'urlopen_allow_internal_hostnames': 'true'})
     def test_socket_timeout(self, urlopen):
         import socket
 
@@ -492,6 +516,7 @@ class TestUrlOpen(TestCase):
         assert urlopen.call_count == 4
 
     @patch('urllib.request.urlopen')
+    @patch.dict(config, {'urlopen_allow_internal_hostnames': 'true'})
     def test_socket_reset(self, urlopen):
         import socket
         import errno
@@ -505,6 +530,7 @@ class TestUrlOpen(TestCase):
         assert urlopen.call_count == 4
 
     @patch('urllib.request.urlopen')
+    @patch.dict(config, {'urlopen_allow_internal_hostnames': 'true'})
     def test_handled_http_error(self, urlopen):
         from urllib.error import HTTPError
 
@@ -517,6 +543,7 @@ class TestUrlOpen(TestCase):
         assert urlopen.call_count == 4
 
     @patch('urllib.request.urlopen')
+    @patch.dict(config, {'urlopen_allow_internal_hostnames': 'true'})
     def test_unhandled_http_error(self, urlopen):
         from urllib.error import HTTPError
 

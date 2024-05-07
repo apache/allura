@@ -41,6 +41,7 @@ import socket
 from functools import partial
 from io import BytesIO
 import html
+import http.client
 
 import emoji
 import tg
@@ -1046,15 +1047,36 @@ class exceptionless:
         return inner
 
 
-class NoRedirectToInternal(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self, req: urllib.request.Request, fp, code, msg, headers, newurl: str):
+class NoInternalHTTPSHandler(urllib.request.HTTPSHandler):
+    def https_open(self, req):
         if not asbool(tg.config.get('urlopen_allow_internal_hostnames', 'false')):
-            validators.URLIsPrivate().to_python(newurl, None)
-        return super().redirect_request(req, fp, code, msg, headers, newurl)
+            # check on every open, covers redirects
+            validators.URLIsPrivate().to_python(req.full_url, None)
+        return super().https_open(req)
+
+class UseKnownIPHTTPConnection(http.client.HTTPConnection):
+    # only for http, since https requires a valid cert it should be ok
+    def __init__(self, *a, known_ip_to_use=None, **kw):
+        super().__init__(*a, **kw)
+        self.known_ip_to_use = known_ip_to_use
+
+    def connect(self):
+        self.host = self.known_ip_to_use
+        super().connect()
 
 
-opener = urllib.request.build_opener(NoRedirectToInternal)
-urllib.request.install_opener(opener)
+class NotInternalHTTPHandler(urllib.request.HTTPHandler):
+    def http_open(self, req):
+        if not asbool(tg.config.get('urlopen_allow_internal_hostnames', 'false')):
+            # check on every open, covers redirects
+            ipValidator = validators.URLIsPrivate()
+            ipValidator.to_python(req.full_url, None)
+            # and force the open to use the known IP
+            return self.do_open(UseKnownIPHTTPConnection, req, known_ip_to_use=str(ipValidator.ip))
+        else:
+            return super().http_open(req)
+
+urllib.request.install_opener(urllib.request.build_opener(NotInternalHTTPHandler, NoInternalHTTPSHandler))
 
 
 def urlopen(url: str | urllib.request.Request, retries=3, codes=(408, 500, 502, 503, 504), timeout=None):
@@ -1073,9 +1095,6 @@ def urlopen(url: str | urllib.request.Request, retries=3, codes=(408, 500, 502, 
         url_str = url
     if not url_str.startswith(('http://', 'https://')):
         raise ValueError(f'URL must be http(s), got {url_str}')
-    if not asbool(tg.config.get('urlopen_allow_internal_hostnames', 'false')):
-        # will raise error if hostname resolves to private address space:
-        validators.URLIsPrivate().to_python(url_str, None)
 
     attempts = 0
     while True:
