@@ -476,7 +476,7 @@ class TestUrlOpen(TestCase):
     @patch('urllib.request.urlopen')
     def test_no_error(self, urlopen):
         r = h.urlopen('http://example.com')
-        self.assertEqual(r, urlopen.return_value)
+        assert r == urlopen.return_value
         urlopen.assert_called_once_with('http://example.com', timeout=None)
 
     @patch('urllib.request.urlopen')
@@ -487,8 +487,9 @@ class TestUrlOpen(TestCase):
             raise socket.timeout()
 
         urlopen.side_effect = side_effect
-        self.assertRaises(socket.timeout, h.urlopen, 'http://example.com')
-        self.assertEqual(urlopen.call_count, 4)
+        with pytest.raises(socket.timeout):
+            h.urlopen('http://example.com')
+        assert urlopen.call_count == 4
 
     @patch('urllib.request.urlopen')
     def test_socket_reset(self, urlopen):
@@ -499,8 +500,9 @@ class TestUrlOpen(TestCase):
             raise OSError(errno.ECONNRESET, 'Connection reset by peer')
 
         urlopen.side_effect = side_effect
-        self.assertRaises(socket.error, h.urlopen, 'http://example.com')
-        self.assertEqual(urlopen.call_count, 4)
+        with pytest.raises(socket.error):
+            h.urlopen('http://example.com')
+        assert urlopen.call_count == 4
 
     @patch('urllib.request.urlopen')
     def test_handled_http_error(self, urlopen):
@@ -510,8 +512,9 @@ class TestUrlOpen(TestCase):
             raise HTTPError('url', 408, 'timeout', None, io.BytesIO())
 
         urlopen.side_effect = side_effect
-        self.assertRaises(HTTPError, h.urlopen, 'http://example.com')
-        self.assertEqual(urlopen.call_count, 4)
+        with pytest.raises(HTTPError):
+            h.urlopen('http://example.com')
+        assert urlopen.call_count == 4
 
     @patch('urllib.request.urlopen')
     def test_unhandled_http_error(self, urlopen):
@@ -521,8 +524,9 @@ class TestUrlOpen(TestCase):
             raise HTTPError('url', 404, 'timeout', None, io.BytesIO())
 
         urlopen.side_effect = side_effect
-        self.assertRaises(HTTPError, h.urlopen, 'http://example.com')
-        self.assertEqual(urlopen.call_count, 1)
+        with pytest.raises(HTTPError):
+            h.urlopen('http://example.com')
+        assert urlopen.call_count == 1
 
 
 def test_absurl():
