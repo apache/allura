@@ -14,12 +14,14 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
+import html
 from datetime import datetime, timedelta
+from io import BytesIO
 from unittest import skipIf
 import pkg_resources
 import mock
 import feedparser
+from mock import patch
 
 from ming.odm.odmsession import ThreadLocalODMSession
 
@@ -37,42 +39,9 @@ def setup_module(module):
     setup_global_objects()
 
 
-def _mock_feed(*entries):
-    class attrdict(dict):
-
-        def __getattr__(self, name):
-            return self[name]
-
-    feed = mock.Mock()
-    feed.bozo = False
-    feed.entries = []
-    for e in entries:
-        _mock_feed.i += 1
-        entry = attrdict(
-            content_type='text/plain',
-            title='Default Title %d' % _mock_feed.i,
-            subtitle='',
-            summary='',
-            link='http://example.com/',
-            updated=datetime.utcnow() + timedelta(days=_mock_feed.i - 100))
-        entry.update(e)
-        entry['updated_parsed'] = entry['updated'].timetuple()
-        if 'content' in entry:
-            entry['content'] = [
-                attrdict(type=entry['content_type'], value=entry['content'])]
-        if 'summary_detail' in entry:
-            entry['summary_detail'] = attrdict(entry['summary_detail'])
-        feed.entries.append(entry)
-
-    return feed
-
-
-_mock_feed.i = 0
-
-
 @skipIf(module_not_available('html2text'), 'requires html2text')
-@mock.patch.object(feedparser, 'parse')
-def test_pull_rss_feeds(parsefeed):
+@patch('urllib.request.urlopen')
+def test_pull_rss_feeds(urlopen):
     html_content = (
         "<p>1. foo</p>\n"
         "\n"
@@ -85,6 +54,7 @@ def test_pull_rss_feeds(parsefeed):
         "baz\n"
         "</a></p>\n"
     )
+    html_in_feed = html.escape(html_content).encode('utf-8')
 
     rendered_html_content = "\n".join([
         r"1\. foo",
@@ -96,12 +66,40 @@ def test_pull_rss_feeds(parsefeed):
         " [link](http://example.com/)",
     ])
 
-    parsefeed.return_value = _mock_feed(
-        dict(title='Test', subtitle='test', summary='This is a test'),
-        dict(content_type='text/plain', content='Test feed'),
-        dict(content_type='text/html', content=html_content),
-        dict(summary_detail=dict(type='text/html', value=html_content)),
-    )
+    urlopen.return_value = BytesIO(b'''<?xml version="1.0" encoding="utf-8"?>
+    <feed xmlns="http://www.w3.org/2005/Atom">
+      <title>Test</title>
+      <updated>2003-12-13T18:30:02Z</updated>
+      <author><name>John Doe</name></author>
+      <subtitle>test</subtitle>
+      <summary>This is a test</summary>
+
+      <entry>
+        <title>Test summary</title>
+        <subtitle>test</subtitle>
+        <link href="http://example.com/"/>
+        <updated>2003-12-13T18:30:02Z</updated>
+        <summary>This is a test</summary>
+      </entry>
+      <entry>
+        <title>Test content</title>
+        <link href="http://example.com/"/>
+        <updated>2003-12-13T18:30:02Z</updated>
+        <content>Test feed</content>
+      </entry>
+      <entry>
+        <title>Test html content</title>
+        <link href="http://example.com/"/>
+        <updated>2003-12-13T18:30:02Z</updated>
+        <content type="html">''' + html_in_feed + b'''</content>
+      </entry>
+      <entry>
+        <title>Test html summary</title>
+        <link href="http://example.com/"/>
+        <updated>2003-12-13T18:30:02Z</updated>
+        <summary type="html">'''+ html_in_feed + b'''</summary>
+      </entry>
+    </feed>''')
 
     base_app = M.AppConfig.query.find().all()[0]
     tmp_app = M.AppConfig(
@@ -119,16 +117,16 @@ def test_pull_rss_feeds(parsefeed):
     cmd = rssfeeds.RssFeedsCommand('pull-rss-feeds')
     cmd.run([test_config, '-a', tmp_app._id])
     cmd.command()
-    parsefeed.assert_called_with('http://example.com/news/feed/')
+    urlopen.assert_called_with('http://example.com/news/feed/', timeout=None)
     posts = BM.BlogPost.query.find(
         {'app_config_id': tmp_app._id}).sort('timestamp', 1)
     assert posts.count() == 4
     posts = posts.all()
-    assert posts[0].title == 'Test'
+    assert posts[0].title == 'Test summary'
     assert posts[0].text == 'This is a test [link](http://example.com/)'
-    assert posts[1].title == 'Default Title 2'
+    assert posts[1].title == 'Test content'
     assert posts[1].text == 'Test feed [link](http://example.com/)'
-    assert posts[2].title == 'Default Title 3'
+    assert posts[2].title == 'Test html content'
     assert posts[2].text == rendered_html_content
-    assert posts[3].title == 'Default Title 4'
+    assert posts[3].title == 'Test html summary'
     assert posts[3].text == rendered_html_content

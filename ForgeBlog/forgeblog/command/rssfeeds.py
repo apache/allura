@@ -28,6 +28,7 @@ from ming.odm import session
 from tg import tmpl_context as c
 
 from allura import model as M
+from allura.lib import helpers as h
 from forgeblog import model as BM
 from forgeblog.main import ForgeBlogApp
 from allura.lib import exceptions
@@ -106,7 +107,8 @@ class RssFeedsCommand(base.BlogCommand):
         c.app = app
 
         allura_base.log.info(f"Getting {app.url} feed {feed_url}")
-        f = feedparser.parse(feed_url)
+        content = h.urlopen(feed_url).read()
+        f = feedparser.parse(content)
         if f.bozo:
             allura_base.log.warning(f"{app.url} feed {feed_url} errored: {f.bozo_exception}")
             return
