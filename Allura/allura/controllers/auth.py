@@ -14,6 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+from __future__ import annotations
 
 import logging
 import os
@@ -75,7 +76,7 @@ class F:
     subscription_form = SubscriptionForm()
     registration_form = forms.RegistrationForm(action='/auth/save_new')
     oauth_application_form = OAuthApplicationForm(action='register')
-    oauth2_application_form = OAuth2ApplicationForm(action='register')
+    oauth2_application_form = OAuth2ApplicationForm(action='register2')
     oauth_revocation_form = OAuthRevocationForm(
         action='/auth/preferences/revoke_oauth')
     change_personal_data_form = forms.PersonalDataForm()
@@ -114,9 +115,6 @@ class AuthController(BaseController):
         self.user_info = UserInfoController()
         self.subscriptions = SubscriptionsController()
         self.oauth = OAuthController()
-
-        if asbool(config.get('auth.oauth2.enabled', False)):
-            self.oauth2 = OAuth2Controller()
 
         if asbool(config.get('auth.allow_user_to_disable_account', False)):
             self.disable = DisableAccountController()
@@ -1329,13 +1327,52 @@ class OAuthController(BaseController):
     @expose('jinja:allura:templates/oauth_applications.html')
     def index(self, **kw):
         c.form = F.oauth_application_form
+        c.form2 = F.oauth2_application_form
+
         consumer_tokens = M.OAuthConsumerToken.for_user(c.user)
-        access_tokens = M.OAuthAccessToken.for_user(c.user)
+        access_tokens: list[dict] = []  # simple dict format to work for both OAuth1 and OAuth2 tokens
+        for oauth1_tok in M.OAuthAccessToken.for_user(c.user):
+            access_tokens.append({
+                'type': 1,
+                'app': oauth1_tok.consumer_token,
+                'is_bearer': oauth1_tok.is_bearer,
+                'api_key': oauth1_tok.api_key,
+                'last_access': oauth1_tok.last_access,
+                '_id': oauth1_tok._id,
+            })
+        if asbool(config.get('auth.oauth2.enabled', False)):
+            oauth2_client_apps = M.OAuth2ClientApp.for_user(c.user)
+            for oauth2_tok in M.OAuth2AccessToken.query.find({'user_id': c.user._id}):
+                access_tokens.append({
+                    'type': 2,
+                    'app': M.OAuth2ClientApp.query.get(client_id=oauth2_tok.client_id),
+                    # TODO personal bearer tokens:
+                    'is_bearer': False,
+                    'api_key': None,
+                    'last_access': oauth2_tok.last_access,
+                    '_id': oauth2_tok._id,
+                })
+            # include auth codes too, but only if they're not already listed via an access/refresh token
+            for oauth2_auth in M.OAuth2AuthorizationCode.query.find({'user_id': c.user._id}):
+                client_app = M.OAuth2ClientApp.query.get(client_id=oauth2_auth.client_id)
+                if client_app not in (app['app'] for app in access_tokens):
+                    access_tokens.append({
+                        'type': '2authcode',
+                        'app': client_app,
+                        'is_bearer': False,
+                        'api_key': None,
+                        'last_access': None,
+                        '_id': oauth2_auth._id,
+                    })
+        else:
+            oauth2_client_apps = []
+
         provider = plugin.AuthenticationProvider.get(request)
         return dict(
             menu=provider.account_navigation(),
             consumer_tokens=consumer_tokens,
             access_tokens=access_tokens,
+            oauth2_client_apps=oauth2_client_apps,
         )
 
     @expose()
@@ -1345,6 +1382,24 @@ class OAuthController(BaseController):
         M.OAuthConsumerToken(name=application_name,
                              description=application_description)
         flash('OAuth Application registered')
+        redirect('.')
+
+    @expose()
+    @require_post()
+    @validate(F.oauth2_application_form, error_handler=index)
+    def register2(self, application_name=None, application_description=None, **kw):
+        if not asbool(config.get('auth.oauth2.enabled', False)):
+            raise wexc.HTTPNotFound
+
+        redirect_urls = [
+            v for k, v in kw.items()
+            if k.startswith('redirect_url_') and v
+        ]
+        M.OAuth2ClientApp(name=application_name,
+                          description=application_description,
+                          redirect_uris=redirect_urls,
+                          user_id=c.user._id)
+        flash('OAuth2 Client registered')
         redirect('.')
 
     @expose()
@@ -1361,6 +1416,37 @@ class OAuthController(BaseController):
         M.OAuthAccessToken.query.remove({'consumer_token_id': app._id})
         app.delete()
         flash('Application deleted')
+        redirect('.')
+
+    def _check_perm_and_revoke_all2(self, client_id: str):
+        """
+        Revokes the authorization code and access tokens for a given client for all its users
+        """
+        if not asbool(config.get('auth.oauth2.enabled', False)):
+            raise wexc.HTTPNotFound
+
+        client = M.OAuth2ClientApp.query.get(client_id=client_id)
+        if client is None or client.user_id != c.user._id:
+            flash('Invalid client ID', 'error')
+            redirect('.')
+
+        M.OAuth2AuthorizationCode.query.remove({'client_id': client_id})
+        M.OAuth2AccessToken.query.remove({'client_id': client_id})
+        return client
+
+    @expose()
+    @require_post()
+    def deregister2(self, client_id):
+        client = self._check_perm_and_revoke_all2(client_id)
+        client.delete()
+        flash('Client deleted and all access tokens revoked.')
+        redirect('.')
+
+    @expose()
+    @require_post()
+    def revoke_all_access_tokens2(self, client_id):
+        self._check_perm_and_revoke_all2(client_id)
+        flash('Access tokens revoked.')
         redirect('.')
 
     @expose()
@@ -1395,82 +1481,50 @@ class OAuthController(BaseController):
         )
         redirect('.')
 
-    @expose()
-    @require_post()
-    def revoke_access_token(self, _id):
-        access_token = M.OAuthAccessToken.query.get(_id=bson.ObjectId(_id))
+    def _check_revoke_perm(self, access_token):
         if access_token is None:
             flash('Invalid token ID', 'error')
             redirect('.')
         if access_token.user_id != c.user._id:
             flash('Invalid token ID', 'error')
             redirect('.')
+
+    @expose()
+    @require_post()
+    def revoke_access_token(self, _id):
+        access_token = M.OAuthAccessToken.query.get(_id=bson.ObjectId(_id))
+        self._check_revoke_perm(access_token)
         access_token.delete()
-        flash('Token revoked')
-        redirect('.')
-
-
-class OAuth2Controller(BaseController):
-    def _check_security(self):
-        require_authenticated()
-
-    # Revokes the authorization code and access tokens for a given client and user
-    def _revoke_user_tokens(self, client_id, user_id):
-        M.OAuth2AuthorizationCode.query.remove({'client_id': client_id, 'user_id': user_id})
-        M.OAuth2AccessToken.query.remove({'client_id': client_id, 'user_id': user_id})
-
-    # Revokes the authorization code and access tokens for a given client and all its users
-    def _revoke_all(self, client_id):
-        M.OAuth2AuthorizationCode.query.remove({'client_id': client_id})
-        M.OAuth2AccessToken.query.remove({'client_id': client_id})
-
-    @with_trailing_slash
-    @expose('jinja:allura:templates/oauth2_applications.html')
-    def index(self, **kw):
-        c.form = F.oauth2_application_form
-        provider = plugin.AuthenticationProvider.get(request)
-        clients = M.OAuth2ClientApp.for_user(c.user)
-        model = []
-
-        for client in clients:
-            authorization = M.OAuth2AuthorizationCode.query.get(client_id=client.client_id, user_id=c.user._id)
-            token = M.OAuth2AccessToken.query.get(client_id=client.client_id, user_id=c.user._id)
-            model.append(dict(client=client, authorization=authorization, token=token))
-
-        return dict(
-            menu=provider.account_navigation(),
-            model=model
-        )
-
-    @expose()
-    @require_post()
-    @validate(F.oauth2_application_form, error_handler=index)
-    def register(self, application_name=None, application_description=None, redirect_url=None, **kw):
-        M.OAuth2ClientApp(name=application_name,
-                          description=application_description,
-                          redirect_uris=[redirect_url] if redirect_url else [],
-                          user_id=c.user._id)
-        flash('Oauth2 Client registered')
+        flash('Authorization revoked')
         redirect('.')
 
     @expose()
     @require_post()
-    def do_client_action(self, _id=None, deregister=None, revoke=None):
-        client = M.OAuth2ClientApp.query.get(client_id=_id)
-        if client is None or client.user_id != c.user._id:
-            flash('Invalid client ID', 'error')
-            redirect('.')
+    def revoke_access_token2(self, _id):
+        if not asbool(config.get('auth.oauth2.enabled', False)):
+            raise wexc.HTTPNotFound
 
-        if deregister:
-            self._revoke_all(_id)
-            client.delete()
-            flash('Client deleted and access tokens revoked.')
-
-        if revoke:
-            self._revoke_user_tokens(_id, c.user._id)
-            flash('Access tokens revoked.')
+        tok = M.OAuth2AccessToken.query.get(_id=bson.ObjectId(_id))
+        self._check_revoke_perm(tok)
+        # also any auth codes associated
+        M.OAuth2AuthorizationCode.query.remove({'client_id': tok.client_id, 'user_id': c.user._id})
+        tok.delete()
+        flash('Authorization revoked')
         redirect('.')
 
+    @expose()
+    @require_post()
+    def revoke_access_token2authcode(self, _id):
+        if not asbool(config.get('auth.oauth2.enabled', False)):
+            raise wexc.HTTPNotFound
+
+        auth = M.OAuth2AuthorizationCode.query.get(_id=bson.ObjectId(_id))
+        self._check_revoke_perm(auth)
+        # also any access tokens associated
+        M.OAuth2AccessToken.query.remove({'client_id': auth.client_id, 'user_id': c.user._id})
+        auth.delete()
+        flash('Authorization revoked')
+        redirect('.')
 
 class DisableAccountController(BaseController):
 

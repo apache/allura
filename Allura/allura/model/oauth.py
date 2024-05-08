@@ -159,6 +159,9 @@ class OAuth2ClientApp(MappedClass):
         session = main_orm_session
         name = 'oauth2_client_app'
         unique_indexes = [('client_id', 'user_id')]
+        indexes = [
+            ('user_id'),
+        ]
 
     query: 'Query[OAuth2ClientApp]'
 
@@ -192,6 +195,9 @@ class OAuth2AuthorizationCode(MappedClass):
         session = main_orm_session
         name = 'oauth2_authorization_code'
         unique_indexes = [('authorization_code', 'client_id', 'user_id')]
+        indexes = [
+            ('user_id'),
+        ]
 
     query: 'Query[OAuth2AuthorizationCode]'
 
@@ -214,6 +220,9 @@ class OAuth2AccessToken(MappedClass):
         session = main_orm_session
         name = 'oauth2_access_token'
         unique_indexes = [('access_token', 'client_id', 'user_id')]
+        indexes = [
+            ('user_id'),
+        ]
 
     query: 'Query[OAuth2AccessToken]'
 

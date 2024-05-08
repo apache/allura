@@ -555,7 +555,7 @@ class Oauth2Negotiator:
 
         if no:
             flash(f'{client.name} NOT AUTHORIZED', 'error')
-            redirect('/auth/oauth2/')
+            redirect('/auth/oauth/')
 
         credentials = json.loads(request.params['credentials'])
         headers, body, status = self.server.create_authorization_response(

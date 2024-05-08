@@ -57,6 +57,14 @@
             }
         });
 
+        $('.revoke_access_tokens').submit(function(e) {
+            var ok = confirm('Revoke all current access tokens?')
+            if(!ok) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
         $('.revoke_access_token').submit(function(e) {
             var ok = confirm('Revoke access?')
             if(!ok) {
@@ -77,13 +85,13 @@
         no longer using an application listed here, you should revoke its
         access.
     </p>
-    {% for access_token in access_tokens %}
+    {% for access_token in access_tokens %}{# both oauth1 & oauth2 #}
     <table class="authorized_app">
         <tr class="name">
-            <th>Name:</th><td>{{access_token.consumer_token.name}}</td>
+            <th>Name:</th><td>{{access_token.app.name}}</td>
         </tr>
         <tr class="description">
-            <th>Description:</th><td>{{access_token.consumer_token.description_html }}</td>
+            <th>Description:</th><td>{{access_token.app.description_html }}</td>
         </tr>
         {% if access_token.is_bearer %}
         <tr class="bearer_token">
@@ -91,11 +99,11 @@
         </tr>
         {% endif %}
          <tr>
-            <th>Last Access:</th><td>{%  if access_token.last_access %} {{ access_token.last_access.strftime('%a %b %d, %Y %I:%M %p UTC')  }} {%  endif %}</td>
+            <th>Last Access:</th><td>{% if access_token.last_access %} {{ access_token.last_access.strftime('%a %b %d, %Y %I:%M %p UTC')  }} {%  endif %}</td>
         </tr>
         <tr class="controls">
             <td colspan="2">
-                <form method="POST" action="revoke_access_token" class="revoke_access_token">
+                <form method="POST" action="revoke_access_token{{ '' if access_token.type == 1 else access_token.type}}" class="revoke_access_token">
                     <input type="hidden" name="_id" value="{{access_token._id}}"/>
                     <input type="submit" value="Revoke"/>
                     {{lib.csrf_token()}}
@@ -103,9 +111,58 @@
             </td>
         </tr>
     </table>
+    {% else %}
+        No applications have been authorized to access your account.
     {% endfor %}
 
-    <h2>My Applications</h2>
+    {% if oauth2_client_apps %}
+    <h2>My OAuth2 Applications</h2>
+    <p>
+    These are the client applications you have registered.  They can request authorization
+    for a user using the Client ID and Client Secret via OAuth negotiation.
+    See the <a href="{{ config['doc.url.api'] }}">API documentation</a> for more information.
+    </p>
+    {% for client in oauth2_client_apps %}
+    <table>
+        <tr><th>Type:</th><td>OAuth2</td></tr>
+        <tr><th>Name:</th><td>{{client.name}}</td></tr>
+        <tr class="description"><th>Description:</th><td>{{client.description_html }}</td></tr>
+        <tr><th>Client ID:</th><td>{{client.client_id}}</td></tr>
+        <tr><th>Client Secret:</th><td>{{client.client_secret}}</td></tr>
+        <tr><th>Redirect URL:</th><td>
+            {% for uri in client.redirect_uris %}
+                {{ uri }}<br/>
+            {% else %}
+                None!
+            {% endfor %}
+        </td></tr>
+        <tr class="controls">
+            <td colspan="2">
+                <form method="POST" action="deregister2" class="deregister_consumer_token">
+                    <input type="hidden" name="client_id" value="{{client.client_id}}"/>
+                    <input type="submit" value="Delete App"/>
+                    {{lib.csrf_token()}}
+                </form>
+                <form method="POST" action="revoke_all_access_tokens2" class="revoke_access_tokens">
+                    <input type="hidden" name="client_id" value="{{client.client_id}}"/>
+                    <input type="submit" value="Delete all access tokens"/>
+                    {{lib.csrf_token()}}
+                </form>
+                {#
+                <form method="POST" action="generate_access_token2" class="generate_access_token">
+                    <input type="hidden" name="_id" value="{{consumer_token._id}}"/>
+                    <input type="submit" value="Generate Bearer Token"/>
+                    {{lib.csrf_token()}}
+                </form>
+                 #}
+            </td>
+        </tr>
+    </table>
+    {% endfor %}
+    {% endif %}
+
+    {% if consumer_tokens %}
+    <h2>My OAuth1 Applications</h2>
     <p>
     These are the applications you have registered.  They can request authorization
     for a user using the Consumer Key and Consumer Secret via OAuth negotiation.
@@ -116,6 +173,7 @@
     </p>
     {% for consumer_token in consumer_tokens %}
     <table class="registered_app">
+        <tr><th>Type:</th><td>OAuth1</td></tr>
         <tr><th>Name:</th><td>{{consumer_token.name}}</td></tr>
         <tr class="description"><th>Description:</th><td>{{consumer_token.description_html }}</td></tr>
         <tr class="consumer_key"><th>Consumer Key:</th><td>{{consumer_token.api_key}}</td></tr>
@@ -124,7 +182,7 @@
             <td colspan="2">
                 <form method="POST" action="deregister" class="deregister_consumer_token">
                     <input type="hidden" name="_id" value="{{consumer_token._id}}"/>
-                    <input type="submit" value="Deregister"/>
+                    <input type="submit" value="Delete App"/>
                     {{lib.csrf_token()}}
                 </form>
                 <form method="POST" action="generate_access_token" class="generate_access_token">
@@ -136,7 +194,15 @@
         </tr>
     </table>
     {% endfor %}
+    {% endif %}
 
-    <h2>Register New Application</h2>
+    {% if h.asbool(config.get('auth.oauth2.enabled', False)) %}
+    <div class="grid-24" style="margin-left:0">
+    <h2>Register New OAuth2 Application</h2>
+    {{ c.form2.display() }}
+    </div>
+    {% endif %}
+
+    <h2>Register New OAuth1 Application</h2>
     {{ c.form.display() }}
 {% endblock %}

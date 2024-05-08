@@ -17,6 +17,7 @@
 
 import ew as ew_core
 import ew.jinja2_ew as ew
+from formencode import validators as fev
 
 from allura.lib import validators as V
 
@@ -30,7 +31,11 @@ class OAuthApplicationForm(ForgeForm):
 
     class fields(ew_core.NameList):
         application_name = ew.TextField(label='Application Name',
-                                        validator=V.UniqueOAuthApplicationName())
+                                        validator=V.UniqueOAuthApplicationName(),
+                                        attrs=dict(
+                                            required=True,
+                                        ),
+                                        )
         application_description = AutoResizeTextarea(
             label='Application Description')
 
@@ -49,6 +54,26 @@ class OAuth2ApplicationForm(ForgeForm):
 
     class fields(ew_core.NameList):
         application_name = ew.TextField(label='Application Name',
-                                        validator=V.UniqueOAuthApplicationName())
+                                        validator=V.UnicodeString(not_empty=True),
+                                        attrs=dict(
+                                            required=True,
+                                        ),
+                                        )
         application_description = AutoResizeTextarea(label='Application Description')
-        redirect_url = ew.TextField(label='Redirect URL')
+
+        # SortableRepeatedField would be nice to use (and ignore sorting) so you can add many dynamically,
+        # but couldn't get it to work easily
+        redirect_url_1 = ew.TextField(
+            label='Redirect URL(s)',
+            validator=fev.URL(not_empty=True),
+            attrs=dict(type='url', style='min-width:25em', required=True),
+        )
+        redirect_url_2 = ew.TextField(
+            validator=fev.URL(),
+            attrs=dict(type='url', style='min-width:25em; margin-left: 162px;'),  # match grid-4 label width
+        )
+        redirect_url_3 = ew.TextField(
+            validator=fev.URL(),
+            attrs=dict(type='url', style='min-width:25em; margin-left: 162px;'),  # match grid-4 label width
+        )
+
