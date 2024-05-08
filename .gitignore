@@ -45,3 +45,4 @@ report.clonedigger
 async-disk-cache/
 ForgeGit/forgegit/tests/data/testgit.git/FETCH_HEAD
 allura-data/
+.vscode
