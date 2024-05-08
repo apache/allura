@@ -164,7 +164,7 @@ class OAuth2ClientApp(MappedClass):
 
     _id = FieldProperty(S.ObjectId)
     client_id = FieldProperty(str, if_missing=lambda: h.nonce(20))
-    credentials = FieldProperty(S.Anything)
+    client_secret = FieldProperty(str, if_missing=h.cryptographic_nonce)
     name = FieldProperty(str)
     description = FieldProperty(str, if_missing='')
     description_cache = FieldProperty(MarkdownCache)
@@ -182,10 +182,6 @@ class OAuth2ClientApp(MappedClass):
         if owner is None:
             owner = c.user
         return cls.query.find(dict(owner_id=owner._id)).all()
-
-    @classmethod
-    def set_credentials(cls, client_id, credentials):
-        cls.query.update({'client_id': client_id }, {'$set': {'credentials': credentials}})
 
     @property
     def description_html(self):

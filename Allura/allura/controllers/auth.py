@@ -117,7 +117,7 @@ class AuthController(BaseController):
 
         if asbool(config.get('auth.oauth2.enabled', False)):
             self.oauth2 = OAuth2Controller()
-            
+
         if asbool(config.get('auth.allow_user_to_disable_account', False)):
             self.disable = DisableAccountController()
 
@@ -1414,6 +1414,12 @@ class OAuth2Controller(BaseController):
     def _check_security(self):
         require_authenticated()
 
+    # Revokes the authorization code and access tokens for a given client and user
+    def _revoke_user_tokens(self, client_id, user_id):
+        M.OAuth2AuthorizationCode.query.remove({'client_id': client_id, 'owner_id': user_id})
+        M.OAuth2AccessToken.query.remove({'client_id': client_id, 'owner_id': user_id})
+
+    # Revokes the authorization code and access tokens for a given client and all its users
     def _revoke_all(self, client_id):
         M.OAuth2AuthorizationCode.query.remove({'client_id': client_id})
         M.OAuth2AccessToken.query.remove({'client_id': client_id})
@@ -1427,8 +1433,8 @@ class OAuth2Controller(BaseController):
         model = []
 
         for client in clients:
-            authorization = M.OAuth2AuthorizationCode.query.get(client_id=client.client_id)
-            token = M.OAuth2AccessToken.query.get(client_id=client.client_id)
+            authorization = M.OAuth2AuthorizationCode.query.get(client_id=client.client_id, owner_id=c.user._id)
+            token = M.OAuth2AccessToken.query.get(client_id=client.client_id, owner_id=c.user._id)
             model.append(dict(client=client, authorization=authorization, token=token))
 
         return dict(
@@ -1442,7 +1448,8 @@ class OAuth2Controller(BaseController):
     def register(self, application_name=None, application_description=None, redirect_url=None, **kw):
         M.OAuth2ClientApp(name=application_name,
                        description=application_description,
-                       redirect_uris=[redirect_url])
+                       redirect_uris=[redirect_url],
+                       owner_id=c.user._id)
         flash('Oauth2 Client registered')
         redirect('.')
 
@@ -1460,7 +1467,7 @@ class OAuth2Controller(BaseController):
             flash('Client deleted and access tokens revoked.')
 
         if revoke:
-            self._revoke_all(_id)
+            self._revoke_user_tokens(_id, c.user._id)
             flash('Access tokens revoked.')
         redirect('.')
 

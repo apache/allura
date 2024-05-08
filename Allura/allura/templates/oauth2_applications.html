@@ -95,6 +95,7 @@
         <tr><th>Name:</th><td>{{app.client.name}}</td></tr>
         <tr class="description"><th>Description:</th><td>{{app.client.description }}</td></tr>
         <tr class="client_id"><th>Client ID:</th><td>{{app.client.client_id}}</td></tr>
+        <tr class="client_secret"><th>Client Secret:</th><td>{{app.client.client_secret}}</td></tr>
         <tr class="redirect_url"><th>Redirect URL:</th><td>{{app.client.redirect_uris[0] if app.client.redirect_uris else ''}}</td></tr>
 
         {% if app.authorization %}
