@@ -623,7 +623,7 @@ class PreferencesController(BaseController):
                     flash('You must provide your current password to delete an email', 'error')
                     return
                 if primary_addr == user.email_addresses[i]:
-                    if select_new_primary_addr(user, ignore_emails=primary_addr) is None \
+                    if select_new_primary_addr(user, ignore_emails=[primary_addr]) is None \
                             and asbool(config.get('auth.require_email_addr', False)):
                         flash('You must have at least one verified email address.', 'error')
                         return
