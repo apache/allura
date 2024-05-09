@@ -865,6 +865,11 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         p = plugin.AuthenticationProvider.get(request)
         return p.user_registration_date(self)
 
+    # overriding since the old and new values are not being tracked for changes within a dictionary like preferences
+    #  This will ensure any changes get indexed by solr.
+    def should_update_index(self, old_doc, new_doc):
+        return True
+
 
 class ProjectRole(MappedClass):
     """
