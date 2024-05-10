@@ -17,7 +17,6 @@
 
 """REST Controller"""
 from __future__ import annotations
-import ast
 import json
 import logging
 from datetime import datetime, timedelta
@@ -294,9 +293,7 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
         M.OAuth2AuthorizationCode.query.remove({'client_id': client_id, 'authorization_code': code})
 
     def authenticate_client(self, request: oauthlib.common.Request, *args, **kwargs) -> bool:
-        client_id = request.body.get('client_id')
-        client_secret = request.body.get('client_secret')
-        request.client = M.OAuth2ClientApp.query.get(client_id=client_id, client_secret=client_secret)
+        request.client = M.OAuth2ClientApp.query.get(client_id=request.client_id, client_secret=request.client_secret)
         return request.client is not None
 
     def validate_code(self, client_id: str, code: str, client: oauthlib.oauth2.Client, request: oauthlib.common.Request, *args, **kwargs) -> bool:
@@ -314,11 +311,11 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
         return authorization.redirect_uri == redirect_uri
 
     def save_authorization_code(self, client_id: str, code, request: oauthlib.common.Request, *args, **kwargs) -> None:
-        authorization = M.OAuth2AuthorizationCode.query.get(client_id=client_id, owner_id=c.user._id, authorization_code=code['code'])
+        authorization = M.OAuth2AuthorizationCode.query.get(client_id=client_id, user_id=c.user._id, authorization_code=code['code'])
 
         # Remove the existing authorization code if it exists and create a new record
         if authorization:
-            M.OAuth2AuthorizationCode.query.remove({'client_id': client_id, 'owner_id': c.user._id, 'authorization_code': code['code']})
+            M.OAuth2AuthorizationCode.query.remove({'client_id': client_id, 'user_id': c.user._id, 'authorization_code': code['code']})
 
         log.info('Saving authorization code for client: %s', client_id)
         auth_code = M.OAuth2AuthorizationCode(
@@ -326,7 +323,7 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
             authorization_code=code['code'],
             expires_at=datetime.utcnow() + timedelta(minutes=10),
             redirect_uri=request.redirect_uri,
-            owner_id=c.user._id,
+            user_id=c.user._id,
             code_challenge=request.code_challenge,
             code_challenge_method=request.code_challenge_method
         )
@@ -335,18 +332,18 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
 
     def save_bearer_token(self, token, request: oauthlib.common.Request, *args, **kwargs) -> object:
         authorization_code = M.OAuth2AuthorizationCode.query.get(client_id=request.client_id, authorization_code=request.code)
-        current_token = M.OAuth2AccessToken.query.get(client_id=request.client_id, owner_id=authorization_code.owner_id)
+        current_token = M.OAuth2AccessToken.query.get(client_id=request.client_id, user_id=authorization_code.user_id)
 
         if current_token:
-            M.OAuth2AccessToken.remove({'client_id': request.client_id, 'owner_id': c.user._id})
+            M.OAuth2AccessToken.query.remove({'client_id': request.client_id, 'user_id': c.user._id})
 
         bearer_token = M.OAuth2AccessToken(
             client_id = request.client_id,
             scopes = token.get('scope', []),
             access_token = token.get('access_token'),
             refresh_token = token.get('refresh_token'),
-            expires_at = datetime.utcfromtimestamp(token.get('expires_in')),
-            owner_id = authorization_code.owner_id
+            expires_at = datetime.utcnow() + timedelta(seconds=token.get('expires_in')),
+            user_id = authorization_code.user_id
         )
 
         session(bearer_token).flush()
@@ -495,11 +492,6 @@ class Oauth2Negotiator:
         return oauthlib.oauth2.WebApplicationServer(Oauth2Validator())
 
     def _authenticate(self):
-        bearer_token_prefix = 'Bearer ' # noqa: S105
-        auth_header = request.headers.get('Authorization')
-        if auth_header and auth_header.startswith(bearer_token_prefix):
-            access_token = auth_header[len(bearer_token_prefix):]
-
         valid, req = self.server.verify_request(
             request.url,
             http_method=request.method,
@@ -509,9 +501,16 @@ class Oauth2Negotiator:
         if not valid:
             raise exc.HTTPUnauthorized
 
-        access_token = M.OAuth2AccessToken.query.get(access_token=req.access_token)
-        access_token.last_access = datetime.utcnow()
-        return access_token
+        bearer_token_prefix = 'Bearer ' # noqa: S105
+        auth_header = req.headers.get('Authorization')
+        if auth_header and auth_header.startswith(bearer_token_prefix):
+            access_token = auth_header[len(bearer_token_prefix):]
+        else:
+            raise exc.HTTPUnauthorized
+
+        token = M.OAuth2AccessToken.query.get(access_token=access_token)
+        token.last_access = datetime.utcnow()
+        return token
 
 
     @expose('jinja:allura:templates/oauth2_authorize.html')
@@ -525,26 +524,23 @@ class Oauth2Negotiator:
             decoded_body = str(request.body, 'utf-8')
             json_body = json.loads(decoded_body)
 
-        try:
-            scopes, credentials = self.server.validate_authorization_request(uri=request.url, http_method=request.method, headers=request.headers, body=json_body)
 
-            client_id = request.params.get('client_id')
-            client = M.OAuth2ClientApp.query.get(client_id=client_id)
+        scopes, credentials = self.server.validate_authorization_request(uri=request.url, http_method=request.method, headers=request.headers, body=json_body)
 
-            # The credentials object has a request object that it's too big to be serialized,
-            # so we remove it because we don't need it for the rest of the authorization workflow
-            del credentials['request']
+        client_id = request.params.get('client_id')
+        client = M.OAuth2ClientApp.query.get(client_id=client_id)
 
-            return dict(client=client, credentials=credentials)
-        except Exception as e:
-            log.exception(e)
+        # The credentials object has a request object that it's too big to be serialized,
+        # so we remove it because we don't need it for the rest of the authorization workflow
+        del credentials['request']
+
+        return dict(client=client, credentials=json.dumps(credentials))
 
     @expose('jinja:allura:templates/oauth2_authorize_ok.html')
     @require_post()
     def do_authorize(self, yes=None, no=None):
         security.require_authenticated()
 
-        credentials = ast.literal_eval(request.params['credentials'])
         client_id = request.params['client_id']
         client = M.OAuth2ClientApp.query.get(client_id=client_id)
 
@@ -552,30 +548,31 @@ class Oauth2Negotiator:
             flash(f'{client.name} NOT AUTHORIZED', 'error')
             redirect('/auth/oauth2/')
 
-        try:
-            headers, body, status = self.server.create_authorization_response(
-                uri=request.url, http_method=request.method, body=request.body, headers=request.headers, scopes=[], credentials=credentials
-            )
+        credentials = json.loads(request.params['credentials'])
+        headers, body, status = self.server.create_authorization_response(
+            uri=request.url, http_method=request.method, body=request.body, headers=request.headers, scopes=[], credentials=credentials
+        )
 
-            response.status_int = status
-            for k, v in headers.items():
-                response.headers[k] = v
+        response.status_int = status
+        for k, v in headers.items():
+            response.headers[k] = v
 
-            return body
-        except Exception as ex:
-            log.exception(ex)
-
+        return body
 
     @expose('json:')
     @require_post()
     def token(self, **kwargs):
+        decoded_body = str(request.body, 'utf-8')
+
+        # We try to parse the request body as JSON, if it fails we just use the body as is
+        # so it's treated as x-www-form-urlencoded
         try:
-            decoded_body = str(request.body, 'utf-8')
-            json_body = json.loads(decoded_body)
-            headers, body, status = self.server.create_token_response(uri=request.url, http_method=request.method, body=json_body, headers=request.headers)
-            return body
-        except Exception as e:
-            log.exception(e)
+            request_body = json.loads(decoded_body)
+        except json.decoder.JSONDecodeError:
+            request_body = decoded_body
+
+        headers, body, status = self.server.create_token_response(uri=request.url, http_method=request.method, body=request_body, headers=request.headers)
+        return body
 
 
 def rest_has_access(obj, user, perm):

@@ -158,7 +158,7 @@ class OAuth2ClientApp(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name = 'oauth2_client_app'
-        unique_indexes = [('client_id', 'owner_id')]
+        unique_indexes = [('client_id', 'user_id')]
 
     query: 'Query[OAuth2ClientApp]'
 
@@ -168,20 +168,20 @@ class OAuth2ClientApp(MappedClass):
     name = FieldProperty(str)
     description = FieldProperty(str, if_missing='')
     description_cache = FieldProperty(MarkdownCache)
-    owner_id: ObjectId = AlluraUserProperty(if_missing=lambda: c.user._id)
+    user_id: ObjectId = AlluraUserProperty(if_missing=lambda: c.user._id)
     grant_type = FieldProperty(str, if_missing='authorization_code')
     response_type = FieldProperty(str, if_missing='code')
     scopes = FieldProperty([str])
     redirect_uris = FieldProperty([str])
 
-    owner = RelationProperty('User')
+    user = RelationProperty('User')
 
 
     @classmethod
-    def for_owner(cls, owner=None):
-        if owner is None:
-            owner = c.user
-        return cls.query.find(dict(owner_id=owner._id)).all()
+    def for_user(cls, user=None):
+        if user is None:
+            user = c.user
+        return cls.query.find(dict(user_id=user._id)).all()
 
     @property
     def description_html(self):
@@ -192,13 +192,13 @@ class OAuth2AuthorizationCode(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name = 'oauth2_authorization_code'
-        unique_indexes = [('authorization_code', 'client_id', 'owner_id')]
+        unique_indexes = [('authorization_code', 'client_id', 'user_id')]
 
     query: 'Query[OAuth2AuthorizationCode]'
 
     _id = FieldProperty(S.ObjectId)
     client_id = FieldProperty(str)
-    owner_id: ObjectId = AlluraUserProperty(if_missing=lambda: c.user._id)
+    user_id: ObjectId = AlluraUserProperty(if_missing=lambda: c.user._id)
     scopes = FieldProperty([str])
     redirect_uri = FieldProperty(str)
     authorization_code = FieldProperty(str)
@@ -207,27 +207,27 @@ class OAuth2AuthorizationCode(MappedClass):
     code_challenge = FieldProperty(str)
     code_challenge_method = FieldProperty(str)
 
-    owner = RelationProperty('User')
+    user = RelationProperty('User')
 
 
 class OAuth2AccessToken(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name = 'oauth2_access_token'
-        unique_indexes = [('access_token', 'client_id', 'owner_id')]
+        unique_indexes = [('access_token', 'client_id', 'user_id')]
 
     query: 'Query[OAuth2AccessToken]'
 
     _id = FieldProperty(S.ObjectId)
     client_id = FieldProperty(str)
-    owner_id: ObjectId = AlluraUserProperty(if_missing=lambda: c.user._id)
+    user_id: ObjectId = AlluraUserProperty(if_missing=lambda: c.user._id)
     scopes = FieldProperty([str])
     access_token = FieldProperty(str)
     refresh_token = FieldProperty(str)
     expires_at = FieldProperty(S.DateTime)
     last_access = FieldProperty(datetime)
 
-    owner = RelationProperty('User')
+    user = RelationProperty('User')
 
 
 def dummy_oauths():

@@ -2090,14 +2090,14 @@ class TestOAuth2(TestController):
         user = M.User.by_username('test-admin')
         M.OAuth2ClientApp(
             client_id='client_12345',
-            owner_id=user._id,
+            user_id=user._id,
             name='testoauth2',
             description='test client',
             response_type='code',
             redirect_uris=['https://localhost/']
         )
         ThreadLocalODMSession.flush_all()
-        r = self.app.get('/rest/oauth2/authorize/', params={'client_id': 'client_12345', 'response_type': 'code'})
+        r = self.app.get('/rest/oauth2/authorize', params={'client_id': 'client_12345', 'response_type': 'code', 'redirect_uri': 'https://localhost/'})
         assert 'testoauth2' in r.text
         assert 'client_12345' in r.text
 
@@ -2106,7 +2106,7 @@ class TestOAuth2(TestController):
         user = M.User.by_username('test-admin')
         M.OAuth2ClientApp(
             client_id='client_12345',
-            owner_id=user._id,
+            user_id=user._id,
             name='testoauth2',
             description='test client',
             response_type='code',
@@ -2121,7 +2121,7 @@ class TestOAuth2(TestController):
         user = M.User.by_username('test-admin')
         M.OAuth2ClientApp(
             client_id='client_12345',
-            owner_id=user._id,
+            user_id=user._id,
             name='testoauth2',
             description='test client',
             response_type='code',
@@ -2133,7 +2133,10 @@ class TestOAuth2(TestController):
         r = self.app.get('/rest/oauth2/authorize', params={'client_id': 'client_12345', 'response_type': 'code', 'redirect_uri': 'https://localhost/'})
 
         # The submit authorization for the authorization code to be created
-        r = self.app.post('/rest/oauth2/do_authorize', params={'yes': '1', 'client_id': 'client_12345', 'response_type': 'code', 'redirect_uri': 'https://localhost/'})
+        mock_credentials = dict(client_id='client_12345', redirect_uri='https://localhost/', response_type='code', state=None)
+        r = self.app.post('/rest/oauth2/do_authorize',
+                          params={'yes': '1', 'client_id': 'client_12345', 'response_type': 'code',
+                                  'redirect_uri': 'https://localhost/', 'credentials': json.dumps(mock_credentials)})
 
         q = M.OAuth2AuthorizationCode.query.get(client_id='client_12345')
         assert q is not None
@@ -2146,7 +2149,8 @@ class TestOAuth2(TestController):
         user = M.User.by_username('test-admin')
         M.OAuth2ClientApp(
             client_id='client_12345',
-            owner_id=user._id,
+            client_secret='98765',
+            user_id=user._id,
             name='testoauth2',
             description='test client',
             response_type='code',
@@ -2158,7 +2162,10 @@ class TestOAuth2(TestController):
         r = self.app.get('/rest/oauth2/authorize', params={'client_id': 'client_12345', 'response_type': 'code', 'redirect_uri': 'https://localhost/'})
 
         # The submit authorization for the authorization code to be created
-        r = self.app.post('/rest/oauth2/do_authorize', params={'yes': '1', 'client_id': 'client_12345', 'response_type': 'code', 'redirect_uri': 'https://localhost/'})
+        mock_credentials = dict(client_id='client_12345', redirect_uri='https://localhost/', response_type='code', state=None)
+        r = self.app.post('/rest/oauth2/do_authorize',
+                            params={'yes': '1', 'client_id': 'client_12345', 'response_type': 'code',
+                                    'redirect_uri': 'https://localhost/', 'credentials': json.dumps(mock_credentials)})
 
         ac = M.OAuth2AuthorizationCode.query.get(client_id='client_12345')
         assert ac is not None
@@ -2169,8 +2176,10 @@ class TestOAuth2(TestController):
         # Create the authorization token
         oauth2_params = dict(
             client_id='client_12345',
+            client_secret='98765',
             code=ac.authorization_code,
-            grant_type='authorization_code'
+            grant_type='authorization_code',
+            redirect_uri='https://localhost/'
         )
         r = self.app.post_json('/rest/oauth2/token', oauth2_params)
         t = M.OAuth2AccessToken.query.get(client_id='client_12345')
@@ -2186,7 +2195,7 @@ class TestOAuth2(TestController):
         user = M.User.by_username('test-admin')
         M.OAuth2ClientApp(
             client_id='client_12345',
-            owner_id=user._id,
+            user_id=user._id,
             name='testoauth2',
             description='test client',
             response_type='code',
@@ -2197,7 +2206,7 @@ class TestOAuth2(TestController):
             client_id='client_12345',
             authotization_code='authcode_12345',
             expires_at=datetime.utcnow() + timedelta(minutes=10),
-            owner_id=user._id,
+            user_id=user._id,
         )
 
         M.OAuth2AccessToken(
@@ -2205,7 +2214,7 @@ class TestOAuth2(TestController):
             access_token='12345',
             refresh_token='54321',
             expires_at=datetime.utcnow() + timedelta(minutes=20),
-            owner_id=user._id,
+            user_id=user._id,
         )
 
         ThreadLocalODMSession.flush_all()

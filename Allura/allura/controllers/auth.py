@@ -1416,8 +1416,8 @@ class OAuth2Controller(BaseController):
 
     # Revokes the authorization code and access tokens for a given client and user
     def _revoke_user_tokens(self, client_id, user_id):
-        M.OAuth2AuthorizationCode.query.remove({'client_id': client_id, 'owner_id': user_id})
-        M.OAuth2AccessToken.query.remove({'client_id': client_id, 'owner_id': user_id})
+        M.OAuth2AuthorizationCode.query.remove({'client_id': client_id, 'user_id': user_id})
+        M.OAuth2AccessToken.query.remove({'client_id': client_id, 'user_id': user_id})
 
     # Revokes the authorization code and access tokens for a given client and all its users
     def _revoke_all(self, client_id):
@@ -1429,12 +1429,12 @@ class OAuth2Controller(BaseController):
     def index(self, **kw):
         c.form = F.oauth2_application_form
         provider = plugin.AuthenticationProvider.get(request)
-        clients = M.OAuth2ClientApp.for_owner(c.user)
+        clients = M.OAuth2ClientApp.for_user(c.user)
         model = []
 
         for client in clients:
-            authorization = M.OAuth2AuthorizationCode.query.get(client_id=client.client_id, owner_id=c.user._id)
-            token = M.OAuth2AccessToken.query.get(client_id=client.client_id, owner_id=c.user._id)
+            authorization = M.OAuth2AuthorizationCode.query.get(client_id=client.client_id, user_id=c.user._id)
+            token = M.OAuth2AccessToken.query.get(client_id=client.client_id, user_id=c.user._id)
             model.append(dict(client=client, authorization=authorization, token=token))
 
         return dict(
@@ -1449,7 +1449,7 @@ class OAuth2Controller(BaseController):
         M.OAuth2ClientApp(name=application_name,
                        description=application_description,
                        redirect_uris=[redirect_url],
-                       owner_id=c.user._id)
+                       user_id=c.user._id)
         flash('Oauth2 Client registered')
         redirect('.')
 
@@ -1457,7 +1457,7 @@ class OAuth2Controller(BaseController):
     @require_post()
     def do_client_action(self, _id=None, deregister=None, revoke=None):
         client = M.OAuth2ClientApp.query.get(client_id=_id)
-        if client is None or client.owner_id != c.user._id:
+        if client is None or client.user_id != c.user._id:
             flash('Invalid client ID', 'error')
             redirect('.')
 
