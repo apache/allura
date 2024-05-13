@@ -24,7 +24,7 @@
 title: Apache Allura
 version: 1
 baseUri: https://{domain}/rest
-securedBy: [null, oauth_1_0]
+securedBy: [null, oauth_1_0, oauth_2_0]
 
 resourceTypes: !include resourceTypes.yaml
 traits: !include traits.yaml
@@ -62,6 +62,10 @@ documentation:
 /oauth:
     description: |
       See separate docs section for authenticating with the OAuth 1.0 APIs
+
+/oauth2:
+    description: |
+      See separate docs section for authenticating with the OAuth 2.0 APIs
 
 /{neighborhood}:
     description: |

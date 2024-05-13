@@ -275,8 +275,12 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
     def get_default_scopes(self, client_id: str, request: oauthlib.common.Request, *args, **kwargs):
         return []
 
+    def get_original_scopes(self, refresh_token: str, request: oauthlib.common.Request, *args, **kwargs) -> list[str]:
+        return None
+
     def get_default_redirect_uri(self, client_id: str, request: oauthlib.common.Request, *args, **kwargs) -> str:
-        return request.uri
+        client = M.OAuth2ClientApp.query.get(client_id=client_id)
+        return client.redirect_uris[0] if client.redirect_uris else None
 
     def is_pkce_required(self, client_id: str, request: oauthlib.common.Request) -> bool:
         return False
@@ -303,6 +307,9 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
     def validate_bearer_token(self, token: str, scopes: list[str], request: oauthlib.common.Request) -> bool:
         access_token = M.OAuth2AccessToken.query.get(access_token=token)
         return access_token.expires_at >= datetime.utcnow() if access_token else False
+
+    def validate_refresh_token(self, refresh_token: str, client: oauthlib.oauth2.Client, request: oauthlib.common.Request, *args, **kwargs) -> bool:
+        return M.OAuth2AccessToken.query.get(refresh_token=refresh_token) is not None
 
     def confirm_redirect_uri(self, client_id: str, code: str, redirect_uri: str, client: oauthlib.oauth2.Client, request: oauthlib.common.Request, *args, **kwargs) -> bool:
         # This method is called when the client is exchanging the authorization code for an access token.
@@ -331,11 +338,15 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
         log.info(f'Saving new authorization code for client: {client_id}')
 
     def save_bearer_token(self, token, request: oauthlib.common.Request, *args, **kwargs) -> object:
-        authorization_code = M.OAuth2AuthorizationCode.query.get(client_id=request.client_id, authorization_code=request.code)
-        current_token = M.OAuth2AccessToken.query.get(client_id=request.client_id, user_id=authorization_code.user_id)
+        if request.grant_type == 'authorization_code':
+            user_id = M.OAuth2AuthorizationCode.query.get(client_id=request.client_id, authorization_code=request.code).user_id
+        elif request.grant_type == 'refresh_token':
+            user_id = M.OAuth2AccessToken.query.get(client_id=request.client_id, refresh_token=request.refresh_token).user_id
+
+        current_token = M.OAuth2AccessToken.query.get(client_id=request.client_id, user_id=user_id)
 
         if current_token:
-            M.OAuth2AccessToken.query.remove({'client_id': request.client_id, 'user_id': c.user._id})
+            M.OAuth2AccessToken.query.remove({'client_id': request.client_id, 'user_id': user_id})
 
         bearer_token = M.OAuth2AccessToken(
             client_id=request.client_id,
@@ -343,7 +354,7 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
             access_token=token.get('access_token'),
             refresh_token=token.get('refresh_token'),
             expires_at=datetime.utcnow() + timedelta(seconds=token.get('expires_in')),
-            user_id=authorization_code.user_id
+            user_id=user_id
         )
 
         session(bearer_token).flush()
@@ -571,7 +582,6 @@ class Oauth2Negotiator:
 
         headers, body, status = self.server.create_token_response(uri=request.url, http_method=request.method, body=request_body, headers=request.headers)
         return body
-
 
 def rest_has_access(obj, user, perm):
     """

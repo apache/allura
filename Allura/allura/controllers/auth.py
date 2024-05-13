@@ -1448,7 +1448,7 @@ class OAuth2Controller(BaseController):
     def register(self, application_name=None, application_description=None, redirect_url=None, **kw):
         M.OAuth2ClientApp(name=application_name,
                           description=application_description,
-                          redirect_uris=[redirect_url],
+                          redirect_uris=[redirect_url] if redirect_url else [],
                           user_id=c.user._id)
         flash('Oauth2 Client registered')
         redirect('.')
