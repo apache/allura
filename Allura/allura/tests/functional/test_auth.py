@@ -1764,7 +1764,6 @@ To update your password on %s, please visit the following URL:
         r = r.follow().follow()
         assert 'Log Out' in r, r
 
-
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
     def test_capitalized_email_entered(self, gen_message_id, sendmail):
@@ -2070,16 +2069,16 @@ class TestOAuth(TestController):
 class TestOAuth2(TestController):
     @mock.patch.dict(config, {'auth.oauth2.enabled': True})
     def test_register_deregister_client(self):
-        #register
+        # register
         r = self.app.get('/auth/oauth2/')
         r = self.app.post('/auth/oauth2/register',
                           params={'application_name': 'testoauth2', 'application_description': 'Oauth2 Test',
-                                    'redirect_url': '', '_session_id': self.app.cookies['_session_id'],
+                                  'redirect_url': '', '_session_id': self.app.cookies['_session_id'],
                                   }).follow()
 
         assert 'testoauth2' in r
 
-        #deregister
+        # deregister
         assert r.forms[0].action == 'do_client_action'
         r.forms[0].submit('deregister')
         r = self.app.get('/auth/oauth2/')
@@ -2164,8 +2163,8 @@ class TestOAuth2(TestController):
         # The submit authorization for the authorization code to be created
         mock_credentials = dict(client_id='client_12345', redirect_uri='https://localhost/', response_type='code', state=None)
         r = self.app.post('/rest/oauth2/do_authorize',
-                            params={'yes': '1', 'client_id': 'client_12345', 'response_type': 'code',
-                                    'redirect_uri': 'https://localhost/', 'credentials': json.dumps(mock_credentials)})
+                          params={'yes': '1', 'client_id': 'client_12345', 'response_type': 'code',
+                                  'redirect_uri': 'https://localhost/', 'credentials': json.dumps(mock_credentials)})
 
         ac = M.OAuth2AuthorizationCode.query.get(client_id='client_12345')
         assert ac is not None

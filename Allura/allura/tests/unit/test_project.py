@@ -106,7 +106,7 @@ class TestProject(unittest.TestCase):
     def test_icon_url(self):
         p = M.Project(
             shortname='myproj',
-            neighborhood = M.Neighborhood(url_prefix='/nbhd/'),
+            neighborhood=M.Neighborhood(url_prefix='/nbhd/'),
         )
         self.assertEqual(p.icon_url(), '/nbhd/myproj/icon')
 

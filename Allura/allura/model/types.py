@@ -111,4 +111,5 @@ class ACL(S.Array):
             if clear_reason(a) == ace_without_reason:
                 return a
 
+
 DENY_ALL = ACE.deny(EVERYONE, ALL_PERMISSIONS)

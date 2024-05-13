@@ -232,8 +232,8 @@ class TestWebhookController(TestController):
                          extra_environ={'username': '*anonymous'},
                          status=302)
         assert (r.location ==
-                     'http://localhost/auth/'
-                     '?return_to=%2Fadobe%2Fadobe-1%2Fadmin%2Fsrc%2Fwebhooks%2Frepo-push%2F')
+                'http://localhost/auth/'
+                '?return_to=%2Fadobe%2Fadobe-1%2Fadmin%2Fsrc%2Fwebhooks%2Frepo-push%2F')
 
     def test_invalid_hook_type(self):
         self.app.get(self.url + '/invalid-hook-type/', status=404)
@@ -482,7 +482,7 @@ class TestSendWebhookHelper(TestWebhookBase):
         self.h.send()
         assert requests.post.call_count == 4  # initial call + 3 retries
         assert (time.sleep.call_args_list ==
-                     [call(60), call(120), call(240)])
+                [call(60), call(120), call(240)])
         assert log.info.call_args_list == [
             call('Retrying webhook in: %s', [60, 120, 240]),
             call('Retrying webhook in %s seconds', 60),
@@ -537,7 +537,7 @@ class TestRepoPushWebhookSender(TestWebhookBase):
             sender.send([dict(arg1=1, arg2=2), dict(arg1=3, arg2=4)])
         assert send_webhook.post.call_count == 2
         assert (send_webhook.post.call_args_list ==
-                     [call(self.wh._id, 1), call(self.wh._id, 2)])
+                [call(self.wh._id, 1), call(self.wh._id, 2)])
         assert self.wh.enforce_limit.call_count == 1
 
     @patch('allura.webhooks.log', autospec=True)
@@ -563,7 +563,7 @@ class TestRepoPushWebhookSender(TestWebhookBase):
 
     def test_get_payload(self):
         sender = RepoPushWebhookSender()
-        _ci = lambda x: MagicMock(webhook_info={'id': str(x)}, parent_ids=['0'])
+        def _ci(x): return MagicMock(webhook_info={'id': str(x)}, parent_ids=['0'])
         with patch.object(self.git.repo, 'commit', new=_ci), h.push_config(c, app=self.git):
             result = sender.get_payload(commit_ids=['1', '2', '3'], ref='ref')
         expected_result = {
@@ -625,7 +625,7 @@ class TestRepoPushWebhookSender(TestWebhookBase):
 class TestModels(TestWebhookBase):
     def test_webhook_url(self):
         assert (self.wh.url() ==
-                     f'/adobe/adobe-1/admin/src/webhooks/repo-push/{self.wh._id}')
+                f'/adobe/adobe-1/admin/src/webhooks/repo-push/{self.wh._id}')
 
     def test_webhook_enforce_limit(self):
         self.wh.last_sent = None

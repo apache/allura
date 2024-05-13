@@ -77,9 +77,9 @@ class TestCORSMiddleware:
     def test_get_response_headers_simple(self):
         # Allow-Origin: * is crucial for security, since that prevents browsers from exposing results fetched withCredentials: true (aka cookies)
         assert (self.cors.get_response_headers() ==
-                     [('Access-Control-Allow-Origin', '*')])
+                [('Access-Control-Allow-Origin', '*')])
         assert (self.cors.get_response_headers(preflight=False) ==
-                     [('Access-Control-Allow-Origin', '*')])
+                [('Access-Control-Allow-Origin', '*')])
 
     def test_get_response_headers_preflight(self):
         assert (
@@ -91,10 +91,10 @@ class TestCORSMiddleware:
     def test_get_response_headers_preflight_with_cache(self):
         cors = CORSMiddleware(self.app, ['GET', 'PUT'], ['Accept'], 86400)
         assert (cors.get_response_headers(preflight=True) ==
-                     [('Access-Control-Allow-Origin', '*'),
-                      ('Access-Control-Allow-Methods', 'GET, PUT'),
-                      ('Access-Control-Allow-Headers', 'accept'),
-                      ('Access-Control-Max-Age', '86400')])
+                [('Access-Control-Allow-Origin', '*'),
+                 ('Access-Control-Allow-Methods', 'GET, PUT'),
+                 ('Access-Control-Allow-Headers', 'accept'),
+                 ('Access-Control-Max-Age', '86400')])
 
     def test_get_access_control_request_headers(self):
         key = 'HTTP_ACCESS_CONTROL_REQUEST_HEADERS'
@@ -102,4 +102,4 @@ class TestCORSMiddleware:
         assert f({}) == set()
         assert f({key: ''}) == set()
         assert (f({key: 'Authorization, Accept'}) ==
-                     {'authorization', 'accept'})
+                {'authorization', 'accept'})

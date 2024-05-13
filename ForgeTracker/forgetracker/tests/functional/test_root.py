@@ -2380,14 +2380,14 @@ class TestFunctionalController(TrackerTestController):
                                    project_id=p2._id,
                                    app_config_id=features.config._id,
                                    artifact_title='Ticket #1: another test ticket',
-                                   artifact_url='/p/test2/features/1/'),\
+                                   artifact_url='/p/test2/features/1/'), \
             "Could not find moved subscription.  User's record is %s" % M.Mailbox.query.get(user_id=user._id)
         # test-admin (who had a tool-level subscription) should be too
         assert M.Mailbox.query.get(user_id=admin._id,
                                    project_id=p2._id,
                                    app_config_id=features.config._id,
                                    artifact_title='Ticket #1: another test ticket',
-                                   artifact_url='/p/test2/features/1/'),\
+                                   artifact_url='/p/test2/features/1/'), \
             "Could not find moved subscription.  Admin's record is %s" % M.Mailbox.query.get(user_id=admin._id)
 
     @td.with_tool('test2', 'Tickets', 'bugs2')

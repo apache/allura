@@ -304,13 +304,13 @@ class SVNImplementation(M.RepositoryImplementation):
         """
         opts = self._repo.app.config.options
         if not svn_path_exists('file://{}{}/{}'.format(self._repo.fs_path,
-                                                          self._repo.name, opts['checkout_url'])):
+                                                       self._repo.name, opts['checkout_url'])):
             opts['checkout_url'] = ''
 
         if (not opts['checkout_url'] and
                 svn_path_exists(
                     'file://{}{}/trunk'.format(self._repo.fs_path,
-                                                 self._repo.name))):
+                                               self._repo.name))):
             opts['checkout_url'] = 'trunk'
 
     def commit(self, rev):
@@ -535,9 +535,9 @@ class SVNImplementation(M.RepositoryImplementation):
                 path and
                 (len(changed_path['path']) < len(path)) and
                 path.startswith(changed_path['path'])):
-                changed_path['copyfrom_path'] = changed_path['copyfrom_path'] + \
-                    path[len(changed_path['path']):]
-                changed_path['path'] = path
+            changed_path['copyfrom_path'] = changed_path['copyfrom_path'] + \
+                path[len(changed_path['path']):]
+            changed_path['path'] = path
         return changed_path
 
     def _map_log(self, ci, url, path=None):
@@ -811,5 +811,6 @@ class SVNImplementation(M.RepositoryImplementation):
                 result['added'].remove(r['new'])
 
         return result
+
 
 Mapper.compile_all()

@@ -457,7 +457,7 @@ class GitImplementation(M.RepositoryImplementation):
         commit_lines = []
         while True:
             line = six.ensure_text(stream.readline())
-            if '\x00' in line or not(len(line)):
+            if '\x00' in line or not (len(line)):
                 # hash line read, need to yield previous commit
                 # first, cleaning lines a bit
                 commit_lines = [
@@ -484,7 +484,7 @@ class GitImplementation(M.RepositoryImplementation):
                             renamed['from'] = name_stat_parts[1]
                             renamed['to'] = name_stat_parts[2]
                     yield (git.Commit(self._git, gitdb.util.hex_to_bin(hexsha)), refs, renamed)
-                if not(len(line)):
+                if not (len(line)):
                     # if all lines have been read
                     break
                 commit_lines = [line]
@@ -596,7 +596,7 @@ class GitImplementation(M.RepositoryImplementation):
         except ValueError:
             threshold = None
             log.warning('Skipping reference caching - The value for config param '
-                     '"repo_refs_cache_threshold" must be a float.')
+                        '"repo_refs_cache_threshold" must be a float.')
 
         if threshold is not None and time_taken > threshold:
             setattr(self._repo, cache_name, refs)
@@ -814,5 +814,6 @@ class _OpenedGitBlob:
 
     def close(self):
         pass
+
 
 Mapper.compile_all()

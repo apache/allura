@@ -912,7 +912,7 @@ class PageRestController(BaseController):
                 require_access(c.app, 'create')
                 if WM.Page.is_limit_exceeded(c.app.config, user=c.user):
                     log.warning('Page create/edit rate limit exceeded. %s',
-                             c.app.config.url())
+                                c.app.config.url())
                     raise forge_exc.HTTPTooManyRequests()
                 self.page = WM.Page.upsert(title)
                 self.page.viewable_by = ['all']

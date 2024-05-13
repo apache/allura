@@ -50,6 +50,7 @@ MAX_MAIL_LINE_OCTETS = 990
 
 email_policy = email.policy.SMTP + email.policy.strict
 
+
 def Header(text, *more_text) -> str:
     '''
     Helper to make sure we encode headers properly
@@ -68,6 +69,7 @@ def Header(text, *more_text) -> str:
             raise TypeError('This must be unicode: %r' % text)
         hdr_text += ' ' + m
     return hdr_text
+
 
 def AddrHeader(fromaddr) -> str:
     '''Accepts any of:

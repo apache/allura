@@ -156,7 +156,7 @@ class RepositoryApp(Application):
                 self.repo.push_upstream_context()
             except Exception:
                 log.warning('Could not get upstream repo (perhaps it is gone) for: %s %s',
-                         self.repo, self.repo.upstream_repo.name, exc_info=True)
+                            self.repo, self.repo.upstream_repo.name, exc_info=True)
             else:
                 has_upstream_repo = True
 
@@ -218,7 +218,7 @@ class RepositoryApp(Application):
             for b in tags[:max_tags]:
                 links.append(SitemapEntry(
                     b.name,
-                    h.urlquote(self.repo.url_for_commit(b.name) + 'tree/'), 
+                    h.urlquote(self.repo.url_for_commit(b.name) + 'tree/'),
                     extra_html_attrs=dict(rel='nofollow')))
             if len(tags) > max_tags:
                 links.append(

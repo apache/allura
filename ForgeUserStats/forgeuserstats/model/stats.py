@@ -73,4 +73,5 @@ class UserStats(Stats):
         self.lastmonthlogins.append(login_datetime)
         self.checkOldArtifacts()
 
+
 Mapper.compile_all()

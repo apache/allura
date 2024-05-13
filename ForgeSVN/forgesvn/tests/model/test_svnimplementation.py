@@ -51,7 +51,7 @@ class TestSVNImplementation:
         tree_id = impl.compute_tree_new(commit, path)
 
         assert (impl._svn.info2.call_args[0]
-                     [0] == 'file://' + g.tmpdir + '/code/trunk/foo')
+                [0] == 'file://' + g.tmpdir + '/code/trunk/foo')
         assert lcd_partial.called
 
     def test_last_commit_ids(self):
@@ -74,7 +74,7 @@ class TestSVNImplementation:
 
         assert entries == {path.strip('/'): '5057636b9c1040636b81e4b1:1'}
         assert (impl._svn.info2.call_args[0]
-                     [0] == 'file://' + g.tmpdir + '/code/trunk')
+                [0] == 'file://' + g.tmpdir + '/code/trunk')
 
     @patch('forgesvn.model.svn.svn_path_exists')
     def test__tarball_path_clean(self, path_exists):

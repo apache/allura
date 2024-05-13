@@ -48,8 +48,8 @@ class TestGitHubWikiImporter(TestCase):
     @patch('forgeimporters.github.wiki.g')
     @patch('forgeimporters.github.wiki.GitHubProjectExtractor')
     def test_import_tool_happy_path(self, ghpe, g, tlorms, M):
-        with patch('forgeimporters.github.wiki.GitHubWikiImporter.import_pages'),\
-                patch('forgeimporters.github.wiki.GitHubWikiImporter.has_wiki_repo', return_value=True),\
+        with patch('forgeimporters.github.wiki.GitHubWikiImporter.import_pages'), \
+                patch('forgeimporters.github.wiki.GitHubWikiImporter.has_wiki_repo', return_value=True), \
                 patch('forgeimporters.github.wiki.c'):
             ghpe.return_value.has_wiki.return_value = True
             p = self._make_project(gh_proj_name='myproject')

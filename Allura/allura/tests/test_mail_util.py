@@ -285,7 +285,7 @@ class TestIdentifySender:
     def test_arg(self, EA):
         EA.canonical = lambda e: e
         EA.get.side_effect = [
-            mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda:'user')]
+            mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda: 'user')]
         assert identify_sender(None, 'arg', None, None) == 'user'
         EA.get.assert_called_once_with(email='arg', confirmed=True)
 
@@ -293,11 +293,11 @@ class TestIdentifySender:
     def test_header(self, EA):
         EA.canonical = lambda e: e
         EA.get.side_effect = [
-            None, mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda:'user')]
+            None, mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda: 'user')]
         assert (
             identify_sender(None, 'arg', {'From': 'from'}, None) == 'user')
         assert (EA.get.call_args_list ==
-                     [mock.call(email='arg', confirmed=True), mock.call(email='from')])
+                [mock.call(email='arg', confirmed=True), mock.call(email='from')])
 
     @mock.patch('allura.model.User')
     @mock.patch('allura.model.EmailAddress')
@@ -305,7 +305,7 @@ class TestIdentifySender:
         anon = User.anonymous()
         EA.canonical = lambda e: e
         EA.get.side_effect = [
-            None, mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda:'user')]
+            None, mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda: 'user')]
         assert identify_sender(None, 'arg', {}, None) == anon
         assert EA.get.call_args_list == [mock.call(email='arg', confirmed=True)]
 
@@ -318,7 +318,7 @@ class TestIdentifySender:
         assert (
             identify_sender(None, 'arg', {'From': 'from'}, None) == anon)
         assert (EA.get.call_args_list ==
-                     [mock.call(email='arg', confirmed=True), mock.call(email='from')])
+                [mock.call(email='arg', confirmed=True), mock.call(email='from')])
 
 
 def test_parse_message_id():

@@ -95,8 +95,8 @@ class SetToolAccessCommand(base.Command):
         for s in self.args[3:]:
             s = s.lower()
             if s == 'production':
-                print ('All projects always have access to prodcution tools,'
-                       ' so removing from list.')
+                print('All projects always have access to prodcution tools,'
+                      ' so removing from list.')
                 continue
             if s not in ('alpha', 'beta'):
                 print('Unknown tool status %s' % s)

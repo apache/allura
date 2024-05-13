@@ -65,6 +65,8 @@ def _mock_feed(*entries):
         feed.entries.append(entry)
 
     return feed
+
+
 _mock_feed.i = 0
 
 
@@ -130,4 +132,3 @@ def test_pull_rss_feeds(parsefeed):
     assert posts[2].text == rendered_html_content
     assert posts[3].title == 'Default Title 4'
     assert posts[3].text == rendered_html_content
-

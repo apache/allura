@@ -332,7 +332,7 @@ class TestSiteAdminNotifications(TestController):
         count = M.notification.SiteNotification.query.find().count()
 
         self.app.post(f'/nf/admin/site_notifications/{note._id}/delete')
-        assert M.notification.SiteNotification.query.find().count() == count -1
+        assert M.notification.SiteNotification.query.find().count() == count - 1
         assert M.notification.SiteNotification.query.get(_id=bson.ObjectId(note._id)) is None
 
 
@@ -430,7 +430,7 @@ class TestUsersSearch(TestController):
         assert options == ['username', 'display_name', '__custom__']
         ths = [th.text for th in r.html.findAll('th')]
         assert ths == ['Username', 'Display name', 'Email', 'Registered',
-                           'Status', 'Details']
+                       'Status', 'Details']
 
     @patch('allura.controllers.site_admin.search.site_admin_search')
     def test_additional_fields(self, site_admin_search):
@@ -442,7 +442,7 @@ class TestUsersSearch(TestController):
         assert options == ['username', 'display_name', 'email_addresses', 'url', '__custom__']
         ths = [th.text for th in r.html.findAll('th')]
         assert ths == ['Username', 'Display name', 'Email', 'Registered',
-                           'Status', 'url', 'Details']
+                       'Status', 'url', 'Details']
 
 
 class TestUserDetails(TestController):

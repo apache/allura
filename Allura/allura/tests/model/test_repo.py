@@ -38,7 +38,7 @@ class TestGitLikeTree:
         assert tree.blobs == {}
         assert tree.get_tree('dir').blobs == {}
         assert (tree.get_tree('dir').get_tree('dir2')
-                     .blobs == {'file': 'file-oid'})
+                .blobs == {'file': 'file-oid'})
 
     def test_hex(self):
         tree = M.GitLikeTree()
@@ -47,9 +47,9 @@ class TestGitLikeTree:
 
         # check the reprs. In case hex (below) fails, this'll be useful
         assert (repr(tree.get_tree('dir').get_tree('dir2')) ==
-                     'b file-oid file')
+                'b file-oid file')
         assert (repr(tree) ==
-                     't 96af1772ecce1e6044e6925e595d9373ffcd2615 dir')
+                't 96af1772ecce1e6044e6925e595d9373ffcd2615 dir')
         # the hex() value shouldn't change, it's an important key
         assert hex == '4abba29a43411b9b7cecc1a74f0b27920554350d'
 

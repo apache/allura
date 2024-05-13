@@ -132,7 +132,6 @@ else:
                     pass
             return stderr.getvalue()
 
-
     class DefOptScriptTask(metaclass=MetaDefOpt):
         """Base class for a command-line script that is also executable as a task."""
 
@@ -156,4 +155,3 @@ else:
         def execute(cls, *args, **kwargs):
             """User code goes here, using defopt kwargs with type annotations"""
             raise NotImplementedError
-

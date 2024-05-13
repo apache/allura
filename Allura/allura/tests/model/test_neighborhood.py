@@ -53,10 +53,10 @@ class TestNeighboorhoodModel:
 
         # Check picker css styles
         test_css_dict = {'barontop': '#444',
-                        'titlebarbackground': '#555',
-                        'projecttitlefont': 'arial,sans-serif',
-                        'projecttitlecolor': '#333',
-                        'titlebarcolor': '#666'}
+                         'titlebarbackground': '#555',
+                         'projecttitlefont': 'arial,sans-serif',
+                         'projecttitlecolor': '#333',
+                         'titlebarcolor': '#666'}
         css_text = neighborhood.compile_css_for_picker(test_css_dict)
         assert '#333' in css_text
         assert '#444' in css_text

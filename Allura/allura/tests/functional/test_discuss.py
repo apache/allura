@@ -84,8 +84,6 @@ class TestDiscuss(TestDiscussBase):
         r = self.app.post('/wiki/_discuss/subscribe', params=params)
         assert not self._is_subscribed(user, thread)
 
-
-
     @patch('allura.controllers.discuss.g.spam_checker.check')
     @patch('allura.controllers.discuss.g.spam_checker.submit_spam')
     def test_post(self, submit_spam, check_spam):
@@ -533,6 +531,3 @@ class TestAttachment(TestDiscussBase):
         # ... but moderator can
         self.app.get(alink, status=200, extra_environ=moderator)
         self.app.get(thumblink, status=200, extra_environ=moderator)
-
-
-

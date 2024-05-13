@@ -179,8 +179,8 @@ class Stats(MappedClass):
             return {}
         entry = self.general[i].messages
         by_type = {el.messagetype: dict(created=el.created,
-                                              modified=el.modified)
-                        for el in entry}
+                                        modified=el.modified)
+                   for el in entry}
         return by_type
 
     def getTicketsByCategory(self):

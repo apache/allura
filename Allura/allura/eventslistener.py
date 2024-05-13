@@ -47,6 +47,7 @@ class EventsListener:
     def addUserToOrganization(self, newMembership):
         pass
 
+
 '''This class simply allows to iterate through all the registered listeners,
 so that all of them are called to update statistics.'''
 

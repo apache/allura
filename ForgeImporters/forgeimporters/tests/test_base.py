@@ -378,11 +378,11 @@ def test_get_importer_upload_path():
         project.is_nbhd_project = False
         project.is_user_project = True
         assert (base.get_importer_upload_path(project) ==
-                     'path/p/shortname')
+                'path/p/shortname')
         project.is_user_project = False
         project.is_root = True
         assert (base.get_importer_upload_path(project) ==
-                     'path/p/prefix/shortname')
+                'path/p/prefix/shortname')
 
 
 @mock.patch.object(base, 'os')

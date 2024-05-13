@@ -116,11 +116,11 @@ def main(options):
             ThreadLocalODMSession.close_all()
 
     log.info('%s %s EmailAddress documents' %
-            (preamble, M.EmailAddress.find().count()))
+             (preamble, M.EmailAddress.find().count()))
     log.info('%s email addresses from %s User documents' %
-            (preamble, M.User.query.find().count()))
+             (preamble, M.User.query.find().count()))
     log.info('%s monitoring_email addresses from %s Forum documents' %
-            (preamble, DM.Forum.query.find({"monitoring_email":
+             (preamble, DM.Forum.query.find({"monitoring_email":
                                             {"$nin": [None, ""]}}).count()))
 
     if not options.dry_run:

@@ -62,14 +62,13 @@ def main():
         import_wiki(cli, options.project, options.wiki, options, doc_txt)
 
 
-
 def import_forum(cli, project, tool, user_map, doc_txt, validate=True,
-        neighborhood='p'):
+                 neighborhood='p'):
     url = '/rest/{neighborhood}/{project}/{tool}'.format(
-            neighborhood=neighborhood,
-            project=project,
-            tool=tool,
-            )
+        neighborhood=neighborhood,
+        project=project,
+        tool=tool,
+    )
     if validate:
         url += '/validate_import'
         print(cli.call(url, doc=doc_txt, user_map=json.dumps(user_map)))

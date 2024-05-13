@@ -130,9 +130,9 @@ class TestConfigOptions(TestController):
         for menu_item in admin_nav_data['menu']:
             if menu_item['tool_name'] == 'link':
                 assert ({'className': 'admin_modal',
-                           'text': 'Options',
-                           'href': '/p/test/admin/link/options'} in
-                          menu_item['admin_options'])
+                         'text': 'Options',
+                         'href': '/p/test/admin/link/options'} in
+                        menu_item['admin_options'])
                 break
         else:
             raise AssertionError("Didn't find 'link' tool in {}".format(admin_nav_data['menu']))

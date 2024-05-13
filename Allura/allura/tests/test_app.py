@@ -53,7 +53,7 @@ class TestApp:
     def test_config_options(self):
         options = [
             app.ConfigOption('test1', str, 'MyTestValue'),
-            app.ConfigOption('test2', str, lambda:'MyTestValue')]
+            app.ConfigOption('test2', str, lambda: 'MyTestValue')]
         assert options[0].default == 'MyTestValue'
         assert options[1].default == 'MyTestValue'
 
@@ -81,6 +81,7 @@ class TestApp:
     def test_options_on_install(self):
         opts = [app.ConfigOption('url', str, None),
                 app.ConfigOption('private', bool, None)]
+
         class TestApp(app.Application):
             config_options = app.Application.config_options + opts + [
                 app.ConfigOption('not_on_install', str, None),
@@ -108,7 +109,7 @@ class TestApp:
         sm = app.SitemapEntry('test', '')[
             app.SitemapEntry('a', 'a/'),
             app.SitemapEntry('b', 'b/')]
-        sm[app.SitemapEntry(lambda app:app.config.script_name(), 'c/')]
+        sm[app.SitemapEntry(lambda app: app.config.script_name(), 'c/')]
         bound_sm = sm.bind_app(c.app)
         assert bound_sm.url == 'http://testproject/test_application/', bound_sm.url
         assert bound_sm.children[

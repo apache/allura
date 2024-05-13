@@ -192,8 +192,7 @@ def update_head_reference(fs_path, branch_name):
     else:
         # it is detached there's no refs in repo.refs default to first
         repo.head.reference = repo.refs[0]
-        #lookup for new default branch
+        # lookup for new default branch
         new_branch = [ref for ref in repo.refs if ref.name == branch_name]
         _ref = SymbolicReference.create(repo, 'HEAD', repo.head.reference)
         _ref.reference = new_branch[0]
-

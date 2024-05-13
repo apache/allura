@@ -26,14 +26,14 @@ def hit_mock():
                                    'reported_by_s': ['admin1', 5],
                                    'status_s': ['closed', 1, 'open', 3, 'unread', 1]}}
     reformated = {'_milestone': [('1.0', 3), ('2.0', 2)],
-                'assigned_to': [('admin1', 1)],
-                'reported_by': [('admin1', 5)],
-                'status': [('closed', 1), ('open', 3), ('unread', 1)]}
+                  'assigned_to': [('admin1', 1)],
+                  'reported_by': [('admin1', 5)],
+                  'status': [('closed', 1), ('open', 3), ('unread', 1)]}
     return hit, reformated
 
 
 def test_get_facets():
-    hit,expected = hit_mock()
+    hit, expected = hit_mock()
     assert get_facets(hit) == expected
 
 

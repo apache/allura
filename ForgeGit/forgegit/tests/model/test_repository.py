@@ -618,14 +618,14 @@ By Dave Brondsema''' in text_body
             assert impl._git.head.reference.name == 'master'
 
     def test_default_branch_non_standard_unset(self):
-        with mock.patch.object(self.repo, 'get_branches') as gb,\
+        with mock.patch.object(self.repo, 'get_branches') as gb, \
                 mock.patch.object(self.repo, 'set_default_branch') as set_db:
             gb.return_value = [Object(name='foo')]
             assert self.repo.get_default_branch(('main', 'master')) == 'foo'
             set_db.assert_called_once_with('foo')
 
     def test_default_branch_non_standard_invalid(self):
-        with mock.patch.object(self.repo, 'get_branches') as gb,\
+        with mock.patch.object(self.repo, 'get_branches') as gb, \
                 mock.patch.object(self.repo, 'set_default_branch') as set_db:
             self.repo.default_branch_name = 'zz'
             gb.return_value = [Object(name='foo')]
@@ -633,7 +633,7 @@ By Dave Brondsema''' in text_body
             set_db.assert_called_once_with('foo')
 
     def test_default_branch_invalid(self):
-        with mock.patch.object(self.repo, 'get_branches') as gb,\
+        with mock.patch.object(self.repo, 'get_branches') as gb, \
                 mock.patch.object(self.repo, 'set_default_branch') as set_db:
             self.repo.default_branch_name = 'zz'
             gb.return_value = [Object(name='foo'), Object(name='master')]
@@ -653,7 +653,7 @@ By Dave Brondsema''' in text_body
             assert self.repo.get_default_branch(('main', 'master')) == 'main'
 
     def test_default_branch_main_before_master(self):
-        with mock.patch.object(self.repo, 'get_branches') as gb,\
+        with mock.patch.object(self.repo, 'get_branches') as gb, \
                 mock.patch.object(self.repo, 'set_default_branch') as set_db:
             self.repo.default_branch_name = None
             gb.return_value = [Object(name='master'), Object(name='main')]

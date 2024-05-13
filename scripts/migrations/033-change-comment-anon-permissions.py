@@ -41,11 +41,11 @@ def arguments():
 def main():
     args = arguments()
 
-    c.project = None # to avoid error in Artifact.__mongometa__.before_save
+    c.project = None  # to avoid error in Artifact.__mongometa__.before_save
     project = M.Project.query.get(shortname=args.shortname)
     tool = project.app_config_by_tool_type(args.toolname)
 
-    for chunk in utils.chunked_find(ForumPost, {'app_config_id':tool._id}):
+    for chunk in utils.chunked_find(ForumPost, {'app_config_id': tool._id}):
         for p in chunk:
             has_access = bool(security.has_access(p, 'moderate', M.User.anonymous()))
 
@@ -53,7 +53,7 @@ def main():
                 anon_role_id = None
                 for acl in p.acl:
                     # find the anon moderate acl
-                    if acl.permission == 'moderate' and acl.access=='ALLOW':
+                    if acl.permission == 'moderate' and acl.access == 'ALLOW':
                         anon_role_id = acl.role_id
 
                 if anon_role_id:

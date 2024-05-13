@@ -70,7 +70,6 @@ class TestActivityHasAccessAPI(TestRestApiBase):
         assert r.status_int == 200
         assert r.json['result'] is False
 
-
     def test_user_api(self):
         r = self.api_get('/rest/u/test-user/activity')
         assert r.status_int == 200

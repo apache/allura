@@ -67,6 +67,7 @@ def check_for_dirty_ming_records(msg_prefix, ming_sessions=None):
             log.warning(msg_prefix + ' changed objects, causing writes back to mongo: %s',
                         dirty_objects)
 
+
 @task
 def add_projects(project_ids):
     from allura.model.project import Project
@@ -176,6 +177,7 @@ def commit():
 @task
 def solr_del_tool(project_id, mount_point_s):
     g.solr.delete(q=f'project_id_s:"{project_id}" AND mount_point_s:"{mount_point_s}"')
+
 
 @contextmanager
 def _indexing_disabled(session):

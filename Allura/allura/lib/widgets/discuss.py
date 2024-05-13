@@ -111,17 +111,17 @@ class PostFilter(ff.ForgeForm):
             name='page',
             validator=fev.Int()),
         ew.SingleSelectField(
-                name='status',
-                label='Filter By Status',
-                options=[
-                    ew.Option(py_value='-', label='Any'),
-                    ew.Option(py_value='spam', label='Spam'),
-                    ew.Option(py_value='pending',
-                                label='Pending moderation'),
-                    ew.Option(py_value='ok', label='Ok')],
-                if_missing='pending'),
+            name='status',
+            label='Filter By Status',
+            options=[
+                ew.Option(py_value='-', label='Any'),
+                ew.Option(py_value='spam', label='Spam'),
+                ew.Option(py_value='pending',
+                          label='Pending moderation'),
+                ew.Option(py_value='ok', label='Ok')],
+            if_missing='pending'),
         ew.InputField(name='username',
-                        label='Filter by Username'),
+                      label='Filter by Username'),
         ew.SubmitButton(label='Filter Posts')
     ]
 

@@ -257,7 +257,7 @@ class PersonalDataForm(ForgeForm):
                         [ew.Option(py_value=c, label=n, selected=False)
                          for c, n in sorted(list(country_names.items()),
                                             key=lambda k_v: k_v[1])],
-                ),
+            ),
             ew.TextField(
                 name='city',
                 label='City of residence',
@@ -777,8 +777,8 @@ class RegistrationForm(ForgeForm):
         fields += [
             ew.PasswordField(
                 name='pw',
-                label='New Password',
-                attrs=dict(minlength=asint(tg.config.get('auth.min_password_len', 6)), maxlength=asint(tg.config.get('auth.max_password_len', 30))),
+                label='New Password', attrs=dict(minlength=asint(tg.config.get('auth.min_password_len', 6)),
+                                                 maxlength=asint(tg.config.get('auth.max_password_len', 30))),
                 validator=V.UnicodeString(
                     not_empty=True,
                     min=asint(tg.config.get('auth.min_password_len', 6)),
@@ -859,17 +859,17 @@ class NeighborhoodOverviewForm(ForgeForm):
                 if inp['value'] is None or inp['value'] == '':
                     empty_val = True
                 display += Markup('<tr><td class="left"><label>%(label)s</label></td>'
-                           '<td><input type="checkbox" name="%(ctx_name)s-%(inp_name)s-def" %(def_checked)s>default</td>'
-                           '<td class="right"><div class="%(ctx_name)s-%(inp_name)s-inp"><table class="input_inner">'
-                           '<tr><td><input type="text" class="%(inp_type)s" name="%(ctx_name)s-%(inp_name)s" '
-                           'value="%(inp_value)s"></td><td>%(inp_additional)s</td></tr></table></div></td></tr>\n') % {
-                               'ctx_name': ctx['name'],
-                               'inp_name': inp['name'],
-                               'inp_value': inp['value'],
-                               'label': inp['label'],
-                               'inp_type': inp['type'],
-                               'def_checked': 'checked="checked"' if empty_val else '',
-                               'inp_additional': additional_inputs}
+                                  '<td><input type="checkbox" name="%(ctx_name)s-%(inp_name)s-def" %(def_checked)s>default</td>'
+                                  '<td class="right"><div class="%(ctx_name)s-%(inp_name)s-inp"><table class="input_inner">'
+                                  '<tr><td><input type="text" class="%(inp_type)s" name="%(ctx_name)s-%(inp_name)s" '
+                                  'value="%(inp_value)s"></td><td>%(inp_additional)s</td></tr></table></div></td></tr>\n') % {
+                    'ctx_name': ctx['name'],
+                    'inp_name': inp['name'],
+                    'inp_value': inp['value'],
+                    'label': inp['label'],
+                    'inp_type': inp['type'],
+                    'def_checked': 'checked="checked"' if empty_val else '',
+                    'inp_additional': additional_inputs}
             display += Markup('</table>')
 
             if ctx['errors'] and field.show_errors and not ignore_errors:

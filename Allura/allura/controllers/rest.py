@@ -338,12 +338,12 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
             M.OAuth2AccessToken.query.remove({'client_id': request.client_id, 'user_id': c.user._id})
 
         bearer_token = M.OAuth2AccessToken(
-            client_id = request.client_id,
-            scopes = token.get('scope', []),
-            access_token = token.get('access_token'),
-            refresh_token = token.get('refresh_token'),
-            expires_at = datetime.utcnow() + timedelta(seconds=token.get('expires_in')),
-            user_id = authorization_code.user_id
+            client_id=request.client_id,
+            scopes=token.get('scope', []),
+            access_token=token.get('access_token'),
+            refresh_token=token.get('refresh_token'),
+            expires_at=datetime.utcnow() + timedelta(seconds=token.get('expires_in')),
+            user_id=authorization_code.user_id
         )
 
         session(bearer_token).flush()
@@ -501,7 +501,7 @@ class Oauth2Negotiator:
         if not valid:
             raise exc.HTTPUnauthorized
 
-        bearer_token_prefix = 'Bearer ' # noqa: S105
+        bearer_token_prefix = 'Bearer '  # noqa: S105
         auth_header = req.headers.get('Authorization')
         if auth_header and auth_header.startswith(bearer_token_prefix):
             access_token = auth_header[len(bearer_token_prefix):]
@@ -511,7 +511,6 @@ class Oauth2Negotiator:
         token = M.OAuth2AccessToken.query.get(access_token=access_token)
         token.last_access = datetime.utcnow()
         return token
-
 
     @expose('jinja:allura:templates/oauth2_authorize.html')
     @without_trailing_slash
@@ -523,7 +522,6 @@ class Oauth2Negotiator:
             # and oauthlib will treat it as x-www-form-urlencoded format.
             decoded_body = str(request.body, 'utf-8')
             json_body = json.loads(decoded_body)
-
 
         scopes, credentials = self.server.validate_authorization_request(uri=request.url, http_method=request.method, headers=request.headers, body=json_body)
 

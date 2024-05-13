@@ -288,7 +288,7 @@ class SiteAdminController:
         def convert_fields(obj):
             # throw the type away (e.g. '_s' from 'url_s')
             result = {}
-            for k,val in obj.items():
+            for k, val in obj.items():
                 name = k.rsplit('_', 1)
                 if len(name) == 2:
                     name = name[0]
@@ -776,4 +776,4 @@ class StatsSiteAdminExtension(SiteAdminExtension):
 
     def update_sidebar_menu(self, links):
         links.append(SitemapEntry('Stats', '/nf/admin/stats',
-            ui_icon=g.icons['stats']))
+                                  ui_icon=g.icons['stats']))

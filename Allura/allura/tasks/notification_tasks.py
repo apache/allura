@@ -19,11 +19,13 @@ from allura.lib.decorators import task
 from allura.lib import utils
 from tg import tmpl_context as c
 
+
 @task
 def notify(n_id, ref_ids, topic):
     from allura import model as M
     M.Mailbox.deliver(n_id, ref_ids, topic)
     M.Mailbox.fire_ready()
+
 
 @task
 def send_usermentions_notification(artifact_id, text, old_text=None):

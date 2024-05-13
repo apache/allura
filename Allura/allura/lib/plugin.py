@@ -635,6 +635,7 @@ class LocalAuthenticationProvider(AuthenticationProvider):
             d = self.user_registration_date(user)
         return d
 
+
 def ldap_conn_staysopen(who=None, cred=None):
     '''
     You must call .unbind_s() when done with this
@@ -643,6 +644,7 @@ def ldap_conn_staysopen(who=None, cred=None):
     con.simple_bind_s(who or config['auth.ldap.admin_dn'],
                       cred or config['auth.ldap.admin_password'])
     return con
+
 
 @contextmanager
 def ldap_conn(who=None, cred=None):

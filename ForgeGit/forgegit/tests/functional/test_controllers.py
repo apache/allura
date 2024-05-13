@@ -527,7 +527,7 @@ class TestRootController(_TestCase):
 
     def test_index_branch_unicode(self):
         # more realistic case is the default branch having unicode, but passing the branch name is easier
-        resp = self.app.get('/p/test/src-git/', params={'branch':'ƒ∂ß'})
+        resp = self.app.get('/p/test/src-git/', params={'branch': 'ƒ∂ß'})
         assert resp.location == 'http://localhost/p/test/src-git/ref/%C6%92%E2%88%82%C3%9F/'
         # further testing needs a real branch in our test repo
 

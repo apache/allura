@@ -145,7 +145,7 @@ class PackagePathLoader(jinja2.BaseLoader):
         # TODO: How does one handle project-theme?
         if default_paths is None:
             default_paths = [
-                #['project-theme', None],
+                # ['project-theme', None],
                 ['site-theme', None],
                 ['allura', '/'],
             ]
@@ -237,7 +237,7 @@ class PackagePathLoader(jinja2.BaseLoader):
 
         This mutates paths.
         """
-        p_idx = lambda n: [e[0] for e in paths].index(n)
+        def p_idx(n): return [e[0] for e in paths].index(n)
         for target, replacement in rules.items():
             try:
                 removed = paths.pop(p_idx(replacement))

@@ -136,11 +136,11 @@ class TaskdCommand(base.Command):
                         waitfunc=waitfunc,
                         only=only)
                     if self.task:
-                        with(proctitle("taskd:{}:{}".format(
+                        with (proctitle("taskd:{}:{}".format(
                                 self.task.task_name, self.task._id))):
                             # Build the (fake) request
                             request_path = '/--{}--/{}/'.format(self.task.task_name,
-                                                            self.task._id)
+                                                                self.task._id)
                             r = Request.blank(request_path,
                                               base_url=tg.config['base_url'].rstrip(
                                                   '/') + request_path,

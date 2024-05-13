@@ -199,6 +199,7 @@ class ProjectNameFieldProperty(FieldProperty):
     Particularly nice if the username and user-project name don't match exactly.
     (This is a python "descriptor")
     """
+
     def __get__(self, instance, cls=None):
         if instance:
             owning_user = instance.user_project_of
@@ -548,7 +549,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         return result
 
     def sitemap(self, excluded_tools=None, included_tools=None,
-            tools_only=False, per_tool_limit=SITEMAP_PER_TOOL_LIMIT, xml=False):
+                tools_only=False, per_tool_limit=SITEMAP_PER_TOOL_LIMIT, xml=False):
         """
         Return the project sitemap.
 
@@ -658,7 +659,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                     'Moderate',
                     "%s_moderate/" % self.neighborhood.url(),
                     ui_icon="tool-admin")
-                })
+            })
             max_ordinal += 1
 
         entries = sorted(entries, key=lambda e: e['ordinal'])

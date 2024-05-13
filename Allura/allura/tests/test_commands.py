@@ -457,6 +457,7 @@ class TestShowModels:
          - <FieldProperty content>
         ''' in output.captured
 
+
 class TestReindexAsTask:
 
     cmd = 'allura.command.show_models.ReindexCommand'
@@ -521,7 +522,7 @@ class TestReindexCommand:
         assert (
             {Solr.call_args_list[0][0][0], Solr.call_args_list[1][0][0]} ==
             {'http://blah.com/solr/forge',
-                 'https://other.net/solr/forge'})
+             'https://other.net/solr/forge'})
 
     @patch('allura.command.show_models.utils')
     def test_project_regex(self, utils):

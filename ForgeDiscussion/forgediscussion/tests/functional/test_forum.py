@@ -231,7 +231,7 @@ class TestForumMessageHandling(TestController):
         url = '/discussion/testforum/thread/%s/' % thd._id
         self.app.get(url)
         resp = self.app.get('/discussion/testforum/thread/foobar/', status=301)
-        assert('/discussion/testforum/' in resp.location)
+        assert ('/discussion/testforum/' in resp.location)
 
     def test_posts(self):
         # not sure why this fails when set to root (to match self.user_id)
@@ -620,8 +620,6 @@ class TestForum(TestController):
         btn_edit = post_container.find('a', {'title': 'Edit'})
         assert not btn_edit
 
-
-
     @td.with_tool('test2', 'Discussion', 'discussion')
     @mock.patch('allura.model.discuss.g.spam_checker')
     def test_is_spam(self, spam_checker):
@@ -911,8 +909,8 @@ class TestForum(TestController):
 
         assert 'first subject' in resp
 
-        f = resp.html.find('div', {'id':'mod_thread_form'}).find('form')
-        params=dict(
+        f = resp.html.find('div', {'id': 'mod_thread_form'}).find('form')
+        params = dict(
             flags='',
             discussion='general',
             subject='changed subject')

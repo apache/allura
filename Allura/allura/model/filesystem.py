@@ -195,13 +195,13 @@ class File(MappedClass):
         format = image.format
         save_anim = False
 
-        if format == 'BMP' and convert_bmp: # use jpg format if bitmap is provided
+        if format == 'BMP' and convert_bmp:  # use jpg format if bitmap is provided
             format = 'PNG'
             content_type = 'image/png'
             filename = re.sub('.bmp$', '.png', filename, flags=re.IGNORECASE)
 
         if format == 'GIF':
-            save_anim = True # save all frames if GIF is provided
+            save_anim = True  # save all frames if GIF is provided
 
         if save_original:
             original_meta = original_meta or {}

@@ -293,6 +293,7 @@ def is_denied(obj, permission: str, user: M.User, project: M.Project) -> bool:
 
     return False
 
+
 def debug_obj(obj) -> str:
     if hasattr(obj, 'url'):
         url = obj.url
@@ -384,7 +385,8 @@ def has_access(obj, permission: str, user: M.User | None = None, project: M.Proj
                     if ace.access == M.ACE.ALLOW:
                         # access is allowed
                         if DEBUG:
-                            log.debug(f"{user.username} '{permission}' granted on {debug_obj(obj)} ({debug_obj(project)})")
+                            log.debug(
+                                f"{user.username} '{permission}' granted on {debug_obj(obj)} ({debug_obj(project)})")
                         return True
                     else:
                         # access is denied for this particular role
@@ -406,7 +408,8 @@ def has_access(obj, permission: str, user: M.User | None = None, project: M.Proj
             result = False
         result = bool(result)
         if DEBUG:
-            log.debug(f"{user.username} '{permission}' {result} from parent(s) on {debug_obj(obj)} ({debug_obj(project)})")
+            log.debug(
+                f"{user.username} '{permission}' {result} from parent(s) on {debug_obj(obj)} ({debug_obj(project)})")
         return result
     return TruthyCallable(predicate)
 

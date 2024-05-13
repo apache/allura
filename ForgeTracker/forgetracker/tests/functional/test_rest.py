@@ -150,7 +150,7 @@ class TestRestIndex(TestTrackerApiBase):
         ticket_config = M.AppConfig.query.get(
             project_id=c.project._id, tool_name='tickets')
         assert (ticket_config.options.get('TicketMonitoringEmail') ==
-                     'test@localhost')
+                'test@localhost')
 
     @td.with_tool('test', 'Tickets', 'dummy')
     def test_move_ticket_redirect(self):
@@ -182,7 +182,7 @@ class TestRestDiscussion(TestTrackerApiBase):
         assert post.json['post']['text'] == 'This is a comment', post.json
         reply = self.api_post(
             '/rest/p/test/bugs/_discuss/thread/{}/{}/reply'.format(thread.json['thread']
-                                                               ['_id'], post.json['post']['slug']),
+                                                                   ['_id'], post.json['post']['slug']),
             text='This is a reply')
         assert reply.json['post']['text'] == 'This is a reply', reply.json
         thread = self.api_get('/rest/p/test/bugs/_discuss/thread/%s/' % thread_id)

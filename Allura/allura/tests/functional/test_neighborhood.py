@@ -852,7 +852,7 @@ class TestNeighborhood(TestController):
         r = self.app.get(
             '/p/check_names?neighborhood=Projects&project_unixname=test')
         assert (r.json ==
-                     {'project_unixname': 'This project name is taken.'})
+                {'project_unixname': 'This project name is taken.'})
 
     @td.with_tool('test/sub1', 'Wiki', 'wiki')
     def test_neighborhood_project(self):

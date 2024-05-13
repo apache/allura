@@ -127,7 +127,7 @@ class ScreenshotAdmin(ff.ForgeFormResponsive):
         ff.ForgeForm.defaults,
         enctype='multipart/form-data',
         submit_text='Upload',
-        )
+    )
 
     @property
     def fields(self):
@@ -137,7 +137,7 @@ class ScreenshotAdmin(ff.ForgeFormResponsive):
                           attrs={
                               'accept': 'image/*',
                               'required': 'true',
-                              }),
+                          }),
             ew.InputField(name='caption',
                           field_type="text",
                           label='Caption',

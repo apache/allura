@@ -38,7 +38,7 @@ for line in args.input_file:
     try:
         typ = data['message']['request_category']
     except KeyError:
-        #print 'No category', data['message']['url']
+        # print 'No category', data['message']['url']
         pass
     if args.filter_category and typ not in args.filter_category:
         continue

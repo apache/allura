@@ -49,11 +49,11 @@ class TestWikiApi(TestRestApiBase):
         r = self.app.get('/rest/p/test/wiki/Home/')
         r = json.loads(r.text)
         assert (r['attachments'][0]['url'] ==
-                     'http://localhost/p/test/wiki/Home/attachment/test_root.py')
+                'http://localhost/p/test/wiki/Home/attachment/test_root.py')
         assert (r['discussion_thread_url'] == 'http://localhost/rest%s' %
-                     discussion_url)
+                discussion_url)
         assert (r['discussion_thread']['_id'] ==
-                     discussion_url.split('/')[-2])
+                discussion_url.split('/')[-2])
         self.app.post('/wiki/Home/attach',
                       upload_files=[('file_info', '__init__.py', content), ])
         r = self.app.get('/rest/p/test/wiki/Home/')

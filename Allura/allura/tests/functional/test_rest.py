@@ -328,7 +328,7 @@ class TestRestHome(TestRestApiBase):
                 'title': 'tést'.encode(),
                 'text': 'sometext',
                 'labels': '',
-                })
+            })
         r = self.api_get(h.urlquote('/rest/p/test/wiki/tést/'))
         assert r.status_int == 200
         assert r.json['title'] == 'tést', r.json
@@ -428,9 +428,9 @@ class TestRestNbhdAddProject(TestRestApiBase):
         M.TroveCategory(fullname="Root", trove_cat_id=1, trove_parent_id=0)
         M.TroveCategory(fullname="License", trove_cat_id=2, trove_parent_id=1)
         M.TroveCategory(fullname="Apache License V2.0", fullpath="License :: Apache License V2.0",
-                                     trove_cat_id=4, trove_parent_id=2)
+                        trove_cat_id=4, trove_parent_id=2)
         M.TroveCategory(fullname="Public Domain", fullpath="License :: Public Domain",
-                                      trove_cat_id=5, trove_parent_id=2)
+                        trove_cat_id=5, trove_parent_id=2)
         p_nbhd = M.Neighborhood.query.get(url_prefix='/p/')
         p_nbhd.features['private_projects'] = False
 
@@ -592,7 +592,7 @@ class TestDoap(TestRestApiBase):
         assert user.find(self.foaf + 'name').text == 'Test Admin'
         assert user.find(self.foaf + 'nick').text == 'test-admin'
         assert (list(user.find(self.foaf + 'homepage').items())[0][1] ==
-                     'http://localhost/u/test-admin/')
+                'http://localhost/u/test-admin/')
 
     @td.with_tool('test', 'Tickets', 'bugs')
     @td.with_tool('test', 'Tickets', 'private-bugs')

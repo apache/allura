@@ -1111,7 +1111,7 @@ class RootController(BaseController, FeedController):
         if dates is None:
             today = datetime.utcnow()
             dates = "{} to {}".format((today - timedelta(days=61))
-                                  .strftime('%Y-%m-%d'), today.strftime('%Y-%m-%d'))
+                                      .strftime('%Y-%m-%d'), today.strftime('%Y-%m-%d'))
         return dict(
             now=str(now),
             week_ago=str(week_ago),
@@ -1691,7 +1691,7 @@ class TrackerAdminController(DefaultAdminController):
     def fields(self, **kw):
         c.form = W.field_admin
         columns = {column: get_label(column)
-                       for column in self.app.globals['show_in_search'].keys()}
+                   for column in self.app.globals['show_in_search'].keys()}
         return dict(app=self.app, globals=self.app.globals, columns=columns)
 
     @expose('jinja:forgetracker:templates/tracker/admin_options.html')

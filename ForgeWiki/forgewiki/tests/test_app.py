@@ -80,12 +80,12 @@ class TestBulkExport:
 
         assert pages[1]['title'] == 'Return of the Jedi'
         assert (pages[1]['text'] ==
-                     'Star Wars Episode VI: Return of the Jedi')
+                'Star Wars Episode VI: Return of the Jedi')
         assert len(pages[1]['discussion_thread']['posts']) == 0
 
         assert pages[2]['title'] == 'The Empire Strikes Back'
         assert (pages[2]['text'] ==
-                     'Star Wars Episode V: The Empire Strikes Back')
+                'Star Wars Episode V: The Empire Strikes Back')
         assert len(pages[2]['discussion_thread']['posts']) == 0
 
     def add_page_with_attachmetns(self):

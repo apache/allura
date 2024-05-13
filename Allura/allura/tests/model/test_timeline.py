@@ -37,4 +37,4 @@ class TestActivityObject_Functional:
         app_config = wiki_app.config
 
         assert (bool(app_config.has_activity_access('read', user=M.User.anonymous(), activity=None)) is
-                     True)
+                True)

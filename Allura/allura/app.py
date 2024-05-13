@@ -801,7 +801,7 @@ class Application(ActivityObject):
 
     def make_dir_for_attachments(self, path):
         if not os.path.exists(path):
-                os.makedirs(path)
+            os.makedirs(path)
 
     def save_attachments(self, path, attachments):
         self.make_dir_for_attachments(path)
@@ -835,6 +835,7 @@ class Application(ActivityObject):
 
 class AdminControllerMixin:
     """Provides common functionality admin controllers need"""
+
     def _before(self, *remainder, **params):
         # Display app's sidebar on admin page, instead of :class:`AdminApp`'s
         c.app = self.app

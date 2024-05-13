@@ -335,7 +335,7 @@ class UserMapJsonFile(JsonFile):
         value = super(self.__class__, self)._convert_to_python(value, state)
         try:
             for k, v in value.items():
-                if not(isinstance(k, str) and isinstance(v, str)):
+                if not (isinstance(k, str) and isinstance(v, str)):
                     raise
             return json.dumps(value) if self.as_string else value
         except Exception:
@@ -489,7 +489,9 @@ class IconValidator(fev.FancyValidator):
 
         return value
 
+
 FEDIVERSE_REGEX = r'^@[\w-]+@[\w-]+(\.[\w-]+)+$'
+
 
 class LinkedinValidator(fev.FancyValidator):
     def _convert_to_python(self, value, state):
@@ -534,7 +536,6 @@ class FediverseValidator(fev.FancyValidator):
             value = f'{url.path.replace("/", "")}@{url.netloc}'
             if not re.match(FEDIVERSE_REGEX, value):
                 raise fe.Invalid('Invalid Mastodon address', value, state)
-        elif not re.match(FEDIVERSE_REGEX , value):
+        elif not re.match(FEDIVERSE_REGEX, value):
             raise fe.Invalid('Invalid Mastodon address', value, state)
         return value
-

@@ -176,7 +176,6 @@ class OAuth2ClientApp(MappedClass):
 
     user = RelationProperty('User')
 
-
     @classmethod
     def for_user(cls, user=None):
         if user is None:

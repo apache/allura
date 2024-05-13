@@ -220,7 +220,7 @@ class TestPostNotifications(unittest.TestCase):
         ThreadLocalODMSession.flush_all()
 
         assert (M.Notification.query.get()
-                     ['from_address'] == '"Test Admin" <test-admin@users.localhost>')
+                ['from_address'] == '"Test Admin" <test-admin@users.localhost>')
         assert M.Mailbox.query.find().count() == 2
 
         # sends the notification out into "mailboxes", and from mailboxes into
@@ -241,13 +241,13 @@ class TestPostNotifications(unittest.TestCase):
         assert str(c.user._id) in first_destinations
         assert str(user2._id) in first_destinations
         assert (email_tasks[0].kwargs['fromaddr'] ==
-                     '"Test Admin" <test-admin@users.localhost>')
+                '"Test Admin" <test-admin@users.localhost>')
         assert (email_tasks[1].kwargs['fromaddr'] ==
-                     '"Test Admin" <test-admin@users.localhost>')
+                '"Test Admin" <test-admin@users.localhost>')
         assert (email_tasks[0].kwargs['sender'] ==
-                     'wiki@test.p.in.localhost')
+                'wiki@test.p.in.localhost')
         assert (email_tasks[1].kwargs['sender'] ==
-                     'wiki@test.p.in.localhost')
+                'wiki@test.p.in.localhost')
         assert email_tasks[0].kwargs['text'].startswith(
             'Home modified by Test Admin')
         assert 'you indicated interest in ' in email_tasks[0].kwargs['text']

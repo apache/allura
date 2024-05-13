@@ -61,6 +61,7 @@ class MinimalApplicationConfiguratorNoRegistry(ApplicationConfigurator):
     Copied from tg.MinimalApplicationConfigurator but without the registry
     since we use RegistryManager in a specific part of our middleware already
     """
+
     def __init__(self):
         super().__init__()
         self.register(MimeTypesConfigurationComponent, after=False)

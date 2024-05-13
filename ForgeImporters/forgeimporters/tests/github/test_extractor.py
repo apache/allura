@@ -27,7 +27,6 @@ from mock import patch, Mock
 from ... import github
 
 
-
 class TestGitHubProjectExtractor(TestCase):
     PROJECT_INFO = {
         'description': 'project description',

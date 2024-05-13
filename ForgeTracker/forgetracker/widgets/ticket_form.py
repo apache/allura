@@ -102,7 +102,7 @@ class GenericTicketForm(ew.SimpleForm):
     def fields(self):
         fields = [
             ew.TextField(name='summary', label='Title',
-                         attrs={'style': 'width: 425px', 'class':'memorable',
+                         attrs={'style': 'width: 425px', 'class': 'memorable',
                                 'placeholder': 'Title'},
                          validator=v.UnicodeString(
                              not_empty=True, messages={
@@ -257,7 +257,7 @@ class MilestoneField(ew.SingleSelectField):
             opt for opt in self.options if opt.complete]
 
         # filter closed milestones entirely
-        #value = context['value']
-        #context['options'] = [opt for opt in self.options if not opt.complete or value == opt.py_value]
+        # value = context['value']
+        # context['options'] = [opt for opt in self.options if not opt.complete or value == opt.py_value]
 
         return context

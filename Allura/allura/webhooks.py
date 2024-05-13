@@ -131,7 +131,7 @@ class WebhookController(BaseController, AdminControllerMixin, metaclass=WebhookC
         if not request.validation.values and kw:
             # Executes if update_webhook raises an error
             request.validation.values = {'url': kw.get('url'),
-                             'secret': kw.get('secret')}
+                                         'secret': kw.get('secret')}
         return {'sender': self.sender,
                 'action': 'create',
                 'form': self.create_form()}
@@ -200,8 +200,8 @@ class WebhookController(BaseController, AdminControllerMixin, metaclass=WebhookC
         except Invalid:
             raise exc.HTTPNotFound()
         request.validation.values = {'url': kw.get('url') or wh.hook_url,
-                         'secret': kw.get('secret') or wh.secret,
-                         'webhook': str(wh._id)}
+                                     'secret': kw.get('secret') or wh.secret,
+                                     'webhook': str(wh._id)}
         return {'sender': self.sender,
                 'action': 'edit',
                 'form': form}

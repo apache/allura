@@ -111,9 +111,9 @@ class TestBulkExport:
         assert blog['posts'][1]['title'] == 'Test title'
         assert blog['posts'][1]['text'] == 'test post'
         assert (blog['posts'][1]['labels'] ==
-                     ['the firstlabel', 'the second label'])
+                ['the firstlabel', 'the second label'])
         assert (blog['posts'][1]['discussion_thread']
-                     ['posts'][0]['text'] == 'test comment')
+                ['posts'][0]['text'] == 'test comment')
 
     @td.with_tool('test', 'Blog', 'blog')
     def test_export_with_attachments(self):
@@ -148,5 +148,5 @@ class TestBulkExport:
             list(post.discussion_thread.post_class().query.find())[0].slug
         )
         assert (blog['posts'][0]['discussion_thread']['posts'][0]
-                     ['attachments'][0]['path'] == file_path)
+                ['attachments'][0]['path'] == file_path)
         assert os.path.exists(os.path.join(temp_dir, file_path))

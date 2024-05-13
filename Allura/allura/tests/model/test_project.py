@@ -141,8 +141,8 @@ class TestProjectModel:
 
     def test_set_ordinal_to_admin_tool(self):
         with h.push_config(c,
-                        user=M.User.by_username('test-admin'),
-                        project=M.Project.query.get(shortname='test')):
+                           user=M.User.by_username('test-admin'),
+                           project=M.Project.query.get(shortname='test')):
             sm = c.project.sitemap()
             assert sm[-1].tool_name == 'admin'
 

@@ -142,7 +142,7 @@ class TestTroveCategoryController(TestController):
         form = r.forms[0]
         r = form.submit()
         assert ("This category contains at least one sub-category, therefore it can't be removed" in
-                  self.webflash(r))
+                self.webflash(r))
 
         r = self.app.get('/categories/2')
         form = r.forms[0]
@@ -173,7 +173,7 @@ class TestTroveCategoryController(TestController):
         form['categoryname'].value = "New Child"
         form.submit()
 
-        possible =M.TroveCategory.query.find(dict(fullname='New Child')).all()
+        possible = M.TroveCategory.query.find(dict(fullname='New Child')).all()
         assert len(possible) == 1
         assert possible[0].fullname == 'New Child'
         assert possible[0].shortname == 'new-child'

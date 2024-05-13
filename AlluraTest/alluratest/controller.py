@@ -48,7 +48,7 @@ import allura.lib.security
 from allura.lib.app_globals import Globals
 from allura.lib import helpers as h
 from allura.websetup.schema import REGISTRY
-#from allura.lib.custom_middleware import environ as ENV, MagicalC
+# from allura.lib.custom_middleware import environ as ENV, MagicalC
 from .validation import ValidatingTestApp
 import six
 
@@ -162,8 +162,8 @@ def setup_global_objects():
 
 def setup_trove_categories():
     create_trove_categories = CreateTroveCategoriesCommand('create_trove_categories')
-    with mock.patch.object(M.project.TroveCategoryMapperExtension, 'after_insert'),\
-            mock.patch.object(M.project.TroveCategoryMapperExtension, 'after_update'),\
+    with mock.patch.object(M.project.TroveCategoryMapperExtension, 'after_insert'), \
+            mock.patch.object(M.project.TroveCategoryMapperExtension, 'after_update'), \
             mock.patch.object(M.project.TroveCategoryMapperExtension, 'after_delete'):
         create_trove_categories.run([''])
 

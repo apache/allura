@@ -70,7 +70,7 @@ class TestFeeds(TestController):
         assert '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">' in r
         # ...and atom:link points to feed url
         assert ('<atom:link href="http://localhost/blog/feed.rss" '
-                  'rel="self" type="application/rss+xml"></atom:link>' in r)
+                'rel="self" type="application/rss+xml"></atom:link>' in r)
 
     def test_post_feeds(self):
         self._post()
@@ -82,7 +82,7 @@ class TestFeeds(TestController):
         self._post(title='test', text='*sometext*')
         response = self.app.get('/blog/feed')
         assert ('&lt;div class="markdown_content"&gt;&lt;p&gt;&lt;em&gt;sometext&lt;/em&gt;&lt;/p&gt;&lt;/div&gt;' in
-                  response)
+                response)
 
     def test_related_artifacts(self):
         self._post(title='one')
@@ -136,7 +136,7 @@ class TestFeeds(TestController):
         self._post()
         blog_post = BM.BlogPost.query.get()
         with h.push_config(c, user=M.User.query.get(username='test-admin')), \
-             h.push_context(blog_post.project._id, app_config_id=blog_post.app_config_id):
+                h.push_context(blog_post.project._id, app_config_id=blog_post.app_config_id):
             blog_post.discussion_thread.add_post(text='You are a good blogger, I am a boring commentor.')
         ThreadLocalODMSession.flush_all()
 

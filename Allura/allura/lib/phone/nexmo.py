@@ -89,7 +89,7 @@ class NexmoPhoneService(PhoneService):
             return self.error()
         if resp.get('status') == '0':
             return self.ok(request_id=resp.get('request_id'))
-        return self.error(code=resp.get('status'), msg=resp.get('error_text'), number=params.get('number',''))
+        return self.error(code=resp.get('status'), msg=resp.get('error_text'), number=params.get('number', ''))
 
     def verify(self, number):
         url = urljoin(self.BASE_URL, 'verify')

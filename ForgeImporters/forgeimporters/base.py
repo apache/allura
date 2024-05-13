@@ -121,7 +121,7 @@ def object_from_path(path):
 def import_tool(importer_path, project_name=None,
                 mount_point=None, mount_label=None, **kw):
     importer = object_from_path(importer_path)()
-    with ImportErrorHandler(importer, project_name, c.project) as handler,\
+    with ImportErrorHandler(importer, project_name, c.project) as handler, \
             M.session.substitute_extensions(M.artifact_orm_session,
                                             [M.session.BatchIndexer]):
         try:
@@ -579,7 +579,7 @@ class ProjectToolsImportController:
         importer_matrix = defaultdict(dict)
         tools_with_importers = set()
         hidden = set(aslist(config.get('hidden_importers'), sep=','))
-        visible = lambda ep: ep.name not in hidden
+        def visible(ep): return ep.name not in hidden
         for ep in filter(visible, h.iter_entry_points('allura.importers')):
             # must instantiate to ensure importer.target_app is populated
             # (see ToolImporterMeta.__call__)

@@ -148,7 +148,7 @@ class ForgeMarkdown:
         except ValueError:
             threshold = None
             log.warning('Skipping Markdown caching - The value for config param '
-                     '"markdown_cache_threshold" must be a float.')
+                        '"markdown_cache_threshold" must be a float.')
 
         # Check if contains macro and never cache
         if self.uncacheable_macro_regex.search(source_text):
@@ -178,7 +178,7 @@ class ForgeMarkdown:
                 log.exception('Could not get session for %s', artifact)
             else:
                 with utils.skip_mod_date(artifact.__class__), \
-                     utils.skip_last_updated(artifact.__class__):
+                        utils.skip_last_updated(artifact.__class__):
                     sess.flush(artifact)
         return html
 
@@ -588,7 +588,7 @@ class Globals:
         return asbool(config['user_profile_url_with_profile_path'])
 
     def user_profile_disabled_tools(self):
-        return aslist(config.get('user_prefs.disabled_tools',''), sep=',')
+        return aslist(config.get('user_prefs.disabled_tools', ''), sep=',')
 
     def app_static(self, resource, app=None):
         base = config['static.url_base']
@@ -665,6 +665,7 @@ class Globals:
     @property
     def commit_statuses_enabled(self):
         return asbool(config['scm.commit_statuses'])
+
 
 class Icon:
 

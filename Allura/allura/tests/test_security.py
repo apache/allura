@@ -150,7 +150,7 @@ class TestSecurity(TestController):
         assert has_access(page, 'post', test_user)
         assert has_access(page, 'unmoderated_post', test_user)
         # FIXME: all_allowed doesn't respect blocked user feature
-        #assert_equal(all_allowed(page, test_user), set(['post', 'unmoderated_post']))
+        # assert_equal(all_allowed(page, test_user), set(['post', 'unmoderated_post']))
 
         assert has_access(wiki, 'read', test_user)
         assert has_access(wiki, 'post', test_user)
@@ -167,7 +167,7 @@ class TestSecurity(TestController):
         assert has_access(wiki, 'post', test_user)
         assert has_access(wiki, 'unmoderated_post', test_user)
         # FIXME: all_allowed doesn't respect blocked user feature
-        #assert_equal(all_allowed(wiki, test_user), set(['post', 'unmoderated_post']))
+        # assert_equal(all_allowed(wiki, test_user), set(['post', 'unmoderated_post']))
 
     @td.with_wiki
     def test_implicit_project(self):

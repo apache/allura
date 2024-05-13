@@ -109,10 +109,10 @@ class TestImportController(TestRestApiBase):  # TestController):
         assert from_api['summary'] == org['summary']
         assert from_api['ticket_num'] == org['id']
         assert (from_api['created_date'] ==
-                     self.time_normalize(org['date']))
+                self.time_normalize(org['date']))
         assert (from_api['mod_date'] ==
-                     self.time_normalize(org['date_updated']))
+                self.time_normalize(org['date_updated']))
         assert (from_api['custom_fields']
-                     ['_resolution'] == org['resolution'])
+                ['_resolution'] == org['resolution'])
         assert from_api['custom_fields']['_cc'] == org['cc']
         assert from_api['custom_fields']['_private'] == org['private']

@@ -40,6 +40,7 @@ log = logging.getLogger(__name__)
 
 class GitHubURLValidator(fev.FancyValidator):
     regex = r'https?:\/\/github\.com'
+
     def _convert_to_python(self, value, state):
         valid_url = urlparse(value.strip())
         if not bool(valid_url.scheme):
@@ -47,6 +48,7 @@ class GitHubURLValidator(fev.FancyValidator):
         if not re.match(self.regex, value):
             raise fev.Invalid('Invalid Github URL', value, state)
         return value
+
 
 class GitHubProjectNameValidator(fev.FancyValidator):
     not_empty = True
@@ -99,7 +101,7 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         now = datetime.utcnow()
         # 60/hour is for GitHub unauthenticated users.  If you get that, check your auth tokens
         log.warning('Rate limit exceeded (%s requests/hour). '
-                 'Sleeping until %s UTC' % (limit, reset))
+                    'Sleeping until %s UTC' % (limit, reset))
         time.sleep((reset - now).total_seconds() + 2)
 
     def urlopen(self, url, headers=None, use_auth_headers_on_redirects=True, **kw):

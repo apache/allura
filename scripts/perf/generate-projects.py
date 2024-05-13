@@ -19,11 +19,12 @@ import re
 from ming.odm import ThreadLocalODMSession
 from allura import model as M
 
+
 def main(start, cnt):
     n = M.Neighborhood.query.get(url_prefix='/p/')
     admin = M.User.by_username('admin1')
-    #M.Project.query.remove({'shortname': re.compile('gen-proj-.*')})
-    #ThreadLocalODMSession.flush_all()
+    # M.Project.query.remove({'shortname': re.compile('gen-proj-.*')})
+    # ThreadLocalODMSession.flush_all()
     for i in range(start, cnt):
         name = f'gen-proj-{i}'
         project = n.register_project(name, admin)
@@ -32,6 +33,7 @@ def main(start, cnt):
     print('Flushing...')
     ThreadLocalODMSession.flush_all()
     print('Done')
+
 
 if __name__ == '__main__':
     import sys

@@ -103,8 +103,8 @@ class parse:
             return response
         except (ValueError, TypeError) as ex:
             log.warning('macro error.  Upwards stack is %s',
-                     ''.join(traceback.format_stack()),
-                     exc_info=True)
+                        ''.join(traceback.format_stack()),
+                        exc_info=True)
             msg = html.escape(f'[[{s}]] ({repr(ex)})')
             return '\n<div class="error"><pre><code>%s</code></pre></div>' % msg
 
@@ -184,7 +184,7 @@ def project_blog_posts(max_number=5, sort='timestamp', summary=False, mount_poin
              ago=h.ago(post.timestamp),
              description=summary and '&nbsp;' or g.markdown.cached_convert(post, 'text'))
         for post in posts if security.has_access(post, 'read', project=post.app.project) and
-            security.has_access(post.app.project, 'read', project=post.app.project)
+        security.has_access(post.app.project, 'read', project=post.app.project)
     ]
     posts = BlogPosts(posts=output)
     g.resource_manager.register(posts)

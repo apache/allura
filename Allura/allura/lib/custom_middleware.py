@@ -496,8 +496,9 @@ class ContentSecurityPolicyMiddleware:
             if environ.get('csp_form_actions'):
                 srcs += ' ' + ' '.join(environ['csp_form_actions'])
 
-            oauth_endpoints = ('/rest/oauth2/authorize', '/rest/oauth2/do_authorize', '/rest/oauth/authorize', '/rest/oauth/do_authorize')
-            if not req.path.startswith(oauth_endpoints): # Do not enforce CSP for OAuth1 and OAuth2 authorization
+            oauth_endpoints = (
+            '/rest/oauth2/authorize', '/rest/oauth2/do_authorize', '/rest/oauth/authorize', '/rest/oauth/do_authorize')
+            if not req.path.startswith(oauth_endpoints):  # Do not enforce CSP for OAuth1 and OAuth2 authorization
                 if asbool(self.config.get('csp.form_actions_enforce', False)):
                     rules.add(f"form-action {srcs}")
                 else:
@@ -516,7 +517,8 @@ class ContentSecurityPolicyMiddleware:
             if asbool(self.config.get('csp.script_src_enforce', False)):
                 rules.add(f"script-src {script_srcs} {self.config.get('csp.script_src.extras','')} 'report-sample'")
             else:
-                report_rules.add(f"script-src {script_srcs} {self.config.get('csp.script_src.extras','')} 'report-sample'")
+                report_rules.add(
+                    f"script-src {script_srcs} {self.config.get('csp.script_src.extras', '')} 'report-sample'")
 
         if self.config.get('csp.script_src_attr'):
             if asbool(self.config.get('csp.script_src_attr_enforce', False)):
@@ -581,6 +583,7 @@ def _call_wsgi_application(application, environ):
     """
     captured = []
     output = []
+
     def _start_response(status, headers, exc_info=None):
         captured[:] = [status, headers, exc_info]
         return output.append
@@ -607,6 +610,7 @@ class StatusCodeRedirect:
     purposely return a 401), set
     ``environ['tg.status_code_redirect'] = False`` in the application.
     """
+
     def __init__(self, app, errors=(400, 401, 403, 404),
                  path='/error/document'):
         """Initialize the ErrorRedirect
@@ -626,7 +630,7 @@ class StatusCodeRedirect:
     def __call__(self, environ, start_response):
         status, headers, app_iter, exc_info = _call_wsgi_application(self.app, environ)
         if status[:3] in self.errors and \
-            'tg.status_code_redirect' not in environ and self.error_path:
+                'tg.status_code_redirect' not in environ and self.error_path:
             # Create a response object
             environ['tg.original_response'] = Response(status=status, headerlist=headers, app_iter=app_iter)
             environ['tg.original_request'] = Request(environ)

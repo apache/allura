@@ -201,9 +201,9 @@ def chunked_list(l, n):
 
 
 def chunked_iter(iterable, max_size):
-    '''return iterable 'chunks' from the iterable of max size max_size'''
+    """return iterable 'chunks' from the iterable of max size max_size"""
     eiter = enumerate(iterable)
-    keyfunc = lambda i_x: i_x[0] // max_size
+    def keyfunc(i_x): return i_x[0] // max_size
     for _, chunk in groupby(eiter, keyfunc):
         yield (x for i, x in chunk)
 
@@ -247,11 +247,11 @@ class AntiSpam:
 
     @staticmethod
     def _wrap(s):
-        '''Encode bytes to make it HTML id-safe (starts with alpha, includes
+        """Encode bytes to make it HTML id-safe (starts with alpha, includes
         only digits, hyphens, underscores, colons, and periods).  Luckily, base64
         encoding doesn't use hyphens, underscores, colons, nor periods, so we'll
         use these characters to replace its plus, slash, equals, and newline.
-        '''
+        """
         s = base64.b64encode(six.ensure_binary(s))
         s = s.rstrip(b'=\n')
         s = s.replace(b'+', b'-').replace(b'/', b'_')

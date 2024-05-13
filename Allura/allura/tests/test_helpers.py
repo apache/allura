@@ -707,6 +707,7 @@ def test_querystring():
     assert (h.querystring(req, dict(page=5, limit=2, count=None)) ==
             'https://mysite.com/p/test/foobar/p/test/foobar?page=5&limit=2')
 
+
 def test_clean_html():
     assert h.clean_html('<script>alert(1)</script>') == '&lt;script&gt;alert(1)&lt;/script&gt;'
     assert h.clean_html('<b style="color: red; right: 0">ok</b>') == '<b style="color: red;">ok</b>'

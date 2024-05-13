@@ -284,7 +284,6 @@ class TestForumAdmin(TestController):
                           extra_environ=dict(username='test-user'),
                           status=403)
 
-
     def test_footer_monitoring_email(self):
         r = self.app.get('/admin/discussion/forums')
         form = r.forms['add-forum']
@@ -318,6 +317,6 @@ class TestForumAdmin(TestController):
             dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
         assert 'Sent from localhost because email@monitoring.com is subscribed '\
                'to http://localhost/p/test/discussion/testforum/' in email_tasks[
-            0].kwargs['text'], email_tasks[0].kwargs['text']
+                   0].kwargs['text'], email_tasks[0].kwargs['text']
         assert 'a project admin can change settings at http://localhost/p/test/admin/discussion/forums' in email_tasks[
             0].kwargs['text']
