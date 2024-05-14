@@ -306,7 +306,11 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
 
     def validate_bearer_token(self, token: str, scopes: list[str], request: oauthlib.common.Request) -> bool:
         access_token = M.OAuth2AccessToken.query.get(access_token=token)
-        return access_token.expires_at >= datetime.utcnow() if access_token else False
+        if access_token and access_token.expires_at >= datetime.utcnow():
+            request.access_token = access_token
+            return True
+        else:
+            return False
 
     def validate_refresh_token(self, refresh_token: str, client: oauthlib.oauth2.Client, request: oauthlib.common.Request, *args, **kwargs) -> bool:
         return M.OAuth2AccessToken.query.get(refresh_token=refresh_token) is not None
@@ -426,7 +430,7 @@ class OAuthNegotiator:
             http_method=request.method,
             body=request.body,
             headers=request.headers)
-        response.headers = headers
+        response.headers.update(headers)
         response.status_int = status
         return body
 
@@ -481,7 +485,7 @@ class OAuthNegotiator:
             rtok.validation_pin = verifier
             return dict(rtok=rtok)
         else:
-            response.headers = headers
+            response.headers.update(headers)
             response.status_int = status
             return body
 
@@ -492,7 +496,7 @@ class OAuthNegotiator:
             http_method=request.method,
             body=request.body,
             headers=request.headers)
-        response.headers = headers
+        response.headers.update(headers)
         response.status_int = status
         return body
 
@@ -512,14 +516,7 @@ class Oauth2Negotiator:
         if not valid:
             raise exc.HTTPUnauthorized
 
-        bearer_token_prefix = 'Bearer '  # noqa: S105
-        auth_header = req.headers.get('Authorization')
-        if auth_header and auth_header.startswith(bearer_token_prefix):
-            access_token = auth_header[len(bearer_token_prefix):]
-        else:
-            raise exc.HTTPUnauthorized
-
-        token = M.OAuth2AccessToken.query.get(access_token=access_token)
+        token = req.access_token  # set by validate_bearer_token
         token.last_access = datetime.utcnow()
         return token
 
@@ -563,9 +560,7 @@ class Oauth2Negotiator:
         )
 
         response.status_int = status
-        for k, v in headers.items():
-            response.headers[k] = v
-
+        response.headers.update(headers)
         return body
 
     @expose('json:')
@@ -581,6 +576,8 @@ class Oauth2Negotiator:
             request_body = decoded_body
 
         headers, body, status = self.server.create_token_response(uri=request.url, http_method=request.method, body=request_body, headers=request.headers)
+        response.headers.update(headers)
+        response.status_int = status
         return body
 
 def rest_has_access(obj, user, perm):
