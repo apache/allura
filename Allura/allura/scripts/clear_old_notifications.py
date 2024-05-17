@@ -40,7 +40,7 @@ class ClearOldNotifications(ScriptTask):
     def execute(cls, options):
         before = datetime.utcnow() - timedelta(days=options.back_days)
         M.Notification.query.remove({
-            'pubdate': {'$lt': before}
+            'pubdate': {'$lte': before}
         })
 
 
