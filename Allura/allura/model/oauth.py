@@ -158,7 +158,10 @@ class OAuth2ClientApp(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name = 'oauth2_client_app'
-        unique_indexes = [('client_id', 'user_id')]
+        unique_indexes = [
+            ('client_id', 'user_id'),
+            ('client_id')
+        ]
         indexes = [
             ('user_id'),
         ]
@@ -194,7 +197,10 @@ class OAuth2AuthorizationCode(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name = 'oauth2_authorization_code'
-        unique_indexes = [('authorization_code', 'client_id', 'user_id')]
+        unique_indexes = [
+            ('authorization_code', 'client_id', 'user_id'),
+            ('authorization_code')
+        ]
         indexes = [
             ('user_id'),
         ]
@@ -219,7 +225,13 @@ class OAuth2AccessToken(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name = 'oauth2_access_token'
-        unique_indexes = [('access_token', 'client_id', 'user_id')]
+        unique_indexes = [
+            ('access_token', 'client_id', 'user_id'),
+            ('access_token')
+        ]
+        custom_indexes = [
+            dict(fields=('refresh_token',), partialFilterExpression={'refresh_token': {'$gt': None}}, unique=True),
+        ]
         indexes = [
             ('user_id'),
         ]
@@ -232,6 +244,7 @@ class OAuth2AccessToken(MappedClass):
     scopes = FieldProperty([str])
     access_token = FieldProperty(str)
     refresh_token = FieldProperty(str)
+    is_bearer = FieldProperty(bool, if_missing=False)
     expires_at = FieldProperty(S.DateTime)
     last_access = FieldProperty(datetime)
 

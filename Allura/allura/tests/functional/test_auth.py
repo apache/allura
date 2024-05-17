@@ -33,6 +33,7 @@ from tg import config, expose
 from mock import patch, Mock
 import mock
 import pytest
+import webtest
 from tg import tmpl_context as c, app_globals as g
 
 from allura.tests import TestController
@@ -2067,6 +2068,79 @@ class TestOAuth(TestController):
 
 
 class TestOAuth2(TestController):
+    @pytest.fixture
+    def mock_client(self):
+        user = M.User.by_username('test-admin')
+        M.OAuth2ClientApp(
+            client_id='client_12345',
+            client_secret='98765',
+            user_id=user._id,
+            name='testoauth2',
+            description='test client',
+            response_type='code',
+            redirect_uris=['https://localhost/']
+        )
+        ThreadLocalODMSession.flush_all()
+
+    @pytest.fixture
+    def mock_credentials(self):
+        return dict(client_id='client_12345', redirect_uri='https://localhost/', response_type='code', state=None)
+
+    @pytest.fixture
+    def mock_valid_token(self):
+        user = M.User.by_username('test-admin')
+        M.OAuth2AccessToken(
+            client_id='client_12345',
+            access_token='ULy1kNFFSCYCscfcoS2oF5Z8i61Mx8',
+            refresh_token='QuoBOJ6CWJlrg0CSXMKDyTezQQHPOP',
+            scopes=[],
+            expires_at=datetime.utcnow() + timedelta(hours=1),
+            user_id=user._id
+        )
+        ThreadLocalODMSession.flush_all()
+
+    @pytest.fixture
+    def mock_expired_token(self):
+        user = M.User.by_username('test-admin')
+        M.OAuth2AccessToken(
+            client_id='client_12345',
+            access_token='ULy1kNFFSCYCscfcoS2oF5Z8i61Mx8',
+            refresh_token='QuoBOJ6CWJlrg0CSXMKDyTezQQHPOP',
+            scopes=[],
+            expires_at=datetime.utcnow() - timedelta(days=1),
+            user_id=user._id
+        )
+        ThreadLocalODMSession.flush_all()
+
+    @pytest.fixture
+    def mock_valid_authorization_code(self):
+        user = M.User.by_username('test-admin')
+        M.OAuth2AuthorizationCode(
+            client_id='client_12345',
+            authorization_code='XToC3m9whoA304HMMKOOUF678n6s6r',
+            scopes=[],
+            redirect_uri='https://localhost/',
+            user_id=user._id,
+            expires_at=datetime.utcnow() + timedelta(minutes=10)
+        )
+        ThreadLocalODMSession.flush_all()
+
+    @pytest.fixture
+    def mock_expired_authorization_code(self):
+        user = M.User.by_username('test-admin')
+        M.OAuth2AuthorizationCode(
+            client_id='client_12345',
+            authorization_code='XToC3m9whoA304HMMKOOUF678n6s6r',
+            scopes=[],
+            redirect_uri='https://localhost/',
+            user_id=user._id,
+            expires_at=datetime.utcnow() - timedelta(minutes=10),
+            # Code verifier: iX7BOwXKgX2PH1diMIN_RQDiczkFTYAyzc-bhUVC3iCD3P2l_fYQYCORcLKbw2uGjGTX9UUBTAIqcjAdf3QRCQ
+            code_challenge='CqIDFfrLC7TTUzeCUdHryYMCUdiXjQsqX6qHgQtsFOQ',
+            code_challenge_method='S256'
+        )
+        ThreadLocalODMSession.flush_all()
+
     @mock.patch.dict(config, {'auth.oauth2.enabled': True})
     def test_register_deregister_client(self):
         # register
@@ -2098,7 +2172,7 @@ class TestOAuth2(TestController):
             redirect_uris=['https://localhost/']
         )
         ThreadLocalODMSession.flush_all()
-        r = self.app.get('/rest/oauth2/authorize', params={'client_id': 'client_12345', 'response_type': 'code', 'redirect_uri': 'https://localhost/'})
+        r = self.app.get('/auth/oauth2/authorize', params={'client_id': 'client_12345', 'response_type': 'code', 'redirect_uri': 'https://localhost/'})
         assert 'testoauth2' in r.text
         assert 'client_12345' in r.text
 
@@ -2115,7 +2189,7 @@ class TestOAuth2(TestController):
             redirect_uris=['https://localhost/']
         )
         ThreadLocalODMSession.flush_all()
-        r = self.app.get('/rest/oauth2/authorize', params={'client_id': 'client_12345', 'response_type': 'code', 'redirect_uri': 'https://localhost/'})
+        r = self.app.get('/auth/oauth2/authorize', params={'client_id': 'client_12345', 'response_type': 'code', 'redirect_uri': 'https://localhost/'})
         r = r.forms[0].submit('no')
         assert M.OAuth2AuthorizationCode.query.get(client_id='client_12345') is None
 
@@ -2139,7 +2213,7 @@ class TestOAuth2(TestController):
         r.mustcontain(no='testoauth2')
 
         # First navigate to the authorization page for the backend to validate the authorization request
-        r = self.app.get('/rest/oauth2/authorize', params={'client_id': 'client_12345', 'response_type': 'code', 'redirect_uri': 'https://localhost/'})
+        r = self.app.get('/auth/oauth2/authorize', params={'client_id': 'client_12345', 'response_type': 'code', 'redirect_uri': 'https://localhost/'})
         # The submit authorization for the authorization code to be created
         r.forms[0].submit('yes')
 
@@ -2160,7 +2234,7 @@ class TestOAuth2(TestController):
         self.app.post_json('/rest/oauth2/token', oauth2_params, extra_environ={'username': '*anonymous'})
         t = M.OAuth2AccessToken.query.get(client_id='client_12345')
         assert t is not None
-        assert t.access_token is not None and t.refresh_token is not None
+        assert t.access_token is not None and t.refresh_token is not None and not t.is_bearer
 
         r = self.app.get('/auth/oauth/')
         r.mustcontain('testoauth2')
@@ -2245,6 +2319,122 @@ class TestOAuth2(TestController):
 
         r = self.app.get('/auth/oauth/')
         r.mustcontain(no='testoauth2')
+
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_pkce(self, mock_client, mock_credentials):
+        code_verifier = 'QkatVHgTq_cZj8tTKWPIe78fXpoeszhVq6kLIUxJj8g9tMmfi0XV4dfZHQBXwOiWsLihJotfrOGKR4nZSXA4mA'
+        code_challenge = 'BxGpJVKt_l6Srlq3uXPfpxge3TxtxetcWhGXq2958yU'
+        code_challenge_method = 'S256' # Must be uppercase
+
+        # Authorize the app by sending the code challenge and code challenge method as qs param
+        params = dict(client_id='client_12345', response_type='code', redirect_uri='https://localhost/', code_challenge=code_challenge,
+                        code_challenge_method=code_challenge_method)
+        r = self.app.get('/auth/oauth2/authorize', params=params)
+
+        # Authorize app
+        r.forms[0].submit('yes')
+
+        # Get the authorization code
+        ac = M.OAuth2AuthorizationCode.query.get(client_id='client_12345')
+        assert ac is not None
+
+        # Exchange the authorization code for an access token. It should fail if you do not provide the code verifier
+        body = dict(client_id='client_12345', client_secret='98765', code=ac.authorization_code, grant_type='authorization_code', redirect_uri='https://localhost/')
+
+        with pytest.raises(webtest.app.AppError) as ex:
+            r = self.app.post_json('/rest/oauth2/token', body, extra_environ={'username': '*anonymous'})
+
+        assert 'Code verifier required' in str(ex.value)
+
+        # Now provide the code verifier and it should pass
+        body.update(code_verifier=code_verifier)
+        r = self.app.post_json('/rest/oauth2/token', body, extra_environ={'username': '*anonymous'})
+        assert r.status_int == 200
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_refresh_token(self, mock_client, mock_valid_token):
+        token = M.OAuth2AccessToken.query.get(client_id='client_12345')
+
+        body = dict(client_id='client_12345', client_secret='98765', grant_type='refresh_token', refresh_token=token.refresh_token)
+        r = self.app.post_json('/rest/oauth2/token', body, extra_environ={'username': '*anonymous'})
+        assert r.status_int == 200
+        assert r.json['access_token'] != token.access_token
+        assert r.json['refresh_token'] != token.refresh_token
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_invalid_refresh_token(self, mock_client, mock_valid_token):
+        body = dict(client_id='client_12345', client_secret='98765', grant_type='refresh_token', refresh_token='invalid_token')
+        with pytest.raises(webtest.app.AppError) as ex:
+            r = self.app.post_json('/rest/oauth2/token', body, extra_environ={'username': '*anonymous'})
+
+        assert 'invalid_grant' in str(ex.value)
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_access_token_with_expired_code(self, mock_client, mock_expired_authorization_code):
+        c = M.OAuth2ClientApp.query.get(client_id='client_12345')
+        ac = M.OAuth2AuthorizationCode.query.get(client_id='client_12345')
+
+        body = dict(client_id=c.client_id, client_secret=c.client_secret, grant_type='authorization_code', code=ac.authorization_code,
+                        redirect_uri=c.redirect_uris[0])
+        with pytest.raises(webtest.app.AppError) as ex:
+            r = self.app.post_json('/rest/oauth2/token', body, extra_environ={'username': '*anonymous'})
+
+        assert 'invalid_grant' in str(ex.value)
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_access_token_with_invalid_redirect_uri(self, mock_client, mock_valid_authorization_code):
+        c = M.OAuth2ClientApp.query.get(client_id='client_12345')
+        ac = M.OAuth2AuthorizationCode.query.get(client_id='client_12345')
+
+        body = dict(client_id=c.client_id, client_secret=c.client_secret, grant_type='authorization_code', code=ac.authorization_code,
+                        redirect_uri='https://invalid.com')
+        with pytest.raises(webtest.app.AppError) as ex:
+            r = self.app.post_json('/rest/oauth2/token', body, extra_environ={'username': '*anonymous'})
+
+        assert 'Mismatching redirect URI' in str(ex.value)
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_access_token_with_invalid_credentials(self, mock_client, mock_valid_authorization_code):
+        c = M.OAuth2ClientApp.query.get(client_id='client_12345')
+        ac = M.OAuth2AuthorizationCode.query.get(client_id='client_12345')
+
+        # First test passing an invalid client id
+        body = dict(client_id='invalid_client_id', client_secret=c.client_secret, grant_type='authorization_code', code=ac.authorization_code,
+                        redirect_uri=c.redirect_uris[0])
+
+        with pytest.raises(webtest.app.AppError) as ex:
+            r = self.app.post_json('/rest/oauth2/token', body, extra_environ={'username': '*anonymous'})
+
+        assert 'invalid_client' in str(ex.value)
+
+        # Now test passing an invalid client secret
+        body = dict(client_id=c.client_id, client_secret='invalid_secret', grant_type='authorization_code', code=ac.authorization_code,
+                        redirect_uri=c.redirect_uris[0])
+
+        with pytest.raises(webtest.app.AppError) as ex:
+            r = self.app.post_json('/rest/oauth2/token', body, extra_environ={'username': '*anonymous'})
+
+        assert 'invalid_client' in str(ex.value)
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_authorization_code_no_duplicates(self, mock_client):
+        c = M.OAuth2ClientApp.query.get(client_id='client_12345')
+
+        params = dict(client_id=c.client_id, response_type='code', redirect_uri=c.redirect_uris[0])
+        r = self.app.get('/auth/oauth2/authorize', params=params)
+        r.forms[0].submit('yes')
+
+        # Find all authorization codes and validate there's only one record
+        ac = M.OAuth2AuthorizationCode.query.find(dict(client_id=c.client_id)).all()
+        assert len(ac) == 1
+
+        # Now try to authorize again and validate there's still only one record
+        r = self.app.get('/auth/oauth2/authorize', params=params)
+        r.forms[0].submit('yes')
+
+        ac = M.OAuth2AuthorizationCode.query.find(dict(client_id=c.client_id)).all()
+        assert len(ac) == 1
 
 
 class TestOAuthRequestToken(TestController):

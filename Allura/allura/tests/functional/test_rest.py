@@ -17,11 +17,14 @@
 
 
 import json
+from datetime import datetime, timedelta
 
 import tg
 from bson import ObjectId
 from tg import app_globals as g
 import mock
+import pytest
+import webtest
 from ming.odm import ThreadLocalODMSession
 from tg import config
 
@@ -418,6 +421,50 @@ class TestRestHome(TestRestApiBase):
         g.theme._get_site_notification = mock.Mock(return_value=None)
         r = self.app.get('/rest/notification')
         assert r.json == {}
+
+    @td.with_wiki
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_oauth2_token_authentication(self):
+        # Create a valid access token
+        user = M.User.by_username('test-admin')
+        token = M.OAuth2AccessToken(
+            client_id='client_12345',
+            access_token='ULy1kNFFSCYCscfcoS2oF5Z8i61Mx8',
+            refresh_token='QuoBOJ6CWJlrg0CSXMKDyTezQQHPOP',
+            scopes=[],
+            expires_at=datetime.utcnow() + timedelta(days=1),
+            user_id=user._id
+        )
+        ThreadLocalODMSession.flush_all()
+
+        self.set_api_token(token)
+        r = self.api_get('/rest/p/test/wiki/Home')
+        params = dict(text=r.json['text'])
+        r = self.api_post('/rest/p/test/wiki/Home', params=params)
+        assert r.status_int == 200
+
+    @td.with_wiki
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_oauth2_expired_token_authentication(self):
+        # Create an expired access token
+        user = M.User.by_username('test-admin')
+        token = M.OAuth2AccessToken(
+            client_id='client_12345',
+            access_token='ULy1kNFFSCYCscfcoS2oF5Z8i61Mx8',
+            refresh_token='QuoBOJ6CWJlrg0CSXMKDyTezQQHPOP',
+            scopes=[],
+            expires_at=datetime.utcnow() - timedelta(days=1),
+            user_id=user._id
+        )
+        ThreadLocalODMSession.flush_all()
+
+        self.set_api_token(token)
+        with pytest.raises(webtest.app.AppError) as ex:
+            r = self.api_get('/rest/p/test/wiki/Home')
+            params = dict(text=r.json['text'])
+            r = self.api_post('/rest/p/test/wiki/Home', params=params)
+            
+        assert '401 Unauthorized' in str(ex.value)
 
 
 class TestRestNbhdAddProject(TestRestApiBase):

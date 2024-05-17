@@ -255,7 +255,7 @@ class Oauth1Validator(oauthlib.oauth1.RequestValidator):
 
 
 class Oauth2Validator(oauthlib.oauth2.RequestValidator):
-    def validate_client_id(self, client_id: str, request: oauthlib.common.Request) -> bool:
+    def validate_client_id(self, client_id: str, request: oauthlib.common.Request, *args, **kwargs) -> bool:
         return M.OAuth2ClientApp.query.get(client_id=client_id) is not None
 
     def validate_redirect_uri(self, client_id, redirect_uri, request, *args, **kwargs):
@@ -270,7 +270,7 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
         return True
 
     def validate_grant_type(self, client_id: str, grant_type: str, client: oauthlib.oauth2.Client, request: oauthlib.common.Request, *args, **kwargs) -> bool:
-        return grant_type in ['authorization_code', 'refresh_token', 'client_credentials']
+        return grant_type in ['authorization_code', 'refresh_token']
 
     def get_default_scopes(self, client_id: str, request: oauthlib.common.Request, *args, **kwargs):
         return []
@@ -313,7 +313,7 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
             return False
 
     def validate_refresh_token(self, refresh_token: str, client: oauthlib.oauth2.Client, request: oauthlib.common.Request, *args, **kwargs) -> bool:
-        return M.OAuth2AccessToken.query.get(refresh_token=refresh_token) is not None
+        return M.OAuth2AccessToken.query.get(refresh_token=refresh_token, client_id=client.client_id) is not None
 
     def confirm_redirect_uri(self, client_id: str, code: str, redirect_uri: str, client: oauthlib.oauth2.Client, request: oauthlib.common.Request, *args, **kwargs) -> bool:
         # This method is called when the client is exchanging the authorization code for an access token.
@@ -322,11 +322,11 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
         return authorization.redirect_uri == redirect_uri
 
     def save_authorization_code(self, client_id: str, code, request: oauthlib.common.Request, *args, **kwargs) -> None:
-        authorization = M.OAuth2AuthorizationCode.query.get(client_id=client_id, user_id=c.user._id, authorization_code=code['code'])
+        authorization = M.OAuth2AuthorizationCode.query.get(client_id=client_id, user_id=c.user._id)
 
         # Remove the existing authorization code if it exists and create a new record
         if authorization:
-            M.OAuth2AuthorizationCode.query.remove({'client_id': client_id, 'user_id': c.user._id, 'authorization_code': code['code']})
+            M.OAuth2AuthorizationCode.query.remove({'client_id': client_id, 'user_id': c.user._id})
 
         log.info('Saving authorization code for client: %s', client_id)
         auth_code = M.OAuth2AuthorizationCode(
@@ -347,10 +347,10 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
         elif request.grant_type == 'refresh_token':
             user_id = M.OAuth2AccessToken.query.get(client_id=request.client_id, refresh_token=request.refresh_token).user_id
 
-        current_token = M.OAuth2AccessToken.query.get(client_id=request.client_id, user_id=user_id)
+        current_token = M.OAuth2AccessToken.query.get(client_id=request.client_id, user_id=user_id, is_bearer=False)
 
         if current_token:
-            M.OAuth2AccessToken.query.remove({'client_id': request.client_id, 'user_id': user_id})
+            M.OAuth2AccessToken.query.remove({'client_id': request.client_id, 'user_id': user_id, 'is_bearer': False})
 
         bearer_token = M.OAuth2AccessToken(
             client_id=request.client_id,
@@ -519,49 +519,6 @@ class Oauth2Negotiator:
         token = req.access_token  # set by validate_bearer_token
         token.last_access = datetime.utcnow()
         return token
-
-    @expose('jinja:allura:templates/oauth2_authorize.html')
-    @without_trailing_slash
-    def authorize(self, **kwargs):
-        security.require_authenticated()
-        json_body = None
-        if request.body:
-            # We need to decode the request body and convert it to a dict because Turbogears creates it as bytes
-            # and oauthlib will treat it as x-www-form-urlencoded format.
-            decoded_body = str(request.body, 'utf-8')
-            json_body = json.loads(decoded_body)
-
-        scopes, credentials = self.server.validate_authorization_request(uri=request.url, http_method=request.method, headers=request.headers, body=json_body)
-
-        client_id = request.params.get('client_id')
-        client = M.OAuth2ClientApp.query.get(client_id=client_id)
-
-        # The credentials object has a request object that it's too big to be serialized,
-        # so we remove it because we don't need it for the rest of the authorization workflow
-        del credentials['request']
-
-        return dict(client=client, credentials=json.dumps(credentials))
-
-    @expose('jinja:allura:templates/oauth2_authorize_ok.html')
-    @require_post()
-    def do_authorize(self, yes=None, no=None):
-        security.require_authenticated()
-
-        client_id = request.params['client_id']
-        client = M.OAuth2ClientApp.query.get(client_id=client_id)
-
-        if no:
-            flash(f'{client.name} NOT AUTHORIZED', 'error')
-            redirect('/auth/oauth/')
-
-        credentials = json.loads(request.params['credentials'])
-        headers, body, status = self.server.create_authorization_response(
-            uri=request.url, http_method=request.method, body=request.body, headers=request.headers, scopes=[], credentials=credentials
-        )
-
-        response.status_int = status
-        response.headers.update(headers)
-        return body
 
     @expose('json:')
     @require_post()

@@ -264,7 +264,12 @@ class TestRestApiBase(TestController):
         if not isinstance(params, str):
             params = variabledecode.variable_encode(params, add_repetitions=False)
 
-        token = self.token(user).api_key
+        bearer_token = self.token(user)
+        try:
+            token = bearer_token.api_key
+        except AttributeError:
+            token = bearer_token.access_token
+
         headers = {
             'Authorization': str(f'Bearer {token}')
         }

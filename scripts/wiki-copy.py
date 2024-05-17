@@ -119,7 +119,7 @@ def make_oauth2_client(base_url) -> requests.Session:
     cp = ConfigParser()
     cp.read(config_file)
 
-    AUTHORIZE_URL = base_url + '/rest/oauth2/authorize'
+    AUTHORIZE_URL = base_url + '/auth/oauth2/authorize'
     ACCESS_TOKEN_URL = base_url + '/rest/oauth2/token'
 
     client_id = option(cp, base_url, 'oauth2_client_id',

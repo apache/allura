@@ -78,6 +78,8 @@
 
 {% block content %}
     {{ super() }}
+    <h5>For direct API use, <a href="#oauth_applications">create an application client</a> and generate a bearer token</h5>
+    <br/>
     <h2>Authorized Applications</h2>
     <p>
         These are applications you have authorized to act on your behalf.
@@ -148,13 +150,12 @@
                     <input type="submit" value="Delete all access tokens"/>
                     {{lib.csrf_token()}}
                 </form>
-                {#
-                <form method="POST" action="generate_access_token2" class="generate_access_token">
-                    <input type="hidden" name="_id" value="{{consumer_token._id}}"/>
+                <form method="POST" action="generate_bearer_token" class="generate_bearer_token">
+                    <input type="hidden" name="client_id" value="{{client.client_id}}"/>
                     <input type="submit" value="Generate Bearer Token"/>
                     {{lib.csrf_token()}}
                 </form>
-                 #}
+
             </td>
         </tr>
     </table>
@@ -197,7 +198,7 @@
     {% endif %}
 
     {% if h.asbool(config.get('auth.oauth2.enabled', False)) %}
-    <div class="grid-24" style="margin-left:0">
+    <div id="oauth_applications" class="grid-24" style="margin-left:0">
     <h2>Register New OAuth2 Application</h2>
     {{ c.form2.display() }}
     </div>

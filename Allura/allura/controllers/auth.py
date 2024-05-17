@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import logging
+import json
 import os
 from base64 import b32encode
 from datetime import datetime
@@ -63,6 +64,8 @@ from allura.lib import utils
 from allura.controllers import BaseController
 from allura.tasks.mail_tasks import send_system_mail_to_user
 import six
+import oauthlib.oauth2
+
 
 log = logging.getLogger(__name__)
 
@@ -115,6 +118,9 @@ class AuthController(BaseController):
         self.user_info = UserInfoController()
         self.subscriptions = SubscriptionsController()
         self.oauth = OAuthController()
+
+        if asbool(config.get('auth.oauth2.enabled', False)):
+            self.oauth2 = OAuth2AuthorizationController()
 
         if asbool(config.get('auth.allow_user_to_disable_account', False)):
             self.disable = DisableAccountController()
@@ -1346,12 +1352,12 @@ class OAuthController(BaseController):
                 access_tokens.append({
                     'type': 2,
                     'app': M.OAuth2ClientApp.query.get(client_id=oauth2_tok.client_id),
-                    # TODO personal bearer tokens:
-                    'is_bearer': False,
-                    'api_key': None,
+                    'is_bearer': oauth2_tok.is_bearer,
+                    'api_key': oauth2_tok.access_token if oauth2_tok.is_bearer else None,
                     'last_access': oauth2_tok.last_access,
                     '_id': oauth2_tok._id,
                 })
+
             # include auth codes too, but only if they're not already listed via an access/refresh token
             for oauth2_auth in M.OAuth2AuthorizationCode.query.find({'user_id': c.user._id}):
                 client_app = M.OAuth2ClientApp.query.get(client_id=oauth2_auth.client_id)
@@ -1491,6 +1497,22 @@ class OAuthController(BaseController):
 
     @expose()
     @require_post()
+    def generate_bearer_token(self, client_id):
+        """
+        Manually generates an OAuth2 access token without needing to go through the OAuth2 flow.
+        """
+        M.OAuth2AccessToken(
+            client_id=client_id,
+            user_id=c.user._id,
+            access_token=h.nonce(40),
+            is_bearer=True,
+            expires_at=datetime.max
+        )
+
+        redirect('.')
+
+    @expose()
+    @require_post()
     def revoke_access_token(self, _id):
         access_token = M.OAuthAccessToken.query.get(_id=bson.ObjectId(_id))
         self._check_revoke_perm(access_token)
@@ -1525,6 +1547,56 @@ class OAuthController(BaseController):
         auth.delete()
         flash('Authorization revoked')
         redirect('.')
+
+class OAuth2AuthorizationController(BaseController):
+    def _check_security(self):
+        require_authenticated()
+
+    @property
+    def server(self):
+        from allura.controllers.rest import Oauth2Validator
+        return oauthlib.oauth2.WebApplicationServer(Oauth2Validator())
+
+    @expose('jinja:allura:templates/oauth2_authorize.html')
+    @without_trailing_slash
+    def authorize(self, **kwargs):
+        json_body = None
+        if request.body:
+            # We need to decode the request body and convert it to a dict because Turbogears creates it as bytes
+            # and oauthlib will treat it as x-www-form-urlencoded format.
+            decoded_body = str(request.body, 'utf-8')
+            json_body = json.loads(decoded_body)
+
+        scopes, credentials = self.server.validate_authorization_request(uri=request.url, http_method=request.method, headers=request.headers, body=json_body)
+
+        client_id = request.params.get('client_id')
+        client = M.OAuth2ClientApp.query.get(client_id=client_id)
+
+        # The credentials object has a request object that it's too big to be serialized,
+        # so we remove it because we don't need it for the rest of the authorization workflow
+        del credentials['request']
+
+        return dict(client=client, credentials=json.dumps(credentials))
+
+    @expose()
+    @require_post()
+    def do_authorize(self, yes=None, no=None):
+        client_id = request.params['client_id']
+        client = M.OAuth2ClientApp.query.get(client_id=client_id)
+
+        if no:
+            flash(f'{client.name} NOT AUTHORIZED', 'error')
+            redirect('/auth/oauth/')
+
+        credentials = json.loads(request.params['credentials'])
+        headers, body, status = self.server.create_authorization_response(
+            uri=request.url, http_method=request.method, body=request.body, headers=request.headers, scopes=[], credentials=credentials
+        )
+
+        response.status_int = status
+        response.headers.update(headers)
+        return body
+
 
 class DisableAccountController(BaseController):
 

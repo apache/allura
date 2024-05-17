@@ -167,7 +167,7 @@ The following example demonstrates the authorization workflow and how to generat
     # Set up your client credentials
     client_id = 'YOUR_CLIENT_ID'
     client_secret = 'YOUR_CLIENT_SECRET'
-    authorization_base_url = 'https://forge-allura.apache.org/rest/oauth2/authorize'
+    authorization_base_url = 'https://forge-allura.apache.org/auth/oauth2/authorize'
     access_token_url = 'https://forge-allura.apache.org/rest/oauth2/token'
     redirect_uri = 'https://forge-allura.apache.org/page'  # Your registered redirect URI
 
@@ -259,7 +259,7 @@ You can use the following example to generate a valid code verifier and code cha
 
 Having generated the codes, you would need to send the code challenge along with the challenge method (in this case S256) as part of the query string in the authorization url, for example:
 
-    https://forge-allura.apache.org/rest/oauth2/authorize?client_id=8dca182d3e6fe0cb76b8&response_type=code&code_challenge=G6wIRjEZlvhLsVS0exbID3o4ppUBsjxUBNtRVL8StXo&code_challenge_method=S256
+    https://forge-allura.apache.org/auth/oauth2/authorize?client_id=8dca182d3e6fe0cb76b8&response_type=code&code_challenge=G6wIRjEZlvhLsVS0exbID3o4ppUBsjxUBNtRVL8StXo&code_challenge_method=S256
 
 
 Afterwards, when you request an access token, you must provide the code verifier that derived the code challenge as part of the request's body, otherwise the token request validation will fail:
