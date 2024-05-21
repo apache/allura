@@ -17,23 +17,24 @@
 
 
 import mock
-import unittest
+import pytest
 import six.moves.urllib.request
 import six.moves.urllib.parse
 import six.moves.urllib.error
 from datetime import datetime
 
-from akismet import CheckResponse
 from bson import ObjectId
 
 from allura.lib.spam.akismetfilter import AKISMET_AVAILABLE, AkismetSpamFilter
 
 
-@unittest.skipIf(not AKISMET_AVAILABLE, "Akismet not available")
-class TestAkismet(unittest.TestCase):
+@pytest.mark.skipif(not AKISMET_AVAILABLE, reason="Akismet not available")
+class TestAkismet:
 
     @mock.patch('allura.lib.spam.akismetfilter.akismet')
     def setup_method(self, method, akismet_lib):
+        from akismet import CheckResponse
+
         self.akismet = AkismetSpamFilter({'spam.key': 'example', 'base_url': 'http://localhost/'})
 
         def side_effect(*args, **kw):

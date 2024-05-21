@@ -17,7 +17,6 @@
 
 import logging
 
-from akismet import CheckResponse
 from tg import request
 from tg import tmpl_context as c
 
@@ -113,7 +112,7 @@ class AkismetSpamFilter(SpamFilter):
                                                          content_type=content_type,
                                                          request=request,
                                                          ))
-        spam = res != CheckResponse.HAM
+        spam = res != akismet.CheckResponse.HAM
         self.record_result(spam, artifact, user)
         return res
 
