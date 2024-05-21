@@ -22,6 +22,7 @@ from paste.deploy.converters import aslist
 
 from allura.lib.helpers import exceptionless
 from allura.model.artifact import SpamCheckResult
+from allura import model as M
 
 log = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ class SpamFilter:
     def submit_ham(self, text, artifact=None, user=None, content_type='comment', **kw):
         log.info("No submit_ham available for %s", self.filter_name)
 
-    def record_result(self, result, artifact, user):
+    def record_result(self, result: bool, artifact: M.Artifact, user: M.User):
         log.info("spam={} ({}): {}".format(str(result), self.filter_name, artifact.url() if artifact else ''))
         r = SpamCheckResult(
             ref=artifact.ref if artifact else None,

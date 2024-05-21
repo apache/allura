@@ -23,6 +23,7 @@ import six.moves.urllib.parse
 import six.moves.urllib.error
 from datetime import datetime
 
+from akismet import CheckResponse
 from bson import ObjectId
 
 from allura.lib.spam.akismetfilter import AKISMET_AVAILABLE, AkismetSpamFilter
@@ -39,6 +40,8 @@ class TestAkismet(unittest.TestCase):
             # side effect to test that data being sent to
             # akismet can be successfully urlencoded
             six.moves.urllib.parse.urlencode(kw.get('data', {}))
+            return CheckResponse.HAM  # relevant to comment_check()
+
         self.akismet.service.comment_check = mock.Mock(side_effect=side_effect)
         self.akismet.service.submit_spam = mock.Mock(side_effect=side_effect)
         self.akismet.service.submit_ham = mock.Mock(side_effect=side_effect)
