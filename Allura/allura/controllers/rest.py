@@ -255,6 +255,11 @@ class Oauth1Validator(oauthlib.oauth1.RequestValidator):
 
 
 class Oauth2Validator(oauthlib.oauth2.RequestValidator):
+    def __init__(self):
+        super().__init__()
+        if asbool(tg.config.get('debug')):
+            oauthlib.set_debug(True)
+
     def validate_client_id(self, client_id: str, request: oauthlib.common.Request, *args, **kwargs) -> bool:
         return M.OAuth2ClientApp.query.get(client_id=client_id) is not None
 

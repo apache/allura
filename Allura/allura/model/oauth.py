@@ -192,6 +192,9 @@ class OAuth2ClientApp(MappedClass):
     def description_html(self):
         return g.markdown.cached_convert(self, 'description')
 
+    def __repr__(self):
+        return f'<{self.__class__.__name__} _id={self._id} client_id={self.client_id} {self.name}>'
+
 
 class OAuth2AuthorizationCode(MappedClass):
     class __mongometa__:
@@ -249,6 +252,9 @@ class OAuth2AccessToken(MappedClass):
     last_access = FieldProperty(datetime)
 
     user = RelationProperty('User')
+
+    def __repr__(self):
+        return f'<{self.__class__.__name__} _id={self._id} client_id={self.client_id} user_id={self.user_id}>'
 
 
 def dummy_oauths():
