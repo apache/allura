@@ -41,20 +41,18 @@ The following tools have API support:
 
 In order to use the API for authenticated actions, you should use the OAuth account page to create a consumer key for your application.  Once you have a consumer key, you must have a site user (e.g. your own account, if you're writing a single script) authorize your application to act on his or her behalf.
 
-You can also use your normal browser session as authentication for the API.  This is useful for manually testing API calls or for in-browser applications (such as extensions or user-scripts).  It is not recommended for programatic access, however, as it would require you to store your account username and password, and thus cannot be easily managed or revoked.
+You can also use your normal browser session as authentication for the API.  This is useful for manually testing API calls or for in-browser applications (such as extensions or user-scripts).  It is not recommended for programmatic access, however, as it would require you to store your account username and password, and thus cannot be easily managed or revoked.
 
 Without authentication, all API requests have the permissions of an anonymous visitor.  To view or change anything that requires a login, you must authenticate to the API using OAuth.  You must first register for an OAuth consumer token at <https://forge-allura.apache.org/auth/oauth/>.  Once you have registered, you will be be able to see your consumer key and consumer secret, or generate a bearer token, at <https://forge-allura.apache.org/auth/oauth/>.
 
 
 ### OAuth With Bearer Tokens
 
-The easiest way to use the API with your own account is to use a bearer token.  Once you have generated a bearer token at <https://forge-allura.apache.org.net/auth/oauth/>, you just include it in the request to the API via the `access_token` URL parameter, `access_token` POST form field, or http header like `Authorization: Bearer MY_BEARER_TOKEN`.
-
-Note, however, that to use bearer tokens, you *must* use HTTPS/SSL for the request.
+The easiest way to use the API with your own account is to use a bearer token.  Once you have generated a bearer token at <https://forge-allura.apache.org.net/auth/oauth/>, you just include it in the request to the API via a http header like `Authorization: Bearer MY_BEARER_TOKEN`.
 
 Simple URL example to access a private ticket:
 
-https://forge-allura.apache.org/rest/p/allura/tickets/35/?access_token=MY_BEARER_TOKEN
+curl -H 'Authorization: Bearer MY_BEARER_TOKEN' https://forge-allura.apache.org/rest/p/allura/tickets/35/
 
 Python code example to create a new ticket:
 
@@ -63,8 +61,9 @@ Python code example to create a new ticket:
 
     BEARER_TOKEN = '<bearer token from oauth page>'
 
-    r = requests.post('https://forge-allura.apache.org/rest/p/test-project/tickets/new', params={
-            'access_token': BEARER_TOKEN,
+    r = requests.post('https://forge-allura.apache.org/rest/p/test-project/tickets/new',
+          headers={'Authorization': f'Bearer {BEARER_TOKEN}'}
+          params={
             'ticket_form.summary': 'Test ticket',
             'ticket_form.description': 'This is a test ticket',
             'ticket_form.labels': 'test',
@@ -156,7 +155,7 @@ You can then use your access token with the REST API.  For instance script to cr
     print("Done.  Response was:")
     print(response)
 
-### OAuth2 Authorization
+### OAuth2 Authorization (Third-Party Apps)
 
 Another option for authorizing your apps is to use the OAuth2 workflow. This is accomplished by authorizing the application which generates an `authorization_code` that can be later exchanged for an `access_token`
 

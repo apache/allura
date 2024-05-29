@@ -73,9 +73,6 @@
         required: true
         description: The username to check
 - bearerAuth:
-    # This can also be done with ?access_token=
-    # But it's simpler in the docs / Try It interface to just show one option
-    # and using the header method keeps it separate from query params that the individual API endpoints use
     headers:
       Authorization:
         description: |

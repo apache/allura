@@ -80,6 +80,9 @@ class RestController:
                 if not self._is_oauth2_enabled():
                     raise
 
+                if params_auth:
+                    raise exc.HTTPUnauthorized('Do not use tokens in URL, instead use header Authorization: Bearer $TOKEN')
+
                 access_token = self.oauth2._authenticate()
                 if not access_token:
                     raise

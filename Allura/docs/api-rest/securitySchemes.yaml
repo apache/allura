@@ -39,7 +39,7 @@
 
 - oauth_2_0:
     description: |
-        OAuth 2.0 may also be used to authenticate API requests.
+        OAuth 2.0 may be used to authenticate API requests.
 
         First authorize your application at https://forge-allura.apache.org/auth/oauth2/authorize with following
         query string parameters:
@@ -64,7 +64,7 @@
 
         Use the access token in an HTTP header like:
 
-        `Authorization: Bearer MY_BEARER_TOKEN``
+        `Authorization: Bearer MY_BEARER_TOKEN`
     type: OAuth 2.0
     settings:
       authorizationUri: https://forge-allura.apache.org/auth/oauth2/authorize

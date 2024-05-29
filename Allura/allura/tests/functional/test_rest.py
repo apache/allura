@@ -443,6 +443,9 @@ class TestRestHome(TestRestApiBase):
         r = self.api_post('/rest/p/test/wiki/Home', params=params)
         assert r.status_int == 200
 
+        r = self.app.get('/rest/p/test/wiki/Home', params={'access_token': token.access_token}, status=401)
+        assert b'Do not use tokens in URL' in r.body
+
     @td.with_wiki
     @mock.patch.dict(config, {'auth.oauth2.enabled': True})
     def test_oauth2_expired_token_authentication(self):

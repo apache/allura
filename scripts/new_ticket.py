@@ -47,8 +47,7 @@ if __name__ == '__main__':
     description = sys.stdin.read()
     print('-----------------------------------------------')
 
-    r = requests.post(opts.url, params={
-        'access_token': access_token,
+    r = requests.post(opts.url, headers={'Authorization': f'Bearer {access_token}'}, params={
         'ticket_form.summary': summary,
         'ticket_form.description': description,
     }, timeout=30)

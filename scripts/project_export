@@ -96,11 +96,11 @@ $VERBOSE && curl_s=''
 URL="https://$HOST/rest/p/$PROJECT/admin/export"
 
 function json() {
-    python -c "import sys, json;  print json.load(sys.stdin)['$1']"
+    python3 -c "import sys, json;  print(json.load(sys.stdin)['$1'])"
 }
 
 $VERBOSE && echo "Posting to $URL"
-curl $curl_s -D $HEADERS -o $BODY --data "access_token=$ACCESS_TOKEN&tools=$TOOLS" "$URL" || error "Running curl failed"
+curl $curl_s -H "Authorization: Bearer $ACCESS_TOKEN" -D $HEADERS -o $BODY --data "tools=$TOOLS" "$URL" || error "Running curl failed"
 head -n1 $HEADERS | grep 400 && error "Invalid or missing tool"
 head -n1 $HEADERS | grep 503 && error "Export already in progress"
 head -n1 $HEADERS | grep -v 200 && error "Error: $(head -n1 $HEADERS)"
@@ -110,7 +110,7 @@ filename=`cat $BODY | json filename`
 minutes=0
 while true; do
     $VERBOSE && echo "Checking $URL_status"
-    curl $curl_s -D $HEADERS -o $BODY "${URL}_status?access_token=$ACCESS_TOKEN" || error "Running curl failed"
+    curl $curl_s -H "Authorization: Bearer $ACCESS_TOKEN" -D $HEADERS -o $BODY "${URL}_status" || error "Running curl failed"
     head -n1 $HEADERS | grep -v 200 && error "Error: $(head -n1 $HEADERS)"
     status=`cat $BODY | json status`
     $VERBOSE && echo "Status: $status"
