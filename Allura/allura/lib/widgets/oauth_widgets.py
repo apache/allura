@@ -63,17 +63,23 @@ class OAuth2ApplicationForm(ForgeForm):
 
         # SortableRepeatedField would be nice to use (and ignore sorting) so you can add many dynamically,
         # but couldn't get it to work easily
+
+        # use HttpsUrl so unencrypted http is prevented and tokens can't be intercepted
+        # in theory could allow some other protocols (but not http:) so it can work with mobile apps etc
         redirect_url_1 = ew.TextField(
             label='Redirect URL(s)',
-            validator=fev.URL(not_empty=True),
-            attrs=dict(type='url', style='min-width:25em', required=True),
+            validator=V.HttpsUrl(not_empty=True),
+            attrs=dict(type='url', style='min-width:25em', required=True, placeholder='https://...',
+                       pattern='https://.*', title='must start with https://'),
         )
         redirect_url_2 = ew.TextField(
-            validator=fev.URL(),
-            attrs=dict(type='url', style='min-width:25em; margin-left: 162px;'),  # match grid-4 label width
+            validator=V.HttpsUrl(),
+            attrs=dict(type='url', style='min-width:25em; margin-left: 162px;',  # match grid-4 label width
+                       pattern='https://.*', title='must start with https://'),
         )
         redirect_url_3 = ew.TextField(
-            validator=fev.URL(),
-            attrs=dict(type='url', style='min-width:25em; margin-left: 162px;'),  # match grid-4 label width
+            validator=V.HttpsUrl(),
+            attrs=dict(type='url', style='min-width:25em; margin-left: 162px;',  # match grid-4 label width
+                       pattern='https://.*', title='must start with https://'),
         )
 

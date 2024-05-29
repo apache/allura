@@ -84,6 +84,16 @@ class NonHttpUrl(URL):
     ''', re.I | re.VERBOSE)
 
 
+class HttpsUrl(URL):
+    add_http = False
+
+    def _convert_to_python(self, value, state):
+        value = super()._convert_to_python(value, state)
+        if not value.startswith('https://'):
+            raise fev.Invalid("Must be https://", value, state)
+        return value
+
+
 class UnicodeString(fev.UnicodeString):
     """
     Override UnicodeString to fix bytes handling.

@@ -259,6 +259,8 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
         return M.OAuth2ClientApp.query.get(client_id=client_id) is not None
 
     def validate_redirect_uri(self, client_id, redirect_uri, request, *args, **kwargs):
+        if redirect_uri.startswith('http:'):
+            return False
         client = M.OAuth2ClientApp.query.get(client_id=client_id)
         return redirect_uri in client.redirect_uris
 
