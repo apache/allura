@@ -17,6 +17,9 @@ Upgrade Instructions
     - optionally `session.read_original_format = true` and rename `session.validate_key` to `session.original_format_validate_key` for backwards compatibility. Remove after a transition period
     - optionally `session.write_original_format = true` if it takes a while to deploy all your code to multiple hosts/procs. Then remove once all processes have new code.
 
+Critical Security Fix
+ * [#8561] CVE 2024-36471 DNS rebinding during imports
+
 Breaking Changes
  * [#8556] deprecate has_access(..)() syntax.  Custom extensions using this syntax will need to remove the second ()
 
