@@ -69,6 +69,25 @@ repos:
         entry: '@extend [^%]((?![\/\/]\stest_scss_extend_pattern allow).)*$'
         exclude: 'node_modules'
 
+-   repo: https://github.com/aristanetworks/j2lint
+    rev: f291b271118c524b9ecb0bb5df9f846345963469  # latest as of June 2024
+    hooks:
+    -   id: j2lint
+        types: [html]
+        args:
+          - --extensions
+          - html
+          # only check jinja-syntax-error and jinja-statements-no-tabs
+          - --ignore
+          - single-space-decorator
+          - operator-enclosed-by-spaces
+          - jinja-statements-indentation
+          - jinja-statements-single-space
+          - jinja-statements-delimiter
+          - single-statement-per-line
+          - jinja-variable-lower-case
+          - jinja-variable-format
+          - --
 
 - repo:  https://github.com/milin/giticket
   rev: v1.4
