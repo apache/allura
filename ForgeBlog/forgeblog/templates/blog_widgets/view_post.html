@@ -23,10 +23,10 @@
 <em class="grid-19">
   Posted by {{lib.user_link(base_post.author(), avatar=True)}} {{lib.abbr_date(value.timestamp)}}
   {% if value.state != 'published' %}
-	<span>| {{value.state.capitalize()}}</span>
+    <span>| {{value.state.capitalize()}}</span>
   {% endif %}
   {% if h.has_access(value, 'write') %}
-	<span>| <a href="{{value.url()}}edit">Edit</a></span>
+    <span>| <a href="{{value.url()}}edit">Edit</a></span>
   {% endif %}
 </em>
 {% if value.labels %}

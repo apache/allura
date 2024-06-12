@@ -53,19 +53,19 @@
 
 {% block wiki_content %}
 <form method="POST" class="can-retry" action="update" id="page_edit_form">
-	<label class="grid-4">Name:</label>
-	<div class="grid-14">
-	  <input type="text" name="title" id="title" value="{{page.title}}" placeholder="Page name" required="required" autofocus="autofocus"/>
-	</div>
-	<label class="grid-20">Content:</label>
-	<div style="clear:both;"></div>
-	<div class="grid-20">
-	  {{c.markdown_editor.display(id='text', name='text',value=page.text)}}
-	</div>
-	<div style="clear:both;"></div>
-	<label class="grid-4">Labels:</label>
-	<div class="grid-14" style="margin-left:0">
-		{{c.label_edit.display(id='labels', name='labels', value=page.labels)}}
+    <label class="grid-4">Name:</label>
+    <div class="grid-14">
+      <input type="text" name="title" id="title" value="{{page.title}}" placeholder="Page name" required="required" autofocus="autofocus"/>
+    </div>
+    <label class="grid-20">Content:</label>
+    <div style="clear:both;"></div>
+    <div class="grid-20">
+      {{c.markdown_editor.display(id='text', name='text',value=page.text)}}
+    </div>
+    <div style="clear:both;"></div>
+    <label class="grid-4">Labels:</label>
+    <div class="grid-14" style="margin-left:0">
+        {{c.label_edit.display(id='labels', name='labels', value=page.labels)}}
   </div>
   <div class="grid-20">
     <input type="submit" value="Save">
@@ -75,7 +75,7 @@
         <input type="checkbox" name="subscribe" class="subscribe-checkbox">Subscribe to this wiki page
       </label>
     {% endif %}
-	</div>
+    </div>
     {{lib.csrf_token()}}
 </form>
 <div class="grid-19">
@@ -113,7 +113,7 @@
                         '<div class="attachment_images"></div>' +
                         '<div class="attachment_files"></div>';
       $(attach_divs).prependTo($('.attachments'));
-    };
+    }
     var ext = filename.split('.').pop().toLowerCase();
     if($.inArray(ext, ['gif','png','jpg','jpeg']) != -1) {
       new_attach = '<div class="attachment_thumb">' +
@@ -135,8 +135,8 @@
                         '</span>' +
                       '</form></div><div style="clear:both"></div>';
       $(new_attach).prependTo($('.attachment_files'));
-    };
-  };
+    }
+  }
 
   $('#attachment_form').on('submit', function(event) {
     event.preventDefault();
@@ -166,7 +166,7 @@
       type: "POST",
       url: attr_url,
       data: elem.serialize() +"&_session_id=" + $.cookie('_session_id'),
-      success:  function() {;
+      success:  function() {
         elem.parent().remove();
       }
     });

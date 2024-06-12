@@ -240,7 +240,7 @@ class Test():
         p_test.add_user(M.User.by_username('test-user'), ['Developer'])
         p_test.add_user(M.User.by_username('test-user-0'), ['Member'])
         ThreadLocalODMSession.flush_all()
-        r = g.markdown_wiki.convert('[[members limit=2]]').replace('\t', '').replace('\n', '')
+        r = g.markdown_wiki.convert('[[members limit=2]]').replace('    ', '').replace('\n', '')
         assert (r ==
                 '<div class="markdown_content"><h6>Project Members:</h6>'
                 '<ul class="md-users-list">'
@@ -254,7 +254,7 @@ class Test():
         user = M.User.by_username('test-admin')
         user.display_name = 'Test Admin <script>'
         r = g.markdown_wiki.convert('[[members]]')
-        assert (r.replace('\n', '').replace('\t', '') ==
+        assert (r.replace('\n', '').replace('    ', '') ==
                 '<div class="markdown_content"><h6>Project Members:</h6>'
                 '<ul class="md-users-list">'
                 '<li><a href="/u/test-admin/">Test Admin &lt;script&gt;</a> (admin)</li>'
