@@ -181,7 +181,7 @@ class SecurityTest:
     @expose()
     def needs_project_access_ok(self):
         pred = has_access(c.project, 'read')
-        if not pred():
+        if not pred:
             log.info('Inside needs_project_access, c.user = %s' % c.user)
         require(pred)
         return ''

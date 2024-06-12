@@ -30,7 +30,6 @@ from allura import model as M
 from allura.lib import plugin
 from allura.lib import phone
 from allura.lib import helpers as h
-from allura.lib.utils import TruthyCallable
 from allura.lib.plugin import ProjectRegistrationProvider
 from allura.lib.plugin import ThemeProvider
 from allura.lib.exceptions import ProjectConflict, ProjectShortnameInvalid

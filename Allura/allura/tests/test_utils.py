@@ -169,27 +169,6 @@ class TestAntispam(unittest.TestCase):
         return encrypted_form
 
 
-class TestTruthyCallable(unittest.TestCase):
-
-    def test_everything(self):
-        def wrapper_func(bool_flag):
-            def predicate(bool_flag=bool_flag):
-                return bool_flag
-            return utils.TruthyCallable(predicate)
-        true_predicate = wrapper_func(True)
-        false_predicate = wrapper_func(False)
-        assert true_predicate(True) is True
-        assert false_predicate(False) is False
-        assert true_predicate() is True
-        assert false_predicate() is False
-        assert bool(true_predicate) is True
-        assert bool(false_predicate) is False
-
-        t, f = True, False  # use variables because '== True' would generate warnings, and we do want '==' not 'is'
-        assert true_predicate == t
-        assert false_predicate == f
-
-
 class TestCaseInsensitiveDict(unittest.TestCase):
 
     def test_everything(self):

@@ -33,8 +33,6 @@ from itertools import chain
 from ming.utils import LazyProperty
 import tg
 
-from allura.lib.utils import TruthyCallable
-
 if typing.TYPE_CHECKING:
     from allura.model import M
 
@@ -306,7 +304,7 @@ def debug_obj(obj) -> str:
     return str(obj)
 
 
-def has_access(obj, permission: str, user: M.User | None = None, project: M.Project | None = None) -> TruthyCallable:
+def has_access(obj, permission: str, user: M.User | None = None, project: M.Project | None = None, roles = None) -> bool:
     '''Return whether the given user has the permission name on the given object.
 
     - First, all the roles for a user in the given project context are computed.
@@ -349,69 +347,65 @@ def has_access(obj, permission: str, user: M.User | None = None, project: M.Proj
 
     DEBUG = False
 
-    def predicate(obj=obj, user=user, project=project, roles=None) -> bool:
-        if obj is None:
-            if DEBUG:
-                log.debug(f'{user} denied {permission} on {debug_obj(obj)} ({debug_obj(project)})')
-            return False
-        if roles is None:
-            if user is None:
-                user = c.user
-            assert user, 'c.user should always be at least M.User.anonymous()'
-            cred = Credentials.get()
-            if project is None:
-                if isinstance(obj, M.Neighborhood):
-                    project = obj.neighborhood_project
-                    if project is None:
-                        log.error('Neighborhood project missing for %s', obj)
-                        return False
-                elif isinstance(obj, M.Project):
-                    project = obj.root_project
-                else:
-                    project = getattr(obj, 'project', None) or c.project
-                    project = project.root_project
-            roles: RoleCache = cred.user_roles(user_id=user._id, project_id=project._id).reaching_roles
-
-        # TODO: move deny logic into loop below; see ticket [#6715]
-        if is_denied(obj, permission, user, project):
-            if DEBUG:
-                log.debug(f"{user.username} '{permission}' denied on {debug_obj(obj)} ({debug_obj(project)})")
-            return False
-
-        chainable_roles = []
-        for role in roles:
-            for ace in obj.acl:
-                if M.ACE.match(ace, role['_id'], permission):
-                    if ace.access == M.ACE.ALLOW:
-                        # access is allowed
-                        if DEBUG:
-                            log.debug(
-                                f"{user.username} '{permission}' granted on {debug_obj(obj)} ({debug_obj(project)})")
-                        return True
-                    else:
-                        # access is denied for this particular role
-                        if DEBUG:
-                            log.debug(f"{user.username} '{permission}' denied for role={role['name'] or role['_id']} (BUT continuing to see if other roles permit) on {debug_obj(obj)} ({debug_obj(project)})")
-                        break
-            else:
-                # access neither allowed or denied, may chain to parent context
-                chainable_roles.append(role)
-        parent = obj.parent_security_context()
-        if parent and chainable_roles:
-            result = has_access(parent, permission, user=user, project=project)(
-                roles=tuple(chainable_roles))
-        elif not isinstance(obj, M.Neighborhood):
-            result = has_access(project.neighborhood, 'admin', user=user)
-            if not (result or isinstance(obj, M.Project)):
-                result = has_access(project, 'admin', user=user)
-        else:
-            result = False
-        result = bool(result)
+    if obj is None:
         if DEBUG:
-            log.debug(
-                f"{user.username} '{permission}' {result} from parent(s) on {debug_obj(obj)} ({debug_obj(project)})")
-        return result
-    return TruthyCallable(predicate)
+            log.debug(f'{user} denied {permission} on {debug_obj(obj)} ({debug_obj(project)})')
+        return False
+    if roles is None:
+        if user is None:
+            user = c.user
+        assert user, 'c.user should always be at least M.User.anonymous()'
+        cred = Credentials.get()
+        if project is None:
+            if isinstance(obj, M.Neighborhood):
+                project = obj.neighborhood_project
+                if project is None:
+                    log.error('Neighborhood project missing for %s', obj)
+                    return False
+            elif isinstance(obj, M.Project):
+                project = obj.root_project
+            else:
+                project = getattr(obj, 'project', None) or c.project
+                project = project.root_project
+        roles: RoleCache = cred.user_roles(user_id=user._id, project_id=project._id).reaching_roles
+
+    # TODO: move deny logic into loop below; see ticket [#6715]
+    if is_denied(obj, permission, user, project):
+        if DEBUG:
+            log.debug(f"{user.username} '{permission}' denied on {debug_obj(obj)} ({debug_obj(project)})")
+        return False
+
+    chainable_roles = []
+    for role in roles:
+        for ace in obj.acl:
+            if M.ACE.match(ace, role['_id'], permission):
+                if ace.access == M.ACE.ALLOW:
+                    # access is allowed
+                    if DEBUG:
+                        log.debug(
+                            f"{user.username} '{permission}' granted on {debug_obj(obj)} ({debug_obj(project)})")
+                    return True
+                else:
+                    # access is denied for this particular role
+                    if DEBUG:
+                        log.debug(f"{user.username} '{permission}' denied for role={role['name'] or role['_id']} (BUT continuing to see if other roles permit) on {debug_obj(obj)} ({debug_obj(project)})")
+                    break
+        else:
+            # access neither allowed or denied, may chain to parent context
+            chainable_roles.append(role)
+    parent = obj.parent_security_context()
+    if parent and chainable_roles:
+        result = has_access(parent, permission, user=user, project=project, roles=tuple(chainable_roles))
+    elif not isinstance(obj, M.Neighborhood):
+        result = has_access(project.neighborhood, 'admin', user=user)
+        if not (result or isinstance(obj, M.Project)):
+            result = has_access(project, 'admin', user=user)
+    else:
+        result = False
+    if DEBUG:
+        log.debug(
+            f"{user.username} '{permission}' {result} from parent(s) on {debug_obj(obj)} ({debug_obj(project)})")
+    return result
 
 
 def all_allowed(obj, user_or_role=None, project=None):
@@ -495,14 +489,20 @@ def require(predicate, message=None):
     '''
     Example: ``require(has_access(c.app, 'read'))``
 
-    :param callable predicate: truth function to call
+    :param callable|bool predicate: truth function to call, or truth value
     :param str message: message to show upon failure
     :raises: HTTPForbidden or HTTPUnauthorized
     '''
 
     from allura import model as M
-    if predicate():
-        return
+
+    if callable(predicate):
+        if predicate():
+            return
+    else:
+        if predicate:
+            return
+
     if not message:
         message = """You don't have permission to do that.
                      You must ask a project administrator for rights to perform this task.

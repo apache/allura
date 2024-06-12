@@ -47,7 +47,7 @@ def main():
 
     for chunk in utils.chunked_find(ForumPost, {'app_config_id': tool._id}):
         for p in chunk:
-            has_access = bool(security.has_access(p, 'moderate', M.User.anonymous()))
+            has_access = security.has_access(p, 'moderate', M.User.anonymous())
 
             if has_access:
                 anon_role_id = None
