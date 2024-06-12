@@ -523,9 +523,9 @@ class AuthController(BaseController):
             log.info("Can't find repo at %s on repo_path %s",
                      rest[0], repo_path)
             return disallow
-        return dict(allow_read=bool(has_access(c.app, 'read', user)),
-                    allow_write=bool(has_access(c.app, 'write', user)),
-                    allow_create=bool(has_access(c.app, 'create', user)))
+        return dict(allow_read=has_access(c.app, 'read', user),
+                    allow_write=has_access(c.app, 'write', user),
+                    allow_create=has_access(c.app, 'create', user))
 
     @expose('jinja:allura:templates/pwd_expired.html')
     @without_trailing_slash

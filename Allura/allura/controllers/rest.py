@@ -555,7 +555,7 @@ def rest_has_access(obj, user, perm):
     resp = {'result': False}
     user = M.User.by_username(user)
     if user:
-        resp['result'] = bool(security.has_access(obj, perm, user=user))
+        resp['result'] = security.has_access(obj, perm, user=user)
     return resp
 
 
