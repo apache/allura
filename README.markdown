@@ -58,7 +58,7 @@ Apache Allura is an effort _for_ the community: an open source platform for shar
 
 Developers interested in hacking on Allura or its components should see `Allura/docs/docs/development/contributing.rst` or <https://forge-allura.apache.org/docs/development/contributing.html>.
 
-You can get in touch with other Allura developers on the developer mailing list ([dev@allura.apache.org](https://mail-archives.apache.org/mod_mbox/allura-dev/)) or in the [#allura](https://webchat.freenode.net/?channels=#allura) channel on the Freenode IRC network.
+You can get in touch with other Allura developers on the developer mailing list ([dev@allura.apache.org](https://mail-archives.apache.org/mod_mbox/allura-dev/)).
 
 To find more documentation, ask a question, file a bug, or contribute a patch, see the links on our website(<https://allura.apache.org/>).  If you're not sure where to start, join the mailing list and ask.
 
