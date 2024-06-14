@@ -836,7 +836,7 @@ class NeighborhoodOverviewForm(ForgeForm):
             validator=V.JsonValidator(if_empty=''))
         icon = ew.FileField(attrs={'accept': 'image/*'})
         tracking_id = ew.TextField(attrs=(dict(placeholder='UA-123456-0', pattern='UA-[0-9]+-[0-9]+')))
-        project_list_url = ew.TextField()
+        project_list_url = ew.TextField(validator=fev.URL(), attrs=dict(type='url'))
         anchored_tools = ffw.AutoResizeTextarea()
         prohibited_tools = ffw.AutoResizeTextarea()
 

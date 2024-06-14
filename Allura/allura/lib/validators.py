@@ -509,7 +509,7 @@ class LinkedinValidator(fev.FancyValidator):
     def _convert_to_python(self, value, state):
         if value.startswith('@') and not re.match(FEDIVERSE_REGEX, value):
             value = f'https://linkedin.com/in/{value.replace("@", "")}/'
-        elif 'linkedin.com' not in value:
+        elif not value.startswith('http') or 'linkedin.com' not in value:
             raise fe.Invalid('Invalid Linkedin address', value, state)
         return value
 
@@ -518,7 +518,7 @@ class TwitterValidator(fev.FancyValidator):
     def _convert_to_python(self, value, state):
         if value.startswith('@') and not re.match(FEDIVERSE_REGEX, value):
             value = f'https://twitter.com/{value.replace("@", "")}'
-        elif 'twitter.com' not in value:
+        elif not value.startswith('http') or 'twitter.com' not in value:
             raise fe.Invalid('Invalid Twitter address', value, state)
         return value
 
@@ -527,7 +527,7 @@ class InstagramValidator(fev.FancyValidator):
     def _convert_to_python(self, value, state):
         if value.startswith('@') and not re.match(FEDIVERSE_REGEX, value):
             value = f'https://instagram.com/{value.replace("@", "")}'
-        elif 'instagram.com' not in value:
+        elif not value.startswith('http') or 'instagram.com' not in value:
             raise fe.Invalid('Invalid Instagram address', value, state)
         return value
 
@@ -536,7 +536,7 @@ class FacebookValidator(fev.FancyValidator):
     def _convert_to_python(self, value, state):
         if value.startswith('@') and not re.match(FEDIVERSE_REGEX, value):
             value = f'https://facebook.com/{value.replace("@", "")}'
-        elif 'facebook.com' not in value:
+        elif not value.startswith('http') or 'facebook.com' not in value:
             raise fe.Invalid('Invalid Facebook address', value, state)
         return value
 
