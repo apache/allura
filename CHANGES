@@ -1,3 +1,19 @@
+Version 1.17.1  (June 2024)
+
+Upgrade Instructions
+
+  If using docker, rebuild the allura image and restart containers.
+
+Breaking Changes
+ * [#8556] remove has_access(..)() syntax.  Custom extensions using this syntax will need to remove the second ()
+
+For Developers
+ * remove #allura irc mentions
+ * delete unused jinja file with invalid syntax
+ * replace tabs with spaces in jinja html files
+ * add jinja linter to pre-commit
+
+
 Version 1.17.0  (June 2024)
 
 Upgrade Instructions
