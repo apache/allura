@@ -466,8 +466,8 @@ class ToolImporter(metaclass=ToolImporterMeta):
         """
         limit = config.get('tool_import.rate_limit', 1)
         pending_key = 'tool_data.%s.pending' % self.classname
-        modified_project = M.Project.query.find_and_modify(
-            query={
+        modified_project = M.Project.query.find_one_and_update(
+            {
                 '_id': project._id,
                 '$or': [
                     {pending_key: None},
@@ -475,7 +475,7 @@ class ToolImporter(metaclass=ToolImporterMeta):
                 ],
             },
             update={'$inc': {pending_key: 1}},
-            new=True,
+            return_document=True,
         )
         return modified_project is not None
 
@@ -485,10 +485,10 @@ class ToolImporter(metaclass=ToolImporterMeta):
         to indicate that an import is complete.
         """
         pending_key = 'tool_data.%s.pending' % self.classname
-        M.Project.query.find_and_modify(
-            query={'_id': project._id},
+        M.Project.query.find_one_and_update(
+            {'_id': project._id},
             update={'$inc': {pending_key: -1}},
-            new=True,
+            return_document=True,
         )
 
     def import_tool(self, project, user, project_name=None,

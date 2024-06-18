@@ -199,7 +199,7 @@ class TestEnsureIndexCommand:
         cmd = show_models.EnsureIndexCommand('ensure_index')
         cmd.options = Object(clean=False)
         cmd._update_indexes(collection, indexes)
-        assert collection.ensure_index.called
+        assert collection.create_index.called
         assert not collection.drop_index.called
 
     def test_update_indexes_order(self):
@@ -220,13 +220,13 @@ class TestEnsureIndexCommand:
         for i, call_ in enumerate(collection.mock_calls):
             method_name = call_[0]
             collection_call_order[method_name] = i
-        assert collection_call_order['ensure_index'] < collection_call_order['drop_index'], collection.mock_calls
+        assert collection_call_order['create_index'] < collection_call_order['drop_index'], collection.mock_calls
 
     def test_update_indexes_unique_changes(self):
         collection = Mock(name='collection')
         # expecting these ensure_index calls, we'll make their return values normal
         # for easier assertions later
-        collection.ensure_index.side_effect = [
+        collection.create_index.side_effect = [
             '_foo_bar_temporary_extra_field_for_indexing',
             '_foo_bar',
             '_foo_baz_temporary_extra_field_for_indexing',
@@ -251,18 +251,16 @@ class TestEnsureIndexCommand:
 
         assert collection.mock_calls == [
             call.index_information(),
-            call.ensure_index(
-                [('foo', 1), ('bar', 1), ('temporary_extra_field_for_indexing', 1)]),
+            call.create_index([('foo', 1), ('bar', 1), ('temporary_extra_field_for_indexing', 1)]),
             call.drop_index('_foo_bar'),
-            call.ensure_index([('foo', 1), ('bar', 1)], unique=False),
+            call.create_index([('foo', 1), ('bar', 1)], unique=False),
             call.drop_index('_foo_bar_temporary_extra_field_for_indexing'),
-            call.ensure_index(
-                [('foo', 1), ('baz', 1), ('temporary_extra_field_for_indexing', 1)]),
+            call.create_index([('foo', 1), ('baz', 1), ('temporary_extra_field_for_indexing', 1)]),
             call.drop_index('_foo_baz'),
-            call.ensure_index([('foo', 1), ('baz', 1)], unique=True),
+            call.create_index([('foo', 1), ('baz', 1)], unique=True),
             call.drop_index('_foo_baz_temporary_extra_field_for_indexing'),
-            call.ensure_index([('foo', 1), ('baz', 1)], unique=True, sparse=False),
-            call.ensure_index([('foo', 1), ('bar', 1)], unique=False, sparse=False, background=True)
+            call.create_index([('foo', 1), ('baz', 1)], unique=True, sparse=False),
+            call.create_index([('foo', 1), ('bar', 1)], unique=False, sparse=False, background=True)
         ]
 
 

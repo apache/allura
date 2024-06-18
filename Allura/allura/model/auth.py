@@ -217,9 +217,9 @@ class AuthGlobals(MappedClass):
     @classmethod
     def get_next_uid(cls):
         cls.upsert()
-        g = cls.query.find_and_modify(
-            query={}, update={'$inc': {'next_uid': 1}},
-            new=True)
+        g = cls.query.find_one_and_update(
+            {}, update={'$inc': {'next_uid': 1}},
+            return_document=True)
         return g.next_uid
 
 

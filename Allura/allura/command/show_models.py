@@ -297,14 +297,14 @@ class EnsureIndexCommand(base.Command):
                         # _id is always non-sparse and unique anyway
                         del index_options['sparse']
                         del index_options['unique']
-                    collection.ensure_index(idx.index_spec, **index_options)
+                    collection.create_index(idx.index_spec, **index_options)
                     break
                 except DuplicateKeyError as err:
                     base.log.info('Found dupe key(%s), eliminating dupes', err)
                     self._remove_dupes(collection, idx.index_spec)
         for keys, idx in indexes.items():
             base.log.info('...... ensure %s:%s', collection.name, idx)
-            collection.ensure_index(idx.index_spec, background=True, **idx.index_options)
+            collection.create_index(idx.index_spec, background=True, **idx.index_options)
         # Drop obsolete indexes
         for iname, keys in prev_indexes.items():
             if keys not in indexes:
@@ -329,12 +329,12 @@ class EnsureIndexCommand(base.Command):
         superset_keys = keys + [('temporary_extra_field_for_indexing', 1)]
         base.log.info('...... ensure index %s:%s',
                       collection.name, superset_keys)
-        superset_index = collection.ensure_index(superset_keys)
+        superset_index = collection.create_index(superset_keys)
         base.log.info('...... drop index %s:%s', collection.name, iname)
         collection.drop_index(iname)
         base.log.info('...... ensure index %s:%s %s',
                       collection.name, keys, creation_options)
-        collection.ensure_index(keys, **creation_options)
+        collection.create_index(keys, **creation_options)
         base.log.info('...... drop index %s:%s',
                       collection.name, superset_index)
         collection.drop_index(superset_index)

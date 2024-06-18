@@ -279,15 +279,15 @@ def wipe_database():
     conn = M.main_doc_session.bind.conn
     if isinstance(conn, mim.Connection):
         clear_all_database_tables()
-        for db in conn.database_names():
+        for db in conn.list_database_names():
             db = conn[db]
     else:
-        for database in conn.database_names():
+        for database in conn.list_database_names():
             if database not in ('allura', 'pyforge', 'project-data'):
                 continue
             log.info('Wiping database %s', database)
             db = conn[database]
-            for coll in list(db.collection_names()):
+            for coll in list(db.list_collection_names()):
                 if coll.startswith('system.'):
                     continue
                 log.info('Dropping collection %s:%s', database, coll)
@@ -299,9 +299,9 @@ def wipe_database():
 
 def clear_all_database_tables():
     conn = M.main_doc_session.bind.conn
-    for db in conn.database_names():
+    for db in conn.list_database_names():
         db = conn[db]
-        for coll in list(db.collection_names()):
+        for coll in list(db.list_collection_names()):
             if coll == 'system.indexes':
                 continue
             db.drop_collection(coll)

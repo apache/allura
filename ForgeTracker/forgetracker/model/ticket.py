@@ -139,10 +139,10 @@ class Globals(MappedClass):
                                                             })
 
     def next_ticket_num(self):
-        gbl = Globals.query.find_and_modify(
-            query=dict(app_config_id=self.app_config_id),
+        gbl = Globals.query.find_one_and_update(
+            dict(app_config_id=self.app_config_id),
             update={'$inc': {'last_ticket_num': 1}},
-            new=True)
+            return_document=True)
         session(gbl).expunge(gbl)
         return gbl.last_ticket_num
 
