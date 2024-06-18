@@ -1072,10 +1072,10 @@ class CommitStatus(MappedClass):
 
     @classmethod
     def upsert(cls, **kw):
-        obj = cls.query.find_and_modify(
-            query=dict(commit_id=kw.get('commit_id'), context=kw.get('context')),
+        obj = cls.query.find_one_and_update(
+            dict(commit_id=kw.get('commit_id'), context=kw.get('context')),
             update={'$set': kw},
-            new=True,
+            return_document=True,
             upsert=True,
         )
         return obj

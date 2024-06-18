@@ -199,14 +199,14 @@ class MonQTask(MappedClass):
                 query['time_queue'] = {'$lte': datetime.utcnow()}
                 if only:
                     query['task_name'] = {'$in': only}
-                obj = cls.query.find_and_modify(
-                    query=query,
+                obj = cls.query.find_one_and_update(
+                    query,
                     update={
                         '$set': dict(
                             state='busy',
                             process=process)
                     },
-                    new=True,
+                    return_document=True,
                     sort=cls.sort)
                 if obj is not None:
                     return obj

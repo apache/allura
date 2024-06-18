@@ -450,8 +450,8 @@ class SVNImplementation(M.RepositoryImplementation):
             path = tree_path.strip('/')
             RM.LastCommitDoc.m.update_partial(
                 {'commit_id': commit_id, 'path': path},
-                {'commit_id': commit_id, 'path':
-                 path, 'entries': lcd_entries},
+                {'$set': {'commit_id': commit_id, 'path':
+                 path, 'entries': lcd_entries}},
                 upsert=True)
         return tree_id
 

@@ -49,16 +49,16 @@ class TestFile(TestCase):
         self.conn = M.session.main_doc_session.db._connection
         self.db = M.session.main_doc_session.db
 
-        self.db.fs.remove()
-        self.db.fs.files.remove()
-        self.db.fs.chunks.remove()
+        self.db.fs.drop()
+        self.db.fs.files.drop()
+        self.db.fs.chunks.drop()
 
     def test_from_stream(self):
         f = File.from_stream('test1.txt', BytesIO(b'test1'))
         self.session.flush()
-        assert self.db.fs.count() == 1
-        assert self.db.fs.files.count() == 1
-        assert self.db.fs.chunks.count() == 1
+        assert self.db.fs.count_documents({}) == 1
+        assert self.db.fs.files.count_documents({}) == 1
+        assert self.db.fs.chunks.count_documents({}) == 1
         assert f.filename == 'test1.txt'
         assert f.content_type == 'text/plain'
         self._assert_content(f, b'test1')
@@ -66,9 +66,9 @@ class TestFile(TestCase):
     def test_from_data(self):
         f = File.from_data('test2.txt', b'test2')
         self.session.flush(f)
-        assert self.db.fs.count() == 1
-        assert self.db.fs.files.count() == 1
-        assert self.db.fs.chunks.count() == 1
+        assert self.db.fs.count_documents({}) == 1
+        assert self.db.fs.files.count_documents({}) == 1
+        assert self.db.fs.chunks.count_documents({}) == 1
         assert f.filename == 'test2.txt'
         assert f.content_type == 'text/plain'
         self._assert_content(f, b'test2')
@@ -77,50 +77,50 @@ class TestFile(TestCase):
         path = __file__.rstrip('c')
         f = File.from_path(path)
         self.session.flush()
-        assert self.db.fs.count() == 1
-        assert self.db.fs.files.count() == 1
-        assert self.db.fs.chunks.count() >= 1
+        assert self.db.fs.count_documents({}) == 1
+        assert self.db.fs.files.count_documents({}) == 1
+        assert self.db.fs.chunks.count_documents({}) >= 1
         assert f.filename == os.path.basename(path)
         text = f.rfile().read()
 
     def test_delete(self):
         f = File.from_data('test1.txt', b'test1')
         self.session.flush()
-        assert self.db.fs.count() == 1
-        assert self.db.fs.files.count() == 1
-        assert self.db.fs.chunks.count() == 1
+        assert self.db.fs.count_documents({}) == 1
+        assert self.db.fs.files.count_documents({}) == 1
+        assert self.db.fs.chunks.count_documents({}) == 1
         f.delete()
         self.session.flush()
-        assert self.db.fs.count() == 0
-        assert self.db.fs.files.count() == 0
-        assert self.db.fs.chunks.count() == 0
+        assert self.db.fs.count_documents({}) == 0
+        assert self.db.fs.files.count_documents({}) == 0
+        assert self.db.fs.chunks.count_documents({}) == 0
 
     def test_remove(self):
         File.from_data('test1.txt', b'test1')
         File.from_data('test2.txt', b'test2')
         self.session.flush()
-        assert self.db.fs.count() == 2
-        assert self.db.fs.files.count() == 2
-        assert self.db.fs.chunks.count() == 2
+        assert self.db.fs.count_documents({}) == 2
+        assert self.db.fs.files.count_documents({}) == 2
+        assert self.db.fs.chunks.count_documents({}) == 2
         File.remove(dict(filename='test1.txt'))
         self.session.flush()
-        assert self.db.fs.count() == 1
-        assert self.db.fs.files.count() == 1
-        assert self.db.fs.chunks.count() == 1
+        assert self.db.fs.count_documents({}) == 1
+        assert self.db.fs.files.count_documents({}) == 1
+        assert self.db.fs.chunks.count_documents({}) == 1
 
     def test_overwrite(self):
         f = File.from_data('test1.txt', b'test1')
         self.session.flush()
-        assert self.db.fs.count() == 1
-        assert self.db.fs.files.count() == 1
-        assert self.db.fs.chunks.count() == 1
+        assert self.db.fs.count_documents({}) == 1
+        assert self.db.fs.files.count_documents({}) == 1
+        assert self.db.fs.chunks.count_documents({}) == 1
         self._assert_content(f, b'test1')
         with f.wfile() as fp:
             fp.write(b'test2')
         self.session.flush()
-        assert self.db.fs.count() == 1
-        assert self.db.fs.files.count() == 2
-        assert self.db.fs.chunks.count() == 2
+        assert self.db.fs.count_documents({}) == 1
+        assert self.db.fs.files.count_documents({}) == 2
+        assert self.db.fs.chunks.count_documents({}) == 2
         self._assert_content(f, b'test2')
 
     def test_serve_embed(self):
@@ -167,9 +167,9 @@ class TestFile(TestCase):
         assert t.content_type == 'image/png'
         assert t.is_image()
         assert f.filename == t.filename
-        assert self.db.fs.count() == 2
-        assert self.db.fs.files.count() == 2
-        assert self.db.fs.chunks.count() == 2
+        assert self.db.fs.count_documents({}) == 2
+        assert self.db.fs.files.count_documents({}) == 2
+        assert self.db.fs.chunks.count_documents({}) == 2
 
     def test_not_image(self):
         f, t = File.save_image(

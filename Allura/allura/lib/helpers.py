@@ -51,8 +51,8 @@ import pkg_resources
 from formencode.validators import FancyValidator
 from dateutil.parser import parse
 from bson import ObjectId
+from bson.errors import InvalidId
 from paste.deploy import appconfig
-from pymongo.errors import InvalidId
 from contextlib import contextmanager
 from tg import tmpl_context as c, app_globals as g
 from tg import response, request

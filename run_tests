@@ -18,7 +18,9 @@
 #       under the License.
 
 import argparse
+from collections import defaultdict
 from glob import glob
+import json
 import multiprocessing
 from multiprocessing.pool import ThreadPool
 import subprocess
@@ -125,13 +127,18 @@ def run_tests_in_parallel(options, runner_args):
 
     def get_pkg_path(pkg):
         return ALT_PKG_PATHS.get(pkg, '')
+    
+    def get_concurrent_tests(pkg):
+        if pkg in NOT_MULTIPROC_SAFE:
+            return 1
+        return options.concurrent_tests
 
     def get_multiproc_args(pkg):
-        if options.concurrent_tests == 1:
-            return ''
-        return '-n {procs_per_suite} --dist loadfile'.format(
-            procs_per_suite=options.concurrent_tests
-        ) if pkg not in NOT_MULTIPROC_SAFE else ''
+        if get_concurrent_tests(pkg) > 1:
+            return '-n {procs_per_suite} --dist loadfile'.format(
+                procs_per_suite=options.concurrent_tests
+            )
+        return ''
 
     def get_concurrent_suites():
         if '-n' in sys.argv:
@@ -140,6 +147,7 @@ def run_tests_in_parallel(options, runner_args):
 
     cmds = []
     env = dict(os.environ)
+    concurrent_tests_map = dict()
     for package in check_packages(options.packages):
         runner = 'pytest'
         if options.coverage:
@@ -163,6 +171,8 @@ def run_tests_in_parallel(options, runner_args):
             args=' '.join(default_args + runner_args),
             multiproc_args=multiproc_args,
         )
+        num_concurrent_tests = get_concurrent_tests(package)
+        concurrent_tests_map[package] = num_concurrent_tests if num_concurrent_tests > 1 else '.'
         if options.coverage:
             cmd += ' && coverage combine'  # merge separate files present from multiprocessing config being on
             cmd += ' && coverage report --include=./* --omit="*/tests/*"'
@@ -171,7 +181,14 @@ def run_tests_in_parallel(options, runner_args):
     # TODO: add a way to include this or not; and add xml output for Jenkins
     cmds.append(('npm run lint-es6', {}))
 
-    ret_codes = run_many(cmds, processes=get_concurrent_suites())
+    num_concurrent_suites = get_concurrent_suites()
+
+    print('Running tests in parallel...')
+    print('\t{:>20}: {}'.format('# CPUS',                       CPUS))
+    print('\t{:>20}: {}'.format('# Suites in Parallel',         num_concurrent_suites))
+    print('\t{:>20}: {}'.format('# Test in Parallel Per Suite', json.dumps(concurrent_tests_map, indent=2)))
+
+    ret_codes = run_many(cmds, processes=num_concurrent_suites)
 
     if options.coverage and not any(ret_codes) and len(options.packages) > 1:
         subprocess.call('rm .coverage', shell=True)

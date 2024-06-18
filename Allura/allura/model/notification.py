@@ -592,13 +592,12 @@ class Mailbox(MappedClass):
             next_scheduled={'$lt': now})
 
         def find_and_modify_direct_mbox():
-            return cls.query.find_and_modify(
-                query=q_direct,
+            return cls.query.find_one_and_update(
+                q_direct,
                 update={'$set': dict(
                     queue=[],
                     queue_empty=True,
-                )},
-                new=False)
+                )})
 
         for mbox in take_while_true(find_and_modify_direct_mbox):
             try:
@@ -618,14 +617,14 @@ class Mailbox(MappedClass):
                 next_scheduled += timedelta(days=7 * mbox.frequency.n)
             elif mbox.frequency.unit == 'month':
                 next_scheduled += timedelta(days=30 * mbox.frequency.n)
-            mbox = cls.query.find_and_modify(
-                query=dict(_id=mbox._id),
+            mbox = cls.query.find_one_and_update(
+                dict(_id=mbox._id),
                 update={'$set': dict(
                         next_scheduled=next_scheduled,
                         queue=[],
                         queue_empty=True,
                         )},
-                new=False)
+                )
             mbox.fire(now)
 
     def fire(self, now):
