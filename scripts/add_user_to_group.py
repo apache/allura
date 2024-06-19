@@ -133,7 +133,7 @@ def parse_options():
                              'Use "ALLPROJECTS" for all projects within a neighborhood')
     parser.add_argument('--nbhd', default='/p/', help='Neighborhood '
                         'url_prefix. Default is /p/.')
-    parser.add_argument('--replace-users', nargs='*',
+    parser.add_argument('--replace-users', nargs='*', default=[],
                         help='If specified, remove these username(s) and only add the new user if one of the replace '
                              'user(s) was found and removed from each project')
     parser.add_argument('--dry-run', action='store_true',
