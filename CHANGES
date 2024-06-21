@@ -4,6 +4,9 @@ Upgrade Instructions
 
   If using docker, rebuild the allura image and restart containers.
 
+Security Fix
+ * [#8563] CVE 2024-38379 authenticated XSS possible for neighborhood admins
+
 Breaking Changes
  * [#8556] remove has_access(..)() syntax.  Custom extensions using this syntax will need to remove the second ()
 
