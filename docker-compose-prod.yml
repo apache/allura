@@ -52,7 +52,7 @@ services:
       - mongo
       - solr
     # see http://docs.gunicorn.org/en/latest/settings.html#workers
-    command: gunicorn --paste /allura-data/production.ini --workers 4 --timeout 90 -b :8088
+    command: gunicorn --paste /allura-data/production.ini --workers 4 --threads 6 --timeout 90 -b :8088
     restart: always
 
   taskd:
