@@ -17,9 +17,7 @@ beautifulsoup4==4.12.3
     #   -r requirements.in
     #   webtest
 bleach[css]==6.1.0
-    # via
-    #   bleach
-    #   pypeline
+    # via pypeline
 certifi==2024.7.4
     # via requests
 cffi==1.16.0
@@ -124,6 +122,8 @@ packaging==24.0
     #   pytest
     #   pytest-sugar
 paginate==0.5.6
+    # via -r requirements.in
+passlib==1.7.4
     # via -r requirements.in
 paste==3.9.0
     # via

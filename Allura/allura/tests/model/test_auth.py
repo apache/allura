@@ -135,11 +135,11 @@ class TestAuth:
         assert len(roles) == 3, roles
         u.set_password('foo')
         provider = plugin.LocalAuthenticationProvider(Request.blank('/'))
-        assert provider._validate_password(u, 'foo')
-        assert not provider._validate_password(u, 'foobar')
+        assert provider.validate_password(u, 'foo')
+        assert not provider.validate_password(u, 'foobar')
         u.set_password('foobar')
-        assert provider._validate_password(u, 'foobar')
-        assert not provider._validate_password(u, 'foo')
+        assert provider.validate_password(u, 'foobar')
+        assert not provider.validate_password(u, 'foo')
 
     def test_user_project_creates_on_demand(self):
         u = M.User.register(dict(username='foobar123'), make_project=False)

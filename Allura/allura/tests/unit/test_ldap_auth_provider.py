@@ -16,13 +16,14 @@
 #       under the License.
 
 import calendar
-import platform
 from datetime import datetime
 
+import pytest
 from bson import ObjectId
 from mock import patch, Mock
-from unittest import SkipTest
 from webob import Request
+
+from allura.tests.test_plugin import TestLocalAuthenticationProvider
 from ming.odm.odmsession import ThreadLocalODMSession
 from tg import config
 
@@ -30,7 +31,6 @@ from alluratest.controller import setup_basic_test
 from allura.lib import plugin
 from allura.lib import helpers as h
 from allura import model as M
-import six
 
 
 class TestLdapAuthenticationProvider:
@@ -39,22 +39,26 @@ class TestLdapAuthenticationProvider:
         setup_basic_test()
         self.provider = plugin.LdapAuthenticationProvider(Request.blank('/'))
 
-    def test_password_encoder(self):
-        # Verify salt
-        ep = self.provider._encode_password
-        # Note: OSX uses a crypt library with a known issue relating the hashing algorithms.
-        if b'$6$rounds=' not in ep('pwd') and platform.system() == 'Darwin':
-            raise SkipTest
-        assert ep('test_pass') != ep('test_pass')
-        assert ep('test_pass', '0000') == ep('test_pass', '0000')
-        # Test password format
-        assert ep('pwd').startswith(b'{CRYPT}$6$rounds=6000$')
+    @pytest.mark.parametrize('algorithm,rounds,specific_salt,salt_len,expected_config', [
+        ('2b', None, 'O'*22, None, '{CRYPT}$2b$12'),
+        ('5', None, None, None, '{CRYPT}$5$rounds=535000$'),
+        ('6', None, None, None, '{CRYPT}$6$rounds=656000$'),
+        ('ldap_pbkdf2_sha256', None, None, None, '{PBKDF2-SHA256}29000$'),
+        ('ldap_pbkdf2_sha512', None, None, None, '{PBKDF2-SHA512}25000$'),
+        ('ldap_bcrypt', None, 'O'*22, None, '{CRYPT}$2b$12$'),
+    ])
+    def test_password_encoder(self, algorithm: str, rounds, specific_salt, salt_len, expected_config):
+        TestLocalAuthenticationProvider._test_password_encoder(
+            'auth.ldap.password.',
+            self.provider,
+            algorithm, rounds, specific_salt, salt_len, expected_config,
+        )
 
     @patch('allura.lib.plugin.ldap')
     def test_set_password(self, ldap):
         user = Mock(username='test-user')
         user.__ming__ = Mock()
-        self.provider._encode_password = Mock(return_value=b'new-pass-hash')
+        self.provider._encode_password = Mock(return_value=('new-pass-hash', 'somealgo'))
         ldap.dn.escape_dn_chars = lambda x: x
 
         dn = 'uid=%s,ou=people,dc=localdomain' % user.username
@@ -75,11 +79,13 @@ class TestLdapAuthenticationProvider:
         self.provider.request.method = 'POST'
         self.provider.request.body = '&'.join([f'{k}={v}' for k, v in params.items()]).encode('utf-8')
         ldap.dn.escape_dn_chars = lambda x: x
+        user = M.User.query.get(username=params['username'])
+        user.password_algorithm = self.provider._password_algorithm()  # default is non-ldap algo so would cause rehash
 
         self.provider._login()
 
         dn = 'uid=%s,ou=people,dc=localdomain' % params['username']
-        ldap.initialize.assert_called_once_with('ldaps://localhost/')
+        ldap.initialize.assert_called_with('ldaps://localhost/')
         connection = ldap.initialize.return_value
         connection.simple_bind_s.assert_called_once_with(dn, b'test-password')
         assert connection.unbind_s.call_count == 1
@@ -113,7 +119,7 @@ class TestLdapAuthenticationProvider:
             'password': 'new-password',
         }
         ldap.dn.escape_dn_chars = lambda x: x
-        self.provider._encode_password = Mock(return_value=b'new-password-hash')
+        self.provider._encode_password = Mock(return_value=('new-password-hash', 'somealgo'))
 
         assert M.User.query.get(username=user_doc['username']) is None
         with h.push_config(config, **{'auth.ldap.autoregister': 'false'}):

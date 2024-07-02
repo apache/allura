@@ -14,12 +14,15 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
+import contextlib
 import datetime as dt
 import calendar
+from unittest import SkipTest
 
+import passlib
 import tg
 from tg import tmpl_context as c
+from tg import config
 from webob import Request, exc
 from bson import ObjectId
 from ming.odm.odmsession import ThreadLocalODMSession
@@ -30,7 +33,7 @@ from allura import model as M
 from allura.lib import plugin
 from allura.lib import phone
 from allura.lib import helpers as h
-from allura.lib.plugin import ProjectRegistrationProvider
+from allura.lib.plugin import ProjectRegistrationProvider, AuthenticationProvider
 from allura.lib.plugin import ThemeProvider
 from allura.lib.exceptions import ProjectConflict, ProjectShortnameInvalid
 from allura.tests.decorators import audits
@@ -624,21 +627,69 @@ class TestLocalAuthenticationProvider:
         setup_global_objects()
         self.provider = plugin.LocalAuthenticationProvider(Request.blank('/'))
 
-    def test_password_encoder(self):
+    @patch.dict(tg.config, {'auth.password.algorithm': 'allura_sha256'})
+    def test_password_encoder_legacy(self):
         # Verify salt
         ep = self.provider._encode_password
         assert ep('test_pass') != ep('test_pass')
         assert ep('test_pass', '0000') == ep('test_pass', '0000')
-        assert ep('test_pass', '0000') == 'sha2560000j7pRjKKZ5L8G0jScZKja9ECmYF2zBV82Mi+E3wkop30='
+        assert ep('test_pass', '0000') == ('sha2560000j7pRjKKZ5L8G0jScZKja9ECmYF2zBV82Mi+E3wkop30=', 'allura_sha256')
+
+    @pytest.mark.parametrize('algorithm,rounds,specific_salt,salt_len,expected_config', [
+        ('sha512_crypt', None,None, None, '$6$rounds=656000$'),
+        ('pbkdf2_sha256', None,None, None, '$pbkdf2-sha256$29000$'),
+        ('pbkdf2_sha512', None,None, None, '$pbkdf2-sha512$25000$'),
+        # test with explicit # of rounds & salt_len
+        ('pbkdf2_sha512', 26789, None, 50, '$pbkdf2-sha512$26789$'),
+        ('bcrypt_sha256', None, 'O'*22, None, '$bcrypt-sha256$v=2,t=2b,r=12$'),
+        ('scrypt', None, None, None, '$scrypt$ln=16,r=8,p=1$'),
+        ('argon2', None, '0'*8, None, '$argon2id$v=19$m=65536,t=3,p=4$'),
+    ])
+    def test_password_encoder(self, algorithm: str, rounds, specific_salt, salt_len, expected_config):
+        self._test_password_encoder(
+            'auth.password.',
+            self.provider,
+            algorithm, rounds, specific_salt, salt_len, expected_config,
+        )
+
+    # shared by test_ldap_auth_provider.py
+    @staticmethod
+    def _test_password_encoder(cfg_prefix: str, provider: AuthenticationProvider,
+                               algorithm, rounds, specific_salt, salt_len, expected_config):
+        if specific_salt is None:
+            specific_salt = '0000'
+        if rounds is not None:
+            rounds_patch = patch.dict(config, {f'{cfg_prefix}rounds': str(rounds)})
+        else:
+            rounds_patch = contextlib.nullcontext()
+        if salt_len is not None:
+            salt_len_patch = patch.dict(config, {f'{cfg_prefix}salt_len': str(salt_len)})
+        else:
+            salt_len_patch = contextlib.nullcontext()
+        with patch.dict(config, {f'{cfg_prefix}algorithm': algorithm}), rounds_patch, salt_len_patch:
+            ep = provider._encode_password
+            try:
+                # different values because of salting
+                assert ep('test_pass') != ep('test_pass')
+            except passlib.exc.MissingBackendError as e:
+                if 'bcrypt' in str(e):
+                    raise SkipTest('bcrypt not available')
+                if 'argon2' in str(e):
+                    raise SkipTest('argon2 not available')
+
+            # same value when same salt
+            assert ep('test_pass', specific_salt) == ep('test_pass', specific_salt)
+
+            # Test password format
+            assert ep('pwd')[0].startswith(expected_config)
 
     def test_set_password_with_old_password(self):
         user = Mock()
         user.__ming__ = Mock()
         self.provider.validate_password = lambda u, p: False
-        self.provider._encode_password = Mock()
-        pytest.raises(
-            exc.HTTPUnauthorized,
-            self.provider.set_password, user, 'old', 'new')
+        self.provider._encode_password = Mock(return_value=['asdfasdf', 'allura_sha256'])
+        with pytest.raises(exc.HTTPUnauthorized):
+            self.provider.set_password(user, 'old', 'new')
         assert self.provider._encode_password.call_count == 0
 
         self.provider.validate_password = lambda u, p: True

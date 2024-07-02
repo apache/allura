@@ -213,6 +213,18 @@ class TestAuth(TestController):
         with audits('Failed login', user=True):
             r = f.submit(extra_environ={'username': '*anonymous'})
 
+    @pytest.mark.parametrize('old_algo', ['allura_sha256', 'sha512_crypt'])
+    def test_login_old_password_hash(self, old_algo):
+        u = M.User.query.get(username='test-user')
+        u.password_algorithm = old_algo
+        r = self.app.get('/auth/', extra_environ={'username': '*anonymous'})
+        f = r.forms[0]
+        encoded = self.app.antispam_field_names(f)
+        f[encoded['username']] = 'test-user'
+        f[encoded['password']] = 'foo'
+        with audits('Successful login', 'Rehashed password automatically', user=True):
+            r = f.submit(extra_environ={'username': '*anonymous'})
+
     def test_login_overlay(self):
         r = self.app.get('/auth/login_fragment/', extra_environ={'username': '*anonymous'})
         f = r.forms[0]
@@ -1745,7 +1757,7 @@ To update your password on %s, please visit the following URL:
         user = M.User.query.get(username='test-admin')
         assert old_pw_hash != user.password
         provider = plugin.LocalAuthenticationProvider(None)
-        assert provider._validate_password(user, new_password)
+        assert provider.validate_password(user, new_password)
 
         # confirm reset fields cleared
         user = M.User.query.get(username='test-admin')
@@ -1860,7 +1872,7 @@ To update your password on %s, please visit the following URL:
         # confirm password changed and works
         user = M.User.query.get(username='test-admin')
         provider = plugin.LocalAuthenticationProvider(None)
-        assert provider._validate_password(user, new_password)
+        assert provider.validate_password(user, new_password)
 
         # confirm can log in now in same session
         r = r.follow()

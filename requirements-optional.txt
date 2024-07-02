@@ -9,3 +9,7 @@ mediawiki2html  # GPL
 
 # for spam checking
 akismet>=1.3
+
+# for this type of password hashing
+bcrypt
+argon2-cffi

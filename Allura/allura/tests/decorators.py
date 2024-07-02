@@ -151,7 +151,7 @@ class patch_middleware_config:
 
 
 @contextlib.contextmanager
-def audits(*messages, **kwargs):
+def audits(*messages, user=False, actor=r'.*', ip_addr=r'.*', user_agent=r'.*'):
     """
     Asserts all the messages exist in audit log
 
@@ -161,10 +161,7 @@ def audits(*messages, **kwargs):
     """
     M.AuditLog.query.remove()
     yield
-    if kwargs.get('user'):
-        actor = kwargs.get('actor', '.*')
-        ip_addr = kwargs.get('ip_addr', '.*')
-        user_agent = kwargs.get('user_agent', '.*')
+    if user:
         preamble = f'(Done by user: {actor}\n)?IP Address: {ip_addr}\nUser-Agent: {user_agent}\n'
     else:
         preamble = ''
@@ -182,7 +179,7 @@ def audits(*messages, **kwargs):
 
 
 @contextlib.contextmanager
-def out_audits(*messages, **kwargs):
+def out_audits(*messages, user=False, actor=r'.*', ip_addr=r'.*'):
     """
     Asserts none the messages exist in audit log.  "without audits"
 
@@ -192,9 +189,7 @@ def out_audits(*messages, **kwargs):
     """
     M.AuditLog.query.remove()
     yield
-    if kwargs.get('user'):
-        actor = kwargs.get('actor', '.*')
-        ip_addr = kwargs.get('ip_addr', '.*')
+    if user:
         preamble = f'(Done by user: {actor}\n)?IP Address: {ip_addr}\n'
     else:
         preamble = ''

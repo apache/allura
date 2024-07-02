@@ -259,8 +259,9 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     sfx_userid = FieldProperty(S.Deprecated)
     username = FieldProperty(str)
     email_addresses = FieldProperty([str])
-    password = FieldProperty(str)
+    password = FieldProperty(str)  # hashed
     last_password_updated = FieldProperty(datetime)  # to access, use AuthProvider's get_last_password_updated
+    password_algorithm = FieldProperty(str)
     reg_date = FieldProperty(datetime)  # to access, use user.registration_date()
     projects = FieldProperty(S.Deprecated)
     # full mount point: prefs dict
