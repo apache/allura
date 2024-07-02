@@ -486,10 +486,13 @@ class ContentSecurityPolicyMiddleware:
             rules.add('upgrade-insecure-requests')
 
         if self.config.get('csp.frame_sources'):
+            frame_srcs = self.config['csp.frame_sources']
+            if environ.get('csp_frame_domains'):
+                frame_srcs += ' ' + ' '.join(environ['csp_frame_domains'])
             if asbool(self.config.get('csp.frame_sources_enforce', False)):
-                rules.add(f"frame-src {self.config['csp.frame_sources']}")
+                rules.add(f"frame-src {frame_srcs}")
             else:
-                report_rules.add(f"frame-src {self.config['csp.frame_sources']}")
+                report_rules.add(f"frame-src {frame_srcs}")
 
         if self.config.get('csp.form_action_urls'):
             srcs = self.config['csp.form_action_urls']
