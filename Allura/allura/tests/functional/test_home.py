@@ -199,10 +199,9 @@ class TestProjectHome(TestController):
         test_project.add_user(M.User.by_username('test-user-1'), ['B_role'])
         test_project.add_user(M.User.by_username('test-user'), ['Developer'])
         test_project.add_user(M.User.by_username('test-user-0'), ['Member'])
-        test_project.add_user(M.User.by_username('test-user-2'), ['Member'])
+        test_project.add_user(M.User.by_username('test-user-2'), ['Admin'])
         test_project.add_user(M.User.by_username('test-user-3'), ['Member'])
         test_project.add_user(M.User.by_username('test-user-3'), ['Developer'])
-        test_project.add_user(M.User.by_username('test-user-4'), ['Admin'])
         ThreadLocalODMSession.flush_all()
         r = self.app.get('/p/test/_members/')
 
@@ -211,12 +210,11 @@ class TestProjectHome(TestController):
         assert '<td>Admin</td>' in r
         tr = r.html.findAll('tr')
         assert "<td>Test Admin</td>" in str(tr[1])
-        assert "<td>Test User 4</td>" in str(tr[2])
+        assert "<td>Test User 2</td>" in str(tr[2])
         assert "<td>Test User</td>" in str(tr[3])
         assert "<td>Test User 3</td>" in str(tr[4])
         assert "<td>Test User 0</td>" in str(tr[5])
         assert "<td>Test User 1</td>" in str(tr[6])
-        assert "<td>Test User 2</td>" in str(tr[7])
 
     def test_members_anonymous(self):
         r = self.app.get('/p/test/_members/',

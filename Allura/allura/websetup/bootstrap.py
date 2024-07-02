@@ -20,6 +20,7 @@ import os
 import sys
 import logging
 import shutil
+from datetime import datetime
 from textwrap import dedent
 
 import tg
@@ -27,6 +28,7 @@ from tg import tmpl_context as c, app_globals as g
 from paste.deploy.converters import asbool
 import ew
 
+from allura.lib.decorators import memoize
 from allura.model.oauth import dummy_oauths
 from ming import Session, mim
 from ming.odm import state, session
@@ -178,7 +180,7 @@ def bootstrap(command, conf, vars):
 
     if create_test_data:
         # Add some test users
-        for unum in range(10):
+        for unum in range(4):
             make_user('Test User %d' % unum)
 
     log.info('Creating basic project categories')
@@ -205,7 +207,7 @@ def bootstrap(command, conf, vars):
             u_admin = make_user('Test Admin')
             u_admin.preferences = dict(email_address='test-admin@users.localhost')
             u_admin.email_addresses = ['test-admin@users.localhost']
-            u_admin.set_password('foo')
+            fast_set_pwd(u_admin, 'foo')
             u_admin.claim_address('test-admin@users.localhost')
             ThreadLocalODMSession.flush_all()
 
@@ -306,6 +308,16 @@ def clear_all_database_tables():
                 continue
             db.drop_collection(coll)
 
+# this re-uses hashes for the same pwd, which gives a huge speedup during tests.  Not good for real usage, since salting is the same.
+user_pwd_hash_speedup_cache = {}
+
+def fast_set_pwd(user: M.User, password: str):
+    if password in user_pwd_hash_speedup_cache:
+        user.password, user.password_algorithm = user_pwd_hash_speedup_cache[password]
+        user.last_password_updated = datetime.utcnow()
+    else:
+        user.set_password(password)
+        user_pwd_hash_speedup_cache[password] = (user.password, user.password_algorithm)
 
 def create_user(display_name, username=None, password='foo', make_project=False):  # noqa: S107
     if not username:
@@ -321,7 +333,7 @@ def create_user(display_name, username=None, password='foo', make_project=False)
     em.confirmed = True
     em.set_nonce_hash()
     user.set_pref('email_address',email)
-    user.set_password(password)
+    fast_set_pwd(user, password)
     return user
 
 

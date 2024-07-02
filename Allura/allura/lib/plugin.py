@@ -24,8 +24,9 @@ import os
 import logging
 import subprocess
 import string
-import crypt
 import random
+import sys
+import warnings
 from contextlib import contextmanager
 from urllib.parse import urlparse
 from io import BytesIO
@@ -36,8 +37,10 @@ from datetime import datetime, timedelta
 import typing
 import calendar
 
+import passlib.ifc
 import requests
 import six
+from passlib.context import CryptContext
 
 try:
     import ldap
@@ -49,8 +52,9 @@ import tg
 from tg import config, request, redirect, response, flash
 from tg import tmpl_context as c, app_globals as g
 from webob import exc, Request
-from paste.deploy.converters import asbool, asint
+from paste.deploy.converters import asbool, asint, aslist
 from formencode import validators as fev
+from passlib.registry import get_crypt_handler
 
 from ming.utils import LazyProperty
 from ming.odm import state
@@ -65,6 +69,7 @@ from allura.tasks.index_tasks import solr_del_project_artifacts
 
 if typing.TYPE_CHECKING:
     from allura.app import SitemapEntry
+    from allura import model as M
 
 log = logging.getLogger(__name__)
 
@@ -93,6 +98,8 @@ class AuthenticationProvider:
         '/auth/multifactor',
         '/auth/do_multifactor',
     ]
+    cfg_prefix_pwds = 'auth.password.'
+    default_pwd_algo = 'scrypt'  # noqa: S105
 
     def __init__(self, request):
         self.request = request
@@ -264,12 +271,23 @@ class AuthenticationProvider:
         self.session.save()
         response.set_cookie('memorable_forget', '/', secure=request.environ['beaker.session'].secure)
 
-    def validate_password(self, user, password):
+    def validate_password(self, user: M.User, password: str) -> bool:
+        ok = self._validate_password(user, password)
+        if ok:
+            self.rehash_password_if_needed(user, password)
+        return ok
+
+    def rehash_password_if_needed(self, user: M.User, password: str) -> None:
+        if user.password_algorithm != self._password_algorithm():
+            self.set_password(user, None, password, set_timestamp=False)
+            h.auditlog_user('Rehashed password automatically', user=user)
+
+    def _validate_password(self, user: M.User, password: str) -> bool:
         '''Check that provided password matches actual user password
 
         :rtype: bool
         '''
-        raise NotImplementedError('validate_password')
+        raise NotImplementedError('_validate_password')
 
     def disable_user(self, user, **kw):
         '''Disable user account'''
@@ -295,12 +313,14 @@ class AuthenticationProvider:
         '''
         raise NotImplementedError('by_username')
 
-    def set_password(self, user, old_password, new_password):
+    def set_password(self, user: M.User, old_password: str | None, new_password: str, set_timestamp=True):
         '''
         Set a user's password.
 
-        A provider implementing this method should store the timestamp of this change, either
+        A provider implementing this method should store the timestamp of this change when set_timestamp=True, either
         on ``user.last_password_updated`` or somewhere else that a custom ``get_last_password_updated`` method uses.
+
+        Also should set user.password_algorithm to the password algorithm used.
 
         :param user: a :class:`User <allura.model.auth.User>`
         :rtype: None
@@ -504,12 +524,54 @@ class AuthenticationProvider:
             validator._messages['invalid'] = 'Usernames only include small letters, numbers, and dashes'
         return validator
 
+    def _passlib_crypt_by_id(self, algorithm: str) -> passlib.ifc.PasswordHash:
+        return get_crypt_handler(algorithm)
+
+    def _encode_password_legacy_sha256(self, password: str, salt: str) -> str:
+        from allura import model as M
+
+        if salt is None:
+            salt = ''.join(chr(randint(1, 0x7f))
+                           for i in range(M.User.SALT_LEN))
+        hashpass = sha256((salt + password).encode('utf-8')).digest()
+        return 'sha256' + salt + six.ensure_text(b64encode(hashpass))
+
+    def _password_algorithm(self) -> str:
+        return config.get(self.cfg_prefix_pwds + 'algorithm', self.default_pwd_algo)
+
+    def _encode_password(self, password: str, salt=None) -> tuple[str, str]:
+        algorithm = self._password_algorithm()
+
+        if algorithm == 'allura_sha256':
+            return self._encode_password_legacy_sha256(password, salt), algorithm
+
+        crypt = self._passlib_crypt_by_id(algorithm)
+
+        passlib_kwargs = dict()
+        if crypt.name.startswith('bcrypt'):
+            passlib_kwargs['truncate_error'] = True
+
+        rounds = config.get(self.cfg_prefix_pwds + 'rounds')
+        if rounds:
+            if int(rounds) < getattr(crypt, 'default_rounds', 0):
+                warnings.warn(f'rounds for {crypt.name} should be at least {crypt.default_rounds}', stacklevel=1)
+            passlib_kwargs['rounds'] = rounds
+
+        salt_len = config.get(self.cfg_prefix_pwds + 'salt_len')
+        if salt_len:
+            passlib_kwargs['salt_size'] = int(salt_len)
+        if salt:
+            if crypt._salt_is_bytes:
+                salt = salt.encode()  # must be bytes
+            passlib_kwargs['salt'] = salt
+        encrypted = crypt.using(**passlib_kwargs).hash(password)
+        return encrypted, algorithm
+
 
 class LocalAuthenticationProvider(AuthenticationProvider):
 
     '''
-    Stores user passwords on the User model, in mongo.  Uses per-user salt and
-    SHA-256 encryption.
+    Stores user password hashes on the User model, in mongo.
     '''
 
     forgotten_password_process = True
@@ -525,7 +587,7 @@ class LocalAuthenticationProvider(AuthenticationProvider):
 
     def _login(self):
         user = self.by_username(self.request.params['username'])
-        if not self._validate_password(user, self.request.params['password']):
+        if not self.validate_password(user, self.request.params['password']):
             raise exc.HTTPUnauthorized()
         return user
 
@@ -553,19 +615,27 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         if kw.get('audit', True):
             h.auditlog_user('Account changed to pending', user=user)
 
-    def validate_password(self, user, password):
-        return self._validate_password(user, password)
-
-    def _validate_password(self, user, password):
+    def _validate_password(self, user: M.User, password) -> bool:
         if user is None:
             return False
         if not user.password:
             return False
-        salt = str(user.password[6:6 + user.SALT_LEN])
-        check = self._encode_password(password, salt)
-        if check != user.password:
-            return False
-        return True
+
+        algorithm = config.get('auth.password.algorithm', self.default_pwd_algo)
+        old_algos = aslist(config.get('auth.password.algorithm.old', 'allura_sha256'))
+
+        if user.password.startswith('sha256') and 'allura_sha256' in old_algos:
+            # legacy.  'allura_sha256' is a custom name for our old logic
+            salt = str(user.password[6:6 + user.SALT_LEN])
+            check = self._encode_password_legacy_sha256(password, salt)
+            return check == user.password
+        else:
+            # https://passlib.readthedocs.io/en/stable/narr/context-tutorial.html#deprecation-hash-migration
+            crypt = CryptContext(
+                schemes=[self._passlib_crypt_by_id(algorithm)],
+                deprecated=[self._passlib_crypt_by_id(algo) for algo in old_algos if algo != 'allura_sha256'],
+            )
+            return crypt.verify(password, user.password)
 
     def by_username(self, username):
         from allura import model as M
@@ -576,21 +646,15 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         rex = r'^' + un + '$'
         return M.User.query.get(username={'$regex': rex}, disabled=False, pending=False)
 
-    def set_password(self, user, old_password, new_password):
+    def set_password(self, user, old_password, new_password, set_timestamp=True):
         if old_password is not None and not self.validate_password(user, old_password):
             raise exc.HTTPUnauthorized()
         else:
-            user.password = self._encode_password(new_password)
-            user.last_password_updated = datetime.utcnow()
+            user.password, algorithm = self._encode_password(new_password)
+            user.password_algorithm = algorithm
+            if set_timestamp:
+                user.last_password_updated = datetime.utcnow()
             session(user).flush(user)
-
-    def _encode_password(self, password, salt=None):
-        from allura import model as M
-        if salt is None:
-            salt = ''.join(chr(randint(1, 0x7f))
-                           for i in range(M.User.SALT_LEN))
-        hashpass = sha256((salt + password).encode('utf-8')).digest()
-        return 'sha256' + salt + six.ensure_text(b64encode(hashpass))
 
     def user_project_shortname(self, user):
         # "_" isn't valid for subdomains (which project names are used with)
@@ -671,9 +735,13 @@ def ldap_user_dn(username):
 class LdapAuthenticationProvider(AuthenticationProvider):
 
     forgotten_password_process = True
+    cfg_prefix_pwds = 'auth.ldap.password.'
+    default_pwd_algo = 'ldap_pbkdf2_sha512'  # noqa: S105
 
     def register_user(self, user_doc):
         from allura import model as M
+        pwd_hash, algorithm = self._encode_password(user_doc['password'])
+        user_doc['password_algorithm'] = algorithm
         result = M.User(**user_doc)
         if asbool(config.get('auth.ldap.autoregister', True)):
             if asbool(config.get('auth.allow_user_registration', True)):
@@ -690,7 +758,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         display_name = user_doc['display_name'].encode('utf-8')
         ldif_u = modlist.addModlist(dict(
             uid=uname,
-            userPassword=self._encode_password(user_doc['password']),
+            userPassword=pwd_hash,
             objectClass=[b'account', b'posixAccount'],
             cn=display_name,
             uidNumber=uid,
@@ -732,39 +800,44 @@ class LdapAuthenticationProvider(AuthenticationProvider):
                           username, errmsg)
             raise AssertionError(errmsg)
 
-    def _get_salt(self, length):
-        def random_char():
-            return random.choice(string.ascii_uppercase + string.digits)
-        return ''.join(random_char() for i in range(length))
-
-    def _encode_password(self, password, salt=None):
-        cfg_prefix = 'auth.ldap.password.'
-        salt_len = asint(config.get(cfg_prefix + 'salt_len', 16))
-        algorithm = config.get(cfg_prefix + 'algorithm', 6)
-        rounds = asint(config.get(cfg_prefix + 'rounds', 6000))
-        salt = self._get_salt(salt_len) if salt is None else salt
-        encrypted = crypt.crypt(
-            six.ensure_str(password),
-            f'${algorithm}$rounds={rounds}${salt}')
-        return b'{CRYPT}%s' % encrypted.encode('utf-8')
-
     def by_username(self, username):
         from allura import model as M
         return M.User.query.get(username=username, disabled=False, pending=False)
 
-    def set_password(self, user, old_password, new_password):
+    def _passlib_crypt_by_id(self, algorithm: str) -> passlib.ifc.PasswordHash:
+        try:
+            crypt = get_crypt_handler(algorithm)
+        except KeyError:
+            # handle a few old system "crypt" ids.  https://passlib.readthedocs.io/en/stable/modular_crypt_format.html#mcf-identifiers
+            crypt = get_crypt_handler(
+                {
+                    # '1': 'ldap_md5_crypt',   # could support this, but it is super weak
+                    '2b': 'ldap_bcrypt',
+                    '5': 'ldap_sha256_crypt',
+                    '6': 'ldap_sha512_crypt',
+                }[algorithm]
+            )
+        else:
+            if not algorithm.startswith('ldap_'):
+                raise ValueError(f'LDAP algorithms should always start with ldap_ (got {algorithm})')
+        return crypt
+
+
+    def set_password(self, user, old_password, new_password, set_timestamp=True):
         dn = ldap_user_dn(user.username)
-        if old_password:
+        if old_password is not None:
             ldap_ident = dn
             ldap_pass = old_password.encode('utf-8')
         else:
             ldap_ident = ldap_pass = None
         try:
-            new_password = self._encode_password(new_password)
+            new_password, algorithm = self._encode_password(new_password)
             with ldap_conn(ldap_ident, ldap_pass) as con:
                 con.modify_s(
-                    dn, [(ldap.MOD_REPLACE, 'userPassword', new_password)])
-            user.last_password_updated = datetime.utcnow()
+                    dn, [(ldap.MOD_REPLACE, 'userPassword', new_password.encode('utf-8'))])
+            if set_timestamp:
+                user.last_password_updated = datetime.utcnow()
+            user.password_algorithm = algorithm
             session(user).flush(user)
         except ldap.INVALID_CREDENTIALS:
             raise exc.HTTPUnauthorized()
@@ -778,7 +851,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
             username = str(self.request.params['username'])
         except UnicodeEncodeError:
             raise exc.HTTPBadRequest('Unicode is not allowed in usernames')
-        if not self._validate_password(username, self.request.params['password']):
+        if not self._validate_password_username(username, self.request.params['password']):
             raise exc.HTTPUnauthorized()
         user = M.User.query.get(username=username)
         if user is None:
@@ -792,17 +865,17 @@ class LdapAuthenticationProvider(AuthenticationProvider):
             else:
                 log.debug(f'LdapAuth: no user {username} found in local mongo')
                 raise exc.HTTPUnauthorized()
-        elif user.disabled or user.pending:
+        else:
+            self.rehash_password_if_needed(user, self.request.params['password'])
+        if user.disabled or user.pending:
             log.debug(f'LdapAuth: user {username} is disabled or pending in Allura')
             raise exc.HTTPUnauthorized()
         return user
 
-    def validate_password(self, user, password):
-        '''by user'''
-        return self._validate_password(user.username, password)
+    def _validate_password(self, user: M.User, password: str) -> bool:
+        return self._validate_password_username(user.username, password)
 
-    def _validate_password(self, username, password):
-        '''by username'''
+    def _validate_password_username(self, username: str, password: str) -> bool:
         password = h.really_unicode(password).encode('utf-8')
         try:
             ldap_user = ldap_user_dn(username)
