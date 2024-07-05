@@ -1008,22 +1008,24 @@ class ProjectRegistrationProvider:
                 "You can't create private projects in the %s neighborhood" %
                 neighborhood.name)
 
-        # Check for project limit creation
-        nb_max_projects = neighborhood.get_max_projects()
-        if nb_max_projects is not None:
-            count = M.Project.query.find(dict(
-                neighborhood_id=neighborhood._id,
-                deleted=False,
-                is_nbhd_project=False,
-            )).count()
-            if count >= nb_max_projects:
-                log.exception('Error registering project %s' % project_name)
-                raise forge_exc.ProjectOverlimitError()
+        if not user_project:  # user-projects should not be subject to these limits
 
-        self.rate_limit(user, neighborhood)
+            # Check for project limit creation
+            nb_max_projects = neighborhood.get_max_projects()
+            if nb_max_projects is not None:
+                count = M.Project.query.find(dict(
+                    neighborhood_id=neighborhood._id,
+                    deleted=False,
+                    is_nbhd_project=False,
+                )).count()
+                if count >= nb_max_projects:
+                    log.exception('Error registering project %s' % project_name)
+                    raise forge_exc.ProjectOverlimitError()
 
-        if not self.phone_verified(user, neighborhood) and not user_project:
-            raise forge_exc.ProjectPhoneVerificationError()
+            self.rate_limit(user, neighborhood)
+
+            if not self.phone_verified(user, neighborhood):
+                raise forge_exc.ProjectPhoneVerificationError()
 
         if user_project and shortname.startswith('u/'):
             check_shortname = shortname.replace('u/', '', 1)
