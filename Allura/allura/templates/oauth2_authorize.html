@@ -55,9 +55,21 @@
       <input type="hidden" name="client_id" value="{{client.client_id}}"/>
       <input type="hidden" name="credentials" value="{{credentials}}"/>
       <input type="submit" class="submit" style="background: #ccc;color:#555" name="no" value="No, do not authorize {{ client.name }}">
-      <input type="submit" class="button" name="yes" value="Yes, authorize {{ client.name }}"><br>
+      <input id="authorize-ok" type="submit" class="button" name="yes" value="Yes, authorize {{ client.name }}"><br>
       {{lib.csrf_token()}}
     </form>
 </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript">
+  $(function() {
+    $('#authorize-ok').click(function() {
+      $(this).attr('disabled', 'disabled');
+      $(this).attr('value', 'Authorizing {{ client.name }}...');
+      $(this).closest('form').submit();
+    });
+  })
+</script>
 {% endblock %}
