@@ -20,7 +20,7 @@ bleach[css]==6.1.0
     # via
     #   bleach
     #   pypeline
-certifi==2024.2.2
+certifi==2024.7.4
     # via requests
 cffi==1.16.0
     # via cryptography
