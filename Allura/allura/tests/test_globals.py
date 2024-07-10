@@ -765,6 +765,7 @@ class Test():
 class TestCachedMarkdown(unittest.TestCase):
 
     def setup_method(self, method):
+        setup()
         self.md = ForgeMarkdown()
         self.post = M.Post()
         self.post.text = '**bold**'
@@ -775,9 +776,10 @@ class TestCachedMarkdown(unittest.TestCase):
             self.md.cached_convert(self.post, 'no_such_field')
 
     def test_missing_cache_field(self):
-        delattr(self.post, 'text_cache')
-        html = self.md.cached_convert(self.post, 'text')
-        self.assertEqual(html, self.expected_html)
+        with h.push_context('test', 'wiki', neighborhood='Projects'):
+            delattr(self.post, 'text_cache')
+            html = self.md.cached_convert(self.post, 'text')
+            self.assertEqual(html, self.expected_html)
 
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='-0.01')
     def test_non_ascii(self):

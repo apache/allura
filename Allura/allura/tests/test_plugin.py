@@ -259,6 +259,7 @@ class TestProjectRegistrationProviderPhoneVerification:
                 assert result == g.phone_service.verify.return_value
             assert 2 == g.phone_service.verify.call_count
 
+    @patch('allura.lib.helpers.request', Request.blank('/'))
     @patch.object(plugin, 'g')
     def test_verify_phone_max_limit_reached(self, g):
         g.phone_service = Mock(spec=phone.PhoneService)
