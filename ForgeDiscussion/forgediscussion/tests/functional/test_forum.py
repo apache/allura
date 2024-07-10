@@ -525,9 +525,9 @@ class TestForum(TestController):
     def _set_anon_allowed(self):
         r = self.app.get('/admin/discussion/permissions')
         select = r.html.find('select', {'name': 'card-3.new'})
-        opt_anon = select.find(text='*anonymous').parent
-        opt_auth = select.find(text='*authenticated').parent
-        opt_admin = select.find(text='Admin').parent
+        opt_anon = select.find(string='*anonymous').parent
+        opt_auth = select.find(string='*authenticated').parent
+        opt_admin = select.find(string='Admin').parent
         r = self.app.post('/admin/discussion/update', params={
             'card-0.id': 'admin',
             'card-0.value': opt_admin['value'],
@@ -726,7 +726,7 @@ class TestForum(TestController):
         return rows
 
     def check_announcement_table(self, response, topic_name):
-        assert response.html.find(text='Announcements')
+        assert response.html.find(string='Announcements')
         rows = self.get_table_rows(response, 'announcements')
         assert len(rows) == 1
         cell = rows[0].findAll('td', {'class': 'topic'})

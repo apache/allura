@@ -210,7 +210,7 @@ class TracExport:
             d['size'] = int(self.match_pattern(SIZE_PATTERN, size_s))
             timestamp_s = attach.find('a', {'class': 'timeline'})['title']
             d['date'] = self.trac2z_date(self.match_pattern(TIMESTAMP_PATTERN, timestamp_s))
-            d['by'] = attach.find(text=re.compile('added by')).nextSibling.text
+            d['by'] = attach.find(string=re.compile('added by')).nextSibling.text
             d['description'] = ''
             # Skip whitespace
             while attach.nextSibling and isinstance(attach.nextSibling, NavigableString):

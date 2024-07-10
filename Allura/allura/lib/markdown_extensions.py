@@ -18,13 +18,14 @@
 from __future__ import annotations
 import re
 import logging
+import warnings
 from typing import List
 import xml.etree.ElementTree as etree
 
 from urllib.parse import urljoin
 
 from tg import config
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, MarkupResemblesLocatorWarning
 import html5lib
 import html5lib.serializer
 import html5lib.filters.alphabeticalattributes
@@ -474,9 +475,13 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
     def __init__(self, make_absolute=False):
         self._make_absolute = make_absolute
 
-    def run(self, text):
-        soup = BeautifulSoup(text,
-                             'html5lib')  # 'html.parser' parser gives weird </li> behaviour with test_macro_members
+    def run(self, text: str):
+        with warnings.catch_warnings():
+            # sometimes short snippets of code (especially escaped html) can trigger this
+            warnings.filterwarnings('ignore', category=MarkupResemblesLocatorWarning)
+
+            soup = BeautifulSoup(text,
+                                 'html5lib')  # 'html.parser' parser gives weird </li> behaviour with test_macro_members
 
         if self._make_absolute:
             rewrite = self._rewrite_abs

@@ -2041,7 +2041,7 @@ class TestOAuth(TestController):
         )
         ThreadLocalODMSession.flush_all()
         r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key_reqtok_12345'})
-        assert r.html.find(text=re.compile('^PIN: ')) is not None
+        assert r.html.find(string=re.compile('^PIN: ')) is not None
 
     def test_do_authorize_cb(self):
         user = M.User.by_username('test-admin')
