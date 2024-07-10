@@ -596,8 +596,8 @@ class TestProjectAdmin(TestController):
     def test_log_permission(self):
         r = self.app.get('/admin/wiki/permissions')
         select = r.html.find('select', {'name': 'card-0.new'})
-        opt_admin = select.find(text='Admin').parent
-        opt_developer = select.find(text='Developer').parent
+        opt_admin = select.find(string='Admin').parent
+        opt_developer = select.find(string='Developer').parent
         assert opt_admin.name == 'option'
         assert opt_developer.name == 'option'
 
@@ -627,8 +627,8 @@ class TestProjectAdmin(TestController):
         r = self.app.get('/test-subproject/admin/permissions/')
         assert len(r.html.findAll('input', {'name': 'card-0.value'})) == 0
         select = r.html.find('select', {'name': 'card-0.new'})
-        opt_admin = select.find(text='Admin').parent
-        opt_developer = select.find(text='Developer').parent
+        opt_admin = select.find(string='Admin').parent
+        opt_developer = select.find(string='Developer').parent
         assert opt_admin.name == 'option'
         assert opt_developer.name == 'option'
         with audits('updated "admin" permissions: "" => "Admin,Developer"'):
