@@ -19,6 +19,8 @@ import json
 import os
 
 from unittest import TestCase, skipIf
+
+import pytest
 from mock import Mock, patch
 from ming.odm import ThreadLocalODMSession
 from tg import tmpl_context as c, config
@@ -98,12 +100,9 @@ class TestTracTicketImporter(TestCase):
         user = Mock(name='User', _id='id')
         export.side_effect = ValueError
 
-        self.assertRaises(ValueError, importer.import_tool, project, user,
-                          mount_point='bugs',
-                          mount_label='Bugs',
-                          trac_url='http://example.com/trac/url',
-                          user_map=None,
-                          )
+        with pytest.raises(ValueError):
+            importer.import_tool(project, user, mount_point='bugs', mount_label='Bugs',
+                                 trac_url='http://example.com/trac/url', user_map=None)
 
         h.make_app_admin_only.assert_called_once_with(app)
 

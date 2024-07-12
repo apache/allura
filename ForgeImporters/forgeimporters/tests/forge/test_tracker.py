@@ -19,6 +19,8 @@ from datetime import datetime
 from unittest import TestCase
 
 import mock
+import pytest
+
 from ming.odm import ThreadLocalODMSession
 import webtest
 
@@ -236,9 +238,9 @@ class TestTrackerImporter(TestCase):
 
         importer = tracker.ForgeTrackerImporter()
         importer._load_json = mock.Mock(return_value=tracker_json)
-        self.assertRaises(
-            ValueError, importer.import_tool, project, user, project_name='project_name',
-            mount_point='mount_point', mount_label='mount_label')
+        with pytest.raises(ValueError):
+            importer.import_tool(project, user, project_name='project_name',
+                                 mount_point='mount_point', mount_label='mount_label')
 
         h.make_app_admin_only.assert_called_once_with(
             project.install_app.return_value)

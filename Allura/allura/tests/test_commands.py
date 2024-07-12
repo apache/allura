@@ -53,8 +53,8 @@ def test_script():
     cmd = script.ScriptCommand('script')
     cmd.run(
         [test_config, pkg_resources.resource_filename('allura', 'tests/tscript.py')])
-    pytest.raises(ValueError, cmd.run,
-                  [test_config, pkg_resources.resource_filename('allura', 'tests/tscript_error.py')])
+    with pytest.raises(ValueError):
+        cmd.run([test_config, pkg_resources.resource_filename('allura', 'tests/tscript_error.py')])
 
 
 def test_set_neighborhood_max_projects():
@@ -74,10 +74,10 @@ def test_set_neighborhood_max_projects():
     assert neighborhood.features['max_projects'] is None
 
     # check validation
-    pytest.raises(InvalidNBFeatureValueError, cmd.run,
-                  [test_config, str(n_id), 'max_projects', 'string'])
-    pytest.raises(InvalidNBFeatureValueError, cmd.run,
-                  [test_config, str(n_id), 'max_projects', '2.8'])
+    with pytest.raises(InvalidNBFeatureValueError):
+        cmd.run([test_config, str(n_id), 'max_projects', 'string'])
+    with pytest.raises(InvalidNBFeatureValueError):
+        cmd.run([test_config, str(n_id), 'max_projects', '2.8'])
 
 
 def test_set_neighborhood_private():
@@ -97,12 +97,12 @@ def test_set_neighborhood_private():
     assert not neighborhood.features['private_projects']
 
     # check validation
-    pytest.raises(InvalidNBFeatureValueError, cmd.run,
-                  [test_config, str(n_id), 'private_projects', 'string'])
-    pytest.raises(InvalidNBFeatureValueError, cmd.run,
-                  [test_config, str(n_id), 'private_projects', '1'])
-    pytest.raises(InvalidNBFeatureValueError, cmd.run,
-                  [test_config, str(n_id), 'private_projects', '2.8'])
+    with pytest.raises(InvalidNBFeatureValueError):
+        cmd.run([test_config, str(n_id), 'private_projects', 'string'])
+    with pytest.raises(InvalidNBFeatureValueError):
+        cmd.run([test_config, str(n_id), 'private_projects', '1'])
+    with pytest.raises(InvalidNBFeatureValueError):
+        cmd.run([test_config, str(n_id), 'private_projects', '2.8'])
 
 
 def test_set_neighborhood_google_analytics():
@@ -122,12 +122,12 @@ def test_set_neighborhood_google_analytics():
     assert not neighborhood.features['google_analytics']
 
     # check validation
-    pytest.raises(InvalidNBFeatureValueError, cmd.run,
-                  [test_config, str(n_id), 'google_analytics', 'string'])
-    pytest.raises(InvalidNBFeatureValueError, cmd.run,
-                  [test_config, str(n_id), 'google_analytics', '1'])
-    pytest.raises(InvalidNBFeatureValueError, cmd.run,
-                  [test_config, str(n_id), 'google_analytics', '2.8'])
+    with pytest.raises(InvalidNBFeatureValueError):
+        cmd.run([test_config, str(n_id), 'google_analytics', 'string'])
+    with pytest.raises(InvalidNBFeatureValueError):
+        cmd.run([test_config, str(n_id), 'google_analytics', '1'])
+    with pytest.raises(InvalidNBFeatureValueError):
+        cmd.run([test_config, str(n_id), 'google_analytics', '2.8'])
 
 
 def test_set_neighborhood_css():
@@ -152,16 +152,16 @@ def test_set_neighborhood_css():
     assert neighborhood.features['css'] == 'custom'
 
     # check validation
-    pytest.raises(InvalidNBFeatureValueError, cmd.run,
-                  [test_config, str(n_id), 'css', 'string'])
-    pytest.raises(InvalidNBFeatureValueError, cmd.run,
-                  [test_config, str(n_id), 'css', '1'])
-    pytest.raises(InvalidNBFeatureValueError, cmd.run,
-                  [test_config, str(n_id), 'css', '2.8'])
-    pytest.raises(InvalidNBFeatureValueError, cmd.run,
-                  [test_config, str(n_id), 'css', 'None'])
-    pytest.raises(InvalidNBFeatureValueError, cmd.run,
-                  [test_config, str(n_id), 'css', 'True'])
+    with pytest.raises(InvalidNBFeatureValueError):
+        cmd.run([test_config, str(n_id), 'css', 'string'])
+    with pytest.raises(InvalidNBFeatureValueError):
+        cmd.run([test_config, str(n_id), 'css', '1'])
+    with pytest.raises(InvalidNBFeatureValueError):
+        cmd.run([test_config, str(n_id), 'css', '2.8'])
+    with pytest.raises(InvalidNBFeatureValueError):
+        cmd.run([test_config, str(n_id), 'css', 'None'])
+    with pytest.raises(InvalidNBFeatureValueError):
+        cmd.run([test_config, str(n_id), 'css', 'True'])
 
 
 def test_update_neighborhood():

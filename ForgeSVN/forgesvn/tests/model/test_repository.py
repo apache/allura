@@ -27,6 +27,7 @@ from zipfile import ZipFile
 from io import BytesIO
 from collections import defaultdict
 
+import pytest
 from tg import tmpl_context as c, app_globals as g
 import mock
 import tg
@@ -92,7 +93,8 @@ class TestNewRepo(unittest.TestCase):
         assert self.rev.tree.by_name['README']
         assert self.rev.tree.is_blob('README') is True
         assert self.rev.tree['a']['b']['c'].ls() == []
-        self.assertRaises(KeyError, lambda: self.rev.tree['a']['b']['d'])
+        with pytest.raises(KeyError):
+            self.rev.tree['a']['b']['d']
 
         assert self.rev.authored_user is None
         assert self.rev.committed_user is None

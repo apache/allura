@@ -118,10 +118,8 @@ class TestAntispam(unittest.TestCase):
     def test_invalid_old(self):
         form = dict(a='1', b='2')
         r = Request.blank('/', POST=self._encrypt_form(**form))
-        self.assertRaises(
-            ValueError,
-            utils.AntiSpam.validate_request,
-            r, now=time.time() + 24 * 60 * 60 * 4 + 1)
+        with pytest.raises(ValueError):
+            utils.AntiSpam.validate_request(r, now=time.time() + 24 * 60 * 60 * 4 + 1)
 
     def test_valid_submit(self):
         form = dict(a='1', b='2')
@@ -134,30 +132,31 @@ class TestAntispam(unittest.TestCase):
     def test_invalid_future(self):
         form = dict(a='1', b='2')
         r = Request.blank('/', POST=self._encrypt_form(**form))
-        self.assertRaises(
-            ValueError,
-            utils.AntiSpam.validate_request,
-            r, now=time.time() - 10)
+        with pytest.raises(ValueError):
+            utils.AntiSpam.validate_request(r, now=time.time() - 10)
 
     def test_invalid_spinner(self):
         form = dict(a='1', b='2')
         eform = self._encrypt_form(**form)
         eform['spinner'] += 'a'
         r = Request.blank('/', POST=eform)
-        self.assertRaises(ValueError, utils.AntiSpam.validate_request, r)
+        with pytest.raises(ValueError):
+            utils.AntiSpam.validate_request(r)
 
     def test_invalid_honey(self):
         form = dict(a='1', b='2', honey0='a')
         eform = self._encrypt_form(**form)
         r = Request.blank('/', POST=eform)
-        self.assertRaises(ValueError, utils.AntiSpam.validate_request, r)
+        with pytest.raises(ValueError):
+            utils.AntiSpam.validate_request(r)
 
     def test_missing_honey(self):
         form = dict(a='1', b='2')
         eform = self._encrypt_form(**form)
         del eform[self.a.enc('honey0')]
         r = Request.blank('/', POST=eform)
-        self.assertRaises(ValueError, utils.AntiSpam.validate_request, r)
+        with pytest.raises(ValueError):
+            utils.AntiSpam.validate_request(r)
 
     def _encrypt_form(self, **kwargs):
         encrypted_form = {
@@ -326,9 +325,12 @@ def test_empty_cursor():
     assert cursor.hint('index') == cursor
     assert cursor.extensions == []
     assert cursor.options(arg1='val1', arg2='val2') == cursor
-    pytest.raises(ValueError, cursor.one)
-    pytest.raises(StopIteration, cursor.next)
-    pytest.raises(StopIteration, cursor._next_impl)
+    with pytest.raises(ValueError):
+        cursor.one()
+    with pytest.raises(StopIteration):
+        cursor.next()
+    with pytest.raises(StopIteration):
+        cursor._next_impl()
 
 
 def test_DateJSONEncoder():

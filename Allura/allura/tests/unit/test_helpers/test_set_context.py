@@ -95,23 +95,17 @@ class TestWhenProjectIsNotFound(WithDatabase):
 
     def test_that_it_raises_an_exception(self):
         nbhd = create_neighborhood()
-        pytest.raises(NoSuchProjectError,
-                      set_context,
-                      'myproject',
-                      neighborhood=nbhd)
+        with pytest.raises(NoSuchProjectError):
+            set_context('myproject', neighborhood=nbhd)
 
     def test_proper_exception_when_id_lookup(self):
         create_neighborhood()
-        pytest.raises(NoSuchProjectError,
-                      set_context,
-                      ObjectId(),
-                      neighborhood=None)
+        with pytest.raises(NoSuchProjectError):
+            set_context(ObjectId(), neighborhood=None)
 
 
 class TestWhenNeighborhoodIsNotFound(WithDatabase):
 
     def test_that_it_raises_an_exception(self):
-        pytest.raises(NoSuchNeighborhoodError,
-                      set_context,
-                      'myproject',
-                      neighborhood='myneighborhood')
+        with pytest.raises(NoSuchNeighborhoodError):
+            set_context('myproject', neighborhood='myneighborhood')

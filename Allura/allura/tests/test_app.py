@@ -71,8 +71,10 @@ class TestApp:
         v = fev.NotEmpty()
         opt = app.ConfigOption('test1', str, None, validator=v)
         assert opt.validate('val') == 'val'
-        pytest.raises(fev.Invalid, opt.validate, None)
-        pytest.raises(fev.Invalid, opt.validate, '')
+        with pytest.raises(fev.Invalid):
+            opt.validate(None)
+        with pytest.raises(fev.Invalid):
+            opt.validate('')
 
     def test_options_on_install_default(self):
         a = app.Application(c.project, c.app.config)

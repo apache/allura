@@ -624,10 +624,9 @@ class TestIterEntryPoints(TestCase):
             self._make_ep('myapp', BetterApp),
             self._make_ep('myapp', BestApp)]
 
-        self.assertRaisesRegex(ImportError,
-                               r'Ambiguous \[allura\] entry points detected. '
-                               'Multiple entry points with name "myapp".',
-                               list, h.iter_entry_points('allura'))
+        with pytest.raises(ImportError, match=r'Ambiguous \[allura\] entry points detected. '
+                                              'Multiple entry points with name "myapp".'):
+           list(h.iter_entry_points('allura'))
 
 
 def test_get_user_status():

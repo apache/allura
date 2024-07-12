@@ -19,6 +19,7 @@ import unittest
 from datetime import timedelta
 import collections
 
+import pytest
 from tg import tmpl_context as c, app_globals as g
 from ming.odm import ThreadLocalODMSession
 import mock
@@ -341,7 +342,8 @@ class TestSubscriptionTypes(unittest.TestCase):
         M.notification.MAILBOX_QUIESCENT = timedelta(minutes=1)
         # will raise "assert msg is not None" since the new message is not 1
         # min old:
-        self.assertRaises(AssertionError, self._test_message)
+        with pytest.raises(AssertionError):
+            self._test_message()
 
     def _test_message(self):
         self._subscribe()
