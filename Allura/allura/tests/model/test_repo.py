@@ -20,6 +20,7 @@ from collections import defaultdict, OrderedDict
 
 import unittest
 import mock
+import pytest
 from tg import tmpl_context as c
 from bson import ObjectId
 from ming.odm import session
@@ -413,7 +414,8 @@ class TestModelCache(unittest.TestCase):
         n = mock.Mock(spec_set=['foo'], foo='qux')
         self.assertEqual(self.cache._model_query(q), 'foo')
         self.assertEqual(self.cache._model_query(m), 'bar')
-        self.assertRaises(AttributeError, self.cache._model_query, [n])
+        with pytest.raises(AttributeError):
+            self.cache._model_query([n])
 
     @mock.patch.object(M.repository.Tree.query, 'get')
     @mock.patch.object(M.repository.LastCommit.query, 'get')

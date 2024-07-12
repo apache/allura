@@ -70,16 +70,17 @@ class TestProjectRegistrationProvider:
         v = self.provider.shortname_validator.to_python
 
         v('thisislegit', neighborhood=nbhd)
-        pytest.raises(ProjectShortnameInvalid, v,
-                      'not valid', neighborhood=nbhd)
-        pytest.raises(ProjectShortnameInvalid, v,
-                      'this-is-valid-but-too-long', neighborhood=nbhd)
-        pytest.raises(ProjectShortnameInvalid, v,
-                      'this is invalid and too long', neighborhood=nbhd)
-        pytest.raises(ProjectShortnameInvalid, v,
-                      'end-dash-', neighborhood=nbhd)
+        with pytest.raises(ProjectShortnameInvalid):
+            v('not valid', neighborhood=nbhd)
+        with pytest.raises(ProjectShortnameInvalid):
+            v('this-is-valid-but-too-long', neighborhood=nbhd)
+        with pytest.raises(ProjectShortnameInvalid):
+            v('this is invalid and too long', neighborhood=nbhd)
+        with pytest.raises(ProjectShortnameInvalid):
+            v('end-dash-', neighborhood=nbhd)
         Project.query.get.return_value = Mock()
-        pytest.raises(ProjectConflict, v, 'thisislegit', neighborhood=nbhd)
+        with pytest.raises(ProjectConflict):
+            v('thisislegit', neighborhood=nbhd)
 
 
 class TestProjectRegistrationProviderParseProjectFromUrl:

@@ -18,6 +18,9 @@ import inspect
 import re
 import os
 from textwrap import dedent
+
+import pytest
+
 import allura
 import unittest
 import hashlib
@@ -768,8 +771,8 @@ class TestCachedMarkdown(unittest.TestCase):
         self.expected_html = '<div class="markdown_content"><p><strong>bold</strong></p></div>'
 
     def test_bad_source_field_name(self):
-        self.assertRaises(AttributeError, self.md.cached_convert,
-                          self.post, 'no_such_field')
+        with pytest.raises(AttributeError):
+            self.md.cached_convert(self.post, 'no_such_field')
 
     def test_missing_cache_field(self):
         delattr(self.post, 'text_cache')

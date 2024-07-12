@@ -165,7 +165,8 @@ class TestArtifact:
         assert ss.shorthand_id() == pg.shorthand_id() + '#2'
         assert ss.title == pg.title
         assert ss.text == pg.text
-        pytest.raises(IndexError, pg.get_version, 42)
+        with pytest.raises(IndexError):
+            pg.get_version(42)
         pg.revert(1)
         pg.commit()
         ThreadLocalODMSession.flush_all()
