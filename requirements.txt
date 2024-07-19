@@ -46,7 +46,7 @@ docutils==0.20.1
     # via
     #   -r requirements.in
     #   pypeline
-easywidgets==0.4.1
+easywidgets==0.4.2
     # via -r requirements.in
 emoji==2.11.0
     # via -r requirements.in
@@ -123,7 +123,7 @@ packaging==24.0
     #   pytest-sugar
 paginate==0.5.6
     # via -r requirements.in
-paste==3.9.0
+paste==3.10.1
     # via
     #   -r requirements.in
     #   easywidgets
