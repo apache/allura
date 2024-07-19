@@ -48,7 +48,7 @@ docutils==0.20.1
     #   pypeline
 easywidgets==0.4.2
     # via -r requirements.in
-emoji==2.11.0
+emoji==2.12.1
     # via -r requirements.in
 execnet==2.0.2
     # via pytest-xdist
@@ -239,7 +239,9 @@ translationstring==1.4
 turbogears2==2.4.3
     # via -r requirements.in
 typing-extensions==4.9.0
-    # via qrcode
+    # via
+    #   emoji
+    #   qrcode
 urllib3==2.2.2
     # via requests
 virtualenv==20.25.3
