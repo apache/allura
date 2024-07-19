@@ -17,9 +17,7 @@ beautifulsoup4==4.12.3
     #   -r requirements.in
     #   webtest
 bleach[css]==6.1.0
-    # via
-    #   bleach
-    #   pypeline
+    # via pypeline
 certifi==2024.7.4
     # via requests
 cffi==1.16.0
@@ -142,9 +140,8 @@ platformdirs==4.2.0
     # via virtualenv
 pluggy==1.4.0
     # via pytest
-pre-commit==3.5.0 ; python_version < "3.9"
-# via -r requirements.in
 pre-commit==3.7.0 ; python_version >= "3.9"
+    # via -r requirements.in
 profanityfilter==2.0.6
     # via -r requirements.in
 pycparser==2.22
