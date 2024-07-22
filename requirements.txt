@@ -50,7 +50,7 @@ easywidgets==0.4.2
     # via -r requirements.in
 emoji==2.12.1
     # via -r requirements.in
-execnet==2.0.2
+execnet==2.1.1
     # via pytest-xdist
 faust-cchardet==2.1.19
     # via -r requirements.in
@@ -167,7 +167,7 @@ pytest==8.3.1
     #   pytest-xdist
 pytest-sugar==1.0.0
     # via -r requirements.in
-pytest-xdist==3.5.0
+pytest-xdist==3.6.1
     # via -r requirements.in
 python-dateutil==2.9.0.post0
     # via
