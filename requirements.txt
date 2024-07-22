@@ -64,7 +64,7 @@ formencode==2.1.0
     # via
     #   -r requirements.in
     #   easywidgets
-genshi==0.7.7
+genshi==0.7.9
     # via creoleparser
 gitdb==4.0.11
     # via gitpython
@@ -186,7 +186,7 @@ pyyaml==6.0.1
     # via pre-commit
 qrcode==7.4.2
     # via -r requirements.in
-regex==2024.4.16
+regex==2024.5.15
     # via
     #   regex-as-re-globally
     #   textile
