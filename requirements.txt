@@ -226,7 +226,7 @@ sxsdiff==0.3.0
     # via -r requirements.in
 termcolor==2.4.0
     # via pytest-sugar
-testfixtures==8.1.0
+testfixtures==8.3.0
     # via -r requirements.in
 textile==4.0.2
     # via pypeline
