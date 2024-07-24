@@ -1,0 +1,4558 @@
+{
+    "swagger": "2.0",
+    "info": {
+      "title": "Apache Allura",
+      "description": "<!--\n    Licensed to the Apache Software Foundation (ASF) under one\n    or more contributor license agreements.  See the NOTICE file\n    distributed with this work for additional information\n    regarding copyright ownership.  The ASF licenses this file\n    to you under the Apache License, Version 2.0 (the\n    \"License\"); you may not use this file except in compliance\n    with the License.  You may obtain a copy of the License at\n\n      http://www.apache.org/licenses/LICENSE-2.0\n\n    Unless required by applicable law or agreed to in writing,\n    software distributed under the License is distributed on an\n    \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY\n    KIND, either express or implied.  See the License for the\n    specific language governing permissions and limitations\n    under the License.\n-->\n\n# Basic API architecture\n\nAll url endpoints are prefixed with /rest/ and the path to the project and tool.\n\nFor example, in order to access a wiki installed in the 'test' project with the mount point 'docs' the API endpoint would be /rest/p/test/docs.\n\nThe following tools have API support:\n\n* Project\n* Wiki\n* Tracker\n* Discussion\n* Blog\n* External Link\n* Admin\n    * Project Export\n    * Installing a new Tool\n    * Webhooks\n* User Profiles\n\n# Authenticating requests\n\nIn order to use the API for authenticated actions, you should use the OAuth account page to create a consumer key for your application.  Once you have a consumer key, you must have a site user (e.g. your own account, if you're writing a single script) authorize your application to act on his or her behalf.\n\nYou can also use your normal browser session as authentication for the API.  This is useful for manually testing API calls or for in-browser applications (such as extensions or user-scripts).  It is not recommended for programmatic access, however, as it would require you to store your account username and password, and thus cannot be easily managed or revoked.\n\nWithout authentication, all API requests have the permissions of an anonymous visitor.  To view or change anything that requires a login, you must authenticate to the API using OAuth.  You must first register for an OAuth consumer token at <https://forge-allura.apache.org/auth/oauth/>.  Once you have registered, you will be be able to see your consumer key and consumer secret, or generate a bearer token, at <https://forge-allura.apache.org/auth/oauth/>.\n\n\n### OAuth With Bearer Tokens\n\nThe easiest way to use the API with your own account is to use a bearer token.  Once you have generated a bearer token at <https://forge-allura.apache.org.net/auth/oauth/>, you just include it in the request to the API via a http header like `Authorization: Bearer MY_BEARER_TOKEN`.\n\nSimple URL example to access a private ticket:\n\ncurl -H 'Authorization: Bearer MY_BEARER_TOKEN' https://forge-allura.apache.org/rest/p/allura/tickets/35/\n\nPython code example to create a new ticket:\n\n    import requests\n    from pprint import pprint\n\n    BEARER_TOKEN = '<bearer token from oauth page>'\n\n    r = requests.post('https://forge-allura.apache.org/rest/p/test-project/tickets/new',\n          headers={'Authorization': f'Bearer {BEARER_TOKEN}'}\n          params={\n            'ticket_form.summary': 'Test ticket',\n            'ticket_form.description': 'This is a test ticket',\n            'ticket_form.labels': 'test',\n            'ticket_form.custom_fields._my_num': '7',  # custom field with label \"My Num\"\n                                                       # must be created first\n        })\n    if r.status_code == 200:\n        print('Ticket created at: %s' % r.url)\n        pprint(r.json())\n    else:\n        print('Error [%s]:\\n%s' % (r.status_code, r.text))\n\n\n\n### OAuth 1.0 Application Authorization (Third-Party Apps)\n\n\nIf you want your application to be able to use the API on behalf of another user, that user must authorize your application to act on their behalf.  This is usually accomplished by obtaining a request token and directing the user authorize the request.  The following is an example of how one would authorize an application in Python using the requests_oauthlib library.  First, run `pip install requests_oauthlib`\n\n    from requests_oauthlib import OAuth1Session\n    import webbrowser\n\n    CONSUMER_KEY = '<consumer key from registration>'\n    CONSUMER_SECRET = '<consumer secret from registration>'\n    REQUEST_TOKEN_URL = 'https://forge-allura.apache.org/rest/oauth/request_token'\n    AUTHORIZE_URL = 'https://forge-allura.apache.org/rest/oauth/authorize'\n    ACCESS_TOKEN_URL = 'https://forge-allura.apache.org/rest/oauth/access_token'\n\n    oauth = OAuth1Session(CONSUMER_KEY, client_secret=CONSUMER_SECRET, callback_uri='oob')\n\n    # Step 1: Get a request token. This is a temporary token that is used for\n    # having the user authorize an access token and to sign the request to obtain\n    # said access token.\n\n    request_token = oauth.fetch_request_token(REQUEST_TOKEN_URL)\n\n    # these are intermediate tokens and not needed later\n    # print(\"Request Token:\")\n    # print(\"    - oauth_token        = %s\" % request_token['oauth_token'])\n    # print(\"    - oauth_token_secret = %s\" % request_token['oauth_token_secret'])\n    # print()\n\n    # Step 2: Redirect to the provider. Since this is a CLI script we do not\n    # redirect. In a web application you would redirect the user to the URL\n    # below, specifying the additional parameter oauth_callback=<your callback URL>.\n\n    webbrowser.open(oauth.authorization_url(AUTHORIZE_URL, request_token['oauth_token']))\n\n    # Since we didn't specify a callback, the user must now enter the PIN displayed in\n    # their browser.  If you had specified a callback URL, it would have been called with\n    # oauth_token and oauth_verifier parameters, used below in obtaining an access token.\n    oauth_verifier = input('What is the PIN? ')\n\n    # Step 3: Once the consumer has redirected the user back to the oauth_callback\n    # URL you can request the access token the user has approved. You use the\n    # request token to sign this request. After this is done you throw away the\n    # request token and use the access token returned. You should store this\n    # access token somewhere safe, like a database, for future use.\n    access_token = oauth.fetch_access_token(ACCESS_TOKEN_URL, oauth_verifier)\n\n    print(\"Access Token:\")\n    print(\"    - oauth_token        = %s\" % access_token['oauth_token'])\n    print(\"    - oauth_token_secret = %s\" % access_token['oauth_token_secret'])\n    print()\n    print(\"You may now access protected resources using the access tokens above.\")\n    print()\n\n\nYou can then use your access token with the REST API.  For instance script to create a wiki page might look like this:\n\n    from requests_oauthlib import OAuth1Session\n\n    PROJECT='test'\n\n    CONSUMER_KEY='<consumer key from app registration>'\n    CONSUMER_SECRET='<consumer secret from app registration>'\n\n    ACCESS_KEY='<access key from previous script>'\n    ACCESS_SECRET='<access secret from previous script>'\n\n    URL_BASE='https://forge-allura.apache.org/rest/'\n\n    oauth = OAuth1Session(CONSUMER_KEY, client_secret=CONSUMER_SECRET,\n                          resource_owner_key=ACCESS_KEY, resource_owner_secret=ACCESS_SECRET)\n\n    response = oauth.post(URL_BASE + 'p/' + PROJECT + '/wiki/TestPage',\n                          data=dict(text='This is a test page'))\n    response.raise_for_status()\n    print(\"Done.  Response was:\")\n    print(response)\n\n### OAuth2 Authorization (Third-Party Apps)\n\nAnother option for authorizing your apps is to use the OAuth2 workflow. This is accomplished by authorizing the application which generates an `authorization_code` that can be later exchanged for an `access_token`\n\nThe following example demonstrates the authorization workflow and how to generate an access token to authenticate your apps\n\n    from requests_oauthlib import OAuth2Session\n\n    # Set up your client credentials\n    client_id = 'YOUR_CLIENT_ID'\n    client_secret = 'YOUR_CLIENT_SECRET'\n    authorization_base_url = 'https://forge-allura.apache.org/auth/oauth2/authorize'\n    access_token_url = 'https://forge-allura.apache.org/rest/oauth2/token'\n    redirect_uri = 'https://forge-allura.apache.org/page'  # Your registered redirect URI\n\n    # Create an OAuth2 session\n    oauth2 = OAuth2Session(client_id, redirect_uri=redirect_uri)\n\n    # Step 1: Prompt the user to navigate to the authorization URL\n    authorization_url, state = oauth2.authorization_url(authorization_base_url)\n\n    print('Please go to this URL to authorize the app:', authorization_url)\n\n    # Step 2: Obtain the authorization code (you can find it in the 'code' URL parameter)\n    # In real use cases, you might implement a small web server to capture this\n    authorization_code = input('Paste authorization code here: ')\n\n    # Step 3: Exchange the authorization code for an access token\n    token = oauth2.fetch_token(access_token_url,\n                            code=authorization_code,\n                            client_secret=client_secret,\n                            include_client_id=True)\n\n    # Print the access and refresh tokens for verification (or use it to request user data)\n    # If your access token expires, you can request a new one using the refresh token\n    print(f\"Access Token: {token.get('access_token')}\")\n    print(f\"Refresh Token: {token.get('refresh_token')}\")\n\n    # Step 4: Use the access token to make authenticated requests\n    response = oauth2.get('https://forge-allura.apache.org/user')\n    print('User data:', response.json())\n\n### Refreshing Access Tokens\n\nA new access token can be requested once it expires. The following example demonstrates how can the refresh token obtained in the previous code sample be used to generate a new access token:\n\n    from requests_oauthlib import OAuth2Session\n\n    # Set up your client credentials\n    client_id = 'YOUR_CLIENT_ID'\n    client_secret = 'YOUR_CLIENT_SECRET'\n    refresh_token = 'YOUR_REFRESH_TOKEN'\n    access_token = 'YOUR_ACCESS_TOKEN'\n    access_token_url = 'https://forge-allura.apache.org/rest/oauth2/token'\n\n    # Step 1: Create an OAuth2 session by also passing token information\n    token = dict(access_token=access_token, token_type='Bearer', refresh_token=refresh_token)\n    oauth2 = OAuth2Session(client_id=client_id, token=token)\n\n    # Step 2: Request for a new token\n    extra = dict(client_id=client_id, client_secret=client_secret)\n    refreshed_token = oauth2.refresh_token(access_token_url, **extra)\n\n    # You can inspect the response object to get the new access and refresh tokens\n    print(f\"Access Token: {token.get('access_token')}\")\n    print(f\"Refresh Token: {token.get('refresh_token')}\")\n\n### PKCE support\n\nPKCE (Proof Key for Code Exchange) is an extension to the authorization code flow to prevent CSRF and authorization code injection attacks. It mitigates the risk of the authorization code being intercepted by a malicious entity during the exchange from the authorization endpoint to the token endpoint.\n\nTo make use of this security extension, you must generate a string known as a \"code verifier\", which is a random string using the characters A-Z, a-z, 0-9 and the special characters -._~ and it should be between 43 and 128 characters long.\n\nOnce the string has been created, perform a SHA256 hash on it and encode the resulting value as a Base-\n\nYou can use the following example to generate a valid code verifier and code challenge:\n\n    import hashlib\n    import base64\n    import os\n\n\n    # Generate a code verifier (random string)\n    def generate_code_verifier(length=64):\n        return base64.urlsafe_b64encode(\n          os.urandom(length)).decode('utf-8').rstrip('=')\n\n\n    # Generate a code challenge (SHA-256)\n    def generate_code_challenge(verifier):\n        digest = hashlib.sha256(verifier.encode('utf-8')).digest()\n        return base64.urlsafe_b64encode(digest).decode('utf-8').rstrip('=')\n\n\n    code_verifier = generate_code_verifier()\n    code_challenge = generate_code_challenge(code_verifier)\n\n    # The code challenge should be sent in the initial authorization request.\n    print(\"Code Verifier:\", code_verifier)\n    print(\"Code Challenge:\", code_challenge)\n\nHaving generated the codes, you would need to send the code challenge along with the challenge method (in this case S256) as part of the query string in the authorization url, for example:\n\n    https://forge-allura.apache.org/auth/oauth2/authorize?client_id=8dca182d3e6fe0cb76b8&response_type=code&code_challenge=G6wIRjEZlvhLsVS0exbID3o4ppUBsjxUBNtRVL8StXo&code_challenge_method=S256\n\n\nAfterwards, when you request an access token, you must provide the code verifier that derived the code challenge as part of the request's body, otherwise the token request validation will fail:\n\n    POST https://forge-allura.apache.org/rest/oauth2/token\n\n    {\n        \"client_id\": \"8dca182d3e6fe0cb76b8\",\n        \"client_secret\": \"1c6a2d99db80223590dd12cc32dfdb8a0cc2e9a38620e05c16076b2872110688b9c1b17db63bb7c3\",\n        \"code\": \"Gvw53xmSBFZYBy0xdawm0qSX0cqhHs\",\n        \"code_verifier\": \"aEyhTs4BfWjZ7g5HT0o7Hu24p6Qw6TxotdX8_G20NN9J1lXIfSnNr3b6jhOUZe5ZWkP5ADCEzlWABUHSPXslgQ\",\n        \"grant_type\": \"authorization_code\"\n    }\n\n\n\n# Permission checks\n\nThe `has_access` API can be used to run permission checks. It is available on a neighborhood, project and tool level.\n\nIt is only available to users that have 'admin' permission for corresponding neighborhood/project/tool.\nIt requires `user` and `perm` parameters and will return JSON dict with `result` key, which contains boolean value, indicating if given `user` has `perm` permission to the neighborhood/project/tool.\n\n\n# DOAP (Description of a Project) API\n\n[DOAP](http://en.wikipedia.org/wiki/DOAP) is an RDF/XML specification for \"Description of a Project\"\n\nProject information is available in DOAP format with additional custom RDF fields at /rest/p/{project}?doap\n\nThis is separate from the normal JSON API at /rest/p/{project}\n",
+      "version": "1"
+    },
+    "x-basePath": "{domain}/rest",
+    "schemes": [
+      "https"
+    ],
+    "securityDefinitions": {
+      "oauth_2_0": {
+        "description": "OAuth 2.0 may be used to authenticate API requests.\n\nFirst authorize your application at https://forge-allura.apache.org/auth/oauth2/authorize with following\nquery string parameters:\n  - response_type=code\n  - client_id=YOUR_CLIENT_ID\n  - redirect_uri=YOUR_REDIRECT_URI\n\nFor PKCE support send these additional parameters\n  - code_challenge=YOUR_CODE_CHALLENGE\n  - code_challenge_method=S256\n\nAn authorization code will be generated which can be exchanged for an access token at https://forge-allura.apache.org/rest/oauth2/token\nwith the following parameters:\n  - grant_type=authorization_code\n  - code=YOUR_AUTHORIZATION_CODE\n  - client_id=YOUR_CLIENT_ID\n  - client_secret=YOUR_CLIENT_SECRET\n  - redirect_uri=YOUR_REDIRECT_URI\n\nFor PKCE support send these additional parameters\n  - code_verifier=YOUR_CODE_VERIFIER\n\nUse the access token in an HTTP header like:\n\n`Authorization: Bearer MY_BEARER_TOKEN`\n",
+        "type": "oauth2",
+        "flow": "accessCode",
+        "authorizationUrl": "https://forge-allura.apache.org/auth/oauth2/authorize",
+        "tokenUrl": "https://forge-allura.apache.org/rest/oauth2/token",
+        "scopes": {
+          "": ""
+        }
+      }
+    },
+    "parameters": {
+      "trait:orderable:order": {
+        "default": "desc",
+        "description": "Order",
+        "enum": [
+          "desc",
+          "asc"
+        ],
+        "type": "string",
+        "in": "query",
+        "name": "order"
+      },
+      "trait:pageable:page": {
+        "default": 0,
+        "description": "Skip over a number of elements by specifying a starting page",
+        "type": "integer",
+        "in": "query",
+        "name": "page"
+      },
+      "trait:pageable:limit": {
+        "default": 25,
+        "description": "Limit the number of elements on the response \"page\"",
+        "type": "integer",
+        "in": "query",
+        "name": "limit"
+      },
+      "trait:permissionTestable:user": {
+        "required": true,
+        "description": "The username to check",
+        "type": "string",
+        "in": "query",
+        "name": "user"
+      },
+      "trait:bearerAuth:Authorization": {
+        "pattern": "^Bearer [0-9a-f]+$",
+        "description": "Optional.  Authenticate yourselve with a token from https://forge-allura.apache.org/auth/oauth/\nUse it here like: `Bearer 5d79e800a36bf602314d`\n",
+        "type": "string",
+        "in": "header",
+        "name": "Authorization",
+        "required": true
+      }
+    },
+    "paths": {
+      "/auth/tools/{tool_type}": {
+        "get": {
+          "description": "List tools (e.g. \"git\" repos) that the current user is associated with\n",
+          "operationId": "GET_auth-tools-tool_type",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "example": {
+                  "tools": [
+                    {
+                      "url": "https://forge-allura.apache.org/p/test/code/",
+                      "api_url": "https://forge-allura.apache.org/rest/p/test/code/",
+                      "mount_label": "Code",
+                      "mount_point": "code",
+                      "name": "git",
+                      "project_name": "Test",
+                      "clone_url_https_anon": "https://forge-allura.apache.org/git/p/test/code/",
+                      "clone_url_ro": "git://forge-allura.apache.org/git/p/test/code"
+                    },
+                    {
+                      "url": "https://forge-allura.apache.org/u/someuser/widgets-fork/",
+                      "api_url": "https://forge-allura.apache.org/rest/u/someuser/widgets-fork/",
+                      "mount_label": "Widgets - Fork",
+                      "mount_point": "widgets-fork",
+                      "name": "git",
+                      "project_name": "someuser",
+                      "clone_url_https_anon": "https://forge-allura.apache.org/git/u/someuser/widgets-fork",
+                      "clone_url_ro": "git://forge-allura.apache.org/git/u/someuser/widgets-fork"
+                    }
+                  ]
+                },
+                "type": "object",
+                "properties": {
+                  "tools": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string"
+                        },
+                        "api_url": {
+                          "type": "string"
+                        },
+                        "mount_label": {
+                          "type": "string"
+                        },
+                        "mount_point": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "project_name": {
+                          "type": "string"
+                        },
+                        "clone_url_https_anon": {
+                          "type": "string"
+                        },
+                        "clone_url_ro": {
+                          "type": "string"
+                        },
+                        "clone_url_*": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "tool_type",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/has_access": {
+        "get": {
+          "description": "**Endpoints**\nPermissions can be checked at three levels:\n1. **Neighborhood:** `/rest/p/has_access`\n2. **Project:** `/rest/p/project_name/has_access`\n3. **Tool:** `/rest/p/project_name/mount_point/has_access`\n\n---\n\nIt is only available to users that have 'admin' permission for corresponding neighborhood/project/tool. It requires user and perm parameters and will return JSON dict with result key, which contains boolean value, indicating if given user has perm permission to the neighborhood/project/tool.\n\nE.g.:\n**GET** `/rest/p/test/wiki/has_access?user=admin1&perm=create`\n*returns* { result: true }\n**GET** `/rest/p/test/wiki/has_access?user=user01&perm=create`\n*returns* { result: false }\n",
+          "operationId": "GET_neighborhood-has_access",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "required": true,
+              "default": "read",
+              "enum": [
+                "read",
+                "admin",
+                "create",
+                "update",
+                "register"
+              ],
+              "type": "string",
+              "in": "query",
+              "name": "perm"
+            },
+            {
+              "$ref": "#/parameters/trait:permissionTestable:user"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/add_project": {
+        "post": {
+          "operationId": "POST_neighborhood-add_project",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "consumes": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "schema": {
+                "example": {
+                  "name": "Template Test 1",
+                  "shortname": "template-test-1",
+                  "summary": "My summary.",
+                  "description": "My description.",
+                  "admin": "admin1",
+                  "external_homepage": "http://wwww.example.com/test",
+                  "labels": [
+                    "label1",
+                    "label2"
+                  ],
+                  "trove_audiences": [
+                    "Information Technology",
+                    "Developers"
+                  ],
+                  "trove_licenses": [
+                    "Apache License V2.0",
+                    "GNU General Public License version 2.0 (GPLv2)",
+                    "Public Domain"
+                  ],
+                  "awards": [],
+                  "tool_data": {
+                    "allura": {
+                      "grouping_threshold": 5
+                    }
+                  },
+                  "icon": "https://via.placeholder.com/140x100"
+                },
+                "type": "string"
+              },
+              "in": "body",
+              "name": "body"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}": {
+        "get": {
+          "operationId": "GET_neighborhood-project",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "example": {
+                  "status": "active",
+                  "preferred_support_tool": "",
+                  "preferred_support_url": "",
+                  "labels": [],
+                  "private": false,
+                  "creation_date": "2013-02-12",
+                  "socialnetworks": [
+                    {
+                      "accounturl": "",
+                      "socialnetwork": "Twitter"
+                    },
+                    {
+                      "accounturl": null,
+                      "socialnetwork": "Facebook"
+                    }
+                  ],
+                  "tools": [
+                    {
+                      "mount_point": "activity",
+                      "name": "activity",
+                      "label": "Activity"
+                    },
+                    {
+                      "mount_point": "git",
+                      "name": "git",
+                      "label": "Git"
+                    },
+                    {
+                      "mount_point": "allura-dev",
+                      "name": "link",
+                      "label": "Mailing List (dev)"
+                    },
+                    {
+                      "mount_point": "wiki",
+                      "name": "wiki",
+                      "label": "Wiki"
+                    },
+                    {
+                      "mount_point": "docs",
+                      "name": "link",
+                      "label": "Docs"
+                    },
+                    {
+                      "mount_point": "license",
+                      "name": "link",
+                      "label": "License"
+                    },
+                    {
+                      "mount_point": "apache",
+                      "name": "link",
+                      "label": "Apache.org"
+                    },
+                    {
+                      "mount_point": "security",
+                      "name": "link",
+                      "label": "Security"
+                    },
+                    {
+                      "mount_point": "thanks",
+                      "name": "link",
+                      "label": "Thanks"
+                    },
+                    {
+                      "mount_point": "sponsorship",
+                      "name": "link",
+                      "label": "Sponsorship"
+                    },
+                    {
+                      "mount_point": "tickets",
+                      "name": "tickets",
+                      "label": "Tickets"
+                    },
+                    {
+                      "mount_point": "AlluraSite",
+                      "name": "git",
+                      "label": "Allura Site Repo"
+                    },
+                    {
+                      "mount_point": "pastebin",
+                      "name": "pastebin",
+                      "label": "Pastebin"
+                    }
+                  ],
+                  "categories": {
+                    "developmentstatus": [],
+                    "environment": [],
+                    "language": [],
+                    "license": [],
+                    "database": [],
+                    "topic": [],
+                    "audience": [],
+                    "translation": [],
+                    "os": []
+                  },
+                  "_id": "511aa1d46d19cd14f9060c67",
+                  "name": "Apache Allura™",
+                  "url": "https://forge-allura.apache.org/p/allura/",
+                  "icon_url": "https://forge-allura.apache.org/p/allura/icon",
+                  "video_url": "www.youtube.com/embed/va9WPbKAI9U?rel=0",
+                  "screenshots": [],
+                  "summary": "Forge software for hosting software projects",
+                  "short_description": "Apache Allura is an open source implementation of a software \"forge\", a web site that manages source code repositories, bug reports, discussions, wiki pages, blogs and more for any number of individual projects.",
+                  "moved_to_url": "",
+                  "shortname": "allura",
+                  "developers": [
+                    {
+                      "url": "https://forge-allura.apache.org/u/masterbunnyfu/",
+                      "username": "masterbunnyfu",
+                      "name": "Cory Johns"
+                    },
+                    {
+                      "url": "https://forge-allura.apache.org/u/jetmind/",
+                      "username": "jetmind",
+                      "name": "Igor Bondarenko"
+                    },
+                    {
+                      "url": "https://forge-allura.apache.org/u/wwitzel3/",
+                      "username": "wwitzel3",
+                      "name": "Wayne Witzel III"
+                    },
+                    {
+                      "url": "https://forge-allura.apache.org/u/alexluberg/",
+                      "username": "alexluberg",
+                      "name": "Alexander Luberg"
+                    },
+                    {
+                      "url": "https://forge-allura.apache.org/u/vansteenburgh/",
+                      "username": "vansteenburgh",
+                      "name": "Tim Van Steenburgh"
+                    },
+                    {
+                      "url": "https://forge-allura.apache.org/u/heiths/",
+                      "username": "heiths",
+                      "name": "Heith Seewald"
+                    },
+                    {
+                      "url": "https://forge-allura.apache.org/u/brondsem/",
+                      "username": "brondsem",
+                      "name": "Dave Brondsema"
+                    }
+                  ],
+                  "external_homepage": "http://allura.apache.org/"
+                },
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string"
+                  },
+                  "_id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "preferred_support_tool": {
+                    "type": "string"
+                  },
+                  "preferred_support_url": {
+                    "type": "string"
+                  },
+                  "icon_url": {
+                    "type": "string"
+                  },
+                  "labels": {
+                    "type": "array"
+                  },
+                  "private": {
+                    "type": "boolean"
+                  },
+                  "creation_date": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "string"
+                  },
+                  "short_description": {
+                    "type": "string"
+                  },
+                  "summary": {
+                    "type": "string"
+                  },
+                  "tools": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "mount_point": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "label": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "video_url": {
+                    "type": "string"
+                  },
+                  "socialnetworks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "accounturl": {
+                          "type": "string"
+                        },
+                        "socialnetwork": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "moved_to_url": {
+                    "type": "string"
+                  },
+                  "shortname": {
+                    "type": "string"
+                  },
+                  "developers": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string"
+                        },
+                        "username": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "screenshots": {
+                    "type": "array"
+                  },
+                  "external_homepage": {
+                    "type": "string"
+                  },
+                  "categories": {
+                    "type": "object",
+                    "properties": {
+                      "developmentstatus": {
+                        "type": "array"
+                      },
+                      "environment": {
+                        "type": "array"
+                      },
+                      "language": {
+                        "type": "array"
+                      },
+                      "license": {
+                        "type": "array"
+                      },
+                      "database": {
+                        "type": "array"
+                      },
+                      "topic": {
+                        "type": "array"
+                      },
+                      "audience": {
+                        "type": "array"
+                      },
+                      "translation": {
+                        "type": "array"
+                      },
+                      "os": {
+                        "type": "array"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/has_access": {
+        "get": {
+          "description": "**Endpoints**\nPermissions can be checked at three levels:\n1. **Neighborhood:** `/rest/p/has_access`\n2. **Project:** `/rest/p/project_name/has_access`\n3. **Tool:** `/rest/p/project_name/mount_point/has_access`\n\n---\n\nIt is only available to users that have 'admin' permission for corresponding neighborhood/project/tool. It requires user and perm parameters and will return JSON dict with result key, which contains boolean value, indicating if given user has perm permission to the neighborhood/project/tool.\n\nE.g.:\n**GET** `/rest/p/test/wiki/has_access?user=admin1&perm=create`\n*returns* { result: true }\n**GET** `/rest/p/test/wiki/has_access?user=user01&perm=create`\n*returns* { result: false }\n",
+          "operationId": "GET_neighborhood-project-has_access",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "required": true,
+              "default": "read",
+              "enum": [
+                "read",
+                "admin",
+                "create",
+                "update"
+              ],
+              "type": "string",
+              "in": "query",
+              "name": "perm"
+            },
+            {
+              "$ref": "#/parameters/trait:permissionTestable:user"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{scm_tool}": {
+        "get": {
+          "operationId": "GET_neighborhood-project-scm_tool",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "example": {
+                  "url": "https://forge-allura.apache.org/p/test/code/",
+                  "api_url": "https://forge-allura.apache.org/rest/p/test/code/",
+                  "mount_label": "Code",
+                  "mount_point": "code",
+                  "name": "git",
+                  "commit_count": 17,
+                  "clone_url_https_anon": "https://forge-allura.apache.org/git/p/test/code",
+                  "clone_url_ro": "git://forge-allura.apache.org/git/p/test/code"
+                },
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "api_url": {
+                    "type": "string"
+                  },
+                  "mount_label": {
+                    "type": "string"
+                  },
+                  "mount_point": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "commit_count": {
+                    "type": "integer"
+                  },
+                  "clone_url_https_anon": {
+                    "type": "string"
+                  },
+                  "clone_url_ro": {
+                    "type": "string"
+                  },
+                  "clone_url_*": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "scm_tool",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{scm_tool}/commits/{rev}/{limit}": {
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "limit",
+            "required": true
+          },
+          {
+            "type": "string",
+            "in": "path",
+            "name": "rev",
+            "required": true
+          },
+          {
+            "type": "string",
+            "in": "path",
+            "name": "scm_tool",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{wiki}": {
+        "get": {
+          "operationId": "GET_neighborhood-project-wiki",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "example": {
+                  "pages": [
+                    "ASF Release Guidelines",
+                    "Allura Deployments",
+                    "Allura Wiki",
+                    "Apache Allura (incubating) Wiki",
+                    "Apache Allura™ (incubating) Wiki",
+                    "Asking Questions",
+                    "Contributing Code",
+                    "Contributing to the Discussion",
+                    "Extensions",
+                    "FAQ",
+                    "Feature Comparison",
+                    "Features",
+                    "Goals",
+                    "Google Summer of Code",
+                    "HTTP(S) Repositories",
+                    "Home",
+                    "Install and Run Allura - Vagrant",
+                    "Notes",
+                    "Our Development Model",
+                    "PyCon 2014 Sprint",
+                    "Themes in Allura",
+                    "Videos",
+                    "Webhooks",
+                    "Working with Contributors"
+                  ]
+                },
+                "type": "object",
+                "properties": {
+                  "pages": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "wiki",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{wiki}/{title}": {
+        "get": {
+          "description": "returns a JSON representation of a page\n",
+          "operationId": "GET_neighborhood-project-wiki-title",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "example": {
+                  "related_artifacts": [
+                    "/p/allura/wiki/Home/"
+                  ],
+                  "attachments": [],
+                  "title": "Extensions",
+                  "text": "The following extensions for Allura are available as separate packages:\r\n\r\nType  | Title  | License | Notes\r\n----- | ------------- | ----- | Notes\r\nTool  | [ForgeHg](http://pypi.python.org/pypi/ForgeHg) | GPLv2 | Maintained by the Allura developers.<br>  Separate package due to Hg GPL license.\r\nTool  | [Pastebin](https://sourceforge.net/p/forgepastebin/) | Apache&nbsp;2 | Maintained by the Allura developers.<br>  Example of writing a simple tool.\r\nTool  | [Donay Incentify](http://docs.donay.com/display/Dosense/Installing+Incentify+in+Allura) | Apache 2\r\nTool  | [Bitergia metrics](https://github.com/Bitergia/AlluraBitergiaMetrics) | Apache 2\r\nTool  | [Perforce SCM](https://sourceforge.net/p/p4allura/allura-fork/ci/master/tree/ForgeP4/)\r\nTool  | [Django Allura](https://github.com/rick446/DjangoAllura)\r\nImporter | [Google Code Wiki Importer](http://pypi.python.org/pypi/googlecodewikiimporter/) | GPLv3 | Maintained by the Allura developers.<br>  Separate package due to `html2text` GPL.\r\nImporter | [Trac Wiki Importer](http://pypi.python.org/pypi/tracwikiimporter/) | GPLv3 | Maintained by the Allura developers.<br>  Separate package due to `html2text` GPL.\r\nImporter | [Mediawiki data importer](http://pypi.python.org/pypi/mediawikiimporter/) | GPLv3 | Maintained by the Allura developers.<br>  Separate package due to `html2text` GPL.\r\nExternal Integration  | [TeamCity](https://github.com/Vampire/teamcity-sourceforge) | Apache 2 | Targeted at SourceForge.net but APIs are the same, so base domain could be changed to any Allura host.\r\n",
+                  "labels": [],
+                  "discussion_thread": {
+                    "_id": "9d181a1d",
+                    "posts": [],
+                    "discussion_id": "523331da6d19cd54e56931db",
+                    "subject": ""
+                  },
+                  "mod_date": "2015-07-07 17:30:01.607000",
+                  "_id": "523332d96d19cd54e569322b",
+                  "discussion_thread_url": "https://forge-allura.apache.org/rest/p/allura/wiki/_discuss/thread/9d181a1d/"
+                },
+                "type": "object",
+                "properties": {
+                  "related_artifacts": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "attachments": {
+                    "type": "array"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "text": {
+                    "type": "string"
+                  },
+                  "labels": {
+                    "type": "array"
+                  },
+                  "discussion_thread": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string"
+                      },
+                      "posts": {
+                        "type": "array"
+                      },
+                      "discussion_id": {
+                        "type": "string"
+                      },
+                      "subject": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "mod_date": {
+                    "type": "string"
+                  },
+                  "_id": {
+                    "type": "string"
+                  },
+                  "discussion_thread_url": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            }
+          ]
+        },
+        "post": {
+          "description": "Creates or updates the titled page.\n",
+          "operationId": "POST_neighborhood-project-wiki-title",
+          "responses": {
+            "201": {
+              "description": "Created"
+            }
+          },
+          "consumes": [
+            "application/x-www-form-urlencoded"
+          ],
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "in": "formData",
+              "name": "text",
+              "type": "string",
+              "description": "Page text.\n"
+            },
+            {
+              "in": "formData",
+              "name": "labels",
+              "type": "string",
+              "description": "Comma-separated list of page labels.\n"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "title",
+            "required": true
+          },
+          {
+            "type": "string",
+            "in": "path",
+            "name": "wiki",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{wiki}/has_access": {
+        "get": {
+          "description": "**Endpoints**\nPermissions can be checked at three levels:\n1. **Neighborhood:** `/rest/p/has_access`\n2. **Project:** `/rest/p/project_name/has_access`\n3. **Tool:** `/rest/p/project_name/mount_point/has_access`\n\n---\n\nIt is only available to users that have 'admin' permission for corresponding neighborhood/project/tool. It requires user and perm parameters and will return JSON dict with result key, which contains boolean value, indicating if given user has perm permission to the neighborhood/project/tool.\n\nE.g.:\n**GET** `/rest/p/test/wiki/has_access?user=admin1&perm=create`\n*returns* { result: true }\n**GET** `/rest/p/test/wiki/has_access?user=user01&perm=create`\n*returns* { result: false }\n",
+          "operationId": "GET_neighborhood-project-wiki-has_access",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "required": true,
+              "default": "read",
+              "enum": [
+                "admin",
+                "configure",
+                "moderate",
+                "post",
+                "unmoderated_post",
+                "read",
+                "create",
+                "delete",
+                "edit"
+              ],
+              "type": "string",
+              "in": "query",
+              "name": "perm"
+            },
+            {
+              "$ref": "#/parameters/trait:permissionTestable:user"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "wiki",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{tracker}": {
+        "get": {
+          "description": "Get a list of tickets\n",
+          "operationId": "GET_neighborhood-project-tracker",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "example": {
+                  "tickets": [
+                    {
+                      "summary": "Diff view on the Commit Browser should have a file size limit",
+                      "ticket_num": 7933
+                    },
+                    {
+                      "summary": "Fix pagination issue in the commit browser",
+                      "ticket_num": 7932
+                    },
+                    {
+                      "summary": "Tool install dialog needs to escape html/js",
+                      "ticket_num": 7931
+                    },
+                    {
+                      "summary": "Bug: viewing a thread updates project mod_date",
+                      "ticket_num": 7930
+                    },
+                    {
+                      "summary": "Enable voting on tickets by default",
+                      "ticket_num": 7929
+                    }
+                  ],
+                  "count": 3662,
+                  "milestones": [
+                    {
+                      "due_date": "",
+                      "complete": false,
+                      "closed": 2316,
+                      "default": false,
+                      "description": "",
+                      "total": 2316,
+                      "name": "asf_release_1.0.0"
+                    },
+                    {
+                      "due_date": "",
+                      "complete": false,
+                      "closed": 0,
+                      "default": false,
+                      "description": "",
+                      "total": 0,
+                      "name": "asf_release_1.0.0-RC1"
+                    },
+                    {
+                      "due_date": "",
+                      "complete": false,
+                      "closed": 66,
+                      "default": false,
+                      "description": "",
+                      "total": 66,
+                      "name": "asf_release_1.0.1"
+                    },
+                    {
+                      "due_date": "",
+                      "complete": false,
+                      "closed": 145,
+                      "default": false,
+                      "description": "",
+                      "total": 145,
+                      "name": "asf_release_1.1.0"
+                    },
+                    {
+                      "due_date": "",
+                      "complete": false,
+                      "closed": 337,
+                      "default": "on",
+                      "description": "",
+                      "total": 891,
+                      "name": "unreleased"
+                    },
+                    {
+                      "due_date": "",
+                      "complete": false,
+                      "closed": 182,
+                      "default": false,
+                      "description": "",
+                      "total": 182,
+                      "name": "asf_release_1.2.0"
+                    },
+                    {
+                      "due_date": "",
+                      "complete": false,
+                      "closed": 13,
+                      "default": false,
+                      "description": "",
+                      "total": 13,
+                      "name": "asf_release_1.2.1"
+                    },
+                    {
+                      "due_date": "",
+                      "complete": false,
+                      "closed": 49,
+                      "default": false,
+                      "description": "",
+                      "total": 49,
+                      "name": "asf_release_1.3.0"
+                    }
+                  ],
+                  "tracker_config": {
+                    "_id": "545186e86d19cd63b88d1603",
+                    "options": {
+                      "ordinal": 3,
+                      "TicketHelpNew": "",
+                      "mount_point": "tickets",
+                      "TicketMonitoringType": "AllPublicTicketChanges",
+                      "EnableVoting": true,
+                      "TicketHelpSearch": "",
+                      "TicketMonitoringEmail": "dev@allura.apache.org",
+                      "import_id": {
+                        "source": "Allura",
+                        "app_config_id": "4c3493551be1ce11d8000032"
+                      },
+                      "mount_label": "Tickets"
+                    }
+                  },
+                  "limit": 5,
+                  "saved_bins": [
+                    {
+                      "sort": "",
+                      "_id": "54526f3f6d19cd509a769848",
+                      "terms": "labels:bitesize AND (status:open OR status:review OR status:in-progress)",
+                      "summary": "Bitesize Tickets"
+                    },
+                    {
+                      "sort": "",
+                      "_id": "54526fd16d19cd5093545c7b",
+                      "terms": "(assigned_to_s:$USER AND status:(blocked in-progress open)) OR (_reviewer_s:$USER AND status:review)",
+                      "summary": "My Assigned Tickets"
+                    },
+                    {
+                      "sort": "",
+                      "_id": "545270036d19cd509a76984c",
+                      "terms": "reported_by:$USER AND NOT status:closed",
+                      "summary": "My Submitted Tickets"
+                    },
+                    {
+                      "sort": "",
+                      "_id": "54526ef86d19cd42f87fbb80",
+                      "terms": "status:review",
+                      "summary": "Needs Review"
+                    },
+                    {
+                      "sort": "",
+                      "_id": "5452703a6d19cd509a769850",
+                      "terms": "labels:\"sf-current\"",
+                      "summary": "SourceForge current sprint"
+                    }
+                  ],
+                  "page": 0
+                },
+                "type": "object",
+                "properties": {
+                  "tickets": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "summary": {
+                          "type": "string"
+                        },
+                        "ticket_num": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  },
+                  "count": {
+                    "type": "integer"
+                  },
+                  "milestones": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "due_date": {
+                          "type": "string"
+                        },
+                        "complete": {
+                          "type": "boolean"
+                        },
+                        "closed": {
+                          "type": "integer"
+                        },
+                        "default": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "tracker_config": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string"
+                      },
+                      "options": {
+                        "type": "object",
+                        "properties": {
+                          "ordinal": {
+                            "type": "integer"
+                          },
+                          "TicketHelpNew": {
+                            "type": "string"
+                          },
+                          "mount_point": {
+                            "type": "string"
+                          },
+                          "TicketMonitoringType": {
+                            "type": "string"
+                          },
+                          "EnableVoting": {
+                            "type": "boolean"
+                          },
+                          "TicketHelpSearch": {
+                            "type": "string"
+                          },
+                          "TicketMonitoringEmail": {
+                            "type": "string"
+                          },
+                          "import_id": {
+                            "type": "object",
+                            "properties": {
+                              "source": {
+                                "type": "string"
+                              },
+                              "app_config_id": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "mount_label": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "limit": {
+                    "type": "integer"
+                  },
+                  "saved_bins": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "sort": {
+                          "type": "string"
+                        },
+                        "_id": {
+                          "type": "string"
+                        },
+                        "terms": {
+                          "type": "string"
+                        },
+                        "summary": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "page": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "$ref": "#/parameters/trait:pageable:page"
+            },
+            {
+              "$ref": "#/parameters/trait:pageable:limit"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "tracker",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{tracker}/{ticketNumber}": {
+        "get": {
+          "operationId": "GET_neighborhood-project-tracker-ticketNumber",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "example": {
+                  "ticket": {
+                    "status": "review",
+                    "reported_by_id": "548b2d136d19cd59705380a3",
+                    "related_artifacts": [],
+                    "attachments": [],
+                    "reported_by": "heiths",
+                    "assigned_to": "heiths",
+                    "labels": [
+                      "sf-2",
+                      "sf-current"
+                    ],
+                    "discussion_disabled": false,
+                    "assigned_to_id": "548b2d136d19cd59705380a3",
+                    "private": false,
+                    "summary": " Speed up diff processing with binary files",
+                    "description": "In a git repo with a large amount of binary files, our diff processing can be very inefficient. We should test if a file is binary and exclude it from the diff processing section.",
+                    "discussion_thread": {
+                      "_id": "8fe1847f",
+                      "posts": [
+                        {
+                          "text": "- **labels**:  --> sf-2, sf-current\n",
+                          "is_meta": true,
+                          "attachments": [],
+                          "author": "brondsem",
+                          "timestamp": "2015-07-13 15:53:20.175000",
+                          "last_edited": null,
+                          "slug": "498b",
+                          "subject": "#7925  Speed up diff processing with binary files"
+                        },
+                        {
+                          "text": "- **status**: in-progress --> review\n",
+                          "is_meta": true,
+                          "attachments": [],
+                          "author": "heiths",
+                          "timestamp": "2015-07-16 19:10:50.153000",
+                          "last_edited": null,
+                          "slug": "bd3e",
+                          "subject": "#7925  Speed up diff processing with binary files"
+                        },
+                        {
+                          "text": "QA: **hs/7925**\r\n\r\nBinary files should no longer make XHR requests for diff processing.",
+                          "is_meta": false,
+                          "attachments": [],
+                          "author": "heiths",
+                          "timestamp": "2015-07-16 19:10:50.511000",
+                          "last_edited": null,
+                          "slug": "b8a7",
+                          "subject": "#7925  Speed up diff processing with binary files"
+                        }
+                      ],
+                      "discussion_id": "545186e86d19cd63b88d1604",
+                      "subject": ""
+                    },
+                    "mod_date": "2015-07-16 19:10:50.625000",
+                    "votes_down": 0,
+                    "votes_up": 0,
+                    "_id": "55a3d3736d19cd2cf292db10",
+                    "discussion_thread_url": "https://forge-allura.apache.org/rest/p/allura/tickets/_discuss/thread/8fe1847f/",
+                    "ticket_num": 7925,
+                    "custom_fields": {
+                      "_component": "General",
+                      "_milestone": "unreleased",
+                      "_reviewer": ""
+                    },
+                    "created_date": "2015-07-13 15:04:19.926000"
+                  }
+                },
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "ticket": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "status": {
+                        "type": "string"
+                      },
+                      "reported_by_id": {
+                        "type": "string"
+                      },
+                      "related_artifacts": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "attachments": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "reported_by": {
+                        "type": "string"
+                      },
+                      "assigned_to": {
+                        "type": "string"
+                      },
+                      "labels": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "discussion_disabled": {
+                        "type": "boolean"
+                      },
+                      "assigned_to_id": {
+                        "type": "string"
+                      },
+                      "private": {
+                        "type": "boolean"
+                      },
+                      "summary": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": "string"
+                      },
+                      "discussion_thread": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "_id": {
+                            "type": "string"
+                          },
+                          "posts": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "text": {
+                                  "type": "string"
+                                },
+                                "is_meta": {
+                                  "type": "boolean"
+                                },
+                                "attachments": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                },
+                                "author": {
+                                  "type": "string"
+                                },
+                                "timestamp": {
+                                  "type": "string"
+                                },
+                                "last_edited": {
+                                  "type": "string"
+                                },
+                                "slug": {
+                                  "type": "string"
+                                },
+                                "subject": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          },
+                          "discussion_id": {
+                            "type": "string"
+                          },
+                          "subject": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "mod_date": {
+                        "type": "string"
+                      },
+                      "votes_down": {
+                        "type": "integer"
+                      },
+                      "votes_up": {
+                        "type": "integer"
+                      },
+                      "_id": {
+                        "type": "string"
+                      },
+                      "discussion_thread_url": {
+                        "type": "string"
+                      },
+                      "ticket_num": {
+                        "type": "integer"
+                      },
+                      "custom_fields": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "_component": {
+                            "type": "string"
+                          },
+                          "_milestone": {
+                            "type": "string"
+                          },
+                          "_reviewer": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "created_date": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "description": "Get a details of a ticket.\n",
+            "type": "string",
+            "in": "path",
+            "name": "ticketNumber",
+            "required": true
+          },
+          {
+            "type": "string",
+            "in": "path",
+            "name": "tracker",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{tracker}/{ticketNumber}/save": {
+        "post": {
+          "operationId": "POST_neighborhood-project-tracker-ticketNumber-save",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "consumes": [
+            "application/x-www-form-urlencoded",
+            "multipart/form-data"
+          ],
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "in": "formData",
+              "name": "ticket_form.summary",
+              "type": "string",
+              "description": "Ticket title"
+            },
+            {
+              "in": "formData",
+              "name": "ticket_form.description",
+              "type": "string",
+              "description": "ticket description"
+            },
+            {
+              "in": "formData",
+              "name": "ticket_form.status",
+              "type": "string",
+              "description": "ticket status"
+            },
+            {
+              "in": "formData",
+              "name": "ticket_form.assigned_to",
+              "type": "string",
+              "description": "username of ticket assignee"
+            },
+            {
+              "in": "formData",
+              "name": "ticket_form.labels",
+              "type": "string",
+              "description": "comma-separated list of ticket labels"
+            },
+            {
+              "in": "formData",
+              "name": "ticket_form.attachment",
+              "type": "file",
+              "description": "(optional) attachment"
+            },
+            {
+              "in": "formData",
+              "name": "ticket_form.custom_fields._any-field-name",
+              "type": "string",
+              "description": "Starts with underscore, and must conform to the custom fields set up for this tracker.  \"true\" or \"false\" values will work for boolean custom fields."
+            },
+            {
+              "in": "formData",
+              "name": "ticket_form.private",
+              "type": "string",
+              "description": "if the ticket is private or not (\"true\" or \"false\")"
+            },
+            {
+              "in": "formData",
+              "name": "ticket_form.discussion_disabled",
+              "type": "string",
+              "description": "if comments may be posted on the ticket (\"true\" or \"false\")"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "description": "Get a details of a ticket.\n",
+            "type": "string",
+            "in": "path",
+            "name": "ticketNumber",
+            "required": true
+          },
+          {
+            "type": "string",
+            "in": "path",
+            "name": "tracker",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{tracker}/search": {
+        "get": {
+          "operationId": "GET_neighborhood-project-tracker-search",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "",
+              "schema": {
+                "example": {
+                  "sort": null,
+                  "count": 2,
+                  "filter_choices": {
+                    "status": [
+                      [
+                        "closed",
+                        4
+                      ],
+                      [
+                        "in-progress",
+                        5
+                      ],
+                      [
+                        "open",
+                        2
+                      ],
+                      [
+                        "review",
+                        3
+                      ]
+                    ],
+                    "reported_by": [
+                      [
+                        "brondsem",
+                        5
+                      ],
+                      [
+                        "ctsai",
+                        1
+                      ],
+                      [
+                        "heiths",
+                        7
+                      ],
+                      [
+                        "jetmind",
+                        1
+                      ]
+                    ],
+                    "_milestone": [
+                      [
+                        "unreleased",
+                        14
+                      ]
+                    ],
+                    "assigned_to": [
+                      [
+                        "brondsem",
+                        1
+                      ],
+                      [
+                        "heiths",
+                        4
+                      ],
+                      [
+                        "jetmind",
+                        7
+                      ]
+                    ]
+                  },
+                  "filter": {},
+                  "q": "labels:\"sf-current\"",
+                  "solr_error": null,
+                  "limit": 100,
+                  "tickets": [
+                    {
+                      "status": "review",
+                      "reported_by_id": "548b2d136d19cd59705380a3",
+                      "related_artifacts": [],
+                      "attachments": [],
+                      "reported_by": "heiths",
+                      "assigned_to": "heiths",
+                      "labels": [
+                        "sf-current",
+                        "sf-2"
+                      ],
+                      "discussion_disabled": false,
+                      "assigned_to_id": "548b2d136d19cd59705380a3",
+                      "private": false,
+                      "summary": "Fix pagination issue in the commit browser",
+                      "mod_date": "2015-07-17 14:53:43.480000",
+                      "votes_down": 0,
+                      "votes_up": 0,
+                      "_id": "55a6c6c86d19cd7d2dc5d89d",
+                      "discussion_thread_url": "https://forge-allura.apache.org/rest/p/allura/tickets/_discuss/thread/3e30246e/",
+                      "ticket_num": 7932,
+                      "custom_fields": {
+                        "_component": "General",
+                        "_milestone": "unreleased",
+                        "_reviewer": ""
+                      },
+                      "created_date": "2015-07-15 20:47:04.434000"
+                    },
+                    {
+                      "status": "closed",
+                      "reported_by_id": "511aa8756d19cd161e8c1b04",
+                      "related_artifacts": [],
+                      "attachments": [],
+                      "reported_by": "brondsem",
+                      "assigned_to": "brondsem",
+                      "labels": [
+                        "sf-current",
+                        "sf-1",
+                        "ux"
+                      ],
+                      "discussion_disabled": false,
+                      "assigned_to_id": "511aa8756d19cd161e8c1b04",
+                      "private": false,
+                      "summary": "Site admin search tables can overflow the page width",
+                      "mod_date": "2015-07-14 08:40:35.931000",
+                      "votes_down": 0,
+                      "votes_up": 0,
+                      "_id": "55a3effc6d19cd320d814749",
+                      "discussion_thread_url": "https://forge-allura.apache.org/rest/p/allura/tickets/_discuss/thread/1f1023b2/",
+                      "ticket_num": 7928,
+                      "custom_fields": {
+                        "_component": "General",
+                        "_milestone": "unreleased",
+                        "_reviewer": "jetmind"
+                      },
+                      "created_date": "2015-07-13 17:06:04.135000"
+                    }
+                  ],
+                  "page": 0
+                },
+                "type": "object",
+                "properties": {
+                  "sort": {
+                    "type": "string"
+                  },
+                  "count": {
+                    "type": "number"
+                  },
+                  "filter_choices": {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
+                        }
+                      },
+                      "reported_by": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
+                        }
+                      },
+                      "_milestone": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
+                        }
+                      },
+                      "assigned_to": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "reported_by",
+                      "_milestone",
+                      "assigned_to"
+                    ]
+                  },
+                  "filter": {
+                    "type": "object"
+                  },
+                  "q": {
+                    "type": "string"
+                  },
+                  "solr_error": {
+                    "type": "string"
+                  },
+                  "limit": {
+                    "type": "number"
+                  },
+                  "tickets": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string"
+                        },
+                        "labels": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "related_artifacts": {
+                          "type": "array"
+                        },
+                        "attachments": {
+                          "type": "array"
+                        },
+                        "reported_by": {
+                          "type": "string"
+                        },
+                        "reported_by_id": {
+                          "type": "string"
+                        },
+                        "discussion_disabled": {
+                          "type": "boolean"
+                        },
+                        "private": {
+                          "type": "boolean"
+                        },
+                        "summary": {
+                          "type": "string"
+                        },
+                        "assigned_to_id": {
+                          "type": "string"
+                        },
+                        "assigned_to": {
+                          "type": "string"
+                        },
+                        "votes_down": {
+                          "type": "number"
+                        },
+                        "votes_up": {
+                          "type": "number"
+                        },
+                        "mod_date": {
+                          "type": "string"
+                        },
+                        "_id": {
+                          "type": "string"
+                        },
+                        "discussion_thread_url": {
+                          "type": "string"
+                        },
+                        "ticket_num": {
+                          "type": "number"
+                        },
+                        "custom_fields": {
+                          "type": "object",
+                          "properties": {
+                            "_component": {
+                              "type": "string"
+                            },
+                            "_milestone": {
+                              "type": "string"
+                            },
+                            "_reviewer": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "_component",
+                            "_milestone",
+                            "_reviewer"
+                          ]
+                        },
+                        "created_date": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "labels",
+                        "related_artifacts",
+                        "attachments",
+                        "reported_by",
+                        "reported_by_id",
+                        "discussion_disabled",
+                        "private",
+                        "summary",
+                        "assigned_to_id",
+                        "assigned_to",
+                        "votes_down",
+                        "votes_up",
+                        "mod_date",
+                        "_id",
+                        "discussion_thread_url",
+                        "ticket_num",
+                        "custom_fields",
+                        "created_date"
+                      ]
+                    }
+                  },
+                  "page": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "sort",
+                  "count",
+                  "filter_choices",
+                  "page",
+                  "q",
+                  "solr_error",
+                  "limit",
+                  "tickets",
+                  "filter"
+                ]
+              }
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "required": true,
+              "description": "Return search that have their q matching the given value",
+              "type": "string",
+              "in": "query",
+              "name": "q"
+            },
+            {
+              "$ref": "#/parameters/trait:pageable:page"
+            },
+            {
+              "$ref": "#/parameters/trait:pageable:limit"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "tracker",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{tracker}/new": {
+        "post": {
+          "operationId": "POST_neighborhood-project-tracker-new",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "consumes": [
+            "application/x-www-form-urlencoded",
+            "multipart/form-data"
+          ],
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "in": "formData",
+              "name": "ticket_form.summary",
+              "type": "string",
+              "description": "Ticket title"
+            },
+            {
+              "in": "formData",
+              "name": "ticket_form.description",
+              "type": "string",
+              "description": "ticket description"
+            },
+            {
+              "in": "formData",
+              "name": "ticket_form.status",
+              "type": "string",
+              "description": "ticket status"
+            },
+            {
+              "in": "formData",
+              "name": "ticket_form.assigned_to",
+              "type": "string",
+              "description": "username of ticket assignee"
+            },
+            {
+              "in": "formData",
+              "name": "ticket_form.labels",
+              "type": "string",
+              "description": "comma-separated list of ticket labels"
+            },
+            {
+              "in": "formData",
+              "name": "ticket_form.attachment",
+              "type": "file",
+              "description": "(optional) attachment"
+            },
+            {
+              "in": "formData",
+              "name": "ticket_form.custom_fields._any-field-name",
+              "type": "string",
+              "description": "Starts with underscore, and must conform to the custom fields set up for this tracker.  \"true\" or \"false\" values will work for boolean custom fields."
+            },
+            {
+              "in": "formData",
+              "name": "ticket_form.private",
+              "type": "string",
+              "description": "if the ticket is private or not (\"true\" or \"false\")"
+            },
+            {
+              "in": "formData",
+              "name": "ticket_form.discussion_disabled",
+              "type": "string",
+              "description": "if comments may be posted on the ticket (\"true\" or \"false\")"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "tracker",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{tracker}/_discuss/thread/{threadId}": {
+        "get": {
+          "description": "returns summary information about a thread, including the posts in a thread\n",
+          "operationId": "GET_neighborhood-project-tracker-_discuss-thread-threadId",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "$ref": "#/parameters/trait:pageable:page"
+            },
+            {
+              "$ref": "#/parameters/trait:pageable:limit"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "threadId",
+            "required": true
+          },
+          {
+            "type": "string",
+            "in": "path",
+            "name": "tracker",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{tracker}/_discuss/thread/{threadId}/{slug}": {
+        "get": {
+          "description": "returns detailed information about a post\n",
+          "operationId": "GET_neighborhood-project-tracker-_discuss-thread-threadId-slug",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "slug",
+            "required": true
+          },
+          {
+            "type": "string",
+            "in": "path",
+            "name": "threadId",
+            "required": true
+          },
+          {
+            "type": "string",
+            "in": "path",
+            "name": "tracker",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{tracker}/_discuss/thread/{threadId}/{slug}/reply": {
+        "post": {
+          "operationId": "POST_neighborhood-project-tracker-_discuss-thread-threadId-slug-reply",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "consumes": [
+            "application/x-www-form-urlencoded"
+          ],
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "in": "formData",
+              "name": "text",
+              "type": "string",
+              "description": "the text of the reply",
+              "required": true
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "slug",
+            "required": true
+          },
+          {
+            "type": "string",
+            "in": "path",
+            "name": "threadId",
+            "required": true
+          },
+          {
+            "type": "string",
+            "in": "path",
+            "name": "tracker",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{tracker}/_discuss/thread/{threadId}/new": {
+        "post": {
+          "operationId": "POST_neighborhood-project-tracker-_discuss-thread-threadId-new",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "consumes": [
+            "application/x-www-form-urlencoded"
+          ],
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "in": "formData",
+              "name": "text",
+              "type": "string",
+              "description": "The text of the new post",
+              "required": true
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "threadId",
+            "required": true
+          },
+          {
+            "type": "string",
+            "in": "path",
+            "name": "tracker",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{tracker}/has_access": {
+        "get": {
+          "description": "**Endpoints**\nPermissions can be checked at three levels:\n1. **Neighborhood:** `/rest/p/has_access`\n2. **Project:** `/rest/p/project_name/has_access`\n3. **Tool:** `/rest/p/project_name/mount_point/has_access`\n\n---\n\nIt is only available to users that have 'admin' permission for corresponding neighborhood/project/tool. It requires user and perm parameters and will return JSON dict with result key, which contains boolean value, indicating if given user has perm permission to the neighborhood/project/tool.\n\nE.g.:\n**GET** `/rest/p/test/wiki/has_access?user=admin1&perm=create`\n*returns* { result: true }\n**GET** `/rest/p/test/wiki/has_access?user=user01&perm=create`\n*returns* { result: false }\n",
+          "operationId": "GET_neighborhood-project-tracker-has_access",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "required": true,
+              "default": "read",
+              "enum": [
+                "admin",
+                "configure",
+                "moderate",
+                "post",
+                "unmoderated_post",
+                "read",
+                "create",
+                "delete",
+                "update",
+                "save_searches"
+              ],
+              "type": "string",
+              "in": "query",
+              "name": "perm"
+            },
+            {
+              "$ref": "#/parameters/trait:permissionTestable:user"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "tracker",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{discussion}": {
+        "get": {
+          "description": "Returns a list of forums, including name, description, num_topics, and last_post details\n",
+          "operationId": "GET_neighborhood-project-discussion",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "example": {
+                  "count": 3,
+                  "forums": [
+                    {
+                      "num_topics": 1,
+                      "name": "Dev Only",
+                      "url": "http://localhost:8080/rest/p/finna/discussion/devs/",
+                      "shortname": "devs",
+                      "_id": "55ad23c34d21224d82656add",
+                      "last_post": {
+                        "status": "ok",
+                        "last_edited": "2015-07-20 16:39:53.290000",
+                        "author": "root",
+                        "timestamp": "2015-07-20 16:39:46.083000",
+                        "thread_id": "2adb0c35",
+                        "text": "checking into it.",
+                        "author_id": "55687b5f4d2122410c76eb92",
+                        "_id": "83aa16ca9db9f811d68ba47285c3d4c65b4f60d7.discussion@finna.p.localhost",
+                        "slug": "c5af",
+                        "subject": "Potential issue"
+                      },
+                      "description": "not open to public!"
+                    },
+                    {
+                      "num_topics": 2,
+                      "name": "General Discussion",
+                      "url": "http://localhost:8080/rest/p/finna/discussion/general/",
+                      "shortname": "general",
+                      "_id": "5568f6684d212236d1eaed07",
+                      "last_post": {
+                        "status": "ok",
+                        "last_edited": null,
+                        "author": "root",
+                        "timestamp": "2015-07-20 16:36:18.019000",
+                        "thread_id": "a7528751",
+                        "text": "How to fix anything!",
+                        "author_id": "55687b5f4d2122410c76eb92",
+                        "_id": "b248780c7fa265106dc91e6004107dd4a601afe8.discussion@finna.p.localhost",
+                        "slug": "c920",
+                        "subject": "Tech Support"
+                      },
+                      "description": "Forum about anything you want to talk about."
+                    },
+                    {
+                      "num_topics": 0,
+                      "name": "Off Topic",
+                      "url": "http://localhost:8080/rest/p/finna/discussion/off-topic/",
+                      "shortname": "off-topic",
+                      "_id": "55ad23a44d21224d82656ada",
+                      "last_post": null,
+                      "description": "anything else...."
+                    }
+                  ],
+                  "limit": 25,
+                  "page": 0
+                },
+                "type": "object",
+                "properties": {
+                  "count": {
+                    "type": "number"
+                  },
+                  "forums": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "num_topics": {
+                          "type": "number"
+                        },
+                        "url": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "shortname": {
+                          "type": "string"
+                        },
+                        "_id": {
+                          "type": "string"
+                        },
+                        "last_post": {
+                          "type": "object",
+                          "properties": {
+                            "status": {
+                              "type": "string"
+                            },
+                            "last_edited": {
+                              "type": "string"
+                            },
+                            "author": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            },
+                            "thread_id": {
+                              "type": "string"
+                            },
+                            "text": {
+                              "type": "string"
+                            },
+                            "author_id": {
+                              "type": "string"
+                            },
+                            "_id": {
+                              "type": "string"
+                            },
+                            "slug": {
+                              "type": "string"
+                            },
+                            "subject": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "description": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "limit": {
+                    "type": "number"
+                  },
+                  "page": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "$ref": "#/parameters/trait:pageable:page"
+            },
+            {
+              "$ref": "#/parameters/trait:pageable:limit"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "discussion",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{discussion}/{forum}": {
+        "get": {
+          "description": "returns a limited list of topics in the forum, with fields for subject, num_replies, API URL, and last_post\nTo view more than 100 threads, or 100 posts in a thread, use the pagination support of the API by adding ?page=1 etc. to the URL.\n",
+          "operationId": "GET_neighborhood-project-discussion-forum",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "example": {
+                  "topic": {
+                    "_id": "a7528751",
+                    "posts": [
+                      {
+                        "text": "How to fix anything!",
+                        "attachments": [],
+                        "author": "root",
+                        "timestamp": "2015-07-20 16:36:18.019000",
+                        "last_edited": null,
+                        "slug": "c920",
+                        "subject": "Tech Support"
+                      },
+                      {
+                        "text": "fdas",
+                        "attachments": [],
+                        "author": "hs2",
+                        "timestamp": "2015-07-22 15:41:58.522000",
+                        "last_edited": null,
+                        "slug": "b8fa",
+                        "subject": "Tech Support"
+                      }
+                    ],
+                    "discussion_id": "5568f6684d212236d1eaed07",
+                    "subject": "Tech Support"
+                  },
+                  "count": 2,
+                  "limit": 25,
+                  "page": 0
+                },
+                "type": "object",
+                "properties": {
+                  "topic": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string"
+                      },
+                      "posts": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "text": {
+                              "type": "string"
+                            },
+                            "attachments": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "author": {
+                              "type": "string"
+                            },
+                            "timestamp": {
+                              "type": "string"
+                            },
+                            "last_edited": {
+                              "type": "string"
+                            },
+                            "slug": {
+                              "type": "string"
+                            },
+                            "subject": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      },
+                      "discussion_id": {
+                        "type": "string"
+                      },
+                      "subject": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "count": {
+                    "type": "integer"
+                  },
+                  "limit": {
+                    "type": "integer"
+                  },
+                  "page": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "$ref": "#/parameters/trait:pageable:page"
+            },
+            {
+              "$ref": "#/parameters/trait:pageable:limit"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "forum",
+            "required": true
+          },
+          {
+            "type": "string",
+            "in": "path",
+            "name": "discussion",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{discussion}/{forum}/thread/{thread}": {
+        "get": {
+          "description": "returns a list of posts in the thread, with fields for author, text, and timestamp. Nested posts (i.e. a reply to a post) can be determined by the slug structure. For example, \"slug\": \"0a0b/9f00\" is a reply to the post with \"slug\": \"0a0b\"\n",
+          "operationId": "GET_neighborhood-project-discussion-forum-thread-thread",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "$ref": "#/parameters/trait:pageable:page"
+            },
+            {
+              "$ref": "#/parameters/trait:pageable:limit"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "thread",
+            "required": true
+          },
+          {
+            "type": "string",
+            "in": "path",
+            "name": "forum",
+            "required": true
+          },
+          {
+            "type": "string",
+            "in": "path",
+            "name": "discussion",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{discussion}/has_access": {
+        "get": {
+          "description": "**Endpoints**\nPermissions can be checked at three levels:\n1. **Neighborhood:** `/rest/p/has_access`\n2. **Project:** `/rest/p/project_name/has_access`\n3. **Tool:** `/rest/p/project_name/mount_point/has_access`\n\n---\n\nIt is only available to users that have 'admin' permission for corresponding neighborhood/project/tool. It requires user and perm parameters and will return JSON dict with result key, which contains boolean value, indicating if given user has perm permission to the neighborhood/project/tool.\n\nE.g.:\n**GET** `/rest/p/test/wiki/has_access?user=admin1&perm=create`\n*returns* { result: true }\n**GET** `/rest/p/test/wiki/has_access?user=user01&perm=create`\n*returns* { result: false }\n",
+          "operationId": "GET_neighborhood-project-discussion-has_access",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "required": true,
+              "default": "read",
+              "enum": [
+                "admin",
+                "configure",
+                "moderate",
+                "post",
+                "unmoderated_post",
+                "read"
+              ],
+              "type": "string",
+              "in": "query",
+              "name": "perm"
+            },
+            {
+              "$ref": "#/parameters/trait:permissionTestable:user"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "discussion",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{blog}": {
+        "get": {
+          "description": "Returns a list of posts, including title and API url.\n",
+          "operationId": "GET_neighborhood-project-blog",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "example": {
+                  "count": 3,
+                  "limit": 10,
+                  "page": 0,
+                  "posts": [
+                    {
+                      "title": "Project Insights",
+                      "url": "http://localhost:8080/rest/p/finna/blog/2015/07/project-insights/"
+                    },
+                    {
+                      "title": "New blog",
+                      "url": "http://localhost:8080/rest/p/finna/blog/2015/07/new-blog/"
+                    },
+                    {
+                      "title": "Old News",
+                      "url": "http://localhost:8080/rest/p/finna/blog/2015/07/old-news/"
+                    }
+                  ]
+                },
+                "type": "object",
+                "properties": {
+                  "count": {
+                    "type": "number"
+                  },
+                  "posts": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "limit": {
+                    "type": "number"
+                  },
+                  "page": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            }
+          ]
+        },
+        "post": {
+          "description": "Creates a new blog post.\n",
+          "operationId": "POST_neighborhood-project-blog",
+          "responses": {
+            "201": {
+              "description": "Created"
+            }
+          },
+          "consumes": [
+            "application/x-www-form-urlencoded"
+          ],
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "in": "formData",
+              "name": "title",
+              "type": "string",
+              "description": "The title of the post.\n"
+            },
+            {
+              "in": "formData",
+              "name": "text",
+              "type": "string",
+              "description": "The text of the post.\n"
+            },
+            {
+              "in": "formData",
+              "name": "labels",
+              "type": "string",
+              "description": "Labels of the post -- comma seperated strings\n"
+            },
+            {
+              "in": "formData",
+              "name": "state",
+              "type": "string",
+              "description": "Draft or published.\n"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "blog",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{blog}/{year}/{month}/{title}": {
+        "post": {
+          "description": "Updates an existing blog post.\n",
+          "operationId": "POST_neighborhood-project-blog-year-month-title",
+          "responses": {
+            "201": {
+              "description": "Created"
+            }
+          },
+          "consumes": [
+            "application/x-www-form-urlencoded"
+          ],
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "in": "formData",
+              "name": "title",
+              "type": "string",
+              "description": "The title of the post.\n"
+            },
+            {
+              "in": "formData",
+              "name": "text",
+              "type": "string",
+              "description": "The text of the post.\n"
+            },
+            {
+              "in": "formData",
+              "name": "labels",
+              "type": "string",
+              "description": "Labels of the post -- comma seperated strings\n"
+            },
+            {
+              "in": "formData",
+              "name": "state",
+              "type": "string",
+              "description": "Draft or published.\n"
+            }
+          ]
+        },
+        "get": {
+          "operationId": "GET_neighborhood-project-blog-year-month-title",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "example": {
+                  "_id": "55ad27204d21224d82656b45",
+                  "author": "root",
+                  "discussion_thread": {
+                    "_id": "afb74fce",
+                    "discussion_id": "55ad26e94d21224d82656b31",
+                    "posts": [],
+                    "subject": "New blog discussion"
+                  },
+                  "discussion_thread_url": "http://localhost:8080/rest/p/finna/blog/_discuss/thread/afb74fce/",
+                  "labels": [
+                    "general"
+                  ],
+                  "mod_date": "2015-07-20 16:51:44.589000",
+                  "related_artifacts": [],
+                  "state": "published",
+                  "text": "Just made a new blog here",
+                  "title": "New blog",
+                  "url": "http://localhost:8080/rest/p/finna/blog/2015/07/new-blog/"
+                },
+                "type": "object",
+                "properties": {
+                  "related_artifacts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "discussion_thread": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string"
+                      },
+                      "posts": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "discussion_id": {
+                        "type": "string"
+                      },
+                      "subject": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "author": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "string"
+                  },
+                  "text": {
+                    "type": "string"
+                  },
+                  "labels": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "state": {
+                    "type": "string"
+                  },
+                  "mod_date": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "_id": {
+                    "type": "string"
+                  },
+                  "discussion_thread_url": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "number",
+            "in": "path",
+            "name": "year",
+            "required": true
+          },
+          {
+            "type": "string",
+            "in": "path",
+            "name": "month",
+            "required": true
+          },
+          {
+            "type": "string",
+            "in": "path",
+            "name": "title",
+            "required": true
+          },
+          {
+            "type": "string",
+            "in": "path",
+            "name": "blog",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{blog}/has_access": {
+        "get": {
+          "description": "**Endpoints**\nPermissions can be checked at three levels:\n1. **Neighborhood:** `/rest/p/has_access`\n2. **Project:** `/rest/p/project_name/has_access`\n3. **Tool:** `/rest/p/project_name/mount_point/has_access`\n\n---\n\nIt is only available to users that have 'admin' permission for corresponding neighborhood/project/tool. It requires user and perm parameters and will return JSON dict with result key, which contains boolean value, indicating if given user has perm permission to the neighborhood/project/tool.\n\nE.g.:\n**GET** `/rest/p/test/wiki/has_access?user=admin1&perm=create`\n*returns* { result: true }\n**GET** `/rest/p/test/wiki/has_access?user=user01&perm=create`\n*returns* { result: false }\n",
+          "operationId": "GET_neighborhood-project-blog-has_access",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "required": true,
+              "default": "read",
+              "enum": [
+                "admin",
+                "configure",
+                "moderate",
+                "post",
+                "unmoderated_post",
+                "read",
+                "write"
+              ],
+              "type": "string",
+              "in": "query",
+              "name": "perm"
+            },
+            {
+              "$ref": "#/parameters/trait:permissionTestable:user"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "blog",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/{link}": {
+        "get": {
+          "description": "Returns the existing url.\n",
+          "operationId": "GET_neighborhood-project-link",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "example": {
+                  "url": "https://google.com"
+                },
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              }
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            }
+          ]
+        },
+        "post": {
+          "description": "Updates the url. *authentication required*.\n",
+          "operationId": "POST_neighborhood-project-link",
+          "responses": {
+            "201": {
+              "description": "Created"
+            }
+          },
+          "consumes": [
+            "application/x-www-form-urlencoded"
+          ],
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "in": "formData",
+              "name": "url",
+              "type": "string",
+              "description": "The url you would like to update to.\n"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "link",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/admin/export": {
+        "post": {
+          "description": "Submits an export job\n\n**400 Bad Request:** tools parameter not provided or is invalid\n**503 Service Unavailable:** an export job is already running\n**200 OK:** job submitted. Body will be: *{\"status\": \"in progress\", \"filename\": FILENAME}*\n",
+          "operationId": "POST_neighborhood-project-admin-export",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/admin/export_status": {
+        "get": {
+          "description": "Returns status: busy or ready\n",
+          "operationId": "GET_neighborhood-project-admin-export_status",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/admin/{tool}/webhooks": {
+        "get": {
+          "description": "Returns the list of webhooks\n",
+          "operationId": "GET_neighborhood-project-admin-tool-webhooks",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "example": {
+                  "webhooks": [
+                    {
+                      "url": "http://localhost:8080/rest/p/finna/admin/finna/webhooks/repo-push/55ae874a4d21222df2980868",
+                      "mod_date": "2015-07-21 17:54:18.066000",
+                      "_id": "55ae874a4d21222df2980868",
+                      "type": "repo-push",
+                      "hook_url": "http://hs.dev:9999/webhooks/"
+                    },
+                    {
+                      "url": "http://localhost:8080/rest/p/finna/admin/finna/webhooks/repo-push/55ae876e4d21222df298086e",
+                      "mod_date": "2015-07-21 17:54:54.836000",
+                      "_id": "55ae876e4d21222df298086e",
+                      "type": "repo-push",
+                      "hook_url": "http://hs.dev:9999/push-it/"
+                    }
+                  ],
+                  "limits": {
+                    "repo-push": {
+                      "max": 3,
+                      "used": 2
+                    }
+                  }
+                },
+                "type": "object",
+                "properties": {
+                  "webhooks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string"
+                        },
+                        "mod_date": {
+                          "type": "string"
+                        },
+                        "_id": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "hook_url": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "limits": {
+                    "type": "object",
+                    "properties": {
+                      "repo-push": {
+                        "type": "object",
+                        "properties": {
+                          "max": {
+                            "type": "integer"
+                          },
+                          "used": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "$ref": "#/parameters/trait:pageable:page"
+            },
+            {
+              "$ref": "#/parameters/trait:pageable:limit"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "tool",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/admin/{tool}/webhooks/{type}": {
+        "post": {
+          "description": "Create a new webhook.\n",
+          "operationId": "POST_neighborhood-project-admin-tool-webhooks-type",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "consumes": [
+            "application/x-www-form-urlencoded"
+          ],
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "in": "formData",
+              "name": "url",
+              "type": "string",
+              "description": "The url to call when the the webhook is triggered.\n",
+              "required": true
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "description": "Allura supports one type of webhook for the moment - repo-push, triggered when a repository receives new commits. It is supported for Git, Mercurial and SVN repositories.\n",
+            "enum": [
+              "repo-push"
+            ],
+            "type": "string",
+            "in": "path",
+            "name": "type",
+            "required": true
+          },
+          {
+            "type": "string",
+            "in": "path",
+            "name": "tool",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/admin/{tool}/webhooks/{type}/{id}": {
+        "get": {
+          "description": "View a webhook\n",
+          "operationId": "GET_neighborhood-project-admin-tool-webhooks-type-id",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "example": {
+                  "hook_url": "http://hs.dev:9999/push-it/",
+                  "mod_date": "2015-07-24 16:44:03.871000",
+                  "url": "http://localhost:8080/rest/p/finna/admin/finna/webhooks/repo-push/55ae876e4d21222df298086e",
+                  "_id": "55ae876e4d21222df298086e",
+                  "type": "repo-push"
+                },
+                "type": "object",
+                "properties": {
+                  "hook_url": {
+                    "type": "string"
+                  },
+                  "mod_date": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "string"
+                  },
+                  "_id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "hook_url",
+                  "mod_date",
+                  "url",
+                  "_id",
+                  "type"
+                ]
+              }
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            }
+          ]
+        },
+        "post": {
+          "description": "Update an existing webhook\n",
+          "operationId": "POST_neighborhood-project-admin-tool-webhooks-type-id",
+          "responses": {
+            "201": {
+              "description": "Created"
+            }
+          },
+          "consumes": [
+            "application/x-www-form-urlencoded"
+          ],
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "in": "formData",
+              "name": "url",
+              "type": "string",
+              "description": "The url to call when the the webhook is triggered.\n",
+              "required": true
+            },
+            {
+              "in": "formData",
+              "name": "secret",
+              "type": "string",
+              "description": "Optionally supply your own secret.\n\nNote: DO NOT ever expose your secret!\n"
+            }
+          ]
+        },
+        "delete": {
+          "description": "Delete an existing webhook\n",
+          "operationId": "DELETE_neighborhood-project-admin-tool-webhooks-type-id",
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "description": "Unique identifier for a webhook.\n",
+            "type": "string",
+            "in": "path",
+            "name": "id",
+            "required": true
+          },
+          {
+            "description": "Allura supports one type of webhook for the moment - repo-push, triggered when a repository receives new commits. It is supported for Git, Mercurial and SVN repositories.\n",
+            "enum": [
+              "repo-push"
+            ],
+            "type": "string",
+            "in": "path",
+            "name": "type",
+            "required": true
+          },
+          {
+            "type": "string",
+            "in": "path",
+            "name": "tool",
+            "required": true
+          },
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/admin/install_tool": {
+        "post": {
+          "operationId": "POST_neighborhood-project-admin-install_tool",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "consumes": [
+            "application/x-www-form-urlencoded"
+          ],
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "in": "formData",
+              "name": "tool",
+              "type": "string",
+              "description": "Tool name that you want to install.",
+              "required": true
+            },
+            {
+              "in": "formData",
+              "name": "mount_point",
+              "type": "string",
+              "description": "The section of the url relative to your project. For example: /p/your_project/{mount_point}\n",
+              "required": true
+            },
+            {
+              "in": "formData",
+              "name": "mount_label",
+              "type": "string",
+              "description": "How your tool will be displayed in your project (like a \"nice name\" for the tool).\n",
+              "required": true
+            },
+            {
+              "in": "formData",
+              "name": "order",
+              "type": "string",
+              "description": "\"first\", \"last\", or \"alpha_tool\" for position with respect to existing tools (or existing tools of the same type for \"alpha_tool\")\n"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/admin/mount_order": {
+        "post": {
+          "operationId": "POST_neighborhood-project-admin-mount_order",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "consumes": [
+            "application/x-www-form-urlencoded"
+          ],
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "in": "formData",
+              "name": "1",
+              "type": "string",
+              "description": "Mount point name for the first position."
+            },
+            {
+              "in": "formData",
+              "name": "2",
+              "type": "string",
+              "description": "Mount point name for the second position."
+            },
+            {
+              "in": "formData",
+              "name": "3",
+              "type": "string",
+              "description": "Mount point name for the third position."
+            },
+            {
+              "in": "formData",
+              "name": "4...",
+              "type": "string",
+              "description": "Etc."
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/admin/configure_tool_grouping": {
+        "post": {
+          "operationId": "POST_neighborhood-project-admin-configure_tool_grouping",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "consumes": [
+            "application/x-www-form-urlencoded"
+          ],
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "in": "formData",
+              "name": "grouping_threshold",
+              "type": "number",
+              "description": "Value for the grouping threshold."
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/admin/installable_tools": {
+        "get": {
+          "operationId": "GET_neighborhood-project-admin-installable_tools",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/{neighborhood}/{project}/admin/admin_options": {
+        "get": {
+          "operationId": "GET_neighborhood-project-admin-admin_options",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            },
+            {
+              "description": "The mount point to specify which tool.\n",
+              "type": "string",
+              "in": "query",
+              "name": "mount_point",
+              "required": true
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "pattern": "([a-zA-Z0-9-]+)",
+            "description": "The Project short name.",
+            "type": "string",
+            "in": "path",
+            "name": "project",
+            "required": true
+          },
+          {
+            "description": "Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.\nMore information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)\n",
+            "type": "string",
+            "in": "path",
+            "name": "neighborhood",
+            "required": true
+          }
+        ]
+      },
+      "/u/{username}": {
+        "get": {
+          "operationId": "GET_u-username",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "title": "User.",
+                "description": "A user's first and last name.",
+                "example": {
+                  "status": "active",
+                  "preferred_support_tool": "",
+                  "profile_api_url": "https://forge-allura.apache.org/rest/u/heiths/profile/",
+                  "preferred_support_url": "",
+                  "labels": [],
+                  "private": false,
+                  "creation_date": "2014-12-12",
+                  "socialnetworks": [
+                    {
+                      "accounturl": "",
+                      "socialnetwork": "Twitter"
+                    },
+                    {
+                      "accounturl": "",
+                      "socialnetwork": "Facebook"
+                    }
+                  ],
+                  "tools": [
+                    {
+                      "mount_point": "admin",
+                      "name": "admin",
+                      "label": "Admin"
+                    },
+                    {
+                      "mount_point": "wiki",
+                      "name": "wiki",
+                      "label": "Wiki"
+                    },
+                    {
+                      "mount_point": "profile",
+                      "name": "profile",
+                      "label": "Profile"
+                    },
+                    {
+                      "mount_point": "search",
+                      "name": "search",
+                      "label": "Search"
+                    },
+                    {
+                      "mount_point": "activity",
+                      "name": "activity",
+                      "label": "Activity"
+                    }
+                  ],
+                  "categories": {
+                    "developmentstatus": [],
+                    "environment": [],
+                    "language": [],
+                    "license": [],
+                    "database": [],
+                    "topic": [],
+                    "audience": [],
+                    "translation": [],
+                    "os": []
+                  },
+                  "_id": "548b2d136d19cd59705380a6",
+                  "name": "u/heiths",
+                  "url": "https://forge-allura.apache.org/u/heiths/",
+                  "icon_url": null,
+                  "video_url": "",
+                  "screenshots": [],
+                  "summary": "",
+                  "short_description": null,
+                  "moved_to_url": "",
+                  "shortname": "u/heiths",
+                  "developers": [
+                    {
+                      "url": "https://forge-allura.apache.org/u/heiths/",
+                      "username": "heiths",
+                      "name": "Heith Seewald"
+                    }
+                  ],
+                  "external_homepage": ""
+                },
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string"
+                  },
+                  "preferred_support_tool": {
+                    "type": "string"
+                  },
+                  "profile_api_url": {
+                    "type": "string"
+                  },
+                  "preferred_support_url": {
+                    "type": "string"
+                  },
+                  "labels": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "private": {
+                    "type": "boolean"
+                  },
+                  "creation_date": {
+                    "type": "string"
+                  },
+                  "socialnetworks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "accounturl": {
+                          "type": "string"
+                        },
+                        "socialnetwork": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "tools": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "mount_point": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "label": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "categories": {
+                    "type": "object",
+                    "properties": {
+                      "developmentstatus": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "environment": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "language": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "license": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "database": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "topic": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "audience": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "translation": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "os": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "_id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "string"
+                  },
+                  "icon_url": {
+                    "type": "string"
+                  },
+                  "video_url": {
+                    "type": "string"
+                  },
+                  "screenshots": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "summary": {
+                    "type": "string"
+                  },
+                  "short_description": {
+                    "type": "string"
+                  },
+                  "moved_to_url": {
+                    "type": "string"
+                  },
+                  "shortname": {
+                    "type": "string"
+                  },
+                  "developers": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string"
+                        },
+                        "username": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "external_homepage": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "username",
+            "required": true
+          }
+        ]
+      },
+      "/u/{username}/profile": {
+        "get": {
+          "operationId": "GET_u-username-profile",
+          "produces": [
+            "application/json"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "title": "User Profile.",
+                "example": {
+                  "username": "heiths",
+                  "name": "Heith Seewald",
+                  "localization": {
+                    "city": "Grand Rapids Area",
+                    "country": "United States"
+                  },
+                  "skills": [
+                    {
+                      "comment": "asdf",
+                      "skill": {
+                        "fullpath": "Programming Language",
+                        "fullname": "Programming Language",
+                        "shortname": "language",
+                        "id": 160
+                      },
+                      "level": "high"
+                    }
+                  ],
+                  "webpages": [],
+                  "joined": "2014-12-12 17:59:47+00:00",
+                  "socialnetworks": [
+                    {
+                      "accounturl": "www.linkedin.com/in/heiths/",
+                      "socialnetwork": "Linkedin"
+                    },
+                    {
+                      "accounturl": "heiths",
+                      "socialnetwork": "Google+"
+                    }
+                  ],
+                  "telnumbers": [],
+                  "sex": "Male",
+                  "availability": [
+                    {
+                      "start_time": {
+                        "h": 3,
+                        "m": 30
+                      },
+                      "week_day": "Thursday",
+                      "end_time": {
+                        "h": 4,
+                        "m": 45
+                      }
+                    }
+                  ],
+                  "projects": [
+                    {
+                      "url": "/p/allura/",
+                      "last_updated": "2015-07-28 16:40:57.701000",
+                      "name": "Apache Allura™",
+                      "summary": "Forge software for hosting software projects"
+                    }
+                  ],
+                  "skypeaccount": null
+                },
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "title": "Full Name.",
+                    "description": "A user's first and last name.",
+                    "type": "string"
+                  },
+                  "localization": {
+                    "description": "General Location.",
+                    "type": "object",
+                    "properties": {
+                      "city": {
+                        "type": "string"
+                      },
+                      "country": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "skills": {
+                    "title": "Skills.",
+                    "description": "A list of skills and associated skill levels.",
+                    "type": "array",
+                    "items": {
+                      "title": "0 schema.",
+                      "type": "object",
+                      "properties": {
+                        "comment": {
+                          "title": "Comment.",
+                          "description": "Additional comments about a given skill.",
+                          "type": "string"
+                        },
+                        "skill": {
+                          "title": "Skill schema.",
+                          "type": "object",
+                          "properties": {
+                            "fullpath": {
+                              "title": "Full Path.",
+                              "description": "Category hierarchy.",
+                              "type": "string"
+                            },
+                            "fullname": {
+                              "title": "Fullname schema.",
+                              "description": "Name of category.",
+                              "type": "string"
+                            },
+                            "shortname": {
+                              "title": "Shortname.",
+                              "description": "Short form of category.",
+                              "type": "string"
+                            },
+                            "id": {
+                              "title": "Id.",
+                              "description": "Unique identifier",
+                              "type": "integer"
+                            }
+                          }
+                        },
+                        "level": {
+                          "title": "Skill Level.",
+                          "description": "low, medium or high",
+                          "enum": [
+                            "low",
+                            "medium",
+                            "high"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "webpages": {
+                    "title": "Webpages schema.",
+                    "description": "A list of URL strings associated with a user.",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "joined": {
+                    "title": "Joined schema.",
+                    "description": "The date a user signed up.",
+                    "type": "string"
+                  },
+                  "socialnetworks": {
+                    "title": "Social Networks.",
+                    "description": "A list of social networks URLs.",
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "accounturl": {
+                          "title": "Account Url.",
+                          "description": "URL to the associated user account on the social network site.",
+                          "type": "string"
+                        },
+                        "socialnetwork": {
+                          "title": "Socialnetwork schema.",
+                          "description": "Name of the social networking site.",
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "telnumbers": {
+                    "title": "Telnumbers schema.",
+                    "description": "A list of phone numbers as strings.",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "sex": {
+                    "type": "string"
+                  },
+                  "availability": {
+                    "title": "Availability.",
+                    "description": "Indicates the availability of a user.",
+                    "type": "array",
+                    "items": {
+                      "description": "An explanation about the puropose of this instance described by this schema.",
+                      "type": "object",
+                      "properties": {
+                        "start_time": {
+                          "title": "Start Time.",
+                          "description": "The start of a user's availability.",
+                          "type": "object",
+                          "properties": {
+                            "h": {
+                              "title": "Hour.",
+                              "type": "integer"
+                            },
+                            "m": {
+                              "title": "Minute.",
+                              "type": "integer"
+                            }
+                          }
+                        },
+                        "week_day": {
+                          "title": "Week Day.",
+                          "description": "Day of week.",
+                          "type": "string"
+                        },
+                        "end_time": {
+                          "title": "End Time.",
+                          "description": "The end of a user's availability.",
+                          "type": "object",
+                          "properties": {
+                            "h": {
+                              "title": "Hour.",
+                              "type": "integer"
+                            },
+                            "m": {
+                              "title": "Minute.",
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "projects": {
+                    "title": "Projects.",
+                    "description": "A list of projects accociated with a user.",
+                    "type": "array",
+                    "items": {
+                      "description": "Apache Allura project.",
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "title": "Project Url.",
+                          "type": "string"
+                        },
+                        "last_updated": {
+                          "title": "Last Updated.",
+                          "description": "string formatted timestamp.",
+                          "type": "string"
+                        },
+                        "name": {
+                          "title": "Name.",
+                          "type": "string"
+                        },
+                        "summary": {
+                          "title": "Project Summary.",
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "skypeaccount": {
+                    "title": "Skype Account.",
+                    "description": "Skype account username.",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "parameters": [
+            {
+              "$ref": "#/parameters/trait:bearerAuth:Authorization"
+            }
+          ]
+        },
+        "parameters": [
+          {
+            "type": "string",
+            "in": "path",
+            "name": "username",
+            "required": true
+          }
+        ]
+      },
+      "/notification": {
+        "get": {
+          "operationId": "GET_notification",
+          "responses": {
+            "default": {
+              "description": ""
+            }
+          },
+          "parameters": [
+            {
+              "description": "site-notification cookie value",
+              "type": "string",
+              "in": "query",
+              "name": "cookie",
+              "required": true
+            },
+            {
+              "description": "page where notification will be shown",
+              "type": "string",
+              "in": "query",
+              "name": "url",
+              "required": true
+            },
+            {
+              "description": "tool's name for current page",
+              "type": "string",
+              "in": "query",
+              "name": "tool_name",
+              "required": true
+            }
+          ]
+        }
+      }
+    }
+  }
