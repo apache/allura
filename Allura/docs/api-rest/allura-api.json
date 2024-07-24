@@ -3,9 +3,12 @@
     "info": {
       "title": "Apache Allura",
       "description": "<!--\n    Licensed to the Apache Software Foundation (ASF) under one\n    or more contributor license agreements.  See the NOTICE file\n    distributed with this work for additional information\n    regarding copyright ownership.  The ASF licenses this file\n    to you under the Apache License, Version 2.0 (the\n    \"License\"); you may not use this file except in compliance\n    with the License.  You may obtain a copy of the License at\n\n      http://www.apache.org/licenses/LICENSE-2.0\n\n    Unless required by applicable law or agreed to in writing,\n    software distributed under the License is distributed on an\n    \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY\n    KIND, either express or implied.  See the License for the\n    specific language governing permissions and limitations\n    under the License.\n-->\n\n# Basic API architecture\n\nAll url endpoints are prefixed with /rest/ and the path to the project and tool.\n\nFor example, in order to access a wiki installed in the 'test' project with the mount point 'docs' the API endpoint would be /rest/p/test/docs.\n\nThe following tools have API support:\n\n* Project\n* Wiki\n* Tracker\n* Discussion\n* Blog\n* External Link\n* Admin\n    * Project Export\n    * Installing a new Tool\n    * Webhooks\n* User Profiles\n\n# Authenticating requests\n\nIn order to use the API for authenticated actions, you should use the OAuth account page to create a consumer key for your application.  Once you have a consumer key, you must have a site user (e.g. your own account, if you're writing a single script) authorize your application to act on his or her behalf.\n\nYou can also use your normal browser session as authentication for the API.  This is useful for manually testing API calls or for in-browser applications (such as extensions or user-scripts).  It is not recommended for programmatic access, however, as it would require you to store your account username and password, and thus cannot be easily managed or revoked.\n\nWithout authentication, all API requests have the permissions of an anonymous visitor.  To view or change anything that requires a login, you must authenticate to the API using OAuth.  You must first register for an OAuth consumer token at <https://forge-allura.apache.org/auth/oauth/>.  Once you have registered, you will be be able to see your consumer key and consumer secret, or generate a bearer token, at <https://forge-allura.apache.org/auth/oauth/>.\n\n\n### OAuth With Bearer Tokens\n\nThe easiest way to use the API with your own account is to use a bearer token.  Once you have generated a bearer token at <https://forge-allura.apache.org.net/auth/oauth/>, you just include it in the request to the API via a http header like `Authorization: Bearer MY_BEARER_TOKEN`.\n\nSimple URL example to access a private ticket:\n\ncurl -H 'Authorization: Bearer MY_BEARER_TOKEN' https://forge-allura.apache.org/rest/p/allura/tickets/35/\n\nPython code example to create a new ticket:\n\n    import requests\n    from pprint import pprint\n\n    BEARER_TOKEN = '<bearer token from oauth page>'\n\n    r = requests.post('https://forge-allura.apache.org/rest/p/test-project/tickets/new',\n          headers={'Authorization': f'Bearer {BEARER_TOKEN}'}\n          params={\n            'ticket_form.summary': 'Test ticket',\n            'ticket_form.description': 'This is a test ticket',\n            'ticket_form.labels': 'test',\n            'ticket_form.custom_fields._my_num': '7',  # custom field with label \"My Num\"\n                                                       # must be created first\n        })\n    if r.status_code == 200:\n        print('Ticket created at: %s' % r.url)\n        pprint(r.json())\n    else:\n        print('Error [%s]:\\n%s' % (r.status_code, r.text))\n\n\n\n### OAuth 1.0 Application Authorization (Third-Party Apps)\n\n\nIf you want your application to be able to use the API on behalf of another user, that user must authorize your application to act on their behalf.  This is usually accomplished by obtaining a request token and directing the user authorize the request.  The following is an example of how one would authorize an application in Python using the requests_oauthlib library.  First, run `pip install requests_oauthlib`\n\n    from requests_oauthlib import OAuth1Session\n    import webbrowser\n\n    CONSUMER_KEY = '<consumer key from registration>'\n    CONSUMER_SECRET = '<consumer secret from registration>'\n    REQUEST_TOKEN_URL = 'https://forge-allura.apache.org/rest/oauth/request_token'\n    AUTHORIZE_URL = 'https://forge-allura.apache.org/rest/oauth/authorize'\n    ACCESS_TOKEN_URL = 'https://forge-allura.apache.org/rest/oauth/access_token'\n\n    oauth = OAuth1Session(CONSUMER_KEY, client_secret=CONSUMER_SECRET, callback_uri='oob')\n\n    # Step 1: Get a request token. This is a temporary token that is used for\n    # having the user authorize an access token and to sign the request to obtain\n    # said access token.\n\n    request_token = oauth.fetch_request_token(REQUEST_TOKEN_URL)\n\n    # these are intermediate tokens and not needed later\n    # print(\"Request Token:\")\n    # print(\"    - oauth_token        = %s\" % request_token['oauth_token'])\n    # print(\"    - oauth_token_secret = %s\" % request_token['oauth_token_secret'])\n    # print()\n\n    # Step 2: Redirect to the provider. Since this is a CLI script we do not\n    # redirect. In a web application you would redirect the user to the URL\n    # below, specifying the additional parameter oauth_callback=<your callback URL>.\n\n    webbrowser.open(oauth.authorization_url(AUTHORIZE_URL, request_token['oauth_token']))\n\n    # Since we didn't specify a callback, the user must now enter the PIN displayed in\n    # their browser.  If you had specified a callback URL, it would have been called with\n    # oauth_token and oauth_verifier parameters, used below in obtaining an access token.\n    oauth_verifier = input('What is the PIN? ')\n\n    # Step 3: Once the consumer has redirected the user back to the oauth_callback\n    # URL you can request the access token the user has approved. You use the\n    # request token to sign this request. After this is done you throw away the\n    # request token and use the access token returned. You should store this\n    # access token somewhere safe, like a database, for future use.\n    access_token = oauth.fetch_access_token(ACCESS_TOKEN_URL, oauth_verifier)\n\n    print(\"Access Token:\")\n    print(\"    - oauth_token        = %s\" % access_token['oauth_token'])\n    print(\"    - oauth_token_secret = %s\" % access_token['oauth_token_secret'])\n    print()\n    print(\"You may now access protected resources using the access tokens above.\")\n    print()\n\n\nYou can then use your access token with the REST API.  For instance script to create a wiki page might look like this:\n\n    from requests_oauthlib import OAuth1Session\n\n    PROJECT='test'\n\n    CONSUMER_KEY='<consumer key from app registration>'\n    CONSUMER_SECRET='<consumer secret from app registration>'\n\n    ACCESS_KEY='<access key from previous script>'\n    ACCESS_SECRET='<access secret from previous script>'\n\n    URL_BASE='https://forge-allura.apache.org/rest/'\n\n    oauth = OAuth1Session(CONSUMER_KEY, client_secret=CONSUMER_SECRET,\n                          resource_owner_key=ACCESS_KEY, resource_owner_secret=ACCESS_SECRET)\n\n    response = oauth.post(URL_BASE + 'p/' + PROJECT + '/wiki/TestPage',\n                          data=dict(text='This is a test page'))\n    response.raise_for_status()\n    print(\"Done.  Response was:\")\n    print(response)\n\n### OAuth2 Authorization (Third-Party Apps)\n\nAnother option for authorizing your apps is to use the OAuth2 workflow. This is accomplished by authorizing the application which generates an `authorization_code` that can be later exchanged for an `access_token`\n\nThe following example demonstrates the authorization workflow and how to generate an access token to authenticate your apps\n\n    from requests_oauthlib import OAuth2Session\n\n    # Set up your client credentials\n    client_id = 'YOUR_CLIENT_ID'\n    client_secret = 'YOUR_CLIENT_SECRET'\n    authorization_base_url = 'https://forge-allura.apache.org/auth/oauth2/authorize'\n    access_token_url = 'https://forge-allura.apache.org/rest/oauth2/token'\n    redirect_uri = 'https://forge-allura.apache.org/page'  # Your registered redirect URI\n\n    # Create an OAuth2 session\n    oauth2 = OAuth2Session(client_id, redirect_uri=redirect_uri)\n\n    # Step 1: Prompt the user to navigate to the authorization URL\n    authorization_url, state = oauth2.authorization_url(authorization_base_url)\n\n    print('Please go to this URL to authorize the app:', authorization_url)\n\n    # Step 2: Obtain the authorization code (you can find it in the 'code' URL parameter)\n    # In real use cases, you might implement a small web server to capture this\n    authorization_code = input('Paste authorization code here: ')\n\n    # Step 3: Exchange the authorization code for an access token\n    token = oauth2.fetch_token(access_token_url,\n                            code=authorization_code,\n                            client_secret=client_secret,\n                            include_client_id=True)\n\n    # Print the access and refresh tokens for verification (or use it to request user data)\n    # If your access token expires, you can request a new one using the refresh token\n    print(f\"Access Token: {token.get('access_token')}\")\n    print(f\"Refresh Token: {token.get('refresh_token')}\")\n\n    # Step 4: Use the access token to make authenticated requests\n    response = oauth2.get('https://forge-allura.apache.org/user')\n    print('User data:', response.json())\n\n### Refreshing Access Tokens\n\nA new access token can be requested once it expires. The following example demonstrates how can the refresh token obtained in the previous code sample be used to generate a new access token:\n\n    from requests_oauthlib import OAuth2Session\n\n    # Set up your client credentials\n    client_id = 'YOUR_CLIENT_ID'\n    client_secret = 'YOUR_CLIENT_SECRET'\n    refresh_token = 'YOUR_REFRESH_TOKEN'\n    access_token = 'YOUR_ACCESS_TOKEN'\n    access_token_url = 'https://forge-allura.apache.org/rest/oauth2/token'\n\n    # Step 1: Create an OAuth2 session by also passing token information\n    token = dict(access_token=access_token, token_type='Bearer', refresh_token=refresh_token)\n    oauth2 = OAuth2Session(client_id=client_id, token=token)\n\n    # Step 2: Request for a new token\n    extra = dict(client_id=client_id, client_secret=client_secret)\n    refreshed_token = oauth2.refresh_token(access_token_url, **extra)\n\n    # You can inspect the response object to get the new access and refresh tokens\n    print(f\"Access Token: {token.get('access_token')}\")\n    print(f\"Refresh Token: {token.get('refresh_token')}\")\n\n### PKCE support\n\nPKCE (Proof Key for Code Exchange) is an extension to the authorization code flow to prevent CSRF and authorization code injection attacks. It mitigates the risk of the authorization code being intercepted by a malicious entity during the exchange from the authorization endpoint to the token endpoint.\n\nTo make use of this security extension, you must generate a string known as a \"code verifier\", which is a random string using the characters A-Z, a-z, 0-9 and the special characters -._~ and it should be between 43 and 128 characters long.\n\nOnce the string has been created, perform a SHA256 hash on it and encode the resulting value as a Base-\n\nYou can use the following example to generate a valid code verifier and code challenge:\n\n    import hashlib\n    import base64\n    import os\n\n\n    # Generate a code verifier (random string)\n    def generate_code_verifier(length=64):\n        return base64.urlsafe_b64encode(\n          os.urandom(length)).decode('utf-8').rstrip('=')\n\n\n    # Generate a code challenge (SHA-256)\n    def generate_code_challenge(verifier):\n        digest = hashlib.sha256(verifier.encode('utf-8')).digest()\n        return base64.urlsafe_b64encode(digest).decode('utf-8').rstrip('=')\n\n\n    code_verifier = generate_code_verifier()\n    code_challenge = generate_code_challenge(code_verifier)\n\n    # The code challenge should be sent in the initial authorization request.\n    print(\"Code Verifier:\", code_verifier)\n    print(\"Code Challenge:\", code_challenge)\n\nHaving generated the codes, you would need to send the code challenge along with the challenge method (in this case S256) as part of the query string in the authorization url, for example:\n\n    https://forge-allura.apache.org/auth/oauth2/authorize?client_id=8dca182d3e6fe0cb76b8&response_type=code&code_challenge=G6wIRjEZlvhLsVS0exbID3o4ppUBsjxUBNtRVL8StXo&code_challenge_method=S256\n\n\nAfterwards, when you request an access token, you must provide the code verifier that derived the code challenge as part of the request's body, otherwise the token request validation will fail:\n\n    POST https://forge-allura.apache.org/rest/oauth2/token\n\n    {\n        \"client_id\": \"8dca182d3e6fe0cb76b8\",\n        \"client_secret\": \"1c6a2d99db80223590dd12cc32dfdb8a0cc2e9a38620e05c16076b2872110688b9c1b17db63bb7c3\",\n        \"code\": \"Gvw53xmSBFZYBy0xdawm0qSX0cqhHs\",\n        \"code_verifier\": \"aEyhTs4BfWjZ7g5HT0o7Hu24p6Qw6TxotdX8_G20NN9J1lXIfSnNr3b6jhOUZe5ZWkP5ADCEzlWABUHSPXslgQ\",\n        \"grant_type\": \"authorization_code\"\n    }\n\n\n\n# Permission checks\n\nThe `has_access` API can be used to run permission checks. It is available on a neighborhood, project and tool level.\n\nIt is only available to users that have 'admin' permission for corresponding neighborhood/project/tool.\nIt requires `user` and `perm` parameters and will return JSON dict with `result` key, which contains boolean value, indicating if given `user` has `perm` permission to the neighborhood/project/tool.\n\n\n# DOAP (Description of a Project) API\n\n[DOAP](http://en.wikipedia.org/wiki/DOAP) is an RDF/XML specification for \"Description of a Project\"\n\nProject information is available in DOAP format with additional custom RDF fields at /rest/p/{project}?doap\n\nThis is separate from the normal JSON API at /rest/p/{project}\n",
-      "version": "1"
+      "version": ""
     },
-    "x-basePath": "{domain}/rest",
+    "x-servers": [{
+      "url": "https://forge-allura.apache.org/rest",
+      "description": "Source Forge"
+    }],
     "schemes": [
       "https"
     ],
@@ -67,6 +70,7 @@
       "/auth/tools/{tool_type}": {
         "get": {
           "description": "List tools (e.g. \"git\" repos) that the current user is associated with\n",
+          "summary":"List user tools",
           "operationId": "GET_auth-tools-tool_type",
           "produces": [
             "application/json"
@@ -158,6 +162,7 @@
       "/{neighborhood}/has_access": {
         "get": {
           "description": "**Endpoints**\nPermissions can be checked at three levels:\n1. **Neighborhood:** `/rest/p/has_access`\n2. **Project:** `/rest/p/project_name/has_access`\n3. **Tool:** `/rest/p/project_name/mount_point/has_access`\n\n---\n\nIt is only available to users that have 'admin' permission for corresponding neighborhood/project/tool. It requires user and perm parameters and will return JSON dict with result key, which contains boolean value, indicating if given user has perm permission to the neighborhood/project/tool.\n\nE.g.:\n**GET** `/rest/p/test/wiki/has_access?user=admin1&perm=create`\n*returns* { result: true }\n**GET** `/rest/p/test/wiki/has_access?user=user01&perm=create`\n*returns* { result: false }\n",
+          "summary":"Neighborhood has_access",
           "operationId": "GET_neighborhood-has_access",
           "responses": {
             "default": {
@@ -200,6 +205,7 @@
       "/{neighborhood}/add_project": {
         "post": {
           "operationId": "POST_neighborhood-add_project",
+          "summary":"Neighborhood add project",
           "responses": {
             "default": {
               "description": ""
@@ -259,6 +265,7 @@
       "/{neighborhood}/{project}": {
         "get": {
           "operationId": "GET_neighborhood-project",
+          "summary":"Neighborhood get project",
           "produces": [
             "application/json"
           ],
@@ -570,6 +577,7 @@
         "get": {
           "description": "**Endpoints**\nPermissions can be checked at three levels:\n1. **Neighborhood:** `/rest/p/has_access`\n2. **Project:** `/rest/p/project_name/has_access`\n3. **Tool:** `/rest/p/project_name/mount_point/has_access`\n\n---\n\nIt is only available to users that have 'admin' permission for corresponding neighborhood/project/tool. It requires user and perm parameters and will return JSON dict with result key, which contains boolean value, indicating if given user has perm permission to the neighborhood/project/tool.\n\nE.g.:\n**GET** `/rest/p/test/wiki/has_access?user=admin1&perm=create`\n*returns* { result: true }\n**GET** `/rest/p/test/wiki/has_access?user=user01&perm=create`\n*returns* { result: false }\n",
           "operationId": "GET_neighborhood-project-has_access",
+          "summary":"Neighborhood Project has_access",
           "responses": {
             "default": {
               "description": ""
@@ -618,6 +626,7 @@
       "/{neighborhood}/{project}/{scm_tool}": {
         "get": {
           "operationId": "GET_neighborhood-project-scm_tool",
+          "summary":"Neighborhood Project scm tool",
           "produces": [
             "application/json"
           ],
@@ -738,6 +747,7 @@
       "/{neighborhood}/{project}/{wiki}": {
         "get": {
           "operationId": "GET_neighborhood-project-wiki",
+          "summary":"Neighborhood Project wiki",
           "produces": [
             "application/json"
           ],
@@ -818,6 +828,7 @@
       "/{neighborhood}/{project}/{wiki}/{title}": {
         "get": {
           "description": "returns a JSON representation of a page\n",
+          "summary":"Neighborhood Project wiki title",
           "operationId": "GET_neighborhood-project-wiki-title",
           "produces": [
             "application/json"
@@ -902,6 +913,7 @@
         },
         "post": {
           "description": "Creates or updates the titled page.\n",
+          "summary":"Neighborhood Project update wiki title",
           "operationId": "POST_neighborhood-project-wiki-title",
           "responses": {
             "201": {
@@ -962,6 +974,7 @@
       "/{neighborhood}/{project}/{wiki}/has_access": {
         "get": {
           "description": "**Endpoints**\nPermissions can be checked at three levels:\n1. **Neighborhood:** `/rest/p/has_access`\n2. **Project:** `/rest/p/project_name/has_access`\n3. **Tool:** `/rest/p/project_name/mount_point/has_access`\n\n---\n\nIt is only available to users that have 'admin' permission for corresponding neighborhood/project/tool. It requires user and perm parameters and will return JSON dict with result key, which contains boolean value, indicating if given user has perm permission to the neighborhood/project/tool.\n\nE.g.:\n**GET** `/rest/p/test/wiki/has_access?user=admin1&perm=create`\n*returns* { result: true }\n**GET** `/rest/p/test/wiki/has_access?user=user01&perm=create`\n*returns* { result: false }\n",
+          "summary":"Neighborhood Project wiki has_access",
           "operationId": "GET_neighborhood-project-wiki-has_access",
           "responses": {
             "default": {
@@ -1022,6 +1035,7 @@
       "/{neighborhood}/{project}/{tracker}": {
         "get": {
           "description": "Get a list of tickets\n",
+          "summary":"Neighborhood Project tracker",
           "operationId": "GET_neighborhood-project-tracker",
           "produces": [
             "application/json"
@@ -1344,6 +1358,7 @@
       },
       "/{neighborhood}/{project}/{tracker}/{ticketNumber}": {
         "get": {
+          "summary":"Neighborhood Project tracker tickerNumber",
           "operationId": "GET_neighborhood-project-tracker-ticketNumber",
           "produces": [
             "application/json"
@@ -1605,6 +1620,7 @@
       "/{neighborhood}/{project}/{tracker}/{ticketNumber}/save": {
         "post": {
           "operationId": "POST_neighborhood-project-tracker-ticketNumber-save",
+          "summary":"Neighborhood Project tracker tickerNumber save",
           "responses": {
             "default": {
               "description": ""
@@ -1708,6 +1724,7 @@
       "/{neighborhood}/{project}/{tracker}/search": {
         "get": {
           "operationId": "GET_neighborhood-project-tracker-search",
+          "summary":"Neighborhood Project tracker search",
           "produces": [
             "application/json"
           ],
@@ -2097,6 +2114,7 @@
       "/{neighborhood}/{project}/{tracker}/new": {
         "post": {
           "operationId": "POST_neighborhood-project-tracker-new",
+          "summary":"Neighborhood Project tracker new",
           "responses": {
             "default": {
               "description": ""
@@ -2194,6 +2212,7 @@
         "get": {
           "description": "returns summary information about a thread, including the posts in a thread\n",
           "operationId": "GET_neighborhood-project-tracker-_discuss-thread-threadId",
+          "summary":"Neighborhood Project tracker discuss thread threadId",
           "responses": {
             "default": {
               "description": ""
@@ -2244,6 +2263,7 @@
       "/{neighborhood}/{project}/{tracker}/_discuss/thread/{threadId}/{slug}": {
         "get": {
           "description": "returns detailed information about a post\n",
+          "summary":"Neighborhood Project tracker discuss thread threadId slug",
           "operationId": "GET_neighborhood-project-tracker-_discuss-thread-threadId-slug",
           "responses": {
             "default": {
@@ -2294,6 +2314,7 @@
       },
       "/{neighborhood}/{project}/{tracker}/_discuss/thread/{threadId}/{slug}/reply": {
         "post": {
+          "summary":"Neighborhood Project tracker discuss thread threadId slug reply",
           "operationId": "POST_neighborhood-project-tracker-_discuss-thread-threadId-slug-reply",
           "responses": {
             "default": {
@@ -2354,6 +2375,7 @@
       },
       "/{neighborhood}/{project}/{tracker}/_discuss/thread/{threadId}/new": {
         "post": {
+          "summary":"Neighborhood Project tracker discuss thread threadId new",
           "operationId": "POST_neighborhood-project-tracker-_discuss-thread-threadId-new",
           "responses": {
             "default": {
@@ -2409,6 +2431,7 @@
       "/{neighborhood}/{project}/{tracker}/has_access": {
         "get": {
           "description": "**Endpoints**\nPermissions can be checked at three levels:\n1. **Neighborhood:** `/rest/p/has_access`\n2. **Project:** `/rest/p/project_name/has_access`\n3. **Tool:** `/rest/p/project_name/mount_point/has_access`\n\n---\n\nIt is only available to users that have 'admin' permission for corresponding neighborhood/project/tool. It requires user and perm parameters and will return JSON dict with result key, which contains boolean value, indicating if given user has perm permission to the neighborhood/project/tool.\n\nE.g.:\n**GET** `/rest/p/test/wiki/has_access?user=admin1&perm=create`\n*returns* { result: true }\n**GET** `/rest/p/test/wiki/has_access?user=user01&perm=create`\n*returns* { result: false }\n",
+          "summary":"Neighborhood Project tracker has_access",
           "operationId": "GET_neighborhood-project-tracker-has_access",
           "responses": {
             "default": {
@@ -2470,6 +2493,7 @@
       "/{neighborhood}/{project}/{discussion}": {
         "get": {
           "description": "Returns a list of forums, including name, description, num_topics, and last_post details\n",
+          "summary":"Neighborhood Project discussion",
           "operationId": "GET_neighborhood-project-discussion",
           "produces": [
             "application/json"
@@ -2649,6 +2673,7 @@
       "/{neighborhood}/{project}/{discussion}/{forum}": {
         "get": {
           "description": "returns a limited list of topics in the forum, with fields for subject, num_replies, API URL, and last_post\nTo view more than 100 threads, or 100 posts in a thread, use the pagination support of the API by adding ?page=1 etc. to the URL.\n",
+          "summary":"Neighborhood Project discussion forum",
           "operationId": "GET_neighborhood-project-discussion-forum",
           "produces": [
             "application/json"
@@ -2793,6 +2818,7 @@
       "/{neighborhood}/{project}/{discussion}/{forum}/thread/{thread}": {
         "get": {
           "description": "returns a list of posts in the thread, with fields for author, text, and timestamp. Nested posts (i.e. a reply to a post) can be determined by the slug structure. For example, \"slug\": \"0a0b/9f00\" is a reply to the post with \"slug\": \"0a0b\"\n",
+          "summary":"Neighborhood Project discussion thread",
           "operationId": "GET_neighborhood-project-discussion-forum-thread-thread",
           "responses": {
             "default": {
@@ -2850,6 +2876,7 @@
       "/{neighborhood}/{project}/{discussion}/has_access": {
         "get": {
           "description": "**Endpoints**\nPermissions can be checked at three levels:\n1. **Neighborhood:** `/rest/p/has_access`\n2. **Project:** `/rest/p/project_name/has_access`\n3. **Tool:** `/rest/p/project_name/mount_point/has_access`\n\n---\n\nIt is only available to users that have 'admin' permission for corresponding neighborhood/project/tool. It requires user and perm parameters and will return JSON dict with result key, which contains boolean value, indicating if given user has perm permission to the neighborhood/project/tool.\n\nE.g.:\n**GET** `/rest/p/test/wiki/has_access?user=admin1&perm=create`\n*returns* { result: true }\n**GET** `/rest/p/test/wiki/has_access?user=user01&perm=create`\n*returns* { result: false }\n",
+          "summary":"Neighborhood Project discussion has_access",
           "operationId": "GET_neighborhood-project-discussion-has_access",
           "responses": {
             "default": {
@@ -2907,6 +2934,7 @@
       "/{neighborhood}/{project}/{blog}": {
         "get": {
           "description": "Returns a list of posts, including title and API url.\n",
+          "summary":"Neighborhood Project blog",
           "operationId": "GET_neighborhood-project-blog",
           "produces": [
             "application/json"
@@ -2971,6 +2999,7 @@
         },
         "post": {
           "description": "Creates a new blog post.\n",
+          "summary":"Neighborhood Project blog new",
           "operationId": "POST_neighborhood-project-blog",
           "responses": {
             "201": {
@@ -3037,6 +3066,7 @@
       "/{neighborhood}/{project}/{blog}/{year}/{month}/{title}": {
         "post": {
           "description": "Updates an existing blog post.\n",
+          "summary":"Neighborhood Project update blog post",
           "operationId": "POST_neighborhood-project-blog-year-month-title",
           "responses": {
             "201": {
@@ -3077,6 +3107,7 @@
           ]
         },
         "get": {
+          "summary":"Neighborhood Project get blog post",
           "operationId": "GET_neighborhood-project-blog-year-month-title",
           "produces": [
             "application/json"
@@ -3218,6 +3249,7 @@
       "/{neighborhood}/{project}/{blog}/has_access": {
         "get": {
           "description": "**Endpoints**\nPermissions can be checked at three levels:\n1. **Neighborhood:** `/rest/p/has_access`\n2. **Project:** `/rest/p/project_name/has_access`\n3. **Tool:** `/rest/p/project_name/mount_point/has_access`\n\n---\n\nIt is only available to users that have 'admin' permission for corresponding neighborhood/project/tool. It requires user and perm parameters and will return JSON dict with result key, which contains boolean value, indicating if given user has perm permission to the neighborhood/project/tool.\n\nE.g.:\n**GET** `/rest/p/test/wiki/has_access?user=admin1&perm=create`\n*returns* { result: true }\n**GET** `/rest/p/test/wiki/has_access?user=user01&perm=create`\n*returns* { result: false }\n",
+          "summary":"Neighborhood Project blog hass_access",
           "operationId": "GET_neighborhood-project-blog-has_access",
           "responses": {
             "default": {
@@ -3276,6 +3308,7 @@
       "/{neighborhood}/{project}/{link}": {
         "get": {
           "description": "Returns the existing url.\n",
+          "summary":"Neighborhood Project Link",
           "operationId": "GET_neighborhood-project-link",
           "produces": [
             "application/json"
@@ -3307,6 +3340,7 @@
         },
         "post": {
           "description": "Updates the url. *authentication required*.\n",
+          "summary":"Neighborhood Project update link",
           "operationId": "POST_neighborhood-project-link",
           "responses": {
             "201": {
@@ -3355,6 +3389,7 @@
       "/{neighborhood}/{project}/admin/export": {
         "post": {
           "description": "Submits an export job\n\n**400 Bad Request:** tools parameter not provided or is invalid\n**503 Service Unavailable:** an export job is already running\n**200 OK:** job submitted. Body will be: *{\"status\": \"in progress\", \"filename\": FILENAME}*\n",
+          "summary":"Neighborhood Project Admin Export",
           "operationId": "POST_neighborhood-project-admin-export",
           "responses": {
             "default": {
@@ -3388,6 +3423,7 @@
       "/{neighborhood}/{project}/admin/export_status": {
         "get": {
           "description": "Returns status: busy or ready\n",
+          "summary":"Neighborhood Project Admin Export status",
           "operationId": "GET_neighborhood-project-admin-export_status",
           "responses": {
             "default": {
@@ -3421,6 +3457,7 @@
       "/{neighborhood}/{project}/admin/{tool}/webhooks": {
         "get": {
           "description": "Returns the list of webhooks\n",
+          "summary":"Neighborhood Project list webhooks",
           "operationId": "GET_neighborhood-project-admin-tool-webhooks",
           "produces": [
             "application/json"
@@ -3537,6 +3574,7 @@
       "/{neighborhood}/{project}/admin/{tool}/webhooks/{type}": {
         "post": {
           "description": "Create a new webhook.\n",
+          "summary":"Neighborhood Project create new webhook",
           "operationId": "POST_neighborhood-project-admin-tool-webhooks-type",
           "responses": {
             "default": {
@@ -3596,6 +3634,7 @@
       "/{neighborhood}/{project}/admin/{tool}/webhooks/{type}/{id}": {
         "get": {
           "description": "View a webhook\n",
+          "summary":"Neighborhood Project get webhook",
           "operationId": "GET_neighborhood-project-admin-tool-webhooks-type-id",
           "produces": [
             "application/json"
@@ -3647,6 +3686,7 @@
         },
         "post": {
           "description": "Update an existing webhook\n",
+          "summary":"Neighborhood Project update webhook",
           "operationId": "POST_neighborhood-project-admin-tool-webhooks-type-id",
           "responses": {
             "201": {
@@ -3677,6 +3717,7 @@
         },
         "delete": {
           "description": "Delete an existing webhook\n",
+          "summary":"Neighborhood Project delete webhook",
           "operationId": "DELETE_neighborhood-project-admin-tool-webhooks-type-id",
           "responses": {
             "200": {
@@ -3733,6 +3774,7 @@
       "/{neighborhood}/{project}/admin/install_tool": {
         "post": {
           "operationId": "POST_neighborhood-project-admin-install_tool",
+          "summary":"Neighborhood Project Admin Install Tool",
           "responses": {
             "default": {
               "description": ""
@@ -3794,6 +3836,7 @@
       },
       "/{neighborhood}/{project}/admin/mount_order": {
         "post": {
+          "summary":"Neighborhood Project Admin Mount Order",
           "operationId": "POST_neighborhood-project-admin-mount_order",
           "responses": {
             "default": {
@@ -3853,6 +3896,7 @@
       },
       "/{neighborhood}/{project}/admin/configure_tool_grouping": {
         "post": {
+          "summary":"Neighborhood Project Adming Configure Tool Grouping",
           "operationId": "POST_neighborhood-project-admin-configure_tool_grouping",
           "responses": {
             "default": {
@@ -3894,6 +3938,7 @@
       },
       "/{neighborhood}/{project}/admin/installable_tools": {
         "get": {
+          "summary":"Neighborhood Project Admin Installable Tools",
           "operationId": "GET_neighborhood-project-admin-installable_tools",
           "responses": {
             "default": {
@@ -3926,6 +3971,7 @@
       },
       "/{neighborhood}/{project}/admin/admin_options": {
         "get": {
+          "summary":"Neighborhood Project Admin Options",
           "operationId": "GET_neighborhood-project-admin-admin_options",
           "responses": {
             "default": {
@@ -3965,6 +4011,7 @@
       },
       "/u/{username}": {
         "get": {
+          "summary":"Get Username",
           "operationId": "GET_u-username",
           "produces": [
             "application/json"
@@ -4240,6 +4287,7 @@
       },
       "/u/{username}/profile": {
         "get": {
+          "summary":"Get profile",
           "operationId": "GET_u-username-profile",
           "produces": [
             "application/json"
@@ -4523,6 +4571,7 @@
       },
       "/notification": {
         "get": {
+          "summary":"Get Notification",
           "operationId": "GET_notification",
           "responses": {
             "default": {
