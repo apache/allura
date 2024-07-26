@@ -7,7 +7,7 @@
     },
     "x-servers": [{
       "url": "https://forge-allura.apache.org/rest",
-      "description": "Source Forge"
+      "description": ""
     }],
     "schemes": [
       "https"
@@ -205,7 +205,7 @@
       "/{neighborhood}/add_project": {
         "post": {
           "operationId": "POST_neighborhood-add_project",
-          "summary":"Neighborhood add project",
+          "summary":"Add project",
           "responses": {
             "default": {
               "description": ""
@@ -265,7 +265,7 @@
       "/{neighborhood}/{project}": {
         "get": {
           "operationId": "GET_neighborhood-project",
-          "summary":"Neighborhood get project",
+          "summary":"Get project",
           "produces": [
             "application/json"
           ],
@@ -577,7 +577,7 @@
         "get": {
           "description": "**Endpoints**\nPermissions can be checked at three levels:\n1. **Neighborhood:** `/rest/p/has_access`\n2. **Project:** `/rest/p/project_name/has_access`\n3. **Tool:** `/rest/p/project_name/mount_point/has_access`\n\n---\n\nIt is only available to users that have 'admin' permission for corresponding neighborhood/project/tool. It requires user and perm parameters and will return JSON dict with result key, which contains boolean value, indicating if given user has perm permission to the neighborhood/project/tool.\n\nE.g.:\n**GET** `/rest/p/test/wiki/has_access?user=admin1&perm=create`\n*returns* { result: true }\n**GET** `/rest/p/test/wiki/has_access?user=user01&perm=create`\n*returns* { result: false }\n",
           "operationId": "GET_neighborhood-project-has_access",
-          "summary":"Neighborhood Project has_access",
+          "summary":"Project has_access",
           "responses": {
             "default": {
               "description": ""
@@ -626,7 +626,7 @@
       "/{neighborhood}/{project}/{scm_tool}": {
         "get": {
           "operationId": "GET_neighborhood-project-scm_tool",
-          "summary":"Neighborhood Project scm tool",
+          "summary":"Project scm tool",
           "produces": [
             "application/json"
           ],
@@ -747,7 +747,7 @@
       "/{neighborhood}/{project}/{wiki}": {
         "get": {
           "operationId": "GET_neighborhood-project-wiki",
-          "summary":"Neighborhood Project wiki",
+          "summary":"Project wiki",
           "produces": [
             "application/json"
           ],
@@ -828,7 +828,7 @@
       "/{neighborhood}/{project}/{wiki}/{title}": {
         "get": {
           "description": "returns a JSON representation of a page\n",
-          "summary":"Neighborhood Project wiki title",
+          "summary":"Project wiki title",
           "operationId": "GET_neighborhood-project-wiki-title",
           "produces": [
             "application/json"
@@ -913,7 +913,7 @@
         },
         "post": {
           "description": "Creates or updates the titled page.\n",
-          "summary":"Neighborhood Project update wiki title",
+          "summary":"Project update wiki title",
           "operationId": "POST_neighborhood-project-wiki-title",
           "responses": {
             "201": {
@@ -974,7 +974,7 @@
       "/{neighborhood}/{project}/{wiki}/has_access": {
         "get": {
           "description": "**Endpoints**\nPermissions can be checked at three levels:\n1. **Neighborhood:** `/rest/p/has_access`\n2. **Project:** `/rest/p/project_name/has_access`\n3. **Tool:** `/rest/p/project_name/mount_point/has_access`\n\n---\n\nIt is only available to users that have 'admin' permission for corresponding neighborhood/project/tool. It requires user and perm parameters and will return JSON dict with result key, which contains boolean value, indicating if given user has perm permission to the neighborhood/project/tool.\n\nE.g.:\n**GET** `/rest/p/test/wiki/has_access?user=admin1&perm=create`\n*returns* { result: true }\n**GET** `/rest/p/test/wiki/has_access?user=user01&perm=create`\n*returns* { result: false }\n",
-          "summary":"Neighborhood Project wiki has_access",
+          "summary":"Project wiki has_access",
           "operationId": "GET_neighborhood-project-wiki-has_access",
           "responses": {
             "default": {
@@ -1035,7 +1035,7 @@
       "/{neighborhood}/{project}/{tracker}": {
         "get": {
           "description": "Get a list of tickets\n",
-          "summary":"Neighborhood Project tracker",
+          "summary":"Project tracker",
           "operationId": "GET_neighborhood-project-tracker",
           "produces": [
             "application/json"
@@ -1358,7 +1358,7 @@
       },
       "/{neighborhood}/{project}/{tracker}/{ticketNumber}": {
         "get": {
-          "summary":"Neighborhood Project tracker tickerNumber",
+          "summary":"Project tracker tickerNumber",
           "operationId": "GET_neighborhood-project-tracker-ticketNumber",
           "produces": [
             "application/json"
@@ -1620,7 +1620,7 @@
       "/{neighborhood}/{project}/{tracker}/{ticketNumber}/save": {
         "post": {
           "operationId": "POST_neighborhood-project-tracker-ticketNumber-save",
-          "summary":"Neighborhood Project tracker tickerNumber save",
+          "summary":"Project tracker tickerNumber save",
           "responses": {
             "default": {
               "description": ""
@@ -1724,7 +1724,7 @@
       "/{neighborhood}/{project}/{tracker}/search": {
         "get": {
           "operationId": "GET_neighborhood-project-tracker-search",
-          "summary":"Neighborhood Project tracker search",
+          "summary":"Project tracker search",
           "produces": [
             "application/json"
           ],
@@ -2114,7 +2114,7 @@
       "/{neighborhood}/{project}/{tracker}/new": {
         "post": {
           "operationId": "POST_neighborhood-project-tracker-new",
-          "summary":"Neighborhood Project tracker new",
+          "summary":"Project tracker new",
           "responses": {
             "default": {
               "description": ""
@@ -2212,7 +2212,7 @@
         "get": {
           "description": "returns summary information about a thread, including the posts in a thread\n",
           "operationId": "GET_neighborhood-project-tracker-_discuss-thread-threadId",
-          "summary":"Neighborhood Project tracker discuss thread threadId",
+          "summary":"Project tracker discuss thread threadId",
           "responses": {
             "default": {
               "description": ""
@@ -2263,7 +2263,7 @@
       "/{neighborhood}/{project}/{tracker}/_discuss/thread/{threadId}/{slug}": {
         "get": {
           "description": "returns detailed information about a post\n",
-          "summary":"Neighborhood Project tracker discuss thread threadId slug",
+          "summary":"Project tracker discuss thread threadId slug",
           "operationId": "GET_neighborhood-project-tracker-_discuss-thread-threadId-slug",
           "responses": {
             "default": {
@@ -2314,7 +2314,7 @@
       },
       "/{neighborhood}/{project}/{tracker}/_discuss/thread/{threadId}/{slug}/reply": {
         "post": {
-          "summary":"Neighborhood Project tracker discuss thread threadId slug reply",
+          "summary":"Project tracker discuss thread threadId slug reply",
           "operationId": "POST_neighborhood-project-tracker-_discuss-thread-threadId-slug-reply",
           "responses": {
             "default": {
@@ -2375,7 +2375,7 @@
       },
       "/{neighborhood}/{project}/{tracker}/_discuss/thread/{threadId}/new": {
         "post": {
-          "summary":"Neighborhood Project tracker discuss thread threadId new",
+          "summary":"Project tracker discuss thread threadId new",
           "operationId": "POST_neighborhood-project-tracker-_discuss-thread-threadId-new",
           "responses": {
             "default": {
@@ -2431,7 +2431,7 @@
       "/{neighborhood}/{project}/{tracker}/has_access": {
         "get": {
           "description": "**Endpoints**\nPermissions can be checked at three levels:\n1. **Neighborhood:** `/rest/p/has_access`\n2. **Project:** `/rest/p/project_name/has_access`\n3. **Tool:** `/rest/p/project_name/mount_point/has_access`\n\n---\n\nIt is only available to users that have 'admin' permission for corresponding neighborhood/project/tool. It requires user and perm parameters and will return JSON dict with result key, which contains boolean value, indicating if given user has perm permission to the neighborhood/project/tool.\n\nE.g.:\n**GET** `/rest/p/test/wiki/has_access?user=admin1&perm=create`\n*returns* { result: true }\n**GET** `/rest/p/test/wiki/has_access?user=user01&perm=create`\n*returns* { result: false }\n",
-          "summary":"Neighborhood Project tracker has_access",
+          "summary":"Project tracker has_access",
           "operationId": "GET_neighborhood-project-tracker-has_access",
           "responses": {
             "default": {
@@ -2493,7 +2493,7 @@
       "/{neighborhood}/{project}/{discussion}": {
         "get": {
           "description": "Returns a list of forums, including name, description, num_topics, and last_post details\n",
-          "summary":"Neighborhood Project discussion",
+          "summary":"Project discussion",
           "operationId": "GET_neighborhood-project-discussion",
           "produces": [
             "application/json"
@@ -2673,7 +2673,7 @@
       "/{neighborhood}/{project}/{discussion}/{forum}": {
         "get": {
           "description": "returns a limited list of topics in the forum, with fields for subject, num_replies, API URL, and last_post\nTo view more than 100 threads, or 100 posts in a thread, use the pagination support of the API by adding ?page=1 etc. to the URL.\n",
-          "summary":"Neighborhood Project discussion forum",
+          "summary":"Project discussion forum",
           "operationId": "GET_neighborhood-project-discussion-forum",
           "produces": [
             "application/json"
@@ -2818,7 +2818,7 @@
       "/{neighborhood}/{project}/{discussion}/{forum}/thread/{thread}": {
         "get": {
           "description": "returns a list of posts in the thread, with fields for author, text, and timestamp. Nested posts (i.e. a reply to a post) can be determined by the slug structure. For example, \"slug\": \"0a0b/9f00\" is a reply to the post with \"slug\": \"0a0b\"\n",
-          "summary":"Neighborhood Project discussion thread",
+          "summary":"Project discussion thread",
           "operationId": "GET_neighborhood-project-discussion-forum-thread-thread",
           "responses": {
             "default": {
@@ -2876,7 +2876,7 @@
       "/{neighborhood}/{project}/{discussion}/has_access": {
         "get": {
           "description": "**Endpoints**\nPermissions can be checked at three levels:\n1. **Neighborhood:** `/rest/p/has_access`\n2. **Project:** `/rest/p/project_name/has_access`\n3. **Tool:** `/rest/p/project_name/mount_point/has_access`\n\n---\n\nIt is only available to users that have 'admin' permission for corresponding neighborhood/project/tool. It requires user and perm parameters and will return JSON dict with result key, which contains boolean value, indicating if given user has perm permission to the neighborhood/project/tool.\n\nE.g.:\n**GET** `/rest/p/test/wiki/has_access?user=admin1&perm=create`\n*returns* { result: true }\n**GET** `/rest/p/test/wiki/has_access?user=user01&perm=create`\n*returns* { result: false }\n",
-          "summary":"Neighborhood Project discussion has_access",
+          "summary":"Project discussion has_access",
           "operationId": "GET_neighborhood-project-discussion-has_access",
           "responses": {
             "default": {
@@ -2934,7 +2934,7 @@
       "/{neighborhood}/{project}/{blog}": {
         "get": {
           "description": "Returns a list of posts, including title and API url.\n",
-          "summary":"Neighborhood Project blog",
+          "summary":"Project blog",
           "operationId": "GET_neighborhood-project-blog",
           "produces": [
             "application/json"
@@ -2999,7 +2999,7 @@
         },
         "post": {
           "description": "Creates a new blog post.\n",
-          "summary":"Neighborhood Project blog new",
+          "summary":"Project blog new post",
           "operationId": "POST_neighborhood-project-blog",
           "responses": {
             "201": {
@@ -3066,7 +3066,7 @@
       "/{neighborhood}/{project}/{blog}/{year}/{month}/{title}": {
         "post": {
           "description": "Updates an existing blog post.\n",
-          "summary":"Neighborhood Project update blog post",
+          "summary":"Project update blog post",
           "operationId": "POST_neighborhood-project-blog-year-month-title",
           "responses": {
             "201": {
@@ -3107,7 +3107,7 @@
           ]
         },
         "get": {
-          "summary":"Neighborhood Project get blog post",
+          "summary":"Project get blog post",
           "operationId": "GET_neighborhood-project-blog-year-month-title",
           "produces": [
             "application/json"
@@ -3249,7 +3249,7 @@
       "/{neighborhood}/{project}/{blog}/has_access": {
         "get": {
           "description": "**Endpoints**\nPermissions can be checked at three levels:\n1. **Neighborhood:** `/rest/p/has_access`\n2. **Project:** `/rest/p/project_name/has_access`\n3. **Tool:** `/rest/p/project_name/mount_point/has_access`\n\n---\n\nIt is only available to users that have 'admin' permission for corresponding neighborhood/project/tool. It requires user and perm parameters and will return JSON dict with result key, which contains boolean value, indicating if given user has perm permission to the neighborhood/project/tool.\n\nE.g.:\n**GET** `/rest/p/test/wiki/has_access?user=admin1&perm=create`\n*returns* { result: true }\n**GET** `/rest/p/test/wiki/has_access?user=user01&perm=create`\n*returns* { result: false }\n",
-          "summary":"Neighborhood Project blog hass_access",
+          "summary":"Project blog hass_access",
           "operationId": "GET_neighborhood-project-blog-has_access",
           "responses": {
             "default": {
@@ -3308,7 +3308,7 @@
       "/{neighborhood}/{project}/{link}": {
         "get": {
           "description": "Returns the existing url.\n",
-          "summary":"Neighborhood Project Link",
+          "summary":"Project Link",
           "operationId": "GET_neighborhood-project-link",
           "produces": [
             "application/json"
@@ -3340,7 +3340,7 @@
         },
         "post": {
           "description": "Updates the url. *authentication required*.\n",
-          "summary":"Neighborhood Project update link",
+          "summary":"Project update link",
           "operationId": "POST_neighborhood-project-link",
           "responses": {
             "201": {
@@ -3389,7 +3389,7 @@
       "/{neighborhood}/{project}/admin/export": {
         "post": {
           "description": "Submits an export job\n\n**400 Bad Request:** tools parameter not provided or is invalid\n**503 Service Unavailable:** an export job is already running\n**200 OK:** job submitted. Body will be: *{\"status\": \"in progress\", \"filename\": FILENAME}*\n",
-          "summary":"Neighborhood Project Admin Export",
+          "summary":"Project Admin Export",
           "operationId": "POST_neighborhood-project-admin-export",
           "responses": {
             "default": {
@@ -3423,7 +3423,7 @@
       "/{neighborhood}/{project}/admin/export_status": {
         "get": {
           "description": "Returns status: busy or ready\n",
-          "summary":"Neighborhood Project Admin Export status",
+          "summary":"Project Admin Export status",
           "operationId": "GET_neighborhood-project-admin-export_status",
           "responses": {
             "default": {
@@ -3457,7 +3457,7 @@
       "/{neighborhood}/{project}/admin/{tool}/webhooks": {
         "get": {
           "description": "Returns the list of webhooks\n",
-          "summary":"Neighborhood Project list webhooks",
+          "summary":"Project list webhooks",
           "operationId": "GET_neighborhood-project-admin-tool-webhooks",
           "produces": [
             "application/json"
@@ -3574,7 +3574,7 @@
       "/{neighborhood}/{project}/admin/{tool}/webhooks/{type}": {
         "post": {
           "description": "Create a new webhook.\n",
-          "summary":"Neighborhood Project create new webhook",
+          "summary":"Project create new webhook",
           "operationId": "POST_neighborhood-project-admin-tool-webhooks-type",
           "responses": {
             "default": {
@@ -3634,7 +3634,7 @@
       "/{neighborhood}/{project}/admin/{tool}/webhooks/{type}/{id}": {
         "get": {
           "description": "View a webhook\n",
-          "summary":"Neighborhood Project get webhook",
+          "summary":"Project get webhook",
           "operationId": "GET_neighborhood-project-admin-tool-webhooks-type-id",
           "produces": [
             "application/json"
@@ -3686,7 +3686,7 @@
         },
         "post": {
           "description": "Update an existing webhook\n",
-          "summary":"Neighborhood Project update webhook",
+          "summary":"Project update webhook",
           "operationId": "POST_neighborhood-project-admin-tool-webhooks-type-id",
           "responses": {
             "201": {
@@ -3717,7 +3717,7 @@
         },
         "delete": {
           "description": "Delete an existing webhook\n",
-          "summary":"Neighborhood Project delete webhook",
+          "summary":"Project delete webhook",
           "operationId": "DELETE_neighborhood-project-admin-tool-webhooks-type-id",
           "responses": {
             "200": {
@@ -3774,7 +3774,7 @@
       "/{neighborhood}/{project}/admin/install_tool": {
         "post": {
           "operationId": "POST_neighborhood-project-admin-install_tool",
-          "summary":"Neighborhood Project Admin Install Tool",
+          "summary":"Project Admin Install Tool",
           "responses": {
             "default": {
               "description": ""
@@ -3836,7 +3836,7 @@
       },
       "/{neighborhood}/{project}/admin/mount_order": {
         "post": {
-          "summary":"Neighborhood Project Admin Mount Order",
+          "summary":"Project Admin Mount Order",
           "operationId": "POST_neighborhood-project-admin-mount_order",
           "responses": {
             "default": {
@@ -3896,7 +3896,7 @@
       },
       "/{neighborhood}/{project}/admin/configure_tool_grouping": {
         "post": {
-          "summary":"Neighborhood Project Adming Configure Tool Grouping",
+          "summary":"Project Adming Configure Tool Grouping",
           "operationId": "POST_neighborhood-project-admin-configure_tool_grouping",
           "responses": {
             "default": {
@@ -3938,7 +3938,7 @@
       },
       "/{neighborhood}/{project}/admin/installable_tools": {
         "get": {
-          "summary":"Neighborhood Project Admin Installable Tools",
+          "summary":"Project Admin Installable Tools",
           "operationId": "GET_neighborhood-project-admin-installable_tools",
           "responses": {
             "default": {
@@ -3971,7 +3971,7 @@
       },
       "/{neighborhood}/{project}/admin/admin_options": {
         "get": {
-          "summary":"Neighborhood Project Admin Options",
+          "summary":"Project Admin Options",
           "operationId": "GET_neighborhood-project-admin-admin_options",
           "responses": {
             "default": {
