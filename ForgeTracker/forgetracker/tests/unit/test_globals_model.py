@@ -151,15 +151,16 @@ class TestCustomFields(TrackerTestWithModel):
         tracker_globals = globals_with_custom_fields(
             [dict(label='Iteration Number',
                   name='_iteration_number',
+                  type='number',
                   show_in_search=False),
              dict(label='Point Estimate',
                   name='_point_estimate',
+                  type='number',
                   show_in_search=True)])
-        expected = [dict(sortable_name='_point_estimate_s',
+        expected = [dict(sortable_name='_point_estimate_d',
                          name='_point_estimate',
                          label='Point Estimate')]
-        assert tracker_globals.sortable_custom_fields_shown_in_search(
-        ) == expected
+        assert tracker_globals.sortable_custom_fields_shown_in_search() == expected
 
 
 def globals_with_custom_fields(custom_fields):

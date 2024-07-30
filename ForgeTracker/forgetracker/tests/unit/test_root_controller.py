@@ -45,7 +45,7 @@ class TestWhenSearchingWithCustomFields(WithUserAndBugsApp):
             self.response = tracker_main.RootController().search(q='friends')
 
     def test_that_sortable_custom_fields_are_present(self):
-        expected = [dict(sortable_name='_iteration_number_s',
+        expected = [dict(sortable_name='_iteration_number_d',
                          name='_iteration_number',
                          label='Iteration Number')]
         assert self.response['sortable_custom_fields'] == expected
