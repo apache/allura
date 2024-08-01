@@ -4,7 +4,7 @@
 #
 #    pip-compile
 #
-activitystream==0.4.2
+activitystream==0.5.0
     # via -r requirements.in
 beaker==1.13.0
     # via
