@@ -42,6 +42,8 @@ diff-match-patch==20230430
     # via sxsdiff
 distlib==0.3.8
     # via virtualenv
+dnspython==2.6.1
+    # via pymongo
 docutils==0.20.1
     # via
     #   -r requirements.in
@@ -106,7 +108,7 @@ markupsafe==2.1.5
     #   turbogears2
     #   webhelpers2
     #   werkzeug
-ming==0.13.0
+ming==0.14.0
     # via -r requirements.in
 mock==5.1.0
     # via -r requirements.in
@@ -142,16 +144,15 @@ platformdirs==4.2.0
     # via virtualenv
 pluggy==1.4.0
     # via pytest
-pre-commit==3.5.0 ; python_version < "3.9"
-# via -r requirements.in
 pre-commit==3.7.0 ; python_version >= "3.9"
+    # via -r requirements.in
 profanityfilter==2.0.6
     # via -r requirements.in
 pycparser==2.22
     # via cffi
 pygments==2.17.2
     # via -r requirements.in
-pymongo==3.13.0
+pymongo==4.8.0
     # via
     #   -r requirements.in
     #   activitystream
@@ -180,7 +181,7 @@ python-magic==0.4.27
     # via -r requirements.in
 python-oembed==0.2.4
     # via -r requirements.in
-pytz==2023.3.post1
+pytz==2024.1
     # via
     #   -r requirements.in
     #   feedgenerator
