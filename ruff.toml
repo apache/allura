@@ -37,7 +37,6 @@ lint.select = [
     "PLE",
     "PLW",
     "SIM101",
-    "SIM103",
     "SIM117",
     "SIM2",
     "SIM401",
@@ -66,6 +65,7 @@ lint.ignore = [
     'S603', # subprocess
     'S607', # partial path
     'PLW2901', # loop var overwritten
+    'SIM103', #Return the condition `bool(raised and isinstance(raised, HTTPFound))` directly
 ]
 
 [lint.per-file-ignores]

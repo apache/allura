@@ -348,7 +348,7 @@ class UserMapJsonFile(JsonFile):
         try:
             for k, v in value.items():
                 if not (isinstance(k, str) and isinstance(v, str)):
-                    raise
+                    raise  # noqa: PLE0704
             return json.dumps(value) if self.as_string else value
         except Exception:
             raise fe.Invalid(

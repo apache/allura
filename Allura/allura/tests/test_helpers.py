@@ -718,7 +718,7 @@ def test_hide_private_info():
     assert h.hide_private_info('foo bar baz@bing.com') == 'foo bar baz@...'
     assert h.hide_private_info('some <1@2.com>\nor asdf+asdf.f@g.f.x') == 'some <1@...>\nor asdf+asdf.f@...'
     safe_markup_converted = h.hide_private_info(Markup('foo bar baz@bing.com'))
-    assert type(safe_markup_converted) == Markup
+    assert type(safe_markup_converted) is Markup
     assert safe_markup_converted == Markup('foo bar baz@...')
 
     with h.push_config(h.tg.config, hide_private_info=False):

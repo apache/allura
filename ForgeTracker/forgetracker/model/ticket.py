@@ -1196,7 +1196,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
     def __json__(self, posts_limit=None, is_export=False):
         parents_json = {}
         for parent in reversed(type(self).mro()):
-            if parent != type(self) and hasattr(parent, '__json__'):
+            if parent is not type(self) and hasattr(parent, '__json__'):
                 kwargs = {}
                 if parent == VersionedArtifact:
                     kwargs['posts_limit'] = posts_limit

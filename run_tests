@@ -84,7 +84,7 @@ def run_many(cmds, processes=None):
 
     async_results = []
     for cmd_kwds in cmds:
-        if type(cmd_kwds) == ():
+        if type(cmd_kwds) == ():  # noqa: E721
             cmd = cmd_kwds
             kwds = {}
         else:

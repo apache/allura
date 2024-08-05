@@ -1007,9 +1007,9 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
                     # skip base options (mount_point, mount_label, ordinal)
                     continue
                 val = kw.get(opt.name, '')
-                if opt.ming_type == bool:
+                if opt.ming_type is bool:
                     val = asbool(val or False)
-                elif opt.ming_type == int:
+                elif opt.ming_type is int:
                     val = asint(val or 0)
                 try:
                     val = opt.validate(val)
