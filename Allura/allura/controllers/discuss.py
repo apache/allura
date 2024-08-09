@@ -559,12 +559,12 @@ class ModerationController(BaseController, metaclass=h.ProxiedAttrMeta):
 
             if posted:
                 if delete:
+                    count += 1
                     # full, for real, delete since this is post was never visible and denied by admin.
                     posted.delete()
                     # If we just deleted the last post in the
                     # thread, delete the thread.
                     if posted.thread and posted.thread.num_replies == 0:
-                        count += 1
                         posted.thread.delete()
                 elif spam and posted.status != 'spam':
                     count += 1

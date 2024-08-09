@@ -86,7 +86,7 @@ class ModeratePosts(ew.SimpleForm):
       (function($){
           var tbl = $('form table');
           var checkboxes = $('input[type=checkbox]', tbl);
-          $('a[href=#]', tbl).click(function () {
+          $('a[href="#"]', tbl).click(function () {
               checkboxes.each(function () {
                   if(this.checked) { this.checked = false; }
                   else { this.checked = true; }
