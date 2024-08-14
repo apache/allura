@@ -192,7 +192,7 @@
          faster and more near-realtime friendly than a hard commit.
       -->
      <autoSoftCommit> 
-       <maxTime>${solr.autoSoftCommit.maxTime:-1}</maxTime> 
+       <maxTime>${solr.autoSoftCommit.maxTime:2000}</maxTime>
      </autoSoftCommit>
 
   </updateHandler>
