@@ -154,6 +154,13 @@ class MockSOLR:
         for o in objects:
             o['text'] = ''.join(o['text'])
             json.dumps(o)  # ensure no errors (since pysolr 3.9+ uses json API to solr)
+            for k in o.keys():
+                if k.endswith(('_i', '_s', '_l', '_t', '_b', '_f', '_d', '_dt', '_ws')):
+                    continue
+                elif k in ('id', 'text', 'title'):
+                    continue
+                else:
+                    raise ValueError(f'Unexpected solr field {k!r}, probably not in schema.xml')
             self.db[o['id']] = o
 
     def commit(self):

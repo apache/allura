@@ -111,82 +111,13 @@
    <field name="text" type="text_general" indexed="true" stored="true" multiValued="true"/>
    <!-- END of required field values -->
 
-   <field name="description" type="text_general" indexed="true" stored="true" />
-   <field name="group_id" type="tint" indexed="true" stored="true"/>
-   <field name="group_ranking" type="tint" indexed="true" stored="true"/>
-   <field name="has_file" type="tint" indexed="true" stored="true"/>
-   <field name="help_wanted" type="boolean" indexed="true" stored="true" />
-   <field name="latest_file_date" type="date" indexed="true" stored="true" />
-   <field name="license" type="string" indexed="true" stored="true" />
-   <field name="license_other" type="string" indexed="true" stored="true" />
-   <field name="name" type="text_general" indexed="true" stored="true"/>
-   <field name="num_developers" type="tint" indexed="true" stored="true"/>
-   <field name="num_downloads" type="tint" indexed="true" stored="true"/>
-   <field name="num_downloads_week" type="tint" indexed="true" stored="true"/>
-   <field name="num_services" type="tint" indexed="true" stored="true"/>
-   <field name="percentile" type="float" indexed="true" stored="true"/>
-   <field name="project_type" type="tint" indexed="true" stored="true" />
-   <field name="project_doc_id" type="string" indexed="true" stored="true" />
-   <field name="registration_date" type="date" indexed="true" stored="true" />
-   <field name="screenshot_url" type="string" indexed="true" stored="true" />
-   <field name="trove" type="text_general" indexed="true" stored="true" />
-   <field name="unix_group_name" type="string" indexed="true" stored="true" />
-   <field name="source" type="string" indexed="true" stored="true" />
-   <field name="rating" type="float" indexed="true" stored="true" />
-   <field name="review_count" type="tint" indexed="true" stored="true" />
-
-   <!-- Common metadata fields, named specifically to match up with
-     SolrCell metadata when parsing rich documents such as Word, PDF.
-     Some fields are multiValued only because Tika currently may return
-     multiple values for them. Some metadata is parsed from the documents,
-     but there are some which come from the client context:
-       "content_type": From the HTTP headers of incoming stream
-       "resourcename": From SolrCell request param resource.name
-   -->
    <field name="title" type="text_general" indexed="true" stored="true" multiValued="true"/>
-   <field name="subject" type="text_general" indexed="true" stored="true"/>
-   <field name="comments" type="text_general" indexed="true" stored="true"/>
-   <field name="author" type="text_general" indexed="true" stored="true"/>
-   <field name="keywords" type="text_general" indexed="true" stored="true"/>
-   <field name="category" type="text_general" indexed="true" stored="true"/>
-   <field name="content_type" type="string" indexed="true" stored="true" multiValued="true"/>
-   <field name="last_modified" type="date" indexed="true" stored="true"/>
-   <field name="links" type="string" indexed="true" stored="true" multiValued="true"/>
-
-   <!-- Main body of document extracted by SolrCell.
-        NOTE: This field is not indexed by default, since it is also copied to "text"
-        using copyField below. This is to save space. Use this field for returning and
-        highlighting document content. Use the "text" field to search the content. -->
-
-
-   <!-- catchall field, containing all other searchable text fields (implemented
-        via copyField further on in this schema  -->
-
-   <!-- catchall text field that indexes tokens both normally and in reverse for efficient
-        leading wildcard queries. -->
-
-   <!-- non-tokenized version of manufacturer to make it easier to sort or group
-        results by manufacturer.  copied from "manu" via copyField -->
-   <!--
-     Some fields such as popularity and manu_exact could be modified to
-     leverage doc values:
-     <field name="popularity" type="int" indexed="true" stored="true" docValues="true" default="0" />
-     <field name="manu_exact" type="string" indexed="false" stored="false" docValues="true" default="" />
-
-     Although it would make indexing slightly slower and the index bigger, it
-     would also make the index faster to load, more memory-efficient and more
-     NRT-friendly.
-     -->
 
    <!-- Dynamic field definitions allow using convention over configuration
        for fields via the specification of patterns to match field names.
        EXAMPLE:  name="*_i" will match any field ending in _i (like myid_i, z_i)
        RESTRICTION: the glob-like pattern in the name attribute must have
        a "*" only at the start or the end.  -->
-
-   <!-- Type used to index the lat and lon components for the "location" FieldType -->
-
-   <!-- some trie-coded dynamic fields for faster range queries -->
 
    <!-- uncomment the following to ignore any fields that don't already match an existing
         field name or dynamic field, rather than reporting them as an error.
