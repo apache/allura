@@ -206,6 +206,7 @@ def _make_core_app(root, global_conf: dict, **app_conf):
         if asbool(config['debug']):
             # Converts exceptions to HTTP errors, shows traceback in debug mode
             app = DebuggedApplication(app, evalex=True)
+            app.trusted_hosts += [config['domain']]
         else:
             app = ErrorMiddleware(app, config)
 
