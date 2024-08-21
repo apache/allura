@@ -22,6 +22,7 @@ import six
 
 FACET_PARAMS = {
     'facet': 'true',
+    # fields used in faceting should have docValues="true" in solr, for faster performance
     'facet.field': ['_milestone_s', 'status_s', 'assigned_to_s', 'reported_by_s'],
     'facet.limit': -1,
     'facet.sort': 'index',

@@ -112,6 +112,12 @@
    <!-- END of required field values -->
 
    <field name="title" type="text_general" indexed="true" stored="true" multiValued="true"/>
+   <!-- these are dynamic *_s but we add specific records to set docValues="true" and ensure faster facet performance
+        (although *_s seems to have docValues by default, but lets be explicit) -->
+   <field name="_milestone_s" type="string"   indexed="true"  stored="true" docValues="true"/>
+   <field name="status_s"     type="string"   indexed="true"  stored="true" docValues="true"/>
+   <field name="assigned_to_s" type="string"  indexed="true"  stored="true" docValues="true"/>
+   <field name="reported_by_s" type="string"  indexed="true"  stored="true" docValues="true"/>
 
    <!-- Dynamic field definitions allow using convention over configuration
        for fields via the specification of patterns to match field names.
