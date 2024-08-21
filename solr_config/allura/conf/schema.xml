@@ -108,7 +108,7 @@
    <!-- Required field values for SOLR, DO NOT REMOVE -->
    <field name="_version_" type="long" indexed="true" stored="true" multiValued="false" />
    <field name="id" type="string" indexed="true" stored="true" required="true" multiValued="false" />
-   <field name="text" type="text_general" indexed="true" stored="true" multiValued="true"/>
+   <field name="text" type="text_general" indexed="true" stored="true" multiValued="true" storeOffsetsWithPositions="true"/>
    <!-- END of required field values -->
 
    <field name="title" type="text_general" indexed="true" stored="true" multiValued="true"/>
