@@ -68,11 +68,11 @@ class TestAkismet:
             REFERER='some url')
         self.content = 'spåm text'
         self.expected_data = dict(
-            comment_content=self.content.encode('utf8'),
-            comment_type=b'comment',
-            user_ip=b'some ip',
-            user_agent=b'some browser',
-            referrer=b'some url')
+            comment_content=self.content,
+            comment_type='comment',
+            user_ip='some ip',
+            user_agent='some browser',
+            referrer='some url')
 
     @mock.patch('allura.lib.spam.akismetfilter.c')
     @mock.patch('allura.lib.spam.akismetfilter.request')
@@ -91,7 +91,7 @@ class TestAkismet:
         request.remote_addr = 'some ip'
         c.user = None
         self.akismet.check(self.content, content_type='some content type')
-        self.expected_data['comment_type'] = b'some content type'
+        self.expected_data['comment_type'] = 'some content type'
         self.akismet.service.comment_check.assert_called_once_with(**self.expected_data)
 
     @mock.patch('allura.lib.spam.akismetfilter.c')
@@ -102,9 +102,9 @@ class TestAkismet:
         c.user = None
         self.akismet.check(self.content, artifact=self.fake_artifact)
         expected_data = self.expected_data
-        expected_data['permalink'] = b'http://localhost/artifact-url'
-        expected_data['comment_date_gmt'] = b'2019-05-17T00:00:00'
-        expected_data['comment_post_modified_gmt'] = b'2019-05-17T00:05:01'
+        expected_data['permalink'] = 'http://localhost/artifact-url'
+        expected_data['comment_date_gmt'] = '2019-05-17T00:00:00'
+        expected_data['comment_post_modified_gmt'] = '2019-05-17T00:05:01'
         self.akismet.service.comment_check.assert_called_once_with(**expected_data)
 
     @mock.patch('allura.lib.spam.akismetfilter.c')
@@ -115,8 +115,8 @@ class TestAkismet:
         c.user = None
         self.akismet.check(self.content, user=self.fake_user)
         expected_data = self.expected_data
-        expected_data.update(comment_author='Søme User'.encode(),
-                             comment_author_email=b'user@domain')
+        expected_data.update(comment_author='Søme User',
+                             comment_author_email='user@domain')
         self.akismet.service.comment_check.assert_called_once_with(**expected_data)
 
     @mock.patch('allura.lib.spam.akismetfilter.c')
@@ -127,8 +127,8 @@ class TestAkismet:
         c.user = self.fake_user
         self.akismet.check(self.content)
         expected_data = self.expected_data
-        expected_data.update(comment_author='Søme User'.encode(),
-                             comment_author_email=b'user@domain')
+        expected_data.update(comment_author='Søme User',
+                             comment_author_email='user@domain')
         self.akismet.service.comment_check.assert_called_once_with(**expected_data)
 
     @mock.patch('allura.lib.spam.akismetfilter.c')
@@ -138,10 +138,10 @@ class TestAkismet:
         self.akismet.submit_spam(self.content)
 
         # no IP addr, UA, etc, since this isn't the original request
-        expected_data = dict(comment_content='spåm text'.encode(),
-                             comment_type=b'comment',
-                             user_ip=b'',
-                             user_agent=b'',
+        expected_data = dict(comment_content='spåm text',
+                             comment_type='comment',
+                             user_ip=None,
+                             user_agent=None,
                              )
         self.akismet.service.submit_spam.assert_called_once_with(**expected_data)
 
@@ -152,10 +152,10 @@ class TestAkismet:
         self.akismet.submit_ham(self.content)
 
         # no IP addr, UA, etc, since this isn't the original request
-        expected_data = dict(comment_content='spåm text'.encode(),
-                             comment_type=b'comment',
-                             user_ip=b'',
-                             user_agent=b'',
+        expected_data = dict(comment_content='spåm text',
+                             comment_type='comment',
+                             user_ip=None,
+                             user_agent=None,
                              )
         self.akismet.service.submit_ham.assert_called_once_with(**expected_data)
 
@@ -165,12 +165,12 @@ class TestAkismet:
 
         self.akismet.submit_ham(self.content, artifact=self.fake_artifact)
 
-        expected_data = dict(comment_content='spåm text'.encode(),
-                             comment_type=b'comment',
-                             user_ip=b'33.4.5.66',
-                             user_agent=b'',
-                             permalink=b'http://localhost/artifact-url',
-                             comment_date_gmt=b'2019-05-17T00:00:00',
-                             comment_post_modified_gmt=b'2019-05-17T00:05:01',
+        expected_data = dict(comment_content='spåm text',
+                             comment_type='comment',
+                             user_ip='33.4.5.66',
+                             user_agent=None,
+                             permalink='http://localhost/artifact-url',
+                             comment_date_gmt='2019-05-17T00:00:00',
+                             comment_post_modified_gmt='2019-05-17T00:05:01',
                              )
         self.akismet.service.submit_ham.assert_called_once_with(**expected_data)

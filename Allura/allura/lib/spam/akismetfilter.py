@@ -100,9 +100,6 @@ class AkismetSpamFilter(SpamFilter):
                 except IndexError:
                     log.debug("couldn't get Snapshot for this artifact %s", artifact)
 
-        # kw will be urlencoded, need to utf8-encode
-        for k, v in list(kw.items()):
-            kw[k] = h.really_unicode(v).encode('utf8')
         return kw
 
     def check(self, text, artifact=None, user=None, content_type='comment', **kw):
