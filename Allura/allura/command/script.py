@@ -44,40 +44,33 @@ class ScriptCommand(base.Command):
                       help='Drop to a debugger on error')
 
     def command(self):
-        with warnings.catch_warnings():
-            try:
-                from sqlalchemy import exc
-            except ImportError:
-                pass
-            else:
-                warnings.simplefilter("ignore", category=exc.SAWarning)
-            self.basic_setup()
-            request = webob.Request.blank('--script--', environ={
-                'paste.registry': self.registry})
-            tg.request_local.context.request = request
-            if self.options.pdb:
-                base.log.info('Installing exception hook')
-                sys.excepthook = utils.postmortem_hook
-            filename = self.args[1]
-            with open(filename) as fp:
-                ns = dict(__name__='__main__')
-                sys.argv = self.args[1:]
-                code = compile(fp.read(), filename, 'exec')
+        self.basic_setup()
+        request = webob.Request.blank('--script--', environ={
+            'paste.registry': self.registry})
+        tg.request_local.context.request = request
+        if self.options.pdb:
+            base.log.info('Installing exception hook')
+            sys.excepthook = utils.postmortem_hook
+        filename = self.args[1]
+        with open(filename) as fp:
+            ns = dict(__name__='__main__')
+            sys.argv = self.args[1:]
+            code = compile(fp.read(), filename, 'exec')
 
-                if self.options.profile:
-                    profile_output_file = self.options.profile_output or '%s.profile' % os.path.basename(filename)
-                    if not os.access(os.path.dirname(profile_output_file), os.W_OK):
-                        raise OSError(f'no write permission to dir for {profile_output_file}. '
-                                      f'Specify a different path with --profile-output')
-                    # https://stackoverflow.com/a/48622889
-                    pr = cProfile.Profile()
-                    pr.enable()
+            if self.options.profile:
+                profile_output_file = self.options.profile_output or '%s.profile' % os.path.basename(filename)
+                if not os.access(os.path.dirname(profile_output_file), os.W_OK):
+                    raise OSError(f'no write permission to dir for {profile_output_file}. '
+                                  f'Specify a different path with --profile-output')
+                # https://stackoverflow.com/a/48622889
+                pr = cProfile.Profile()
+                pr.enable()
 
-                exec(code, ns)  # noqa: S102
+            exec(code, ns)  # noqa: S102
 
-                if self.options.profile:
-                    pr.disable()
-                    pr.dump_stats(profile_output_file)
+            if self.options.profile:
+                pr.disable()
+                pr.dump_stats(profile_output_file)
 
 
 class SetToolAccessCommand(base.Command):

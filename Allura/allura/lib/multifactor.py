@@ -31,12 +31,10 @@ from allura.lib.exceptions import InvalidRecoveryCode, MultifactorRateLimitError
 from tg import config
 from tg import app_globals as g
 from paste.deploy.converters import asint
-with warnings.catch_warnings():  # ignore py2 CryptographyDeprecationWarning
-    warnings.filterwarnings('ignore')
-    from cryptography.hazmat.backends import default_backend
-    from cryptography.hazmat.primitives.twofactor import InvalidToken
-    from cryptography.hazmat.primitives.twofactor.totp import TOTP
-    from cryptography.hazmat.primitives.hashes import SHA1
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.twofactor import InvalidToken
+from cryptography.hazmat.primitives.twofactor.totp import TOTP
+from cryptography.hazmat.primitives.hashes import SHA1
 import qrcode
 from ming.odm import session
 

@@ -40,14 +40,7 @@ class RecloneRepoCommand(base.Command):
 
     def _setup(self):
         '''Perform basic setup, suppressing superfluous warnings.'''
-        with warnings.catch_warnings():
-            try:
-                from sqlalchemy import exc
-            except ImportError:
-                pass
-            else:
-                warnings.simplefilter("ignore", category=exc.SAWarning)
-            self.basic_setup()
+        self.basic_setup()
 
     def _load_objects(self):
         '''Load objects to be operated on.'''
