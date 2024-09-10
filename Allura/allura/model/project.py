@@ -463,6 +463,8 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
 
     @LazyProperty
     def icon_timestamp(self):
+        if not self.icon:
+            return None
         return timegm(self.icon._id.generation_time.timetuple())
 
     @property

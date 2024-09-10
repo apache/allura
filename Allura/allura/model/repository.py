@@ -861,12 +861,12 @@ class MergeRequest(VersionedArtifact, ActivityObject):
     @LazyProperty
     def downstream_url(self):
         with self.push_downstream_context():
-            return c.app.url
+            return c.app.url if c.app else None
 
     @LazyProperty
     def downstream_repo(self):
         with self.push_downstream_context():
-            return c.app.repo
+            return c.app.repo if c.app else None
 
     def push_downstream_context(self):
         return h.push_context(self.downstream.project_id, self.downstream.mount_point)
@@ -1608,6 +1608,15 @@ class EmptyBlob(Blob):
         return 0
 
     def __bool__(self):
+        return False
+
+    def content_type(self):
+        return None
+
+    def content_encoding(self):
+        return None
+
+    def has_html_view(self):
         return False
 
 
