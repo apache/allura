@@ -24,6 +24,7 @@ import pytest
 from tg import expose, config
 from webob.exc import HTTPUnauthorized
 
+from allura.tests.test_helpers import httpbin_domain
 from alluratest.controller import TestController, setup_basic_test
 from allura.tests import decorators as td
 from allura.lib import helpers as h
@@ -58,11 +59,11 @@ class TestProjectExtractor(TestCase):
             base.ProjectExtractor.urlopen('http://localhost:1234/blah', data=b'foo')
 
         # redirect to external site ok
-        base.ProjectExtractor.urlopen('https://httpbin.org/redirect-to?url=http%3A%2F%2Fexample.com%2F')
+        base.ProjectExtractor.urlopen(f'https://{httpbin_domain}/redirect-to?url=http%3A%2F%2Fexample.com%2F')
 
         # redirect to internal is blocked
         with pytest.raises(Invalid):
-            base.ProjectExtractor.urlopen('https://httpbin.org/redirect-to?url=http%3A%2F%2Flocalhost%2F')
+            base.ProjectExtractor.urlopen(f'https://{httpbin_domain}/redirect-to?url=http%3A%2F%2Flocalhost%2F')
 
     @mock.patch('forgeimporters.base.h.urlopen')
     @mock.patch('urllib.request.Request')

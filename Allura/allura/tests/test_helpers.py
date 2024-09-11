@@ -44,6 +44,9 @@ from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test
 import six
 
+# httpbin.org should work, but lately has been unreliable
+# httpbin.io does not allow /redirect-to to localhost
+httpbin_domain = 'httpbin.dev'
 
 def setup_module():
     setup_basic_test()
@@ -480,17 +483,17 @@ class TestUrlOpen:
         'http://localhost/',
         'https://localhost/',
         'http://localhost:8080',
-        'https://httpbin.org/redirect-to?url=http://localhost',
-        'https://httpbin.org/redirect-to?url=https://localhost',
+        f'https://{httpbin_domain}/redirect-to?url=http://localhost',
+        f'https://{httpbin_domain}/redirect-to?url=https://localhost',
     ])
     def test_internal_invalid(self, url):
         with pytest.raises(fev.Invalid):
             h.urlopen(url)
 
     @pytest.mark.parametrize('url', [
-        'http://httpbin.org/status/200',
-        'https://httpbin.org/status/200',
-        'http://httpbin.org:80/status/200',
+        f'http://{httpbin_domain}/status/200',
+        f'https://{httpbin_domain}/status/200',
+        f'http://{httpbin_domain}:80/status/200',
     ])
     def test_ok(self, url):
         h.urlopen(url)
