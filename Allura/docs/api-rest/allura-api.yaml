@@ -1,6 +1,6 @@
 swagger: '2.0'
 info:
-  title: Apache Allura
+  title: Apache Allura REST API
   description: >
     <!--
         Licensed to the Apache Software Foundation (ASF) under one
@@ -3006,7 +3006,7 @@ paths:
         **GET** `/rest/p/test/wiki/has_access?user=user01&perm=create`
 
         *returns* { result: false }
-      summary: Project blog hass_access
+      summary: Project blog has_access
       operationId: GET_neighborhood-project-blog-has_access
       responses:
         default:
