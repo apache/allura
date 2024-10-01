@@ -247,7 +247,7 @@ typing-extensions==4.9.0
     # via qrcode
 urllib3==2.2.2
     # via requests
-virtualenv==20.25.3
+virtualenv==20.26.6
     # via pre-commit
 waitress==2.1.2
     # via webtest
