@@ -203,13 +203,22 @@ class Globals:
         self.solr_server = aslist(config.get('solr.server'), ',')
         # skip empty strings in case of extra commas
         self.solr_server = [s for s in self.solr_server if s]
+        push_auths = zip(aslist(config.get('solr.user'), ','),
+                         aslist(config.get('solr.pass'), ','))
         self.solr_query_server = config.get('solr.query_server')
+        query_auth = (config.get('solr.query_user'), config.get('solr.query_pass'))
         if self.solr_server:
             self.solr = make_solr_from_config(
-                self.solr_server, self.solr_query_server)
+                self.solr_server, self.solr_query_server,
+                push_servers_auths=push_auths,
+                query_server_auth=query_auth,
+            )
             self.solr_short_timeout = make_solr_from_config(
                 self.solr_server, self.solr_query_server,
-                timeout=int(config.get('solr.short_timeout', 10)))
+                push_servers_auths=push_auths,
+                query_server_auth=query_auth,
+                timeout=int(config.get('solr.short_timeout', 10)),
+            )
         else:  # pragma no cover
             log.warning('Solr config not set; using in-memory MockSOLR')
             self.solr = self.solr_short_timeout = MockSOLR()

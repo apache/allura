@@ -79,6 +79,8 @@ class ReindexCommand(base.Command):
                            'which are needed for some markdown macros to run properly')
     parser.add_option('--solr-hosts', dest='solr_hosts',
                       help='Override the solr host(s) to post to.  Comma-separated list of solr server URLs')
+    parser.add_option('--solr-creds', dest='solr_creds',
+                      help='Creds for the solr host(s).  Comma-separated list of user:pwd strings')
     parser.add_option(
         '--max-chunk', dest='max_chunk', type=int, default=100 * 1000,
         help='Max number of artifacts to index in one Solr update command')
@@ -148,9 +150,13 @@ class ReindexCommand(base.Command):
 
     @property
     def add_artifact_kwargs(self):
+        kwargs = {}
         if self.options.solr_hosts:
-            return {'solr_hosts': self.options.solr_hosts.split(',')}
-        return {}
+            kwargs['solr_hosts'] = self.options.solr_hosts.split(',')
+        if self.options.solr_creds:
+            kwargs['solr_creds'] = [cred.split(':')
+                                    for cred in self.options.solr_creds.split(',')]
+        return kwargs
 
     def _chunked_add_artifacts(self, ref_ids):
         # ref_ids contains solr index ids which can easily be over

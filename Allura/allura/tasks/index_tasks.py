@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import sys
 import logging
+from collections.abc import Iterable
 from contextlib import contextmanager
 import typing
 
@@ -38,12 +39,12 @@ if typing.TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
-def __get_solr(solr_hosts=None):
-    return make_solr_from_config(solr_hosts) if solr_hosts else g.solr
+def __get_solr(solr_hosts=None, solr_creds=()):
+    return make_solr_from_config(solr_hosts, push_servers_auths=solr_creds) if solr_hosts else g.solr
 
 
-def __add_objects(objects, solr_hosts=None):
-    solr_instance = __get_solr(solr_hosts)
+def __add_objects(objects, solr_hosts=None, solr_creds=()):
+    solr_instance = __get_solr(solr_hosts, solr_creds)
     solr_instance.add([obj.solarize() for obj in objects])
 
 
@@ -94,15 +95,18 @@ def del_users(user_solr_ids):
 
 
 @task
-def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
+def add_artifacts(ref_ids, update_solr=True, update_refs=True,
+                  solr_hosts: Iterable[str] = (),
+                  solr_creds: Iterable[tuple[str, str]] = (),
+                  ):
     '''
     Add the referenced artifacts to SOLR and shortlinks.
-
-    :param solr_hosts: a list of solr hosts to use instead of the defaults
-    :type solr_hosts: [str]
     '''
     from allura import model as M
     from allura.lib.search import find_shortlinks
+
+    # task params end up as instrumented lists, need to make this a list of plain tuples
+    solr_creds = [tuple(cred) for cred in solr_creds]
 
     exceptions = []
     solr_updates = []
@@ -146,7 +150,7 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
                     log.info("Solr.add raised HTTPRequestEntityTooLarge but there is only one artifact. Raising exception.")
                     raise
 
-        _add_artifact(__get_solr(solr_hosts), solr_updates)
+        _add_artifact(__get_solr(solr_hosts, solr_creds), solr_updates)
 
     if len(exceptions) == 1:
         raise exceptions[0][1].with_traceback(exceptions[0][2])

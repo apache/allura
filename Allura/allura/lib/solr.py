@@ -14,10 +14,12 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
+from __future__ import annotations
 
 import json
 import logging
+from itertools import zip_longest
+from collections.abc import Iterable
 
 from tg import config
 from webob.exc import HTTPRequestEntityTooLarge
@@ -61,7 +63,10 @@ def escape_solr_arg(term):
     return term
 
 
-def make_solr_from_config(push_servers, query_server=None, **kwargs):
+def make_solr_from_config(push_servers: Iterable[str], query_server: str|None=None,
+                          push_servers_auths: Iterable[tuple[str, str] | None] = (),
+                          query_server_auth: tuple[str, str] | None = None,
+                          **kwargs):
     """
     Make a :class:`Solr <Solr>` instance from config defaults.  Use
     `**kwargs` to override any value
@@ -72,7 +77,7 @@ def make_solr_from_config(push_servers, query_server=None, **kwargs):
         timeout=int(config.get('solr.long_timeout', 60)),
     )
     solr_kwargs.update(kwargs)
-    return Solr(push_servers, query_server, **solr_kwargs)
+    return Solr(push_servers, query_server, push_servers_auths, query_server_auth, **solr_kwargs)
 
 
 class Solr:
@@ -87,13 +92,18 @@ class Solr:
     unless explicitly overridden.
     """
 
-    def __init__(self, push_servers, query_server=None,
+    def __init__(self, push_servers: Iterable[str], query_server: str|None = None,
+                 push_servers_auths: Iterable[tuple[str, str] | None] = (),
+                 query_server_auth: tuple[str, str] | None = None,
                  commit=True, commitWithin=None, **kw):
-        self.push_pool = [pysolr.Solr(s, **kw) for s in push_servers]
+        self.push_pool = [pysolr.Solr(s, auth=auth, **kw)
+                          for s, auth in zip_longest(push_servers, push_servers_auths)]
         if query_server:
-            self.query_server = pysolr.Solr(query_server, **kw)
+            self.query_server = pysolr.Solr(query_server, auth=query_server_auth, **kw)
         else:
             self.query_server = self.push_pool[0]
+            if query_server_auth:
+                self.query_server.auth = query_server_auth
         self._commit = commit
         self.commitWithin = commitWithin
 
