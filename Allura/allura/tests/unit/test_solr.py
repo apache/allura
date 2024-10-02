@@ -39,15 +39,18 @@ class TestSolr(unittest.TestCase):
     @mock.patch('allura.lib.solr.pysolr')
     def test_init(self, pysolr):
         servers = ['server1', 'server2']
-        solr = Solr(servers, commit=False, commitWithin='10000')
-        calls = [mock.call('server1'), mock.call('server2')]
+        auths = [('u', 'pwd'),]
+        solr = Solr(servers, push_servers_auths=auths, commit=False, commitWithin='10000')
+        calls = [mock.call('server1', auth=('u', 'pwd')), mock.call('server2', auth=None)]
         pysolr.Solr.assert_has_calls(calls)
         assert len(solr.push_pool) == 2
 
         pysolr.reset_mock()
         solr = Solr(servers, 'server3', commit=False, commitWithin='10000')
-        calls = [mock.call('server1'), mock.call('server2'),
-                 mock.call('server3')]
+        calls = [mock.call('server1', auth=None),
+                 mock.call('server2', auth=None),
+                 mock.call('server3', auth=None),
+        ]
         pysolr.Solr.assert_has_calls(calls)
         assert len(solr.push_pool) == 2
 
