@@ -57,10 +57,8 @@ WebTest
 pytest
 pytest-xdist
 pytest-sugar
-# last version supporting Python 3.7 and 3.8.
-docutils==0.20.1
+docutils
 
 # deployment
 gunicorn
-pre-commit; python_version>="3.9"
-pre-commit<3.6; python_version<"3.9"
+pre-commit

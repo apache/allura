@@ -60,7 +60,7 @@ distlib==0.3.8
     # via virtualenv
 dnspython==2.6.1
     # via pymongo
-docutils==0.20.1
+docutils==0.21.2
     # via
     #   -r requirements.in
     #   pypeline
@@ -174,8 +174,7 @@ platformdirs==4.2.0
     # via virtualenv
 pluggy==1.4.0
     # via pytest
-pre-commit==3.5.0 ; python_version < "3.9"
-pre-commit==3.7.0 ; python_version >= "3.9"
+pre-commit==3.7.0
     # via -r requirements.in
 profanityfilter==2.0.6
     # via -r requirements.in
