@@ -60,7 +60,7 @@ FORGE_LINK_RE = markdown.inlinepatterns.NOIMG + BRK + \
     r'''\(\s*(<.*?>|((?:(?:\(.*?\))|[^\(\)]))*?)\s*((['"])(.*?)\12\s*)?\)'''
 
 
-def clear_markdown_registry(reg: markdown.util.Registry, keep: List[str] = []):
+def clear_markdown_registry(reg: markdown.util.Registry, keep: list[str] = []):
     keep_items = {}
     for name in keep:
         keep_items[name] = reg[name]

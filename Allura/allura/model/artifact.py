@@ -87,7 +87,7 @@ class Artifact(MappedClass, SearchIndexable):
             if c.project and not skip_last_updated:
                 c.project.last_updated = datetime.utcnow()
 
-    query: 'Query[Artifact]'
+    query: Query[Artifact]
 
     type_s = 'Generic Artifact'
 
@@ -548,7 +548,7 @@ class Snapshot(Artifact):
                    'author.id',
                    ]
 
-    query: 'Query[Snapshot]'
+    query: Query[Snapshot]
 
     _id = FieldProperty(S.ObjectId)
     artifact_id = FieldProperty(S.ObjectId)
@@ -623,7 +623,7 @@ class VersionedArtifact(Artifact):
         name = 'versioned_artifact'
         history_class = Snapshot
 
-    query: 'Query[VersionedArtifact]'
+    query: Query[VersionedArtifact]
 
     version = FieldProperty(S.Int, if_missing=0)
 
@@ -743,7 +743,7 @@ class Message(Artifact):
         session = artifact_orm_session
         name = 'message'
 
-    query: 'Query[Message]'
+    query: Query[Message]
 
     type_s = 'Generic Message'
 
@@ -794,7 +794,7 @@ class AwardFile(File):
         session = main_orm_session
         name = 'award_file'
 
-    query: 'Query[AwardFile]'
+    query: Query[AwardFile]
 
     award_id = FieldProperty(S.ObjectId)
 
@@ -806,7 +806,7 @@ class Award(Artifact):
         name = 'award'
         indexes = ['short']
 
-    query: 'Query[Award]'
+    query: Query[Award]
 
     type_s = 'Generic Award'
 
@@ -852,7 +852,7 @@ class AwardGrant(Artifact):
         name = 'grant'
         indexes = ['short']
 
-    query: 'Query[AwardGrant]'
+    query: Query[AwardGrant]
 
     type_s = 'Generic Award Grant'
 
@@ -941,7 +941,7 @@ class Feed(MappedClass):
              ('pubdate', pymongo.DESCENDING)),
         ]
 
-    query: 'Query[Feed]'
+    query: Query[Feed]
 
     _id = FieldProperty(S.ObjectId)
     ref_id: str = ForeignIdProperty('ArtifactReference')
@@ -1068,7 +1068,7 @@ class VotableArtifact(MappedClass):
         session = main_orm_session
         name = 'vote'
 
-    query: 'Query[VotableArtifact]'
+    query: Query[VotableArtifact]
 
     votes = FieldProperty(int, if_missing=0)
     votes_up = FieldProperty(int, if_missing=0)
@@ -1198,7 +1198,7 @@ class MovedArtifact(Artifact):
         session = artifact_orm_session
         name = 'moved_artifact'
 
-    query: 'Query[MovedArtifact]'
+    query: Query[MovedArtifact]
 
     _id = FieldProperty(S.ObjectId)
     app_config_id = ForeignIdProperty(
@@ -1216,7 +1216,7 @@ class SpamCheckResult(MappedClass):
             ('user_id', 'result'),
         ]
 
-    query: 'Query[SpamCheckResult]'
+    query: Query[SpamCheckResult]
 
     _id = FieldProperty(S.ObjectId)
     ref_id: str = ForeignIdProperty('ArtifactReference')

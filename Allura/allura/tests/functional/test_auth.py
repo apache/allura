@@ -1725,9 +1725,9 @@ class TestPasswordReset(TestController):
         # confirm email sent
         text = '''Your username is test-admin
 
-To update your password on %s, please visit the following URL:
+To update your password on {}, please visit the following URL:
 
-%s/auth/forgotten_password/%s''' % (config['site_name'], config['base_url'], hash)
+{}/auth/forgotten_password/{}'''.format(config['site_name'], config['base_url'], hash)
         sendsimplemail.post.assert_called_once_with(
             sender='noreply@localhost',
             toaddr=email.email,

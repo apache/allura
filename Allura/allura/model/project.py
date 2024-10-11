@@ -1444,7 +1444,7 @@ class AppConfig(MappedClass, ActivityObject):
         '''ACL processing should terminate at the AppConfig'''
         return None
 
-    def load(self) -> typing.Type[Application]:
+    def load(self) -> type[Application]:
         """
         :returns: the related :class:`Application <allura.app.Application>` class
         """

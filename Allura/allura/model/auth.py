@@ -172,11 +172,11 @@ class EmailAddress(MappedClass):
         self.set_nonce_hash()
         log.info('Sending verification link to %s', self.email)
         text = '''
-To verify the email address %s belongs to the user %s,
+To verify the email address {} belongs to the user {},
 please visit the following URL:
 
-%s
-''' % (self.email,
+{}
+'''.format(self.email,
             self.claimed_by_user(include_pending=True).username,
             h.absurl(f'/auth/verify_addr?a={h.urlquote(self.nonce)}'),
        )

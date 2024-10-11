@@ -57,7 +57,7 @@ class Discussion(Artifact, ActivityObject):
     class __mongometa__:
         name = 'discussion'
 
-    query: 'Query[Discussion]'
+    query: Query[Discussion]
 
     type_s = 'Discussion'
 
@@ -168,7 +168,7 @@ class Thread(Artifact, ActivityObject):
             ('discussion_id',),
         ]
 
-    query: 'Query[Thread]'
+    query: Query[Thread]
 
     type_s = 'Thread'
 
@@ -492,7 +492,7 @@ class PostHistory(Snapshot):
     class __mongometa__:
         name = 'post_history'
 
-    query: 'Query[PostHistory]'
+    query: Query[PostHistory]
 
     artifact_id = ForeignIdProperty('Post')
 
@@ -540,7 +540,7 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
             ('deleted', 'discussion_id', 'thread_id', 'full_slug'),
         ]
 
-    query: 'Query[Post]'
+    query: Query[Post]
 
     type_s = 'Post'
 
@@ -862,7 +862,7 @@ class DiscussionAttachment(BaseAttachment):
         polymorphic_identity = 'DiscussionAttachment'
         indexes = ['filename', 'discussion_id', 'thread_id', 'post_id']
 
-    query: 'Query[DiscussionAttachment]'
+    query: Query[DiscussionAttachment]
 
     discussion_id = FieldProperty(schema.ObjectId)
     thread_id = FieldProperty(str)

@@ -1883,7 +1883,7 @@ class AdminExtension:
 
     project_admin_controllers = {}
 
-    def update_project_sidebar_menu(self, sidebar_links: list['SitemapEntry']) -> list['SitemapEntry']:
+    def update_project_sidebar_menu(self, sidebar_links: list[SitemapEntry]) -> list[SitemapEntry]:
         """
         Implement this function to modify the project sidebar.
         Check `c.project` if you want to limit when this displays

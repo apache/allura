@@ -380,10 +380,10 @@ class JQueryMixin:
             k: getattr(self, k)
             for k in self.js_params}
         yield onready('''
-$(document).on('clone', function () {
-    $('.%s').%s(%s); });
+$(document).on('clone', function () {{
+    $('.{}').{}({}); }});
 $(document).trigger('clone');
-            ''' % (self.container_cls, self.js_widget_name, json.dumps(opts)))
+            '''.format(self.container_cls, self.js_widget_name, json.dumps(opts)))
 
 
 class SortableRepeatedMixin(JQueryMixin):
@@ -503,16 +503,16 @@ class Lightbox(ew_core.Widget):
     def resources(self):
         yield ew.JSLink('js/jquery.lightbox_me.js')
         yield onready('''
-            var $lightbox = $('#lightbox_%s');
-            $('body').on('click', '%s', function(e) {
+            var $lightbox = $('#lightbox_{}');
+            $('body').on('click', '{}', function(e) {{
                 e.preventDefault();
-                $lightbox.lightbox_me(%s);
-            });
-            $lightbox.on('click', '.close', function(e) {
+                $lightbox.lightbox_me({});
+            }});
+            $lightbox.on('click', '.close', function(e) {{
                 e.preventDefault();
                 $lightbox.trigger('close');
-            });
-        ''' % (self.name, self.trigger, self.options))
+            }});
+        '''.format(self.name, self.trigger, self.options))
 
 
 class DisplayOnlyField(ew.HiddenField):
