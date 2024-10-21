@@ -279,8 +279,8 @@ class TestZipDir(unittest.TestCase):
             "Command: " +
             "['/bin/zip', '-y', '-q', '-r', '/fake/zip/file.tmp', b'repo'] " +
             "returned non-zero exit code 1", emsg)
-        self.assertTrue("STDOUT: 1" in emsg)
-        self.assertTrue("STDERR: 2" in emsg)
+        assert "STDOUT: 1" in emsg
+        assert "STDERR: 2" in emsg
 
 
 class TestPrefixPathsUnion(unittest.TestCase):

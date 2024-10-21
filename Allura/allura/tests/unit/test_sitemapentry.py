@@ -30,5 +30,5 @@ class TestSitemapEntry(unittest.TestCase):
         s3 = SitemapEntry('Tool', url='/p/project/_list/tool')
         s3.matching_urls.append('/p/project/tool')
         self.assertTrue(s1.matches_url(request))
-        self.assertFalse(s2.matches_url(request))
+        assert not s2.matches_url(request)
         self.assertTrue(s3.matches_url(request))

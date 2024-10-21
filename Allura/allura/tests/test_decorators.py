@@ -33,13 +33,13 @@ class TestTask(TestCase):
         @task
         def func():
             pass
-        self.assertTrue(hasattr(func, 'post'))
+        assert hasattr(func, 'post')
 
     def test_with_params(self):
         @task(disable_notifications=True)
         def func():
             pass
-        self.assertTrue(hasattr(func, 'post'))
+        assert hasattr(func, 'post')
 
     @patch('allura.lib.decorators.c')
     @patch('allura.model.MonQTask')
@@ -49,8 +49,8 @@ class TestTask(TestCase):
             pass
 
         def mock_post(f, args, kw, delay=None):
-            self.assertTrue(c.project.notifications_disabled)
-            self.assertFalse('delay' in kw)
+            assert c.project.notifications_disabled
+            assert 'delay' not in kw
             self.assertEqual(delay, 1)
             self.assertEqual(kw, dict(foo=2))
             self.assertEqual(args, ('test',))
