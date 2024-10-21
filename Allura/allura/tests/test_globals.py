@@ -797,7 +797,7 @@ class TestCachedMarkdown(unittest.TestCase):
         self.assertEqual(html, self.post.text_cache.html)
         self.assertEqual(hashlib.md5(self.post.text.encode('utf-8')).hexdigest(),
                          self.post.text_cache.md5)
-        self.assertTrue(self.post.text_cache.render_time > 0)
+        assert self.post.text_cache.render_time > 0
 
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='-0.01')
     def test_stale_cache(self):
@@ -808,7 +808,7 @@ class TestCachedMarkdown(unittest.TestCase):
         self.assertEqual(html, self.post.text_cache.html)
         self.assertEqual(hashlib.md5(self.post.text.encode('utf-8')).hexdigest(),
                          self.post.text_cache.md5)
-        self.assertTrue(self.post.text_cache.render_time > 0)
+        assert self.post.text_cache.render_time > 0
 
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='-0.01')
     def test_valid_cache(self):
@@ -818,10 +818,10 @@ class TestCachedMarkdown(unittest.TestCase):
             html = self.md.cached_convert(self.post, 'text')
             self.assertEqual(html, self.expected_html)
             self.assertIsInstance(html, Markup)
-            self.assertFalse(convert_func.called)
+            assert not convert_func.called
             self.post.text = "text [[include]] pass"
             html = self.md.cached_convert(self.post, 'text')
-            self.assertTrue(convert_func.called)
+            assert convert_func.called
 
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='-0.01')
     def test_cacheable_macro(self):

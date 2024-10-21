@@ -207,7 +207,7 @@ class TestTaskValidator(unittest.TestCase):
     def test_invalid_name(self):
         with self.assertRaises(fe.Invalid) as cm:
             self.val.to_python('badname')
-        self.assertTrue(str(cm.exception).startswith('Invalid task name'))
+        assert str(cm.exception).startswith('Invalid task name')
 
     def test_import_failure(self):
         with self.assertRaises(fe.Invalid) as cm:
@@ -237,14 +237,14 @@ class TestPathValidator(unittest.TestCase):
         project = M.Project.query.get(shortname='test')
         d = self.val.to_python('/p/test')
         self.assertEqual(d['project'], project)
-        self.assertTrue('app' not in d)
+        assert 'app' not in d
 
     def test_project_in_nbhd_with_prefix(self):
         create_user('myuser', make_project=True)
         project = M.Project.query.get(shortname='u/myuser')
         d = self.val.to_python('/u/myuser')
         self.assertEqual(d['project'], project)
-        self.assertTrue('app' not in d)
+        assert 'app' not in d
 
     def test_valid_app(self):
         project = M.Project.query.get(shortname='test')
@@ -256,8 +256,8 @@ class TestPathValidator(unittest.TestCase):
     def test_invalid_format(self):
         with self.assertRaises(fe.Invalid) as cm:
             self.val.to_python('test')
-        self.assertTrue(str(cm.exception).startswith(
-            'You must specify at least a neighborhood and project'))
+        assert str(cm.exception).startswith(
+            'You must specify at least a neighborhood and project')
 
     def test_invalid_neighborhood(self):
         with self.assertRaises(fe.Invalid) as cm:

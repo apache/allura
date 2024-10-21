@@ -92,16 +92,16 @@ class TestProject(unittest.TestCase):
 
     def test_should_update_index(self):
         p = M.Project()
-        self.assertFalse(p.should_update_index({}, {}))
+        assert not p.should_update_index({}, {})
         old = {'last_updated': 1}
         new = {'last_updated': 2}
-        self.assertFalse(p.should_update_index(old, new))
+        assert not p.should_update_index(old, new)
         old = {'last_updated': 1, 'a': 1}
         new = {'last_updated': 2, 'a': 1}
-        self.assertFalse(p.should_update_index(old, new))
+        assert not p.should_update_index(old, new)
         old = {'last_updated': 1, 'a': 1}
         new = {'last_updated': 2, 'a': 2}
-        self.assertTrue(p.should_update_index(old, new))
+        assert p.should_update_index(old, new)
 
     def test_icon_url(self):
         p = M.Project(
