@@ -67,7 +67,7 @@ class TestTracTicketImporter(TestCase):
                                    trac_url='http://example.com/trac/url',
                                    user_map=json.dumps(user_map),
                                    )
-        self.assertEqual(res, app)
+        assert res == app
         project.install_app.assert_called_once_with(
             'Tickets', mount_point='bugs', mount_label='Bugs',
             open_status_names='new assigned accepted reopened',
@@ -136,15 +136,15 @@ class TestTracTicketImportController(TestController, TestCase):
                               'user_map', 'myfile', b'{"orig_user": "new_user"}'
                           )],
                           status=302)
-        self.assertEqual(r.location, 'http://localhost/p/test/admin/')
-        self.assertEqual(
-            'mymount', import_tool.post.call_args[1]['mount_point'])
-        self.assertEqual(
-            'mylabel', import_tool.post.call_args[1]['mount_label'])
-        self.assertEqual('{"orig_user": "new_user"}',
-                         import_tool.post.call_args[1]['user_map'])
-        self.assertEqual('http://example.com/trac/url/',
-                         import_tool.post.call_args[1]['trac_url'])
+        assert r.location == 'http://localhost/p/test/admin/'
+        assert \
+            'mymount' == import_tool.post.call_args[1]['mount_point']
+        assert \
+            'mylabel' == import_tool.post.call_args[1]['mount_label']
+        assert '{"orig_user": "new_user"}' == \
+                         import_tool.post.call_args[1]['user_map']
+        assert 'http://example.com/trac/url/' == \
+                         import_tool.post.call_args[1]['trac_url']
 
     @with_tracker
     @patch('forgeimporters.trac.requests.head')
@@ -163,8 +163,8 @@ class TestTracTicketImportController(TestController, TestCase):
                               'user_map', 'myfile', b'{"orig_user": "new_user"}'
                           )],
                           status=302).follow()
-        self.assertIn('Please wait and try again', r)
-        self.assertEqual(import_tool.post.call_count, 0)
+        assert 'Please wait and try again' in r
+        assert import_tool.post.call_count == 0
 
     @with_tracker
     @patch('forgeimporters.trac.requests.head')
@@ -179,7 +179,7 @@ class TestTracTicketImportController(TestController, TestCase):
                           upload_files=[(
                               'user_map', 'myfile', b'{"orig_user": "new_user"}'
                           )])
-        self.assertEqual(import_tool.post.call_count, 0)
+        assert import_tool.post.call_count == 0
 
     @with_tracker
     @patch('forgeimporters.trac.requests.head')
@@ -190,7 +190,7 @@ class TestTracTicketImportController(TestController, TestCase):
                       mount_label='mylabel',
                       mount_point='mymount')
         r = self.app.post('/p/test/admin/ext/import/trac-tickets/create', params, status=200)
-        self.assertIn('Invalid URL', r.text)
+        assert 'Invalid URL' in r.text
 
 class TestTracImportSupport(TestCase):
 
@@ -221,7 +221,7 @@ class TestTracImportSupport(TestCase):
         }
         for input, expected in cases.items():
             actual = import_support.link_processing(input)
-            self.assertEqual(actual, expected)
+            assert actual == expected
 
 
 class TestTracImportSupportFunctional(TestRestApiBase, TestCase):
@@ -262,10 +262,10 @@ class TestTracImportSupportFunctional(TestRestApiBase, TestCase):
             status={'$in': ['ok', 'pending']})).sort('timestamp').all()
 
         import_support = TracImportSupport()
-        self.assertEqual(
-            import_support.get_slug_by_id('204', '1'), comments[0].slug)
-        self.assertEqual(
-            import_support.get_slug_by_id('204', '2'), comments[1].slug)
+        assert \
+            import_support.get_slug_by_id('204', '1') == comments[0].slug
+        assert \
+            import_support.get_slug_by_id('204', '2') == comments[1].slug
 
     @with_tracker
     @skipIf(module_not_available('html2text'), 'html2text required')
@@ -287,8 +287,8 @@ class TestTracImportSupportFunctional(TestRestApiBase, TestCase):
             '{"user_map": {}}')
         ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
                                      ticket_num=390)
-        self.assertIn('To reproduce:  \n\\- open an mzML file',
-                      ticket.description)
-        self.assertIn('duplicate of:  \n\\- [#316](316 "defect: SpectraViewWidget is',
-                      ticket.discussion_thread.find_posts()[0].text)
-        self.assertIn('will crash TOPPView.', ticket.description)
+        assert 'To reproduce:  \n\\- open an mzML file' in \
+                      ticket.description
+        assert 'duplicate of:  \n\\- [#316](316 "defect: SpectraViewWidget is' in \
+                      ticket.discussion_thread.find_posts()[0].text
+        assert 'will crash TOPPView.' in ticket.description

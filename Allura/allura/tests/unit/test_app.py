@@ -1,21 +1,4 @@
-#       Licensed to the Apache Software Foundation (ASF) under one
-#       or more contributor license agreements.  See the NOTICE file
-#       distributed with this work for additional information
-#       regarding copyright ownership.  The ASF licenses this file
-#       to you under the Apache License, Version 2.0 (the
-#       "License"); you may not use this file except in compliance
-#       with the License.  You may obtain a copy of the License at
-#
-#         http://www.apache.org/licenses/LICENSE-2.0
-#
-#       Unless required by applicable law or agreed to in writing,
-#       software distributed under the License is distributed on an
-#       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-#       KIND, either express or implied.  See the License for the
-#       specific language governing permissions and limitations
-#       under the License.
-
-from unittest import TestCase
+import pytest
 
 from allura.app import Application
 from allura import model
@@ -25,58 +8,65 @@ from allura.tests.unit.patches import fake_app_patch
 from allura.tests.unit.factories import create_project, create_app_config
 
 
-class TestApplication(TestCase):
+def test_validate_mount_point():
+    app = Application
 
-    def test_validate_mount_point(self):
-        app = Application
+    assert app.validate_mount_point('dash-in-middle') is not None
+    assert app.validate_mount_point('end-dash-') is None
 
-        self.assertIsNotNone(app.validate_mount_point('dash-in-middle'))
+    mount_point = '1.2+foo_bar'
+    assert app.validate_mount_point(mount_point) is None
 
-        self.assertIsNone(app.validate_mount_point('end-dash-'))
+    with h.push_config(app, relaxed_mount_points=True):
+        assert app.validate_mount_point(mount_point) is not None
 
-        mount_point = '1.2+foo_bar'
-        self.assertIsNone(app.validate_mount_point(mount_point))
 
-        with h.push_config(app, relaxed_mount_points=True):
-            self.assertIsNotNone(app.validate_mount_point(mount_point))
+def test_describe_permission():
+    class DummyApp(Application):
+        permissions_desc = {
+            'foo': 'bar',
+            'post': 'overridden',
+        }
+    f = DummyApp.describe_permission
+    assert f('foo') == 'bar'
+    assert f('post') == 'overridden'
+    assert f('admin') == 'Set permissions.'
+    assert f('does_not_exist') == ''
 
-    def test_describe_permission(self):
-        class DummyApp(Application):
-            permissions_desc = {
-                'foo': 'bar',
-                'post': 'overridden',
-            }
-        f = DummyApp.describe_permission
-        self.assertEqual(f('foo'), 'bar')
-        self.assertEqual(f('post'), 'overridden')
-        self.assertEqual(f('admin'), 'Set permissions.')
-        self.assertEqual(f('does_not_exist'), '')
+
+@pytest.fixture
+def installed_app(request):
+    """Returns an installed application instance."""
+    project = create_project('myproject')
+    app_config = create_app_config(project, 'my_mounted_app')
+    app = Application(project, app_config)
+    app.install(project)
+    return app
 
 
 class TestInstall(WithDatabase):
     patches = [fake_app_patch]
 
     def test_that_it_creates_a_discussion(self):
-        original_discussion_count = self.discussion_count()
-        install_app()
-        assert self.discussion_count() == original_discussion_count + 1
+        def discussion_count():
+            return model.Discussion.query.find().count()
 
-    def discussion_count(self):
-        return model.Discussion.query.find().count()
+        original_discussion_count = discussion_count()
+        install_app()
+        assert discussion_count() == original_discussion_count + 1
 
 
 class TestDefaultDiscussion(WithDatabase):
     patches = [fake_app_patch]
 
-    def setup_method(self, method):
-        super().setup_method(method)
+    @pytest.fixture(autouse=True)
+    def setup_discussion(self):
         install_app()
         self.discussion = model.Discussion.query.get(
             shortname='my_mounted_app')
 
     def test_that_it_has_a_description(self):
-        description = self.discussion.description
-        assert description == 'Forum for my_mounted_app comments'
+        assert self.discussion.description == 'Forum for my_mounted_app comments'
 
     def test_that_it_has_a_name(self):
         assert self.discussion.name == 'my_mounted_app Discussion'
@@ -88,8 +78,8 @@ class TestDefaultDiscussion(WithDatabase):
 class TestAppDefaults(WithDatabase):
     patches = [fake_app_patch]
 
-    def setup_method(self, method):
-        super().setup_method(method)
+    @pytest.fixture(autouse=True)
+    def setup_app(self):
         self.app = install_app()
 
     def test_that_it_has_an_empty_sidebar_menu(self):
@@ -111,6 +101,7 @@ class TestAppDefaults(WithDatabase):
 
 
 def install_app():
+    """Helper function to create and install an application instance."""
     project = create_project('myproject')
     app_config = create_app_config(project, 'my_mounted_app')
     # XXX: Remove project argument to install; it's redundant

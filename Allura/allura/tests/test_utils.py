@@ -48,18 +48,18 @@ class TestConfigProxy(unittest.TestCase):
         self.cp = utils.ConfigProxy(mybaz="baz")
 
     def test_getattr(self):
-        self.assertEqual(self.cp.foo, "bar")
-        self.assertEqual(self.cp.mybaz, "true")
+        assert self.cp.foo == "bar"
+        assert self.cp.mybaz == "true"
 
     def test_get(self):
-        self.assertEqual(self.cp.get("foo"), "bar")
-        self.assertEqual(self.cp.get("mybaz"), "true")
-        self.assertEqual(self.cp.get("fake"), None)
-        self.assertEqual(self.cp.get("fake", "default"), "default")
+        assert self.cp.get("foo") == "bar"
+        assert self.cp.get("mybaz") == "true"
+        assert self.cp.get("fake") is None
+        assert self.cp.get("fake", "default") == "default"
 
     def test_get_bool(self):
-        self.assertEqual(self.cp.get_bool("mybaz"), True)
-        self.assertEqual(self.cp.get_bool("fake"), False)
+        assert self.cp.get_bool("mybaz") is True
+        assert self.cp.get_bool("fake") is False
 
 
 class TestChunkedIterator(unittest.TestCase):
@@ -75,8 +75,8 @@ class TestChunkedIterator(unittest.TestCase):
 
     def test_can_iterate(self):
         chunks = list(utils.chunked_find(M.User, {}, 2))
-        assert len(chunks) > 1, chunks
-        assert len(chunks[0]) == 2, chunks[0]
+        assert len(chunks) > 1
+        assert len(chunks[0]) == 2
 
     def test_filter_on_sort_key(self):
         query = {'username':
@@ -85,9 +85,9 @@ class TestChunkedIterator(unittest.TestCase):
                                          query,
                                          2,
                                          sort_key='username'))
-        assert len(chunks) == 2, chunks
-        assert len(chunks[0]) == 2, chunks[0]
-        assert len(chunks[1]) == 1, chunks[1]
+        assert len(chunks) == 2
+        assert len(chunks[0]) == 2
+        assert len(chunks[1]) == 1
         assert chunks[0][0].username == 'sample-user-1'
         assert chunks[0][1].username == 'sample-user-2'
         assert chunks[1][0].username == 'sample-user-3'
@@ -98,9 +98,9 @@ class TestChunkedList(unittest.TestCase):
     def test_chunked_list(self):
         l = list(range(10))
         chunks = list(utils.chunked_list(l, 3))
-        self.assertEqual(len(chunks), 4)
-        self.assertEqual(len(chunks[0]), 3)
-        self.assertEqual([el for sublist in chunks for el in sublist], l)
+        assert len(chunks) == 4
+        assert len(chunks[0]) == 3
+        assert [el for sublist in chunks for el in sublist] == l
 
 
 class TestAntispam(unittest.TestCase):
@@ -111,9 +111,9 @@ class TestAntispam(unittest.TestCase):
 
     def test_generate_fields(self):
         fields = '\n'.join(self.a.extra_fields())
-        assert 'name="timestamp"' in fields, fields
-        assert 'name="spinner"' in fields, fields
-        assert ('class="%s"' % self.a.honey_class) in fields, fields
+        assert 'name="timestamp"' in fields
+        assert 'name="spinner"' in fields
+        assert ('class="%s"' % self.a.honey_class) in fields
 
     def test_invalid_old(self):
         form = dict(a='1', b='2')
@@ -127,7 +127,7 @@ class TestAntispam(unittest.TestCase):
                           environ={'remote_addr': '127.0.0.1'}
                           )
         validated = utils.AntiSpam.validate_request(r)
-        assert dict(a='1', b='2') == validated, validated
+        assert dict(a='1', b='2') == validated
 
     def test_invalid_future(self):
         form = dict(a='1', b='2')
@@ -178,7 +178,7 @@ class TestCaseInsensitiveDict(unittest.TestCase):
         d['bar'] = 7
         assert d['bar'] == d['bAr'] == 7
         del d['bar']
-        assert len(d) == 1, d
+        assert len(d) == 1
         assert d.get('foo') == 5
         d.update(foo=1, Bar=2)
         assert d.get('FOO') == 1
@@ -291,8 +291,7 @@ def test_ip_address():
     req = Mock()
     req.remote_addr = '1.2.3.4'
     req.headers = {}
-    assert (utils.ip_address(req) ==
-            '1.2.3.4')
+    assert utils.ip_address(req) == '1.2.3.4'
 
 
 def test_ip_address_header():
@@ -300,8 +299,7 @@ def test_ip_address_header():
     req.remote_addr = '1.2.3.4'
     req.headers = {'X_FORWARDED_FOR': '5.6.7.8'}
     with h.push_config(config, **{'ip_address_header': 'X_FORWARDED_FOR'}):
-        assert (utils.ip_address(req) ==
-                '5.6.7.8')
+        assert utils.ip_address(req) == '5.6.7.8'
 
 
 def test_ip_address_header_not_set():
@@ -309,8 +307,7 @@ def test_ip_address_header_not_set():
     req.remote_addr = '1.2.3.4'
     req.headers = {}
     with h.push_config(config, **{'ip_address_header': 'X_FORWARDED_FOR'}):
-        assert (utils.ip_address(req) ==
-                '1.2.3.4')
+        assert utils.ip_address(req) == '1.2.3.4'
 
 
 def test_empty_cursor():
@@ -338,7 +335,7 @@ def test_DateJSONEncoder():
             'date': dt.datetime(2015, 1, 30, 13, 13, 13)}
     result = json.dumps(data, cls=utils.DateJSONEncoder)
     assert result in ['{"date": "2015-01-30T13:13:13Z", "message": "Hi!"}',
-                      '{"message": "Hi!", "date": "2015-01-30T13:13:13Z"}'], result
+                      '{"message": "Hi!", "date": "2015-01-30T13:13:13Z"}']
 
 
 def test_clean_phone_number():

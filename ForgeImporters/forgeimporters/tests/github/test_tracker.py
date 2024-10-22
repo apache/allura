@@ -66,10 +66,10 @@ class TestTrackerImporter(TestCase):
                 'project_name': 'me/project_name',
             }
         )
-        self.assertEqual(tlos.flush_all.call_args_list, [
+        assert tlos.flush_all.call_args_list == [
             mock.call(),
             mock.call(),
-        ])
+        ]
         M.AuditLog.log.assert_called_once_with(
             'import tool mount_point from me/project_name on GitHub',
             project=project, user=user, url='foo')
@@ -96,17 +96,17 @@ class TestTrackerImporter(TestCase):
         with mock.patch.object(tracker, 'datetime') as dt:
             dt.strptime.side_effect = lambda s, f: s
             importer.process_fields(extractor, ticket, issue)
-            self.assertEqual(ticket.summary, 'title')
-            self.assertEqual(ticket.description,
-                             '*Originally created by:* [creator](https://github.com/creator)\n*Originally owned by:* [owner](https://github.com/owner)\n\nhello')
-            self.assertEqual(ticket.status, 'New')
-            self.assertEqual(ticket.created_date, 'created_at')
-            self.assertEqual(ticket.mod_date, 'updated_at')
-            self.assertEqual(dt.strptime.call_args_list, [
+            assert ticket.summary == 'title'
+            assert ticket.description == \
+                             '*Originally created by:* [creator](https://github.com/creator)\n*Originally owned by:* [owner](https://github.com/owner)\n\nhello'
+            assert ticket.status == 'New'
+            assert ticket.created_date == 'created_at'
+            assert ticket.mod_date == 'updated_at'
+            assert dt.strptime.call_args_list == [
                 mock.call('created_at', '%Y-%m-%dT%H:%M:%SZ'),
                 mock.call('updated_at', '%Y-%m-%dT%H:%M:%SZ'),
-            ])
-            self.assertEqual(ticket.labels, ['first', 'second'])
+            ]
+            assert ticket.labels == ['first', 'second']
 
     @mock.patch.object(tracker, 'c')
     def test_postprocess_milestones(self, c):
@@ -118,7 +118,7 @@ class TestTrackerImporter(TestCase):
         milestones = importer.postprocess_milestones()
         # for stable order
         milestones[0]['milestones'] = sorted(milestones[0]['milestones'], key=itemgetter('name'))
-        self.assertEqual(milestones, [
+        assert milestones == [
             {
                 'name': '_milestone',
                 'type': 'milestone',
@@ -130,7 +130,7 @@ class TestTrackerImporter(TestCase):
                             '2015-04-25', 'complete': False},
                 ],
             },
-        ])
+        ]
 
     def test_get_attachments(self):
         importer = tracker.GitHubTrackerImporter()
@@ -140,14 +140,14 @@ class TestTrackerImporter(TestCase):
             '![cdbpzjc5ex4](https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg)\r\n' \
             '![screensh0t](http://f.cl.ly/items/13453x43053r2G0d3x0v/Screen%20Shot%202012-04-28%20at%2010.48.17%20AM.png)'
         new_body, attachments = importer._get_attachments(extractor, body)
-        self.assertEqual(new_body, 'hello\n')
-        self.assertEqual(len(attachments), 2)
-        self.assertEqual(
-            attachments[0].url, 'https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg')
-        self.assertEqual(
-            attachments[1].url, 'http://f.cl.ly/items/13453x43053r2G0d3x0v/Screen%20Shot%202012-04-28%20at%2010.48.17%20AM.png')
-        self.assertEqual(attachments[0].file.read(), b'data')
-        self.assertEqual(attachments[1].file.read(), b'data')
+        assert new_body == 'hello\n'
+        assert len(attachments) == 2
+        assert \
+            attachments[0].url == 'https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg'
+        assert \
+            attachments[1].url == 'http://f.cl.ly/items/13453x43053r2G0d3x0v/Screen%20Shot%202012-04-28%20at%2010.48.17%20AM.png'
+        assert attachments[0].file.read() == b'data'
+        assert attachments[1].file.read() == b'data'
 
     def test_get_attachments_404(self):
         importer = tracker.GitHubTrackerImporter()
@@ -175,11 +175,11 @@ class TestTrackerImporter(TestCase):
         importer.github_markdown_converter = GitHubMarkdownConverter(
             'user', 'project')
         importer.process_comments(extractor, ticket, issue)
-        self.assertEqual(ticket.discussion_thread.add_post.call_args_list[0], mock.call(
+        assert ticket.discussion_thread.add_post.call_args_list[0] == mock.call(
             text='*Originally posted by:* [me](https://github.com/me)\n\nhello',
             timestamp=datetime(2013, 8, 26, 16, 57, 53),
             ignore_security=True,
-        ))
+        )
 
     def test_process_events(self):
         ticket = mock.Mock()
@@ -210,24 +210,24 @@ class TestTrackerImporter(TestCase):
         importer = tracker.GitHubTrackerImporter()
         importer.process_events(extractor, ticket, issue)
         args = ticket.discussion_thread.add_post.call_args_list
-        self.assertEqual(args[0], mock.call(
+        assert args[0] == mock.call(
             text='*Ticket changed by:* [darth](https://github.com/darth)\n\n'
                  '- **status**: open --> closed',
             timestamp=datetime(2013, 9, 12, 9, 58, 49),
-            ignore_security=True))
-        self.assertEqual(args[1], mock.call(
+            ignore_security=True)
+        assert args[1] == mock.call(
             text='*Ticket changed by:* [yoda](https://github.com/yoda)\n\n'
                  '- **status**: closed --> open',
             timestamp=datetime(2013, 9, 12, 10, 13, 20),
-            ignore_security=True))
-        self.assertEqual(args[2], mock.call(
+            ignore_security=True)
+        assert args[2] == mock.call(
             text='- **assigned_to**: [luke](https://github.com/luke)',
             timestamp=datetime(2013, 9, 12, 10, 14, 0),
-            ignore_security=True))
-        self.assertEqual(args[3], mock.call(
+            ignore_security=True)
+        assert args[3] == mock.call(
             text='- **assigned_to**: [ghost](https://github.com/ghost)',
             timestamp=datetime(2013, 9, 12, 10, 14, 0),
-            ignore_security=True))
+            ignore_security=True)
 
     def test_github_markdown_converted_in_description(self):
         ticket = mock.Mock()
@@ -264,7 +264,7 @@ Hello
         with mock.patch.object(tracker, 'datetime') as dt:
             dt.strptime.side_effect = lambda s, f: s
             importer.process_fields(extractor, ticket, issue)
-        self.assertEqual(ticket.description.strip(), body_converted.strip())
+        assert ticket.description.strip() == body_converted.strip()
 
     def test_github_markdown_converted_in_comments(self):
         ticket = mock.Mock()
@@ -295,8 +295,8 @@ Hello
         importer.github_markdown_converter = GitHubMarkdownConverter(
             'user', 'project')
         importer.process_comments(extractor, ticket, issue)
-        self.assertEqual(ticket.discussion_thread.add_post.call_args_list[0], mock.call(
+        assert ticket.discussion_thread.add_post.call_args_list[0] == mock.call(
             text=body_converted,
             timestamp=datetime(2013, 8, 26, 16, 57, 53),
             ignore_security=True,
-        ))
+        )

@@ -167,17 +167,17 @@ class TestBatchIndexer(TestCase):
         arefs = [m(_id=i) for i in (4, 5, 6)]
         find.return_value = [m(_id=i) for i in (7, 8, 9)]
         self.ext.update_index(objs_deleted, arefs)
-        self.assertEqual(self.ext.to_delete,
-                         {o.index_id() for o in objs_deleted})
-        self.assertEqual(self.ext.to_add, {4, 5, 6})
+        assert self.ext.to_delete == \
+                         {o.index_id() for o in objs_deleted}
+        assert self.ext.to_add == {4, 5, 6}
 
         # test deleting something that was previously added
         objs_deleted += [m(_id=4)]
         find.return_value = [m(_id=4)]
         self.ext.update_index(objs_deleted, [])
-        self.assertEqual(self.ext.to_delete,
-                         {o.index_id() for o in objs_deleted})
-        self.assertEqual(self.ext.to_add, {5, 6})
+        assert self.ext.to_delete == \
+                         {o.index_id() for o in objs_deleted}
+        assert self.ext.to_add == {5, 6}
 
     @mock.patch('allura.model.session.index_tasks')
     def test_flush(self, index_tasks):
@@ -189,34 +189,32 @@ class TestBatchIndexer(TestCase):
         index_tasks.del_artifacts.post.assert_called_once_with(
             list(del_index_ids))
         index_tasks.add_artifacts.post.assert_called_once_with([4, 5, 6])
-        self.assertEqual(self.ext.to_delete, set())
-        self.assertEqual(self.ext.to_add, set())
+        assert self.ext.to_delete == set()
+        assert self.ext.to_add == set()
 
     @mock.patch('allura.model.session.index_tasks')
     def test_flush_chunks_huge_lists(self, index_tasks):
         self.extcls.to_delete = set(range(100 * 1000 + 1))
         self.extcls.to_add = set(range(1000 * 1000 + 1))
         self.ext.flush()
-        self.assertEqual(
-            len(index_tasks.del_artifacts.post.call_args_list[0][0][0]),
-            100 * 1000)
-        self.assertEqual(
-            len(index_tasks.del_artifacts.post.call_args_list[1][0][0]), 1)
-        self.assertEqual(
-            len(index_tasks.add_artifacts.post.call_args_list[0][0][0]),
-            1000 * 1000)
-        self.assertEqual(
-            len(index_tasks.add_artifacts.post.call_args_list[1][0][0]), 1)
-        self.assertEqual(self.ext.to_delete, set())
-        self.assertEqual(self.ext.to_add, set())
+        assert \
+            len(index_tasks.del_artifacts.post.call_args_list[0][0][0]) == 100 * 1000
+        assert \
+            len(index_tasks.del_artifacts.post.call_args_list[1][0][0]) == 1
+        assert \
+            len(index_tasks.add_artifacts.post.call_args_list[0][0][0]) == 1000 * 1000
+        assert \
+            len(index_tasks.add_artifacts.post.call_args_list[1][0][0]) == 1
+        assert self.ext.to_delete == set()
+        assert self.ext.to_add == set()
 
     @mock.patch('allura.tasks.index_tasks')
     def test_flush_noop(self, index_tasks):
         self.ext.flush()
-        self.assertEqual(0, index_tasks.del_artifacts.post.call_count)
-        self.assertEqual(0, index_tasks.add_artifacts.post.call_count)
-        self.assertEqual(self.ext.to_delete, set())
-        self.assertEqual(self.ext.to_add, set())
+        assert 0 == index_tasks.del_artifacts.post.call_count
+        assert 0 == index_tasks.add_artifacts.post.call_count
+        assert self.ext.to_delete == set()
+        assert self.ext.to_add == set()
 
     @mock.patch('allura.tasks.index_tasks')
     def test__post_too_large(self, index_tasks):
@@ -240,8 +238,8 @@ class TestBatchIndexer(TestCase):
             mock.call([3]),
             mock.call([4])
         ]
-        self.assertEqual(
-            expected, index_tasks.add_artifacts.post.call_args_list)
+        assert \
+            expected == index_tasks.add_artifacts.post.call_args_list
 
     @mock.patch('allura.tasks.index_tasks')
     def test__post_other_error(self, index_tasks):

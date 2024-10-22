@@ -51,10 +51,10 @@ class TestTask(TestCase):
         def mock_post(f, args, kw, delay=None):
             assert c.project.notifications_disabled
             assert 'delay' not in kw
-            self.assertEqual(delay, 1)
-            self.assertEqual(kw, dict(foo=2))
-            self.assertEqual(args, ('test',))
-            self.assertEqual(f, func)
+            assert delay == 1
+            assert kw == dict(foo=2)
+            assert args == ('test',)
+            assert f == func
 
         c.project.notifications_disabled = False
         MonQTask.post.side_effect = mock_post

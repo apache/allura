@@ -283,8 +283,7 @@ class TestPostNotifications(unittest.TestCase):
         assert 'test@mail.com is subscribed to http://test1.com' in footer
         assert 'admin can change settings at http://test2.com' in footer
         footer = MailFooter.standard(M.Notification())
-        self.assertIn('Sent from localhost because you indicated interest',
-                      footer)
+        assert 'Sent from localhost because you indicated interest' in footer
 
     def _subscribe(self, **kw):
         self.pg.subscribe(type='direct', **kw)

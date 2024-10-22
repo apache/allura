@@ -572,15 +572,14 @@ class TestGitHubWikiImportController(TestController, TestCase):
             mount_label='GitHub Wiki',
             tool_option='import_history')
         r = self.app.post(self.url + 'create', params, status=302)
-        self.assertEqual(r.location, 'http://localhost/p/%s/admin/' %
-                         test_project_with_wiki)
+        assert r.location == 'http://localhost/p/%s/admin/' % test_project_with_wiki
         args = import_tool.post.call_args[1]
-        self.assertEqual('GitHub Wiki', args['mount_label'])
-        self.assertEqual('gh-wiki', args['mount_point'])
-        self.assertEqual('mulder', args['project_name'])
-        self.assertEqual('spooky', args['user_name'])
-        self.assertEqual('import_history', args['tool_option'])
-        self.assertEqual(requests.head.call_count, 1)
+        assert 'GitHub Wiki' == args['mount_label']
+        assert 'gh-wiki' == args['mount_point']
+        assert 'mulder' == args['project_name']
+        assert 'spooky' == args['user_name']
+        assert 'import_history' == args['tool_option']
+        assert requests.head.call_count == 1
 
     @with_wiki
     @patch('forgeimporters.github.requests')
@@ -594,15 +593,14 @@ class TestGitHubWikiImportController(TestController, TestCase):
             mount_label='GitHub Wiki'
         )
         r = self.app.post(self.url + 'create', params, status=302)
-        self.assertEqual(r.location, 'http://localhost/p/%s/admin/' %
-                         test_project_with_wiki)
+        assert r.location, 'http://localhost/p/%s/admin/' % test_project_with_wiki
         args = import_tool.post.call_args[1]
-        self.assertEqual('GitHub Wiki', args['mount_label'])
-        self.assertEqual('gh-wiki', args['mount_point'])
-        self.assertEqual('mulder', args['project_name'])
-        self.assertEqual('spooky', args['user_name'])
-        self.assertEqual('', args['tool_option'])
-        self.assertEqual(requests.head.call_count, 1)
+        assert 'GitHub Wiki' == args['mount_label']
+        assert 'gh-wiki' == args['mount_point']
+        assert 'mulder' == args['project_name']
+        assert 'spooky' == args['user_name']
+        assert '' == args['tool_option']
+        assert requests.head.call_count == 1
 
     @with_wiki
     @patch('forgeimporters.github.requests')
@@ -618,11 +616,11 @@ class TestGitHubWikiImportController(TestController, TestCase):
             mount_point='gh-wiki',
             mount_label='GitHub Wiki')
         r = self.app.post(self.url + 'create', params, status=302).follow()
-        self.assertIn('Please wait and try again', r)
-        self.assertEqual(import_tool.post.call_count, 0)
+        assert 'Please wait and try again' in r
+        assert import_tool.post.call_count == 0
 
     @with_wiki
     @patch.object(GitHubOAuthMixin, 'oauth_begin')
     def test_oauth(self, oauth_begin):
         self.app.get(self.url)
-        self.assertEqual(oauth_begin.call_count, 1)
+        assert oauth_begin.call_count == 1

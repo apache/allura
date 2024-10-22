@@ -442,11 +442,11 @@ class TestUserStats(unittest.TestCase):
 
     def test_start_date(self):
         stats = USM.UserStats(registration_date=datetime(2012, 4, 1))
-        self.assertEqual(stats.start_date, datetime(2012, 4, 1))
+        assert stats.start_date == datetime(2012, 4, 1)
         with h.push_config(config, **{'userstats.start_date': '2013-04-01'}):
-            self.assertEqual(stats.start_date, datetime(2013, 4, 1))
+            assert stats.start_date == datetime(2013, 4, 1)
         with h.push_config(config, **{'userstats.start_date': '2011-04-01'}):
-            self.assertEqual(stats.start_date, datetime(2012, 4, 1))
+            assert stats.start_date == datetime(2012, 4, 1)
 
     @mock.patch('allura.model.stats.difflib.unified_diff')
     def test_count_loc(self, unified_diff):
@@ -472,11 +472,11 @@ class TestUserStats(unittest.TestCase):
             trove_language=[],
         )
         stats.addCommit(newcommit, commit_datetime, project)
-        self.assertEqual(stats.general[0].commits[0],
-                         {'lines': 3, 'number': 1, 'language': None})
+        assert stats.general[0].commits[0] == \
+                         {'lines': 3, 'number': 1, 'language': None}
         unified_diff.reset_mock()
         with h.push_config(config, **{'userstats.count_lines_of_code': 'false'}):
             stats.addCommit(newcommit, commit_datetime, project)
-        self.assertEqual(stats.general[0].commits[0],
-                         {'lines': 3, 'number': 2, 'language': None})
+        assert stats.general[0].commits[0] == \
+                         {'lines': 3, 'number': 2, 'language': None}
         assert not unified_diff.called

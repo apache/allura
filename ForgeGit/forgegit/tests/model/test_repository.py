@@ -210,9 +210,9 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))[0] & stat.S_IXUSR
         with open(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive')) as f:
             c = f.read()
-        self.assertIn(
-            'curl -s http://localhost/auth/refresh_repo/p/test/src-git/\n', c)
-        self.assertIn('exec $DIR/post-receive-user\n', c)
+        assert \
+            'curl -s http://localhost/auth/refresh_repo/p/test/src-git/\n' in c
+        assert 'exec $DIR/post-receive-user\n' in c
         shutil.rmtree(dirname)
 
     @mock.patch('forgegit.model.git_repo.git.Repo.clone_from', autospec=True)
@@ -244,9 +244,9 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
                 os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))[0] & stat.S_IXUSR
             with open(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive')) as f:
                 c = f.read()
-            self.assertIn(
-                'curl -s http://localhost/auth/refresh_repo/p/test/src-git/\n', c)
-            self.assertIn('exec $DIR/post-receive-user\n', c)
+            assert \
+                'curl -s http://localhost/auth/refresh_repo/p/test/src-git/\n' in c
+            assert 'exec $DIR/post-receive-user\n' in c
             shutil.rmtree(dirname)
 
     def test_index(self):
@@ -365,10 +365,10 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         # regenerate the tree
         new_tree = entry.tree
         assert new_tree
-        self.assertEqual(new_tree._id, orig_tree._id)
-        self.assertEqual(new_tree.tree_ids, orig_tree.tree_ids)
-        self.assertEqual(new_tree.blob_ids, orig_tree.blob_ids)
-        self.assertEqual(new_tree.other_ids, orig_tree.other_ids)
+        assert new_tree._id == orig_tree._id
+        assert new_tree.tree_ids == orig_tree.tree_ids
+        assert new_tree.blob_ids == orig_tree.blob_ids
+        assert new_tree.other_ids == orig_tree.other_ids
 
     def test_refresh(self):
         # test results of things that ran during setup_method
@@ -513,16 +513,16 @@ By Dave Brondsema''' in text_body
             '1e146e67985dcd71c74de79613719bef7bddca4a',  # master
             '5c47243c8e424136fd5cdd18cd94d34c66d1955c',  # zz
         ]
-        self.assertIn(cids[0], heads)  # repo head comes first
+        assert cids[0] in heads  # repo head comes first
         for head in heads:
-            self.assertIn(head, cids)  # all branches included
+            assert head in cids  # all branches included
         # repo root comes last
-        self.assertEqual(cids[-1], '9a7df788cf800241e3bb5a849c8870f2f8259d98')
+        assert cids[-1] == '9a7df788cf800241e3bb5a849c8870f2f8259d98'
 
     def test_ls(self):
         c.lcid_cache = {}  # else it'll be a mock
         lcd_map = self.repo.commit('HEAD').tree.ls()
-        self.assertEqual(lcd_map, [{
+        assert lcd_map == [{
             'href': 'README',
             'kind': 'BLOB',
             'last_commit': {
@@ -533,7 +533,7 @@ By Dave Brondsema''' in text_body
                 'href': '/p/test/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/',
                 'shortlink': '[1e146e]',
                 'summary': 'Change README'},
-            'name': 'README'}])
+            'name': 'README'}]
 
     def test_ls_with_prev(self):
         c.lcid_cache = {}  # else it'll be a mock
@@ -993,12 +993,12 @@ class TestGitImplementation(unittest.TestCase):
         repo.__ming__ = mock.Mock()
         repo.cached_branches = []
         impl = GM.git_repo.GitImplementation(repo)
-        self.assertEqual(impl.branches, [
+        assert impl.branches == [
             Object(name='master',
                    object_id='1e146e67985dcd71c74de79613719bef7bddca4a'),
             Object(name='zz',
                    object_id='5c47243c8e424136fd5cdd18cd94d34c66d1955c')
-        ])
+        ]
 
     def test_tags(self):
         repo_dir = pkg_resources.resource_filename(
@@ -1007,10 +1007,10 @@ class TestGitImplementation(unittest.TestCase):
         repo.__ming__ = mock.Mock()
         repo.cached_tags = []
         impl = GM.git_repo.GitImplementation(repo)
-        self.assertEqual(impl.tags, [
+        assert impl.tags == [
             Object(name='foo',
                    object_id='1e146e67985dcd71c74de79613719bef7bddca4a'),
-        ])
+        ]
 
     def test_last_commit_ids(self):
         repo_dir = pkg_resources.resource_filename(
@@ -1018,13 +1018,13 @@ class TestGitImplementation(unittest.TestCase):
         repo = mock.Mock(full_fs_path=repo_dir)
         impl = GM.git_repo.GitImplementation(repo)
         def lcd(c, p): return impl.last_commit_ids(mock.Mock(_id=c), p)
-        self.assertEqual(lcd('13951944969cf45a701bf90f83647b309815e6d5', ['f2.txt', 'f3.txt']), {
+        assert lcd('13951944969cf45a701bf90f83647b309815e6d5', ['f2.txt', 'f3.txt']) == {
             'f2.txt': '259c77dd6ee0e6091d11e429b56c44ccbf1e64a3',
             'f3.txt': '653667b582ef2950c1954a0c7e1e8797b19d778a',
-        })
-        self.assertEqual(lcd('259c77dd6ee0e6091d11e429b56c44ccbf1e64a3', ['f2.txt', 'f3.txt']), {
+        }
+        assert lcd('259c77dd6ee0e6091d11e429b56c44ccbf1e64a3', ['f2.txt', 'f3.txt']) == {
             'f2.txt': '259c77dd6ee0e6091d11e429b56c44ccbf1e64a3',
-        })
+        }
 
     def test_last_commit_ids_threaded(self):
         with h.push_config(tg.config, lcd_thread_chunk_size=1):
@@ -1040,7 +1040,7 @@ class TestGitImplementation(unittest.TestCase):
             impl = GM.git_repo.GitImplementation(repo)
             lcds = impl.last_commit_ids(
                 mock.Mock(_id='13951944969cf45a701bf90f83647b309815e6d5'), ['f2.txt', 'f3.txt'])
-            self.assertEqual(lcds, {})
+            assert lcds == {}
 
 
 class TestGitCommit(unittest.TestCase):
@@ -1173,17 +1173,17 @@ class TestGitRename(unittest.TestCase):
     def test_renamed_file(self):
         # There was a file f.txt, then it was renamed to f2.txt.
         commits = list(self.repo.log(id_only=False, path='/f2.txt'))
-        self.assertEqual(len(commits), 4)
+        assert len(commits) == 4
         rename_commit = commits[1]
-        self.assertEqual(rename_commit['rename_details']['path'], '/f.txt')
-        self.assertEqual(
-            rename_commit['rename_details']['commit_url'],
+        assert rename_commit['rename_details']['path'] == '/f.txt'
+        assert \
+            rename_commit['rename_details']['commit_url'] == \
             '/p/test/src-git/ci/fbb0644603bb6ecee3ebb62efe8c86efc9b84ee6/'
-        )
-        self.assertEqual(rename_commit['size'], 19)
-        self.assertEqual(commits[2]['size'], 19)
+
+        assert rename_commit['size'] == 19
+        assert commits[2]['size'] == 19
 
     def test_merge_commit(self):
         merge_sha = '13951944969cf45a701bf90f83647b309815e6d5'
         commit = next(self.repo.log(revs=merge_sha, id_only=False))
-        self.assertEqual(commit['rename_details'], {})
+        assert commit['rename_details'] == {}
