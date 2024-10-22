@@ -59,27 +59,27 @@ class TestMakeSafePathPortion(TestCase):
 
     def test_no_ascii_chars(self):
         s = self.f('Задачи', relaxed=False)
-        self.assertEqual(s, '')
+        assert s == ''
 
     def test_some_ascii_chars(self):
         s = self.f('aßbƒ', relaxed=False)
-        self.assertEqual(s, 'ab')
+        assert s == 'ab'
 
     def test_strict_mount_point_names(self):
         s = self.f('1this+is.illegal', relaxed=False)
-        self.assertEqual(s, 'this-is-illegal')
+        assert s == 'this-is-illegal'
         s = self.f('this-1-is-legal', relaxed=False)
-        self.assertEqual(s, 'this-1-is-legal')
+        assert s == 'this-1-is-legal'
         s = self.f('THIS-IS-Illegal', relaxed=False)
-        self.assertEqual(s, 'this-is-illegal')
+        assert s == 'this-is-illegal'
 
     def test_relaxed_mount_point_names(self):
         s = self.f('1_this+is.legal')
-        self.assertEqual(s, '1_this+is.legal')
+        assert s == '1_this+is.legal'
         s = self.f('not*_legal')
-        self.assertEqual(s, 'not-legal')
+        assert s == 'not-legal'
         s = self.f('THIS-IS-Illegal')
-        self.assertEqual(s, 'THIS-IS-Illegal')
+        assert s == 'THIS-IS-Illegal'
 
 
 def test_escape_json():
@@ -593,7 +593,7 @@ class TestIterEntryPoints(TestCase):
     def test_disabled(self, pkg_resources):
         pkg_resources.iter_entry_points.return_value = [
             self._make_ep('myapp', object)]
-        self.assertEqual([], list(h.iter_entry_points('allura')))
+        assert [] == list(h.iter_entry_points('allura'))
 
     @patch('allura.lib.helpers.pkg_resources')
     def test_subclassed_ep(self, pkg_resources):
@@ -608,8 +608,8 @@ class TestIterEntryPoints(TestCase):
             self._make_ep('myapp', BetterApp)]
 
         eps = list(h.iter_entry_points('allura'))
-        self.assertEqual(len(eps), 1)
-        self.assertEqual(BetterApp, eps[0].load())
+        assert len(eps) == 1
+        assert BetterApp == eps[0].load()
 
     @patch('allura.lib.helpers.pkg_resources')
     def test_ambiguous_eps(self, pkg_resources):

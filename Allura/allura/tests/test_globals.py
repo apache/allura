@@ -779,24 +779,23 @@ class TestCachedMarkdown(unittest.TestCase):
         with h.push_context('test', 'wiki', neighborhood='Projects'):
             delattr(self.post, 'text_cache')
             html = self.md.cached_convert(self.post, 'text')
-            self.assertEqual(html, self.expected_html)
+            assert html == self.expected_html
 
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='-0.01')
     def test_non_ascii(self):
         self.post.text = 'å∫ç'
         expected = '<div class="markdown_content"><p>å∫ç</p></div>'
         # test with empty cache
-        self.assertEqual(expected, self.md.cached_convert(self.post, 'text'))
+        assert expected == self.md.cached_convert(self.post, 'text')
         # test with primed cache
-        self.assertEqual(expected, self.md.cached_convert(self.post, 'text'))
+        assert expected == self.md.cached_convert(self.post, 'text')
 
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='-0.01')
     def test_empty_cache(self):
         html = self.md.cached_convert(self.post, 'text')
-        self.assertEqual(html, self.expected_html)
-        self.assertEqual(html, self.post.text_cache.html)
-        self.assertEqual(hashlib.md5(self.post.text.encode('utf-8')).hexdigest(),
-                         self.post.text_cache.md5)
+        assert html == self.expected_html
+        assert html == self.post.text_cache.html
+        assert hashlib.md5(self.post.text.encode('utf-8')).hexdigest()  == self.post.text_cache.md5
         assert self.post.text_cache.render_time > 0
 
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='-0.01')
@@ -804,10 +803,9 @@ class TestCachedMarkdown(unittest.TestCase):
         old = self.md.cached_convert(self.post, 'text')
         self.post.text = 'new, different source text'
         html = self.md.cached_convert(self.post, 'text')
-        self.assertNotEqual(old, html)
-        self.assertEqual(html, self.post.text_cache.html)
-        self.assertEqual(hashlib.md5(self.post.text.encode('utf-8')).hexdigest(),
-                         self.post.text_cache.md5)
+        assert old != html
+        assert html == self.post.text_cache.html
+        assert hashlib.md5(self.post.text.encode('utf-8')).hexdigest() == self.post.text_cache.md5
         assert self.post.text_cache.render_time > 0
 
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='-0.01')
@@ -816,7 +814,7 @@ class TestCachedMarkdown(unittest.TestCase):
         self.md.cached_convert(self.post, 'text')
         with patch.object(self.md, 'convert') as convert_func:
             html = self.md.cached_convert(self.post, 'text')
-            self.assertEqual(html, self.expected_html)
+            assert html == self.expected_html
             self.assertIsInstance(html, Markup)
             assert not convert_func.called
             self.post.text = "text [[include]] pass"
@@ -852,7 +850,7 @@ class TestCachedMarkdown(unittest.TestCase):
     @patch.dict('allura.lib.app_globals.config', {})
     def test_no_threshold_defined(self):
         html = self.md.cached_convert(self.post, 'text')
-        self.assertEqual(html, self.expected_html)
+        assert html == self.expected_html
         self.assertIsNone(self.post.text_cache.md5)
         self.assertIsNone(self.post.text_cache.html)
         self.assertIsNone(self.post.text_cache.render_time)
@@ -860,7 +858,7 @@ class TestCachedMarkdown(unittest.TestCase):
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='foo')
     def test_invalid_threshold(self):
         html = self.md.cached_convert(self.post, 'text')
-        self.assertEqual(html, self.expected_html)
+        assert html == self.expected_html
         self.assertIsNone(self.post.text_cache.md5)
         self.assertIsNone(self.post.text_cache.html)
         self.assertIsNone(self.post.text_cache.render_time)
@@ -868,7 +866,7 @@ class TestCachedMarkdown(unittest.TestCase):
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='99999')
     def test_render_time_below_threshold(self):
         html = self.md.cached_convert(self.post, 'text')
-        self.assertEqual(html, self.expected_html)
+        assert html == self.expected_html
         self.assertIsNone(self.post.text_cache.md5)
         self.assertIsNone(self.post.text_cache.html)
         self.assertIsNone(self.post.text_cache.render_time)
@@ -878,7 +876,7 @@ class TestCachedMarkdown(unittest.TestCase):
         self.md.cached_convert(self.post, 'text')
         required_keys = ['fix7528', 'html', 'md5', 'render_time']
         keys = sorted(self.post.text_cache.keys())
-        self.assertEqual(required_keys, keys)
+        assert required_keys == keys
 
 
 class TestEmojis(unittest.TestCase):
@@ -972,49 +970,49 @@ class TestHandlePaging(unittest.TestCase):
         c.user.set_pref = set_pref
 
     def test_with_limit(self):
-        self.assertEqual(g.handle_paging(10, 0), (10, 0, 0))
-        self.assertEqual(g.handle_paging(10, 2), (10, 2, 20))
+        assert g.handle_paging(10, 0) == (10, 0, 0)
+        assert g.handle_paging(10, 2) == (10, 2, 20)
         # handle paging must not mess up user preferences
-        self.assertEqual(c.user.get_pref('results_per_page'), None)
+        assert c.user.get_pref('results_per_page') is None
         # maximum enforced
-        self.assertEqual(g.handle_paging(99999999, 0), (500, 0, 0))
+        assert g.handle_paging(99999999, 0) == (500, 0, 0)
 
     def test_without_limit(self):
         # default limit = 25
-        self.assertEqual(g.handle_paging(None, 0), (25, 0, 0))
-        self.assertEqual(g.handle_paging(None, 2), (25, 2, 50))
+        assert g.handle_paging(None, 0) == (25, 0, 0)
+        assert g.handle_paging(None, 2) == (25, 2, 50)
         # handle paging must not mess up user preferences
-        self.assertEqual(c.user.get_pref('results_per_page'), None)
+        assert c.user.get_pref('results_per_page') is None
 
         # user has page size preference
         c.user.set_pref('results_per_page', 100)
-        self.assertEqual(g.handle_paging(None, 0), (100, 0, 0))
-        self.assertEqual(g.handle_paging(None, 2), (100, 2, 200))
+        assert g.handle_paging(None, 0) == (100, 0, 0)
+        assert g.handle_paging(None, 2) == (100, 2, 200)
         # handle paging must not mess up user preferences
-        self.assertEqual(c.user.get_pref('results_per_page'), 100)
+        assert c.user.get_pref('results_per_page') == 100
 
     def test_without_limit_with_default(self):
         # default limit is not used when explicitly provided
-        self.assertEqual(g.handle_paging(None, 0, 30), (30, 0, 0))
-        self.assertEqual(g.handle_paging(None, 2, 30), (30, 2, 60))
+        assert g.handle_paging(None, 0, 30) == (30, 0, 0)
+        assert g.handle_paging(None, 2, 30) == (30, 2, 60)
         # handle paging must not mess up user preferences
-        self.assertEqual(c.user.get_pref('results_per_page'), None)
+        assert c.user.get_pref('results_per_page') is None
 
         # user has page size preference, which is not affected by default
         c.user.set_pref('results_per_page', 25)
-        self.assertEqual(g.handle_paging(None, 0, 30), (25, 0, 0))
-        self.assertEqual(g.handle_paging(None, 2, 30), (25, 2, 50))
+        assert g.handle_paging(None, 0, 30) == (25, 0, 0)
+        assert g.handle_paging(None, 2, 30) == (25, 2, 50)
         # handle paging must not mess up user preferences
-        self.assertEqual(c.user.get_pref('results_per_page'), 25)
+        assert c.user.get_pref('results_per_page') == 25
 
     def test_with_invalid_limit(self):
-        self.assertEqual(g.handle_paging('foo', 0, 30), (30, 0, 0))
+        assert g.handle_paging('foo', 0, 30) == (30, 0, 0)
 
         c.user.set_pref('results_per_page', 'bar')
-        self.assertEqual(g.handle_paging(None, 0, 30), (30, 0, 0))
+        assert g.handle_paging(None, 0, 30) == (30, 0, 0)
 
     def test_with_invalid_page(self):
-        self.assertEqual(g.handle_paging(10, 'asdf', 30), (10, 0, 0))
+        assert g.handle_paging(10, 'asdf', 30) == (10, 0, 0)
 
 
 class TestIconRender:

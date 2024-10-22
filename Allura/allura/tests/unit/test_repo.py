@@ -60,8 +60,7 @@ class TestTopoSort(unittest.TestCase):
             'master':     datetime.datetime(2012, 5, 1),
             'dev':        datetime.datetime(2012, 6, 1)}
         result = topo_sort(children, parents, dates, head_ids)
-        self.assertEqual(list(result), ['dev', 'dev@{1}', 'master',
-                                        'master@{1}', 'master@{2}', 'master@{3}'])
+        assert list(result) == ['dev', 'dev@{1}', 'master', 'master@{1}', 'master@{2}', 'master@{3}']
 
 
 def tree(name, id, trees=None, blobs=None):
@@ -146,8 +145,8 @@ class TestCommit(unittest.TestCase):
         commit = M.repository.Commit()
         commit.shorthand_id = MagicMock(return_value='abcdef')
         commit.message = 'commit msg'
-        self.assertIn('allura_id', commit.activity_extras)
-        self.assertEqual(commit.activity_extras['summary'], commit.summary)
+        assert 'allura_id' in commit.activity_extras
+        assert commit.activity_extras['summary'] == commit.summary
 
     def test_get_path_no_create(self):
         commit = M.repository.Commit()
@@ -155,7 +154,7 @@ class TestCommit(unittest.TestCase):
         commit.get_path('foo/', create=False)
         commit.get_tree.assert_called_with(False)
         commit.get_tree().__getitem__.assert_called_with('foo')
-        self.assertNotIn(call(''), commit.get_tree().__getitem__.call_args_list)
+        assert (call('') not in commit.get_tree().__getitem__.call_args_list)
 
     def test_get_tree_no_create(self):
         c.model_cache = Mock()
@@ -275,10 +274,10 @@ class TestZipDir(unittest.TestCase):
         with self.assertRaises(Exception) as cm:
             zipdir(src, zipfile)
         emsg = str(cm.exception)
-        self.assertIn(
-            "Command: " +
-            "['/bin/zip', '-y', '-q', '-r', '/fake/zip/file.tmp', b'repo'] " +
-            "returned non-zero exit code 1", emsg)
+        assert \
+            "Command: " + \
+            "['/bin/zip', '-y', '-q', '-r', '/fake/zip/file.tmp', b'repo'] " + \
+            "returned non-zero exit code 1" in emsg
         assert "STDOUT: 1" in emsg
         assert "STDERR: 2" in emsg
 
@@ -288,17 +287,17 @@ class TestPrefixPathsUnion(unittest.TestCase):
     def test_disjoint(self):
         a = {'a1', 'a2', 'a3'}
         b = {'b1', 'b1/foo', 'b2'}
-        self.assertEqual(prefix_paths_union(a, b), set())
+        assert prefix_paths_union(a, b) == set()
 
     def test_exact(self):
         a = {'a1', 'a2', 'a3'}
         b = {'b1', 'a2', 'a3'}
-        self.assertEqual(prefix_paths_union(a, b), {'a2', 'a3'})
+        assert prefix_paths_union(a, b) == {'a2', 'a3'}
 
     def test_prefix(self):
         a = {'a1', 'a2', 'a3'}
         b = {'b1', 'a2/foo', 'b3/foo'}
-        self.assertEqual(prefix_paths_union(a, b), {'a2'})
+        assert prefix_paths_union(a, b) == {'a2'}
 
 
 class TestGroupCommits:

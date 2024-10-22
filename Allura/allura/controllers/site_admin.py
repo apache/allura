@@ -18,7 +18,7 @@
 import re
 import logging
 from datetime import datetime, timedelta
-import pipes
+import shlex
 
 from tg import expose, validate, flash, config, redirect
 from tg.decorators import with_trailing_slash, without_trailing_slash
@@ -413,7 +413,7 @@ class DeleteProjectsController:
             redirect('.')
         task_params = ' '.join(task_params)
         if reason:
-            task_params = f'-r {pipes.quote(reason)} {task_params}'
+            task_params = f'-r {shlex.quote(reason)} {task_params}'
         if disable_users:
             task_params = f'--disable-users {task_params}'
         DeleteProjects.post(task_params)

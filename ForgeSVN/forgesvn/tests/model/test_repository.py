@@ -167,10 +167,9 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
             os.path.join(g.tmpdir, 'testsvn/hooks/post-commit'), os.X_OK)
         with open(os.path.join(g.tmpdir, 'testsvn/hooks/post-commit')) as f:
             hook_data = f.read()
-        self.assertIn(
-            'curl -s http://localhost/auth/refresh_repo/p/test/src/\n',
-            hook_data)
-        self.assertIn('exec $DIR/post-commit-user "$@"\n', hook_data)
+        assert \
+            'curl -s http://localhost/auth/refresh_repo/p/test/src/\n' in hook_data
+        assert 'exec $DIR/post-commit-user "$@"\n' in hook_data
 
         repo.refresh(notify=False)
         assert len(list(repo.log(limit=100)))
@@ -219,9 +218,8 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
             os.path.join(g.tmpdir, 'testsvn/hooks/post-commit'), os.X_OK)
         with open(os.path.join(g.tmpdir, 'testsvn/hooks/post-commit')) as f:
             c = f.read()
-        self.assertIn(
-            'curl -s http://localhost/auth/refresh_repo/p/test/src/\n', c)
-        self.assertIn('exec $DIR/post-commit-user "$@"\n', c)
+        assert  'curl -s http://localhost/auth/refresh_repo/p/test/src/\n' in c
+        assert 'exec $DIR/post-commit-user "$@"\n' in c
 
         repo.refresh(notify=False)
         assert len(list(repo.log(limit=100)))
@@ -359,50 +357,50 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
 
     def test_paged_diffs(self):
         entry = self.repo.commit(next(self.repo.log(2, id_only=True, limit=1)))
-        self.assertEqual(entry.diffs, entry.paged_diffs())
-        self.assertEqual(entry.diffs, entry.paged_diffs(start=0))
+        assert entry.diffs == entry.paged_diffs()
+        assert entry.diffs == entry.paged_diffs(start=0)
         added_expected = entry.diffs.added[1:3]
         expected = dict(
             copied=[], changed=[], removed=[], renamed=[],
             added=added_expected, total=4)
         actual = entry.paged_diffs(start=1, end=3)
-        self.assertEqual(expected, actual)
+        assert expected == actual
 
         fake_id = self.repo._impl._oid(100)
         empty = M.repository.Commit(_id=fake_id, repo=self.repo).paged_diffs()
-        self.assertEqual(sorted(actual.keys()), sorted(empty.keys()))
+        assert sorted(actual.keys()) == sorted(empty.keys())
 
     def test_diff_create_file(self):
         entry = self.repo.commit(next(self.repo.log(1, id_only=True, limit=1)))
-        self.assertEqual(
-            entry.diffs, dict(
+        assert \
+            entry.diffs == dict(
                 copied=[], changed=[], renamed=[],
-                removed=[], added=['/README'], total=1))
+                removed=[], added=['/README'], total=1)
 
     def test_diff_create_path(self):
         entry = self.repo.commit(next(self.repo.log(2, id_only=True, limit=1)))
         actual = entry.diffs
         actual.added = sorted(actual.added)
-        self.assertEqual(
-            entry.diffs, dict(
+        assert \
+            entry.diffs == dict(
                 copied=[], changed=[], removed=[], renamed=[],
                 added=sorted([
                     '/a', '/a/b', '/a/b/c',
-                    '/a/b/c/hello.txt']), total=4))
+                    '/a/b/c/hello.txt']), total=4)
 
     def test_diff_modify_file(self):
         entry = self.repo.commit(next(self.repo.log(3, id_only=True, limit=1)))
-        self.assertEqual(
-            entry.diffs, dict(
+        assert \
+            entry.diffs == dict(
                 copied=[], changed=['/README'], renamed=[],
-                removed=[], added=[], total=1))
+                removed=[], added=[], total=1)
 
     def test_diff_delete(self):
         entry = self.repo.commit(next(self.repo.log(4, id_only=True, limit=1)))
-        self.assertEqual(
-            entry.diffs, dict(
+        assert \
+            entry.diffs == dict(
                 copied=[], changed=[], renamed=[],
-                removed=['/a/b/c/hello.txt'], added=[], total=1))
+                removed=['/a/b/c/hello.txt'], added=[], total=1)
 
     def test_diff_copy(self):
         entry = self.repo.commit(next(self.repo.log(5, id_only=True, limit=1)))
@@ -741,14 +739,13 @@ class TestRepo(_TestWithRepo):
             getattr(self.repo._impl, fn).assert_called_with('foo')
 
     def test_shorthand_for_commit(self):
-        self.assertEqual(
-            self.repo.shorthand_for_commit('a' * 40),
-            '[aaaaaa]')
+        assert \
+            self.repo.shorthand_for_commit('a' * 40) == '[aaaaaa]'
 
     def test_url_for_commit(self):
-        self.assertEqual(
-            self.repo.url_for_commit('a' * 40),
-            '/p/test/test1/ci/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/')
+        assert \
+            self.repo.url_for_commit('a' * 40) == \
+            '/p/test/test1/ci/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/'
 
     @mock.patch('allura.model.repository.g.post_event')
     def test_init_as_clone(self, post_event):

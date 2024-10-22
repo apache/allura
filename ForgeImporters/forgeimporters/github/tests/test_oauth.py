@@ -49,10 +49,10 @@ class TestGitHubOAuthMixin(TestController, TestCase):
         req.post.return_value = Mock(status_code=404, json=Mock(return_value={}))
         assert not self.mix.oauth_has_access('write:repo_hook')
         call_args = req.post.call_args[0]
-        self.assertEqual(call_args, ('https://api.github.com/applications/123456/token',))
+        assert call_args == ('https://api.github.com/applications/123456/token',)
         call_kwargs = req.post.call_args[1]
         assert call_kwargs['auth']
-        self.assertEqual(call_kwargs['json'], {'access_token': 'some-token'})
+        assert call_kwargs['json'] == {'access_token': 'some-token'}
 
     @patch.dict(config, {'github_importer.client_id': '123456',
                          'github_importer.client_secret': 'deadbeef'})
@@ -78,5 +78,5 @@ class TestGitHubOAuthMixin(TestController, TestCase):
         with patch.object(self.mix, 'oauth_callback_complete') as _mock, \
                 patch('forgeimporters.github.redirect') as tg_redir:
             self.mix.handle_oauth_callback()
-        self.assertEqual(_mock.call_count, 1)
-        self.assertEqual(tg_redir.call_count, 1)
+        assert _mock.call_count == 1
+        assert tg_redir.call_count == 1

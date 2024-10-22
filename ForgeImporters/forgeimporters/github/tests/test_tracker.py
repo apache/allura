@@ -55,16 +55,12 @@ class TestGitHubTrackerImportController(TestController, TestCase):
             mount_point='issues',
             mount_label='Issues')
         r = self.app.post(self.url + 'create', params, status=302)
-        self.assertEqual(r.location, 'http://localhost/p/%s/admin/' %
-                         test_project_with_tracker)
-        self.assertEqual(
-            'Issues', import_tool.post.call_args[1]['mount_label'])
-        self.assertEqual(
-            'issues', import_tool.post.call_args[1]['mount_point'])
-        self.assertEqual(
-            'mulder', import_tool.post.call_args[1]['project_name'])
-        self.assertEqual('spooky', import_tool.post.call_args[1]['user_name'])
-        self.assertEqual(requests.head.call_count, 1)
+        assert r.location == 'http://localhost/p/%s/admin/' % test_project_with_tracker
+        assert 'Issues' == import_tool.post.call_args[1]['mount_label']
+        assert 'issues' == import_tool.post.call_args[1]['mount_point']
+        assert 'mulder' == import_tool.post.call_args[1]['project_name']
+        assert 'spooky' == import_tool.post.call_args[1]['user_name']
+        assert requests.head.call_count == 1
 
     @with_tracker
     @patch('forgeimporters.github.requests')
@@ -80,11 +76,11 @@ class TestGitHubTrackerImportController(TestController, TestCase):
             mount_point='issues',
             mount_label='Issues')
         r = self.app.post(self.url + 'create', params, status=302).follow()
-        self.assertIn('Please wait and try again', r)
-        self.assertEqual(import_tool.post.call_count, 0)
+        assert 'Please wait and try again' in r
+        assert import_tool.post.call_count == 0
 
     @with_tracker
     @patch.object(GitHubOAuthMixin, 'oauth_begin')
     def test_oauth(self, oauth_begin):
         self.app.get(self.url)
-        self.assertEqual(oauth_begin.call_count, 1)
+        assert oauth_begin.call_count == 1

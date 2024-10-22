@@ -137,13 +137,13 @@ class TestTrackerImporter(TestCase):
             },
             foo='bar',
         )
-        self.assertEqual(importer.annotate.call_args_list, [
+        assert importer.annotate.call_args_list == [
             mock.call('d1', author, 'at1', label=' owned'),
             mock.call('ad1', reporter, 'rb1', label=' created'),
             mock.call('d2', anonymous, 'at2', label=' owned'),
             mock.call('ad2', anonymous, 'rb2', label=' created'),
-        ])
-        self.assertEqual(TM.Ticket.call_args_list, [
+        ]
+        assert TM.Ticket.call_args_list == [
             mock.call(
                 app_config_id=app.config._id,
                 import_id={
@@ -184,44 +184,44 @@ class TestTrackerImporter(TestCase):
                 votes=2,
                 assigned_to_id=None,
             ),
-        ])
-        self.assertEqual(tickets[0].private, False)
-        self.assertEqual(tickets[1].private, True)
-        self.assertEqual(importer.process_comments.call_args_list, [
+        ]
+        assert tickets[0].private is False
+        assert tickets[1].private is True
+        assert importer.process_comments.call_args_list == [
             mock.call(tickets[0], 'comments1'),
             mock.call(tickets[1], 'comments2'),
-        ])
-        self.assertEqual(tlos.flush_all.call_args_list, [
+        ]
+        assert tlos.flush_all.call_args_list == [
             mock.call(),
             mock.call(),
-        ])
-        self.assertEqual(session.return_value.flush.call_args_list, [
+        ]
+        assert session.return_value.flush.call_args_list == [
             mock.call(tickets[0]),
             mock.call(tickets[1]),
-        ])
-        self.assertEqual(session.return_value.expunge.call_args_list, [
+        ]
+        assert session.return_value.expunge.call_args_list == [
             mock.call(tickets[0]),
             mock.call(tickets[1]),
-        ])
-        self.assertEqual(app.globals.custom_fields, 'fields')
+        ]
+        assert app.globals.custom_fields == 'fields'
         importer.process_bins.assert_called_once_with(app, 'bins')
-        self.assertEqual(app.globals.last_ticket_num, 100)
+        assert app.globals.last_ticket_num == 100
         M.AuditLog.log.assert_called_once_with(
             'import tool mount_point from exported Allura JSON',
             project=project, user=user, url='foo')
         g.post_event.assert_called_once_with('project_updated')
         app.globals.invalidate_bin_counts.assert_called_once_with()
-        self.assertEqual(File.call_args_list, [
+        assert File.call_args_list == [
             mock.call('u1'),
             mock.call('u2'),
             mock.call('u3'),
             mock.call('u4'),
-        ])
-        self.assertEqual(tickets[0].add_multiple_attachments.call_args_list, [
-            mock.call(['f1', 'f2'])])
-        self.assertEqual(tickets[1].add_multiple_attachments.call_args_list, [
+        ]
+        assert tickets[0].add_multiple_attachments.call_args_list == [
+            mock.call(['f1', 'f2'])]
+        assert tickets[1].add_multiple_attachments.call_args_list == [
             mock.call(['f3', 'f4']),
-        ])
+        ]
 
     @mock.patch.object(tracker, 'ThreadLocalODMSession')
     @mock.patch.object(tracker, 'M')
@@ -251,26 +251,25 @@ class TestTrackerImporter(TestCase):
         M.User.anonymous.return_value = 'anon'
 
         M.User.by_username.return_value = 'bar'
-        self.assertEqual(importer.get_user('foo'), 'bar')
-        self.assertEqual(M.User.anonymous.call_count, 0)
+        assert importer.get_user('foo') == 'bar'
+        assert M.User.anonymous.call_count == 0
 
-        self.assertEqual(importer.get_user(None), 'anon')
-        self.assertEqual(M.User.anonymous.call_count, 1)
+        assert importer.get_user(None), 'anon'
+        assert M.User.anonymous.call_count == 1
 
         M.User.by_username.return_value = None
-        self.assertEqual(importer.get_user('foo'), 'anon')
-        self.assertEqual(M.User.anonymous.call_count, 2)
+        assert importer.get_user('foo') == 'anon'
+        assert M.User.anonymous.call_count == 2
 
     def test_annotate(self):
         importer = tracker.ForgeTrackerImporter()
         user = mock.Mock(_id=1)
         user.is_anonymous.return_value = False
-        self.assertEqual(importer.annotate('foo', user, 'bar'), 'foo')
+        assert importer.annotate('foo', user, 'bar') == 'foo'
         user.is_anonymous.return_value = True
-        self.assertEqual(importer.annotate('foo', user, 'bar'),
-                         '*Originally by:* bar\n\nfoo')
-        self.assertEqual(importer.annotate('foo', user, 'nobody'), 'foo')
-        self.assertEqual(importer.annotate('foo', user, None), 'foo')
+        assert importer.annotate('foo', user, 'bar') == '*Originally by:* bar\n\nfoo'
+        assert importer.annotate('foo', user, 'nobody') == 'foo'
+        assert importer.annotate('foo', user, None) == 'foo'
 
     @mock.patch.object(tracker, 'File')
     @mock.patch.object(tracker, 'c')
@@ -300,28 +299,28 @@ class TestTrackerImporter(TestCase):
 
         importer.process_comments(ticket, comments)
 
-        self.assertEqual(importer.get_user.call_args_list,
-                         [mock.call('a1'), mock.call('a2')])
-        self.assertEqual(importer.annotate.call_args_list, [
+        assert importer.get_user.call_args_list == \
+                         [mock.call('a1'), mock.call('a2')]
+        assert importer.annotate.call_args_list == [
             mock.call('t1', author, 'a1'),
             mock.call('t2', author, 'a2'),
-        ])
-        self.assertEqual(add_post.call_args_list, [
+        ]
+        assert add_post.call_args_list == [
             mock.call(text='at1', ignore_security=True,
                       timestamp=datetime(2013, 9, 1)),
             mock.call(text='at2', ignore_security=True,
                       timestamp=datetime(2013, 9, 2)),
-        ])
-        self.assertEqual(File.call_args_list, [
+        ]
+        assert File.call_args_list == [
             mock.call('u1'),
             mock.call('u2'),
             mock.call('u3'),
             mock.call('u4'),
-        ])
-        self.assertEqual(ama.call_args_list, [
+        ]
+        assert ama.call_args_list == [
             mock.call(['f1', 'f2']),
             mock.call(['f3', 'f4']),
-        ])
+        ]
 
     @mock.patch.object(tracker, 'TM')
     def test_process_bins(self, TM):
@@ -330,10 +329,10 @@ class TestTrackerImporter(TestCase):
         importer = tracker.ForgeTrackerImporter()
         importer.process_bins(app, [{'_id': 1, 'b': 1}, {'b': 2}])
         TM.Bin.query.remove.assert_called_once_with({'app_config_id': 1})
-        self.assertEqual(TM.Bin.call_args_list, [
+        assert TM.Bin.call_args_list == [
             mock.call(app_config_id=1, b=1),
             mock.call(app_config_id=1, b=2),
-        ])
+        ]
 
 
 class TestForgeTrackerImportController(TestController, TestCase):
@@ -364,12 +363,10 @@ class TestForgeTrackerImportController(TestController, TestCase):
         }
         r = self.app.post('/p/test/admin/bugs/_importer/create', params,
                           status=302)
-        self.assertEqual(r.location, 'http://localhost/p/test/admin/')
+        assert r.location == 'http://localhost/p/test/admin/'
         sui.assert_called_once_with(project, 'tickets.json', '{"key": "val"}')
-        self.assertEqual(
-            'mymount', import_tool.post.call_args[1]['mount_point'])
-        self.assertEqual(
-            'mylabel', import_tool.post.call_args[1]['mount_label'])
+        assert 'mymount' == import_tool.post.call_args[1]['mount_point']
+        assert 'mylabel' == import_tool.post.call_args[1]['mount_label']
 
     @with_tracker
     @mock.patch('forgeimporters.forge.tracker.save_importer_upload')
@@ -385,5 +382,5 @@ class TestForgeTrackerImportController(TestController, TestCase):
         }
         r = self.app.post('/p/test/admin/bugs/_importer/create', params,
                           status=302).follow()
-        self.assertIn('Please wait and try again', r)
-        self.assertEqual(import_tool.post.call_count, 0)
+        assert 'Please wait and try again' in r
+        assert import_tool.post.call_count == 0

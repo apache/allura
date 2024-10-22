@@ -50,8 +50,8 @@ class TestProject(unittest.TestCase):
         ]
         expected_ticket_urls = ['bugs url', 'features url', 'support url']
         actual = [(e.label, e.url, len(e.matching_urls)) for e in entries]
-        self.assertEqual(expected, actual)
-        self.assertEqual(entries[0].matching_urls, expected_ticket_urls)
+        assert expected == actual
+        assert entries[0].matching_urls == expected_ticket_urls
 
     def test_grouped_navbar_threshold(self):
         p = M.Project()
@@ -78,17 +78,16 @@ class TestProject(unittest.TestCase):
         ]
         expected_ticket_urls = ['bugs url', 'features url', 'support url']
         actual = [(e.label, e.url, len(e.matching_urls)) for e in entries]
-        self.assertEqual(expected, actual)
-        self.assertEqual(entries[0].matching_urls, expected_ticket_urls)
+        assert expected == actual
+        assert entries[0].matching_urls == expected_ticket_urls
 
     def test_social_account(self):
         p = M.Project()
         self.assertIsNone(p.social_account('Twitter'))
 
         p.set_social_account('Twitter', 'http://twitter.com/allura')
-        self.assertEqual(p.social_account('Twitter')
-                         .accounturl, 'http://twitter.com/allura')
-        self.assertEqual(p.twitter_handle, 'http://twitter.com/allura')
+        assert p.social_account('Twitter').accounturl == 'http://twitter.com/allura'
+        assert p.twitter_handle == 'http://twitter.com/allura'
 
     def test_should_update_index(self):
         p = M.Project()
@@ -108,7 +107,7 @@ class TestProject(unittest.TestCase):
             shortname='myproj',
             neighborhood=M.Neighborhood(url_prefix='/nbhd/'),
         )
-        self.assertEqual(p.icon_url(), '/nbhd/myproj/icon')
+        assert p.icon_url() == '/nbhd/myproj/icon'
 
         with h.push_config(config, **{'static.icon_base': 'https://mycdn.com/mysite'}):
-            self.assertEqual(p.icon_url(), 'https://mycdn.com/mysite/nbhd/myproj/icon')
+            assert p.icon_url() == 'https://mycdn.com/mysite/nbhd/myproj/icon'

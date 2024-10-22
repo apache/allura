@@ -43,7 +43,7 @@ class TestProjectExtractor(TestCase):
         req.add_header.assert_called_once_with(
             'User-Agent', 'Allura Data Importer (https://allura.apache.org/)')
         urlopen.assert_called_once_with(req, retries=3, codes=(408, 500, 502, 503, 504), timeout=120)
-        self.assertEqual(r, urlopen.return_value)
+        assert r == urlopen.return_value
 
     def test_urlopen_invalid(self):
         with pytest.raises(ValueError):
@@ -150,8 +150,8 @@ class TestProjectImporter(TestCase):
             ep('ep1', 'foo'), ep('ep2', 'bar'), ep('ep3', 'foo')]
         pi = base.ProjectImporter(mock.Mock(name='neighborhood'))
         pi.source = 'foo'
-        self.assertEqual(pi.tool_importers,
-                         {'ep1': eps[0].lv, 'ep3': eps[2].lv})
+        assert pi.tool_importers == \
+                         {'ep1': eps[0].lv, 'ep3': eps[2].lv}
         iep.assert_called_once_with('allura.importers')
 
     @mock.patch.object(base.ToolImporter, 'by_name')
@@ -181,7 +181,7 @@ class TestProjectImporter(TestCase):
         import_tool.post.assert_called_once_with(
             'forgeimporters.base.ToolImporter', **kw)
         M.AuditLog.log.assert_called_once_with('import project from Source')
-        self.assertEqual(flash.call_count, 1)
+        assert flash.call_count == 1
         redirect.assert_called_once_with('script_name/admin/overview')
 
     @mock.patch.object(base.h, 'request')
@@ -194,18 +194,18 @@ class TestProjectImporter(TestCase):
         c.show_login_overlay = False
         request.path = '/test-importer/'
         pi._check_security()
-        self.assertEqual(c.show_login_overlay, True)
+        assert c.show_login_overlay is True
 
         c.show_login_overlay = False
         request.path = '/test-importer/check_names/'
         pi._check_security()
-        self.assertEqual(c.show_login_overlay, True)
+        assert c.show_login_overlay is True
 
         c.show_login_overlay = False
         request.path = '/test-importer/process/'
         with td.raises(HTTPUnauthorized):
             pi._check_security()
-        self.assertEqual(c.show_login_overlay, False)
+        assert c.show_login_overlay is False
 
 
 TA1 = mock.Mock(tool_label='foo', tool_description='foo_desc')
@@ -241,13 +241,13 @@ class TestToolImporter(TestCase):
         eps = iep.return_value = [ep('my-name', 'my-source')]
         importer = base.ToolImporter.by_name('my-name')
         iep.assert_called_once_with('allura.importers', 'my-name')
-        self.assertEqual(importer, eps[0].lv)
+        assert importer == eps[0].lv
 
         iep.reset_mock()
         iep.return_value = []
         importer = base.ToolImporter.by_name('other-name')
         iep.assert_called_once_with('allura.importers', 'other-name')
-        self.assertEqual(importer, None)
+        assert importer is None
 
     @mock.patch.object(base.h, 'iter_entry_points')
     def test_by_app(self, iep):
@@ -257,22 +257,22 @@ class TestToolImporter(TestCase):
             ep('importer3', importer=TI3),
         ]
         importers = base.ToolImporter.by_app(TA2)
-        self.assertEqual(set(importers.keys()), {
+        assert set(importers.keys()) == {
             'importer2',
             'importer3',
-        })
+        }
         self.assertIsInstance(importers['importer2'], TI2)
         self.assertIsInstance(importers['importer3'], TI3)
 
     def test_tool_label(self):
-        self.assertEqual(TI1().tool_label, 'foo')
-        self.assertEqual(TI2().tool_label, 'bar')
-        self.assertEqual(TI3().tool_label, 'qux')
+        assert TI1().tool_label == 'foo'
+        assert TI2().tool_label == 'bar'
+        assert TI3().tool_label == 'qux'
 
     def test_tool_description(self):
-        self.assertEqual(TI1().tool_description, 'foo_desc')
-        self.assertEqual(TI2().tool_description, 'bar_desc')
-        self.assertEqual(TI3().tool_description, 'qux_desc')
+        assert TI1().tool_description == 'foo_desc'
+        assert TI2().tool_description == 'bar_desc'
+        assert TI3().tool_description == 'qux_desc'
 
 
 class TestToolsValidator(TestCase):
@@ -282,15 +282,15 @@ class TestToolsValidator(TestCase):
 
     @mock.patch.object(base.ToolImporter, 'by_name')
     def test_empty(self, by_name):
-        self.assertEqual(self.tv.to_python(''), [])
-        self.assertEqual(by_name.call_count, 0)
+        assert self.tv.to_python('') == []
+        assert by_name.call_count == 0
 
     @mock.patch.object(base.ToolImporter, 'by_name')
     def test_no_ep(self, by_name):
         eps = by_name.return_value = None
         with self.assertRaises(Invalid) as cm:
             self.tv.to_python('my-value')
-        self.assertEqual(cm.exception.msg, 'Invalid tool selected: my-value')
+        assert cm.exception.msg == 'Invalid tool selected: my-value'
         by_name.assert_called_once_with('my-value')
 
     @mock.patch.object(base.ToolImporter, 'by_name')
@@ -298,7 +298,7 @@ class TestToolsValidator(TestCase):
         eps = by_name.return_value = ep('ep1', 'bad-source').lv
         with self.assertRaises(Invalid) as cm:
             self.tv.to_python('my-value')
-        self.assertEqual(cm.exception.msg, 'Invalid tool selected: my-value')
+        assert cm.exception.msg == 'Invalid tool selected: my-value'
         by_name.assert_called_once_with('my-value')
 
     @mock.patch.object(base.ToolImporter, 'by_name')
@@ -307,24 +307,24 @@ class TestToolsValidator(TestCase):
             ep('ep1', 'bad-source').lv, ep('ep2', 'good-source').lv, ep('ep3', 'bad-source').lv]
         with self.assertRaises(Invalid) as cm:
             self.tv.to_python(['value1', 'value2', 'value3'])
-        self.assertEqual(cm.exception.msg,
-                         'Invalid tools selected: value1, value3')
-        self.assertEqual(by_name.call_args_list, [
+        assert cm.exception.msg == \
+                         'Invalid tools selected: value1, value3'
+        assert by_name.call_args_list == [
             mock.call('value1'),
             mock.call('value2'),
             mock.call('value3'),
-        ])
+        ]
 
     @mock.patch.object(base.ToolImporter, 'by_name')
     def test_valid(self, by_name):
         eps = by_name.side_effect = [
             ep('ep1', 'good-source').lv, ep('ep2', 'good-source').lv, ep('ep3', 'bad-source').lv]
-        self.assertEqual(
-            self.tv.to_python(['value1', 'value2']), ['value1', 'value2'])
-        self.assertEqual(by_name.call_args_list, [
+        assert \
+            self.tv.to_python(['value1', 'value2']) == ['value1', 'value2']
+        assert by_name.call_args_list == [
             mock.call('value1'),
             mock.call('value2'),
-        ])
+        ]
 
 
 class TestProjectToolsImportController(TestController):

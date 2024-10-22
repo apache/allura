@@ -113,19 +113,19 @@ def create_ticket(summary, custom_fields):
 class test_change_text(unittest.TestCase):
 
     def test_get_label(self):
-        self.assertEqual('Milestone', tracker_main.get_label('_milestone'))
-        self.assertEqual('Ticket Number', tracker_main.get_label('ticket_num'))
-        self.assertEqual('Summary', tracker_main.get_label('summary'))
-        self.assertEqual('Status', tracker_main.get_label('status'))
-        self.assertEqual('Owner', tracker_main.get_label('assigned_to'))
-        self.assertEqual(None, tracker_main.get_label('test'))
+        assert 'Milestone' == tracker_main.get_label('_milestone')
+        assert 'Ticket Number' == tracker_main.get_label('ticket_num')
+        assert 'Summary' == tracker_main.get_label('summary')
+        assert 'Status' == tracker_main.get_label('status')
+        assert 'Owner' == tracker_main.get_label('assigned_to')
+        assert None is tracker_main.get_label('test')
 
     def test_get_change_text(self):
-        self.assertEqual(
-            '- **test**: value2 --> value1\n',
-            tracker_main.get_change_text('test', 'value1', 'value2'))
+        assert \
+            '- **test**: value2 --> value1\n' == \
+            tracker_main.get_change_text('test', 'value1', 'value2')
 
     def test_get_change_text_for_lists(self):
-        self.assertEqual(
-            '- **test**: v1, v2 --> v3, v4, v5\n',
-            tracker_main.get_change_text('test', ['v3', 'v4', 'v5'], ['v1', 'v2']))
+        assert \
+            '- **test**: v1, v2 --> v3, v4, v5\n' == \
+            tracker_main.get_change_text('test', ['v3', 'v4', 'v5'], ['v1', 'v2'])

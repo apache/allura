@@ -26,4 +26,4 @@ class TestArtifact(unittest.TestCase):
         fields = {'name_t': '', 'shortname_s': ''}
         query = 'name:1 AND shortname:2 AND shortname_name_field:3'
         q = M.Artifact.translate_query(query, fields)
-        self.assertEqual(q, 'name_t:1 AND shortname_s:2 AND shortname_name_field:3')
+        assert q  == 'name_t:1 AND shortname_s:2 AND shortname_name_field:3'

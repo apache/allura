@@ -15,50 +15,46 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import unittest
-
 import markdown
 import mock
 
 from allura.lib import markdown_extensions as mde
 
 
-class TestTracRef1(unittest.TestCase):
+class TestTracRef1:
 
     @mock.patch('allura.lib.markdown_extensions.M.Shortlink.lookup')
     def test_no_such_artifact(self, lookup):
         lookup.return_value = None
-        self.assertEqual(mde.TracRef1().sub('#100'), '#100')
+        assert mde.TracRef1().sub('#100') == '#100'
 
     def test_skip_if_brackets(self):
-        self.assertEqual(mde.TracRef1().sub('[#100]'), '[#100]')
-        self.assertEqual(mde.TracRef1().sub('[r123]'), '[r123]')
+        assert mde.TracRef1().sub('[#100]') == '[#100]'
+        assert mde.TracRef1().sub('[r123]') == '[r123]'
 
     def test_word_boundaries(self):
-        self.assertEqual(mde.TracRef1().sub('foo#100'), 'foo#100')
-        self.assertEqual(mde.TracRef1().sub('r123bar'), 'r123bar')
+        assert mde.TracRef1().sub('foo#100') == 'foo#100'
+        assert mde.TracRef1().sub('r123bar') == 'r123bar'
 
     @mock.patch('allura.lib.markdown_extensions.M.Shortlink.lookup')
     def test_legit_refs(self, lookup):
         shortlink = mock.Mock(url='/p/project/tool/artifact')
         shortlink.ref.artifact.deleted = False
         lookup.return_value = shortlink
-        self.assertEqual(mde.TracRef1().sub('#100'),
-                         '[#100](/p/project/tool/artifact)')
-        self.assertEqual(mde.TracRef1().sub('r123'),
-                         '[r123](/p/project/tool/artifact)')
+        assert mde.TracRef1().sub('#100') == '[#100](/p/project/tool/artifact)'
+        assert mde.TracRef1().sub('r123') == '[r123](/p/project/tool/artifact)'
 
 
-class TestTracRef2(unittest.TestCase):
+class TestTracRef2:
 
     @mock.patch('allura.lib.markdown_extensions.M.Shortlink.lookup')
     def test_no_such_artifact(self, lookup):
         lookup.return_value = None
-        self.assertEqual(mde.TracRef2().sub('ticket:100'), 'ticket:100')
+        assert mde.TracRef2().sub('ticket:100') == 'ticket:100'
 
     def test_word_boundaries(self):
-        self.assertEqual(mde.TracRef2().sub('myticket:100'), 'myticket:100')
-        self.assertEqual(mde.TracRef2().sub('ticket:100th'), 'ticket:100th')
+        assert mde.TracRef2().sub('myticket:100') == 'myticket:100'
+        assert mde.TracRef2().sub('ticket:100th') == 'ticket:100th'
 
     @mock.patch('allura.lib.markdown_extensions.M.Shortlink.lookup')
     def test_legit_refs(self, lookup):
@@ -67,36 +63,27 @@ class TestTracRef2(unittest.TestCase):
         lookup.return_value = shortlink
         pattern = mde.TracRef2()
         pattern.get_comment_slug = lambda *args: 'abc'
-        self.assertEqual(pattern.sub('ticket:100'),
-                         '[ticket:100](/p/project/tool/artifact/)')
-        self.assertEqual(pattern.sub('[ticket:100]'),
-                         '[[ticket:100](/p/project/tool/artifact/)]')
-        self.assertEqual(pattern.sub('comment:13:ticket:100'),
-                         '[comment:13:ticket:100](/p/project/tool/artifact/#abc)')
+        assert pattern.sub('ticket:100') == '[ticket:100](/p/project/tool/artifact/)'
+        assert pattern.sub('[ticket:100]') == '[[ticket:100](/p/project/tool/artifact/)]'
+        assert pattern.sub('comment:13:ticket:100') == '[comment:13:ticket:100](/p/project/tool/artifact/#abc)'
         pattern.get_comment_slug = lambda *args: None
-        self.assertEqual(pattern.sub('comment:13:ticket:100'),
-                         '[comment:13:ticket:100](/p/project/tool/artifact/)')
+        assert pattern.sub('comment:13:ticket:100') == '[comment:13:ticket:100](/p/project/tool/artifact/)'
 
 
-class TestTracRef3(unittest.TestCase):
+class TestTracRef3:
 
     def test_no_app_context(self):
-        self.assertEqual(mde.TracRef3(None)
-                         .sub('source:file.py'), 'source:file.py')
+        assert mde.TracRef3(None).sub('source:file.py') == 'source:file.py'
 
     def test_legit_refs(self):
         app = mock.Mock(url='/p/project/tool/')
-        self.assertEqual(mde.TracRef3(app).sub('source:file.py'),
-                         '[source:file.py](/p/project/tool/HEAD/tree/file.py)')
-        self.assertEqual(mde.TracRef3(app).sub('source:file.py@123'),
-                         '[source:file.py@123](/p/project/tool/123/tree/file.py)')
-        self.assertEqual(mde.TracRef3(app).sub('source:file.py@123#L456'),
-                         '[source:file.py@123#L456](/p/project/tool/123/tree/file.py#l456)')
-        self.assertEqual(mde.TracRef3(app).sub('source:file.py#L456'),
-                         '[source:file.py#L456](/p/project/tool/HEAD/tree/file.py#l456)')
+        assert mde.TracRef3(app).sub('source:file.py') == '[source:file.py](/p/project/tool/HEAD/tree/file.py)'
+        assert mde.TracRef3(app).sub('source:file.py@123') == '[source:file.py@123](/p/project/tool/123/tree/file.py)'
+        assert mde.TracRef3(app).sub('source:file.py@123#L456') == '[source:file.py@123#L456](/p/project/tool/123/tree/file.py#l456)'
+        assert mde.TracRef3(app).sub('source:file.py#L456') == '[source:file.py#L456](/p/project/tool/HEAD/tree/file.py#l456)'
 
 
-class TestPatternReplacingProcessor(unittest.TestCase):
+class TestPatternReplacingProcessor:
 
     @mock.patch('allura.lib.markdown_extensions.M.Shortlink.lookup')
     def test_run(self, lookup):
@@ -105,12 +92,12 @@ class TestPatternReplacingProcessor(unittest.TestCase):
         lookup.return_value = shortlink
         p = mde.PatternReplacingProcessor(mde.TracRef1(), mde.TracRef2())
         res = p.run(['#100', 'ticket:100'])
-        self.assertEqual(res, [
+        assert res == [
             '[#100](/p/project/tool/artifact)',
-            '[ticket:100](/p/project/tool/artifact)'])
+            '[ticket:100](/p/project/tool/artifact)']
 
 
-class TestCommitMessageExtension(unittest.TestCase):
+class TestCommitMessageExtension:
 
     @mock.patch('allura.lib.markdown_extensions.TracRef2.get_comment_slug')
     @mock.patch('allura.lib.markdown_extensions.M.Shortlink.lookup')
@@ -145,4 +132,4 @@ Not *strong* or _underlined_."""
         md = markdown.Markdown(
             extensions=[mde.CommitMessageExtension(app), 'markdown.extensions.nl2br'],
             output_format='html')
-        self.assertEqual(md.convert(text), expected_html)
+        assert md.convert(text) == expected_html

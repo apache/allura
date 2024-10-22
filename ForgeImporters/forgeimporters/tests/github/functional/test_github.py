@@ -36,12 +36,12 @@ class TestGitHubImportController(TestController, TestCase):
     def test_login_overlay(self):
         r = self.app.get('/p/import_project/github/',
                          extra_environ=dict(username='*anonymous'))
-        self.assertIn('GitHub Project Importer', r)
-        self.assertIn('Login Required', r)
+        assert 'GitHub Project Importer' in r
+        assert 'Login Required' in r
 
         r = self.app.post('/p/import_project/github/process',
                           extra_environ=dict(username='*anonymous'), status=302)
-        self.assertIn('/auth/', r.location)
+        assert '/auth/' in r.location
 
 
 class TestGitHubOAuth(TestController):
