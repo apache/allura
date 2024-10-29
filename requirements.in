@@ -14,6 +14,8 @@ FormEncode
 GitPython
 html5lib
 Jinja2
+# for faster resp.html parsing in tests
+lxml
 Markdown
 markdown-checklist
 MarkupSafe
