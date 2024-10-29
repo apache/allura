@@ -26,6 +26,7 @@ import json
 
 import mock
 import beaker.session
+from bs4 import BeautifulSoup
 from formencode import variabledecode
 from paste.deploy import loadapp
 from paste.deploy.converters import asbool
@@ -177,7 +178,7 @@ class TestController:
         pkg = self.__module__.split('.')[0]
         self.app = ValidatingTestApp(  # inherits from webtest.TestApp ultimately
             setup_functional_test(app_name=self.application_under_test, current_pkg=pkg),
-            parser_features='lxml',  # fastest bs4 parser (otherwise WebTest defaults to html.parser)
+            parser_features=BeautifulSoup.DEFAULT_BUILDER_FEATURES,  # fastest parser (WebTest defaults to html.parser)
         )
         self.app.extra_environ = {'REMOTE_ADDR': '127.0.0.1'}  # remote_addr needed by AntiSpam
         if self.validate_skip:

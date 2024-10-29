@@ -1,6 +1,7 @@
 # development-only dependencies
 # nothing needed at runtime or for tests
 
+lxml  # faster resp.html parsing in tests
 pip-tools
 q
 sphinx-argparse
