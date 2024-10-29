@@ -15,7 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from unittest import TestCase, skipIf
+from unittest import  skipIf
 from mock import Mock, patch, call
 from ming.odm import ThreadLocalODMSession
 import git
@@ -36,7 +36,7 @@ test_project_with_wiki = 'test2'
 with_wiki = with_tool(test_project_with_wiki, 'wiki', 'w', 'wiki')
 
 
-class TestGitHubWikiImporter(TestCase):
+class TestGitHubWikiImporter:
 
     def _make_project(self, gh_proj_name=None):
         project = Mock()
@@ -546,19 +546,18 @@ some text and **[Tips n\u2019 Tricks]**
         assert i.has_wiki_repo('fake url') is False
 
 
-class TestGitHubWikiImportController(TestController, TestCase):
+class TestGitHubWikiImportController(TestController):
 
     url = '/p/%s/admin/ext/import/github-wiki/' % test_project_with_wiki
 
     @with_wiki
     def test_index(self):
         r = self.app.get(self.url)
-        self.assertIsNotNone(r.html.find(attrs=dict(name='gh_user_name')))
-        self.assertIsNotNone(r.html.find(attrs=dict(name='gh_project_name')))
-        self.assertIsNotNone(r.html.find(attrs=dict(name='mount_label')))
-        self.assertIsNotNone(r.html.find(attrs=dict(name='mount_point')))
-        self.assertIsNotNone(
-            r.html.find(attrs=dict(name='tool_option', value='import_history')))
+        assert r.html.find(attrs=dict(name='gh_user_name')) is not None
+        assert r.html.find(attrs=dict(name='gh_project_name')) is not None
+        assert r.html.find(attrs=dict(name='mount_label')) is not None
+        assert r.html.find(attrs=dict(name='mount_point')) is not None
+        assert r.html.find(attrs=dict(name='tool_option', value='import_history')) is not None
 
     @with_wiki
     @patch('forgeimporters.github.requests')
@@ -593,7 +592,7 @@ class TestGitHubWikiImportController(TestController, TestCase):
             mount_label='GitHub Wiki'
         )
         r = self.app.post(self.url + 'create', params, status=302)
-        assert r.location, 'http://localhost/p/%s/admin/' % test_project_with_wiki
+        assert r.location == 'http://localhost/p/%s/admin/' % test_project_with_wiki
         args = import_tool.post.call_args[1]
         assert 'GitHub Wiki' == args['mount_label']
         assert 'gh-wiki' == args['mount_point']

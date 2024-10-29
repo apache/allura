@@ -762,7 +762,7 @@ class Test():
             assert 'src="/p/test/screenshot/test_file.jpg/thumb"' in r
 
 
-class TestCachedMarkdown(unittest.TestCase):
+class TestCachedMarkdown:
 
     def setup_method(self, method):
         setup()
@@ -815,7 +815,7 @@ class TestCachedMarkdown(unittest.TestCase):
         with patch.object(self.md, 'convert') as convert_func:
             html = self.md.cached_convert(self.post, 'text')
             assert html == self.expected_html
-            self.assertIsInstance(html, Markup)
+            assert isinstance(html, Markup)
             assert not convert_func.called
             self.post.text = "text [[include]] pass"
             html = self.md.cached_convert(self.post, 'text')
@@ -851,25 +851,25 @@ class TestCachedMarkdown(unittest.TestCase):
     def test_no_threshold_defined(self):
         html = self.md.cached_convert(self.post, 'text')
         assert html == self.expected_html
-        self.assertIsNone(self.post.text_cache.md5)
-        self.assertIsNone(self.post.text_cache.html)
-        self.assertIsNone(self.post.text_cache.render_time)
+        assert self.post.text_cache.md5 is None
+        assert self.post.text_cache.html is None
+        assert self.post.text_cache.render_time is None
 
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='foo')
     def test_invalid_threshold(self):
         html = self.md.cached_convert(self.post, 'text')
         assert html == self.expected_html
-        self.assertIsNone(self.post.text_cache.md5)
-        self.assertIsNone(self.post.text_cache.html)
-        self.assertIsNone(self.post.text_cache.render_time)
+        assert self.post.text_cache.md5 is None
+        assert self.post.text_cache.html is None
+        assert self.post.text_cache.render_time is None
 
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='99999')
     def test_render_time_below_threshold(self):
         html = self.md.cached_convert(self.post, 'text')
         assert html == self.expected_html
-        self.assertIsNone(self.post.text_cache.md5)
-        self.assertIsNone(self.post.text_cache.html)
-        self.assertIsNone(self.post.text_cache.render_time)
+        assert self.post.text_cache.md5 is None
+        assert self.post.text_cache.html is None
+        assert self.post.text_cache.render_time is None
 
     @patch.dict('allura.lib.app_globals.config', {})
     def test_all_expected_keys_exist_in_cache(self):
@@ -879,7 +879,7 @@ class TestCachedMarkdown(unittest.TestCase):
         assert required_keys == keys
 
 
-class TestEmojis(unittest.TestCase):
+class TestEmojis:
 
     def test_markdown_emoji_atomic(self):
         output = g.markdown.convert(':smile:')
@@ -914,7 +914,7 @@ class TestEmojis(unittest.TestCase):
         assert 'More emojis \U0001F44D\U0001F42B\U0001F552 wow!' in output
 
 
-class TestUserMentions(unittest.TestCase):
+class TestUserMentions:
 
     def test_markdown_user_mention_default(self):
         output = g.markdown.convert('Hello.. @nouser1, how are you?')
@@ -955,7 +955,7 @@ class TestUserMentions(unittest.TestCase):
         assert 'class="user-mention"' in output
 
 
-class TestHandlePaging(unittest.TestCase):
+class TestHandlePaging:
 
     def setup_method(self, method):
         prefs = {}

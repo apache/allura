@@ -42,7 +42,7 @@ from allura.lib import helpers as h
 
 
 @patch.dict('allura.lib.utils.tg.config', clear=True, foo='bar', baz='true')
-class TestConfigProxy(unittest.TestCase):
+class TestConfigProxy:
 
     def setup_method(self, method):
         self.cp = utils.ConfigProxy(mybaz="baz")
@@ -62,7 +62,7 @@ class TestConfigProxy(unittest.TestCase):
         assert self.cp.get_bool("fake") is False
 
 
-class TestChunkedIterator(unittest.TestCase):
+class TestChunkedIterator:
 
     def setup_method(self, method):
         setup_unit_test()
@@ -93,7 +93,7 @@ class TestChunkedIterator(unittest.TestCase):
         assert chunks[1][0].username == 'sample-user-3'
 
 
-class TestChunkedList(unittest.TestCase):
+class TestChunkedList:
 
     def test_chunked_list(self):
         l = list(range(10))
@@ -103,7 +103,7 @@ class TestChunkedList(unittest.TestCase):
         assert [el for sublist in chunks for el in sublist] == l
 
 
-class TestAntispam(unittest.TestCase):
+class TestAntispam:
 
     def setup_method(self, method):
         setup_unit_test()
@@ -168,7 +168,7 @@ class TestAntispam(unittest.TestCase):
         return encrypted_form
 
 
-class TestCaseInsensitiveDict(unittest.TestCase):
+class TestCaseInsensitiveDict:
 
     def test_everything(self):
         d = utils.CaseInsensitiveDict(Foo=5)
@@ -187,7 +187,7 @@ class TestCaseInsensitiveDict(unittest.TestCase):
         assert d == utils.CaseInsensitiveDict(Foo=1, bar=2)
 
 
-class TestLineAnchorCodeHtmlFormatter(unittest.TestCase):
+class TestLineAnchorCodeHtmlFormatter:
 
     def test_render(self):
         code = '#!/usr/bin/env python\n'\
@@ -207,7 +207,7 @@ class TestLineAnchorCodeHtmlFormatter(unittest.TestCase):
             assert '<span class="linenos">1</span>' in hl_code
 
 
-class TestIsTextFile(unittest.TestCase):
+class TestIsTextFile:
 
     def test_is_text_file(self):
         here_dir = path.dirname(__file__)
@@ -217,7 +217,7 @@ class TestIsTextFile(unittest.TestCase):
         assert not utils.is_text_file(open(bin_file, 'rb').read())
 
 
-class TestCodeStats(unittest.TestCase):
+class TestCodeStats:
 
     def setup_method(self, method):
         setup_unit_test()
@@ -241,7 +241,7 @@ class TestCodeStats(unittest.TestCase):
         assert stats['code_size'] == len(blob.text)
 
 
-class TestHTMLSanitizer(unittest.TestCase):
+class TestHTMLSanitizer:
 
     def walker_from_text(self, text):
         parsed = html5lib.parseFragment(text)

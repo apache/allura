@@ -33,7 +33,7 @@ from allura.tasks import repo_tasks
 from forgesvn.tests import with_svn
 
 
-class TestRepoTasks(unittest.TestCase):
+class TestRepoTasks:
 
     def setup_method(self, method):
         setup_basic_test()

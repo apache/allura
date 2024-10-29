@@ -17,7 +17,6 @@
 
 
 from collections import OrderedDict
-from unittest import TestCase
 
 import jinja2
 import mock
@@ -27,7 +26,7 @@ from tg import config
 from allura.lib.package_path_loader import PackagePathLoader
 
 
-class TestPackagePathLoader(TestCase):
+class TestPackagePathLoader:
 
     @mock.patch('pkg_resources.resource_filename')
     @mock.patch('pkg_resources.iter_entry_points')

@@ -25,7 +25,7 @@ from allura.lib import helpers as h
 from forgesvn.tests import with_svn
 
 
-class TestSVNApp(unittest.TestCase):
+class TestSVNApp:
 
     def setup_method(self, method):
         setup_basic_test()

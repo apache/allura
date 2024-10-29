@@ -25,7 +25,7 @@ from allura.lib import helpers as h
 from forgegit.tests import with_git
 
 
-class TestGitApp(unittest.TestCase):
+class TestGitApp:
 
     def setup_method(self, method):
         setup_basic_test()

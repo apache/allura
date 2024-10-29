@@ -17,7 +17,6 @@
 
 from datetime import datetime
 from operator import itemgetter
-from unittest import TestCase
 from urllib.error import HTTPError
 import mock
 
@@ -25,7 +24,7 @@ from ...github import tracker
 from forgeimporters.github.utils import GitHubMarkdownConverter
 
 
-class TestTrackerImporter(TestCase):
+class TestTrackerImporter:
 
     def setup_method(self, method):
         # every single test method here creates an importer and ToolImporterMeta uses 'g'
@@ -157,7 +156,7 @@ class TestTrackerImporter(TestCase):
         body = 'hello\n' \
             '![cdbpzjc5ex4](https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg)\r\n'
         new_body, attachments = importer._get_attachments(extractor, body)
-        self.assertIsNotNone(attachments[0])
+        assert attachments[0] is not None
         assert not hasattr(attachments[0], 'file')
 
     def test_process_comments(self):

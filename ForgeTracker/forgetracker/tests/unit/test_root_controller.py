@@ -110,7 +110,7 @@ def create_ticket(summary, custom_fields):
     return ticket
 
 
-class test_change_text(unittest.TestCase):
+class test_change_text:
 
     def test_get_label(self):
         assert 'Milestone' == tracker_main.get_label('_milestone')

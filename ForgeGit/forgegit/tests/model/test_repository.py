@@ -23,13 +23,14 @@ import unittest
 import pkg_resources
 import datetime
 import email.iterators
-
+import pytest
 import mock
 from tg import tmpl_context as c, app_globals as g
 import tg
 from ming.base import Object
 from ming.odm import ThreadLocalODMSession, session
 from testfixtures import TempDirectory
+import pytest
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
@@ -44,7 +45,7 @@ from forgegit.tests import with_git
 from forgewiki import model as WM
 
 
-class TestNewGit(unittest.TestCase):
+class TestNewGit:
 
     def setup_method(self, method):
         setup_basic_test()
@@ -122,7 +123,7 @@ class TestNewGit(unittest.TestCase):
                     'committer', 'added', 'removed', 'renamed', 'modified', 'copied']))
 
 
-class TestGitRepo(unittest.TestCase, RepoImplTestBase):
+class TestGitRepo(RepoImplTestBase):
 
     def setup_method(self, method):
         setup_basic_test()
@@ -790,7 +791,7 @@ By Dave Brondsema''' in text_body
     def test_merge_raise_exception(self, git, shutil, tempfile):
         self.repo._impl._git.git = mock.Mock()
         git.Repo.clone_from.side_effect = ConnectionError
-        with self.assertRaises(ConnectionError):
+        with pytest.raises(ConnectionError):
             self.repo.merge(mock.Mock())
         assert shutil.rmtree.called
 
@@ -984,7 +985,7 @@ By Dave Brondsema''' in text_body
             assert rev.cached_tags == tags
 
 
-class TestGitImplementation(unittest.TestCase):
+class TestGitImplementation:
 
     def test_branches(self):
         repo_dir = pkg_resources.resource_filename(
@@ -1043,7 +1044,7 @@ class TestGitImplementation(unittest.TestCase):
             assert lcds == {}
 
 
-class TestGitCommit(unittest.TestCase):
+class TestGitCommit:
 
     def setup_method(self, method):
         setup_basic_test()
@@ -1119,7 +1120,7 @@ class TestGitCommit(unittest.TestCase):
         assert commits == []
 
 
-class TestGitHtmlView(unittest.TestCase):
+class TestGitHtmlView:
 
     def setup_method(self, method):
         setup_basic_test()
@@ -1150,7 +1151,7 @@ class TestGitHtmlView(unittest.TestCase):
         assert b.has_html_view
 
 
-class TestGitRename(unittest.TestCase):
+class TestGitRename:
 
     def setup_method(self, method):
         setup_basic_test()

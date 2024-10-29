@@ -16,7 +16,7 @@
 #       under the License.
 
 import io
-from unittest import TestCase, skipIf
+from unittest import  skipIf
 from os import path
 from datetime import datetime, timedelta
 import time
@@ -52,7 +52,7 @@ def setup_module():
     setup_basic_test()
 
 
-class TestMakeSafePathPortion(TestCase):
+class TestMakeSafePathPortion:
 
     def setup_method(self, method):
         self.f = h.make_safe_path_portion
@@ -580,7 +580,7 @@ def test_login_overlay():
         raise HTTPUnauthorized()
 
 
-class TestIterEntryPoints(TestCase):
+class TestIterEntryPoints:
 
     def _make_ep(self, name, cls):
         m = Mock()
@@ -683,7 +683,7 @@ def test_slugify():
     assert h.slugify('Foo.Bar', True)[0] == 'Foo.Bar'
 
 
-class TestRateLimit(TestCase):
+class TestRateLimit:
     rate_limits = '{"60": 1, "120": 3, "900": 5, "1800": 7, "3600": 10, "7200": 15, "86400": 20, "604800": 50, "2592000": 200}'
     key_comment = 'allura.rate_limits_per_user'
 

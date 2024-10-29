@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from unittest import TestCase
 from mock import Mock, patch
 from ming.odm import ThreadLocalODMSession
 
@@ -33,7 +32,7 @@ test_project_with_repo = 'test2'
 with_git = with_tool(test_project_with_repo, 'git', 'src', 'git')
 
 
-class TestGitHubRepoImporter(TestCase):
+class TestGitHubRepoImporter:
 
     def setup_method(self, method):
         setup_unit_test()
@@ -67,16 +66,16 @@ class TestGitHubRepoImporter(TestCase):
         g.post_event.assert_called_once_with('project_updated')
 
 
-class TestGitHubImportController(TestController, TestCase):
+class TestGitHubImportController(TestController):
 
     @with_git
     def test_index(self):
         r = self.app.get(
             f'/p/{test_project_with_repo}/admin/ext/import/github-repo/')
-        self.assertIsNotNone(r.html.find(attrs=dict(name="gh_user_name")))
-        self.assertIsNotNone(r.html.find(attrs=dict(name="gh_project_name")))
-        self.assertIsNotNone(r.html.find(attrs=dict(name="mount_label")))
-        self.assertIsNotNone(r.html.find(attrs=dict(name="mount_point")))
+        assert r.html.find(attrs=dict(name="gh_user_name")) is not None
+        assert r.html.find(attrs=dict(name="gh_project_name")) is not None
+        assert r.html.find(attrs=dict(name="mount_label")) is not None
+        assert r.html.find(attrs=dict(name="mount_point")) is not None
 
     @with_git
     @patch('forgeimporters.github.requests')

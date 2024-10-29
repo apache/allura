@@ -15,7 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import unittest
+import pytest
 import formencode as fe
 from mock import Mock, patch
 
@@ -35,7 +35,7 @@ def dummy_task(*args, **kw):
     pass
 
 
-class TestJsonConverter(unittest.TestCase):
+class TestJsonConverter:
     val = v.JsonConverter
 
     def setup_method(self, method):
@@ -45,13 +45,13 @@ class TestJsonConverter(unittest.TestCase):
         assert {} == self.val.to_python('{}')
 
     def test_invalid(self):
-        with self.assertRaises(fe.Invalid):
+        with pytest.raises(fe.Invalid):
             self.val.to_python('{')
-        with self.assertRaises(fe.Invalid):
+        with pytest.raises(fe.Invalid):
             self.val.to_python('3')
 
 
-class TestJsonFile(unittest.TestCase):
+class TestJsonFile:
 
     def setup_method(self, method):
         _setup_method()
@@ -67,11 +67,11 @@ class TestJsonFile(unittest.TestCase):
         assert {} == self.val.to_python(self.FieldStorage('{}'))
 
     def test_invalid(self):
-        with self.assertRaises(fe.Invalid):
+        with pytest.raises(fe.Invalid):
             self.val.to_python(self.FieldStorage('{'))
 
 
-class TestUserMapFile(unittest.TestCase):
+class TestUserMapFile:
     val = v.UserMapJsonFile()
 
     def setup_method(self, method):
@@ -87,7 +87,7 @@ class TestUserMapFile(unittest.TestCase):
             self.FieldStorage('{"user_old": "user_new"}'))
 
     def test_invalid(self):
-        with self.assertRaises(fe.Invalid):
+        with pytest.raises(fe.Invalid):
             self.val.to_python(self.FieldStorage('{"user_old": 1}'))
 
     def test_as_string(self):
@@ -96,7 +96,7 @@ class TestUserMapFile(unittest.TestCase):
             self.FieldStorage('{"user_old": "user_new"}'))
 
 
-class TestUserValidator(unittest.TestCase):
+class TestUserValidator:
     val = v.UserValidator
 
     def setup_method(self, method):
@@ -106,12 +106,12 @@ class TestUserValidator(unittest.TestCase):
         assert M.User.by_username('root') == self.val.to_python('root')
 
     def test_invalid(self):
-        with self.assertRaises(fe.Invalid) as cm:
+        with pytest.raises(fe.Invalid) as cm:
             self.val.to_python('fakeuser')
-        assert str(cm.exception) == "Invalid username"
+        assert str(cm.value) == "Invalid username"
 
 
-class TestAnonymousValidator(unittest.TestCase):
+class TestAnonymousValidator:
     val = v.AnonymousValidator
 
     def setup_method(self, method):
@@ -125,12 +125,12 @@ class TestAnonymousValidator(unittest.TestCase):
     @patch('allura.lib.validators.c')
     def test_invalid(self, c):
         c.user = M.User.anonymous()
-        with self.assertRaises(fe.Invalid) as cm:
+        with pytest.raises(fe.Invalid) as cm:
             self.val.to_python(True)
-        assert str(cm.exception) ==  "Log in to Mark as Private"
+        assert str(cm.value) ==  "Log in to Mark as Private"
 
 
-class TestMountPointValidator(unittest.TestCase):
+class TestMountPointValidator:
 
     def setup_method(self, method):
         _setup_method()
@@ -151,7 +151,7 @@ class TestMountPointValidator(unittest.TestCase):
         App.validate_mount_point.return_value = False
         c.project.app_instance.return_value = False
         val = v.MountPointValidator(App)
-        with self.assertRaises(fe.Invalid):
+        with pytest.raises(fe.Invalid):
             val.to_python('mymount')
 
     @patch('allura.lib.validators.c')
@@ -170,7 +170,7 @@ class TestMountPointValidator(unittest.TestCase):
         App.validate_mount_point.return_value = True
         c.project.app_instance.return_value = True
         val = v.MountPointValidator(App)
-        with self.assertRaises(fe.Invalid):
+        with pytest.raises(fe.Invalid):
             val.to_python('mymount')
 
     @patch('allura.lib.validators.c')
@@ -180,7 +180,7 @@ class TestMountPointValidator(unittest.TestCase):
         App.validate_mount_point.return_value = True
         c.project.app_instance.return_value = False
         val = v.MountPointValidator(App)
-        with self.assertRaises(fe.Invalid):
+        with pytest.raises(fe.Invalid):
             val.to_python('feed')
 
     @patch('allura.lib.validators.c')
@@ -193,7 +193,7 @@ class TestMountPointValidator(unittest.TestCase):
         assert 'wiki-0' == val.to_python(None)
 
 
-class TestTaskValidator(unittest.TestCase):
+class TestTaskValidator:
     val = v.TaskValidator
 
     def setup_method(self, method):
@@ -203,27 +203,27 @@ class TestTaskValidator(unittest.TestCase):
         assert dummy_task == self.val.to_python('allura.tests.test_validators.dummy_task')
 
     def test_invalid_name(self):
-        with self.assertRaises(fe.Invalid) as cm:
+        with pytest.raises(fe.Invalid) as cm:
             self.val.to_python('badname')
-        assert str(cm.exception).startswith('Invalid task name')
+        assert str(cm.value).startswith('Invalid task name')
 
     def test_import_failure(self):
-        with self.assertRaises(fe.Invalid) as cm:
+        with pytest.raises(fe.Invalid) as cm:
             self.val.to_python('allura.does.not.exist')
-        assert str(cm.exception) =='Could not import "allura.does.not.exist"'
+        assert str(cm.value) =='Could not import "allura.does.not.exist"'
 
     def test_attr_lookup_failure(self):
-        with self.assertRaises(fe.Invalid) as cm:
+        with pytest.raises(fe.Invalid) as cm:
             self.val.to_python('allura.tests.test_validators.typo')
-        assert str(cm.exception) == 'Module has no attribute "typo"'
+        assert str(cm.value) == 'Module has no attribute "typo"'
 
     def test_not_a_task(self):
-        with self.assertRaises(fe.Invalid) as cm:
+        with pytest.raises(fe.Invalid) as cm:
             self.val.to_python('allura.tests.test_validators._setup_method')
-        assert str(cm.exception) == '"allura.tests.test_validators._setup_method" is not a task.'
+        assert str(cm.value) == '"allura.tests.test_validators._setup_method" is not a task.'
 
 
-class TestPathValidator(unittest.TestCase):
+class TestPathValidator:
     val = v.PathValidator(strip=True, if_missing={}, if_empty={})
 
     def setup_method(self, method):
@@ -250,31 +250,31 @@ class TestPathValidator(unittest.TestCase):
         assert d['app'].config._id == app.config._id
 
     def test_invalid_format(self):
-        with self.assertRaises(fe.Invalid) as cm:
+        with pytest.raises(fe.Invalid) as cm:
             self.val.to_python('test')
-        assert str(cm.exception).startswith(
+        assert str(cm.value).startswith(
             'You must specify at least a neighborhood and project')
 
     def test_invalid_neighborhood(self):
-        with self.assertRaises(fe.Invalid) as cm:
+        with pytest.raises(fe.Invalid) as cm:
             self.val.to_python('/q/test')
-        assert str(cm.exception) == 'Invalid neighborhood: /q/'
+        assert str(cm.value) == 'Invalid neighborhood: /q/'
 
     def test_invalid_project(self):
-        with self.assertRaises(fe.Invalid) as cm:
+        with pytest.raises(fe.Invalid) as cm:
             self.val.to_python('/p/badproject')
-        assert str(cm.exception) == 'Invalid project: badproject'
+        assert str(cm.value) == 'Invalid project: badproject'
 
     def test_invalid_app_mount_point(self):
-        with self.assertRaises(fe.Invalid) as cm:
+        with pytest.raises(fe.Invalid) as cm:
             self.val.to_python('/p/test/badapp')
-        assert str(cm.exception) == 'Invalid app mount point: badapp'
+        assert str(cm.value) == 'Invalid app mount point: badapp'
 
     def test_no_input(self):
         assert {} == self.val.to_python('')
 
 
-class TestUrlValidator(unittest.TestCase):
+class TestUrlValidator:
     val = v.URL
 
     def setup_method(self, method):
@@ -285,17 +285,17 @@ class TestUrlValidator(unittest.TestCase):
         assert 'http://url' == self.val.to_python('url')
 
     def test_invalid_ip(self):
-        with self.assertRaises(fe.Invalid) as cm:
+        with pytest.raises(fe.Invalid) as cm:
             self.val.to_python('192.168.0')
-        assert str(cm.exception) == 'That is not a valid URL'
+        assert str(cm.value) == 'That is not a valid URL'
 
     def test_invalid_url(self):
-        with self.assertRaises(fe.Invalid) as cm:
+        with pytest.raises(fe.Invalid) as cm:
             self.val.to_python('u"rl')
-        assert str(cm.exception) == 'That is not a valid URL'
+        assert str(cm.value) == 'That is not a valid URL'
 
 
-class TestNonHttpUrlValidator(unittest.TestCase):
+class TestNonHttpUrlValidator:
     val = v.NonHttpUrl
 
     def setup_method(self, method):
@@ -306,17 +306,17 @@ class TestNonHttpUrlValidator(unittest.TestCase):
         assert 'ssh+git://url' == self.val.to_python('ssh+git://url')
 
     def test_invalid(self):
-        with self.assertRaises(fe.Invalid) as cm:
+        with pytest.raises(fe.Invalid) as cm:
             self.val.to_python('http://u"rl')
-        assert str(cm.exception) == 'That is not a valid URL'
+        assert str(cm.value) == 'That is not a valid URL'
 
     def test_no_scheme(self):
-        with self.assertRaises(fe.Invalid) as cm:
+        with pytest.raises(fe.Invalid) as cm:
             self.val.to_python('url')
-        assert str(cm.exception) == 'You must start your URL with a scheme'
+        assert str(cm.value) == 'You must start your URL with a scheme'
 
 
-class TestIconValidator(unittest.TestCase):
+class TestIconValidator:
     val = v.IconValidator
 
     def _mock(self, val):
@@ -339,11 +339,11 @@ class TestIconValidator(unittest.TestCase):
 
     def test_invalid(self):
         input = self._mock('foo.svg')
-        with self.assertRaises(fe.Invalid) as cm:
+        with pytest.raises(fe.Invalid) as cm:
             self.val.to_python(input)
-        assert str(cm.exception) == 'Project icons must be PNG, GIF, JPG, or BMP format.'
+        assert str(cm.value) == 'Project icons must be PNG, GIF, JPG, or BMP format.'
 
         input = self._mock('foogif.svg')
-        with self.assertRaises(fe.Invalid) as cm:
+        with pytest.raises(fe.Invalid) as cm:
             assert input == self.val.to_python(input)
-        assert str(cm.exception) == 'Project icons must be PNG, GIF, JPG, or BMP format.'
+        assert str(cm.value) == 'Project icons must be PNG, GIF, JPG, or BMP format.'

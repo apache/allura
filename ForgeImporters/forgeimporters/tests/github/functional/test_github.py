@@ -17,13 +17,12 @@
 import requests
 import tg
 from mock import patch, call, Mock
-from unittest import TestCase
 
 from allura.tests import TestController
 from allura import model as M
 
 
-class TestGitHubImportController(TestController, TestCase):
+class TestGitHubImportController(TestController):
 
     def test_index(self):
         r = self.app.get('/p/import_project/github/')

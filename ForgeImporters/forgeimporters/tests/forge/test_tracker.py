@@ -16,7 +16,6 @@
 #       under the License.
 
 from datetime import datetime
-from unittest import TestCase
 
 import mock
 import pytest
@@ -33,7 +32,7 @@ from forgeimporters.forge import tracker
 from forgeimporters.forge import alluraImporter
 
 
-class TestTrackerImporter(TestCase):
+class TestTrackerImporter:
 
     def setup_method(self, method):
         # every single test method here creates an importer and ToolImporterMeta uses 'g'
@@ -254,7 +253,7 @@ class TestTrackerImporter(TestCase):
         assert importer.get_user('foo') == 'bar'
         assert M.User.anonymous.call_count == 0
 
-        assert importer.get_user(None), 'anon'
+        assert importer.get_user(None) == 'anon'
         assert M.User.anonymous.call_count == 1
 
         M.User.by_username.return_value = None
@@ -335,7 +334,7 @@ class TestTrackerImporter(TestCase):
         ]
 
 
-class TestForgeTrackerImportController(TestController, TestCase):
+class TestForgeTrackerImportController(TestController):
 
     def setup_method(self, method):
         """Mount Allura importer on the Tracker admin controller"""
@@ -347,9 +346,9 @@ class TestForgeTrackerImportController(TestController, TestCase):
     @with_tracker
     def test_index(self):
         r = self.app.get('/p/test/admin/bugs/_importer/')
-        self.assertIsNotNone(r.html.find(attrs=dict(name="tickets_json")))
-        self.assertIsNotNone(r.html.find(attrs=dict(name="mount_label")))
-        self.assertIsNotNone(r.html.find(attrs=dict(name="mount_point")))
+        assert r.html.find(attrs=dict(name="tickets_json")) is not None
+        assert r.html.find(attrs=dict(name="mount_label")) is not None
+        assert r.html.find(attrs=dict(name="mount_point")) is not None
 
     @with_tracker
     @mock.patch('forgeimporters.forge.tracker.save_importer_upload')

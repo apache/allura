@@ -46,7 +46,7 @@ config = ConfigProxy(
     return_path='forgemail.return_path')
 
 
-class TestReactor(unittest.TestCase):
+class TestReactor:
 
     def setup_method(self, method):
         setup_basic_test()

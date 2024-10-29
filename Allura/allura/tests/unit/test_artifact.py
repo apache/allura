@@ -20,7 +20,7 @@ import unittest
 from allura import model as M
 
 
-class TestArtifact(unittest.TestCase):
+class TestArtifact:
 
     def test_translate_query(self):
         fields = {'name_t': '', 'shortname_s': ''}

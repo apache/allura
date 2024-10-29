@@ -18,7 +18,7 @@
 import json
 import os
 
-from unittest import TestCase, skipIf
+from unittest import  skipIf
 
 import pytest
 from mock import Mock, patch
@@ -40,7 +40,7 @@ from forgeimporters.trac.tickets import (
 )
 
 
-class TestTracTicketImporter(TestCase):
+class TestTracTicketImporter:
 
     def setup_method(self, method):
         setup_unit_test()
@@ -107,7 +107,7 @@ class TestTracTicketImporter(TestCase):
         h.make_app_admin_only.assert_called_once_with(app)
 
 
-class TestTracTicketImportController(TestController, TestCase):
+class TestTracTicketImportController(TestController):
 
     def setup_method(self, method):
         """Mount Trac import controller on the Tracker admin controller"""
@@ -118,9 +118,9 @@ class TestTracTicketImportController(TestController, TestCase):
     @with_tracker
     def test_index(self):
         r = self.app.get('/p/test/admin/bugs/_importer/')
-        self.assertIsNotNone(r.html.find(attrs=dict(name="trac_url")))
-        self.assertIsNotNone(r.html.find(attrs=dict(name="mount_label")))
-        self.assertIsNotNone(r.html.find(attrs=dict(name="mount_point")))
+        assert r.html.find(attrs=dict(name="trac_url")) is not None
+        assert r.html.find(attrs=dict(name="mount_label")) is not None
+        assert r.html.find(attrs=dict(name="mount_point")) is not None
 
     @with_tracker
     @patch('forgeimporters.trac.requests.head')
@@ -192,7 +192,7 @@ class TestTracTicketImportController(TestController, TestCase):
         r = self.app.post('/p/test/admin/ext/import/trac-tickets/create', params, status=200)
         assert 'Invalid URL' in r.text
 
-class TestTracImportSupport(TestCase):
+class TestTracImportSupport:
 
     def test_link_processing(self):
         import_support = TracImportSupport()
@@ -224,7 +224,7 @@ class TestTracImportSupport(TestCase):
             assert actual == expected
 
 
-class TestTracImportSupportFunctional(TestRestApiBase, TestCase):
+class TestTracImportSupportFunctional(TestRestApiBase):
 
     @with_tracker
     def test_links(self):

@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import pytest
 import json
 from io import BytesIO
 import six.moves.urllib.parse
@@ -25,6 +24,7 @@ import six.moves.urllib.error
 from mock import patch, Mock
 
 from ... import github
+
 
 class TestGitHubProjectExtractor:
     PROJECT_INFO = {
@@ -82,58 +82,56 @@ class TestGitHubProjectExtractor:
         response.info = lambda: headers
         return response
 
-    @pytest.fixture
-    def extractor(self):  # Changed from setup_method to fixture
-        extractor = github.GitHubProjectExtractor('test_project')
-        extractor.urlopen = self.mocked_urlopen
-        return extractor
+    def setup_method(self, method):
+        self.extractor = github.GitHubProjectExtractor('test_project')
+        self.extractor.urlopen = self.mocked_urlopen
 
-    def test_get_next_page_url(self, extractor):
-        assert extractor.get_next_page_url(None) is None
-        assert extractor.get_next_page_url('') is None
-
+    def test_get_next_page_url(self):
+        assert self.extractor.get_next_page_url(None) is None
+        assert self.extractor.get_next_page_url('') is None
         link = '<https://api.github.com/repositories/8560576/issues?state=open&page=2>; rel="next", <https://api.github.com/repositories/8560576/issues?state=open&page=10>; rel="last"'
-        assert extractor.get_next_page_url(link) == 'https://api.github.com/repositories/8560576/issues?state=open&page=2'
+        assert self.extractor.get_next_page_url(link) == 'https://api.github.com/repositories/8560576/issues?state=open&page=2'
 
         link = '<https://api.github.com/repositories/8560576/issues?state=open&page=2>; rel="next"'
-        assert extractor.get_next_page_url(link) == 'https://api.github.com/repositories/8560576/issues?state=open&page=2'
+        assert self.extractor.get_next_page_url(link) == 'https://api.github.com/repositories/8560576/issues?state=open&page=2'
 
         link = '<https://api.github.com/repositories/8560576/issues?state=open&page=1>; rel="prev"'
-        assert extractor.get_next_page_url(link) is None
+        assert self.extractor.get_next_page_url(link) is None
 
-    def test_get_summary(self, extractor):
-        assert extractor.get_summary() == 'project description'
+    def test_get_summary(self):
+        assert self.extractor.get_summary() == 'project description'
 
-    def test_get_homepage(self, extractor):
-        assert extractor.get_homepage() == 'http://example.com'
+    def test_get_homepage(self):
+        assert self.extractor.get_homepage() == 'http://example.com'
 
-    def test_iter_issues(self, extractor):
-        issues = list(extractor.iter_issues())
+    def test_iter_issues(self):
+        issues = list(self.extractor.iter_issues())
         all_issues = list(zip((1, 2), self.CLOSED_ISSUES_LIST))
         all_issues += list(zip((3, 4, 5), self.OPENED_ISSUES_LIST))
         all_issues += list(zip((6, 7, 8), self.OPENED_ISSUES_LIST_PAGE2))
         assert issues == all_issues
 
-    def test_iter_comments(self, extractor):
+    def test_iter_comments(self):
         mock_issue = {'comments_url': '/issues/1/comments'}
-        comments = list(extractor.iter_comments(mock_issue))
+        comments = list(self.extractor.iter_comments(mock_issue))
         assert comments == self.ISSUE_COMMENTS + self.ISSUE_COMMENTS_PAGE2
 
-    def test_iter_events(self, extractor):
+    def test_iter_events(self):
         mock_issue = {'events_url': '/issues/1/events'}
-        events = list(extractor.iter_events(mock_issue))
+        events = list(self.extractor.iter_events(mock_issue))
         assert events == self.ISSUE_EVENTS + self.ISSUE_EVENTS_PAGE2[:1]
 
-    def test_has_wiki(self, extractor):
-        assert extractor.has_wiki()
+    def test_has_wiki(self):
+        assert self.extractor.has_wiki()
 
-    def test_get_wiki_url(self, extractor):
-        assert extractor.get_page_url('wiki_url') == 'https://github.com/test_project.wiki'
+    def test_get_wiki_url(self):
+        assert self.extractor.get_page_url('wiki_url') == 'https://github.com/test_project.wiki'
 
     @patch('forgeimporters.base.h.urlopen')
-    def test_urlopen(self, urlopen, extractor):
+    def test_urlopen(self, urlopen):
+        e = github.GitHubProjectExtractor('test_project')
         url = 'https://github.com/u/p/'
-        extractor.urlopen(url)
+        e.urlopen(url)
         request = urlopen.call_args[0][0]
         assert request.get_full_url() == url
 
@@ -149,7 +147,8 @@ class TestGitHubProjectExtractor:
     @patch('forgeimporters.base.h.urlopen')
     @patch('forgeimporters.github.time.sleep')
     @patch('forgeimporters.github.log')
-    def test_urlopen_rate_limit_403(self, log, sleep, urlopen, extractor):
+    def test_urlopen_rate_limit_403(self, log, sleep, urlopen):
+        '''Test that urlopen catches 403 which may happen if limit exceeded by previous fetches'''
         limit_exceeded_headers = {
             'X-RateLimit-Limit': '10',
             'X-RateLimit-Remaining': '0',
@@ -163,7 +162,8 @@ class TestGitHubProjectExtractor:
             raise six.moves.urllib.error.HTTPError(
                 'url', 403, 'msg', limit_exceeded_headers, BytesIO(b'{}'))
         urlopen.side_effect = urlopen_side_effect
-        extractor.get_page('http://example.com/')
+        e = github.GitHubProjectExtractor('test_project')
+        e.get_page('http://example.com/')
         assert sleep.call_count == 1
         assert urlopen.call_count == 2
         log.warning.assert_called_once_with(

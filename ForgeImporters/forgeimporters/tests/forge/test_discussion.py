@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from unittest import TestCase
 import mock
 
 from dateutil.parser import parse
@@ -31,7 +30,7 @@ from forgeimporters.forge import discussion
 from forgediscussion import utils
 
 
-class TestDiscussionImporter(TestCase):
+class TestDiscussionImporter:
 
     def setup_method(self, method):
         self.patcher_g = mock.patch('forgeimporters.base.g', mock.MagicMock())
@@ -1268,7 +1267,7 @@ class TestDiscussionImporter(TestCase):
         g.post_event.assert_not_called()
 
 
-class TestForgeDiscussionController(TestController, TestCase):
+class TestForgeDiscussionController(TestController):
 
     def setup_method(self, method):
         super().setup_method(method)
@@ -1276,9 +1275,9 @@ class TestForgeDiscussionController(TestController, TestCase):
     @with_discussion
     def test_index(self):
         r = self.app.get('/p/test/admin/ext/import/forge-discussion/')
-        self.assertIsNotNone(r.html.find(attrs=dict(name="discussions_json")))
-        self.assertIsNotNone(r.html.find(attrs=dict(name="mount_label")))
-        self.assertIsNotNone(r.html.find(attrs=dict(name="mount_point")))
+        assert r.html.find(attrs=dict(name="discussions_json")) is not None
+        assert r.html.find(attrs=dict(name="mount_label")) is not None
+        assert r.html.find(attrs=dict(name="mount_point")) is not None
 
     @with_discussion
     @mock.patch('forgeimporters.forge.discussion.save_importer_upload')

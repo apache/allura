@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from unittest import TestCase
 from mock import patch
 from ming.odm import ThreadLocalODMSession
 
@@ -32,17 +31,17 @@ with_tracker = with_tool(test_project_with_tracker,
                          'tickets', 'spooky-issues', 'tickets')
 
 
-class TestGitHubTrackerImportController(TestController, TestCase):
+class TestGitHubTrackerImportController(TestController):
 
     url = '/p/%s/admin/ext/import/github-tracker/' % test_project_with_tracker
 
     @with_tracker
     def test_index(self):
         r = self.app.get(self.url)
-        self.assertIsNotNone(r.html.find(attrs=dict(name='gh_user_name')))
-        self.assertIsNotNone(r.html.find(attrs=dict(name='gh_project_name')))
-        self.assertIsNotNone(r.html.find(attrs=dict(name='mount_label')))
-        self.assertIsNotNone(r.html.find(attrs=dict(name='mount_point')))
+        assert r.html.find(attrs=dict(name='gh_user_name')) is not None
+        assert r.html.find(attrs=dict(name='gh_project_name')) is not None
+        assert r.html.find(attrs=dict(name='mount_label')) is not None
+        assert r.html.find(attrs=dict(name='mount_point')) is not None
 
     @with_tracker
     @patch('forgeimporters.github.requests')

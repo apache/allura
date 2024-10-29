@@ -32,7 +32,7 @@ from forgegit.tests import with_git
 from forgegit.tests.functional.test_controllers import _TestCase as GitRealDataBaseTestCase
 
 
-class TestGitTasks(unittest.TestCase):
+class TestGitTasks:
 
     def setup_method(self, method):
         setup_basic_test()

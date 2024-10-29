@@ -16,7 +16,6 @@
 #       under the License.
 
 import os
-from unittest import TestCase
 from io import BytesIO
 
 import ming
@@ -36,7 +35,7 @@ class File(M.File):
 Mapper.compile_all()
 
 
-class TestFile(TestCase):
+class TestFile:
 
     def setup_method(self, method):
         config = {

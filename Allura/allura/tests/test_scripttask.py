@@ -21,7 +21,7 @@ import mock
 from allura.scripts.scripttask import ScriptTask
 
 
-class TestScriptTask(unittest.TestCase):
+class TestScriptTask:
 
     def setup_method(self, method):
         class TestScriptTask(ScriptTask):

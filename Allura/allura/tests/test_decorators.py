@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 import inspect
-from unittest import TestCase
 from mock import patch
 import random
 import gc
@@ -24,7 +23,7 @@ from allura.lib.decorators import task, memoize
 from alluratest.controller import setup_basic_test, setup_global_objects
 
 
-class TestTask(TestCase):
+class TestTask:
 
     def setup_method(self, method):
         setup_basic_test()
