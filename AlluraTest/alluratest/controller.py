@@ -175,8 +175,10 @@ class TestController:
 
     def setup_method(self, method=None):
         pkg = self.__module__.split('.')[0]
-        self.app = ValidatingTestApp(
-            setup_functional_test(app_name=self.application_under_test, current_pkg=pkg))
+        self.app = ValidatingTestApp(  # inherits from webtest.TestApp ultimately
+            setup_functional_test(app_name=self.application_under_test, current_pkg=pkg),
+            parser_features='lxml',  # fastest bs4 parser (otherwise WebTest defaults to html.parser)
+        )
         self.app.extra_environ = {'REMOTE_ADDR': '127.0.0.1'}  # remote_addr needed by AntiSpam
         if self.validate_skip:
             self.app.validate_skip = self.validate_skip
