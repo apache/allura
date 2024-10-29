@@ -183,7 +183,7 @@ class TestStats(TestController):
             'modified'] == initial_tickets_artifacts['modified'] + 3
 
 
-class TestGitCommit(TestController, unittest.TestCase):
+class TestGitCommit(TestController):
 
     def setup_method(self, method):
         super().setup_method(method)

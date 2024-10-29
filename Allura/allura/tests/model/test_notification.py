@@ -33,7 +33,7 @@ from allura.tests import decorators as td
 from forgewiki import model as WM
 
 
-class TestNotification(unittest.TestCase):
+class TestNotification:
 
     def setup_method(self, method):
         setup_basic_test()
@@ -164,7 +164,7 @@ class TestNotification(unittest.TestCase):
         )
 
 
-class TestPostNotifications(unittest.TestCase):
+class TestPostNotifications:
 
     def setup_method(self, method):
         setup_basic_test()
@@ -294,7 +294,7 @@ class TestPostNotifications(unittest.TestCase):
         return M.Notification.post(self.pg, 'metadata')
 
 
-class TestSubscriptionTypes(unittest.TestCase):
+class TestSubscriptionTypes:
 
     def setup_method(self, method):
         setup_basic_test()
@@ -468,7 +468,7 @@ class TestSubscriptionTypes(unittest.TestCase):
         assert count == 1
 
 
-class TestSiteNotification(unittest.TestCase):
+class TestSiteNotification:
     def setup_method(self, method):
         self.note = M.SiteNotification(
             active=True,

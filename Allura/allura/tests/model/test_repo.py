@@ -71,7 +71,7 @@ class RepoImplTestBase:
     pass
 
 
-class RepoTestBase(unittest.TestCase):
+class RepoTestBase:
     def setup_method(self, method):
         setup_basic_test()
 
@@ -128,7 +128,7 @@ class RepoTestBase(unittest.TestCase):
         ]
 
 
-class TestLastCommit(unittest.TestCase):
+class TestLastCommit:
     def setup_method(self, method):
         setup_basic_test()
         setup_global_objects()
@@ -400,7 +400,7 @@ class TestLastCommit(unittest.TestCase):
         assert lcd.by_name['file2'] == commit3._id
 
 
-class TestModelCache(unittest.TestCase):
+class TestModelCache:
     def setup_method(self, method):
         self.cache = M.repository.ModelCache()
 

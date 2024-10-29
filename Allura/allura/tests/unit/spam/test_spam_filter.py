@@ -45,7 +45,7 @@ class MockFilter2(SpamFilter):
         return True
 
 
-class TestSpamFilter(unittest.TestCase):
+class TestSpamFilter:
 
     def test_check(self):
         # default no-op impl always returns False

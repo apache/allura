@@ -30,7 +30,7 @@ from allura.lib.solr import Solr, escape_solr_arg
 from allura.lib.search import search_app, SearchIndexable
 
 
-class TestSolr(unittest.TestCase):
+class TestSolr:
 
     def setup_method(self, method):
         # need to create the "test" project so @td.with_wiki works
@@ -140,7 +140,7 @@ class TestSolr(unittest.TestCase):
             r'registration_ip:(2601\:404\:c300\:a560\:598f\:9336\:d2bb\:9e32)', fq=fq, ignore_errors=False, **{'q.op': 'AND'})
 
 
-class TestSearchIndexable(unittest.TestCase):
+class TestSearchIndexable:
 
     def setup_method(self, method):
         self.obj = SearchIndexable()
@@ -164,7 +164,7 @@ class TestSearchIndexable(unittest.TestCase):
         assert self.obj.solarize() == dict(text='<script>a(1)</script>')
 
 
-class TestSearch_app(unittest.TestCase):
+class TestSearch_app:
 
     def setup_method(self, method):
         # need to create the "test" project so @td.with_wiki works

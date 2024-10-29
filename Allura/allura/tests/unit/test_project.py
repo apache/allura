@@ -25,7 +25,7 @@ from allura.lib import helpers as h
 from allura.app import SitemapEntry
 
 
-class TestProject(unittest.TestCase):
+class TestProject:
 
     def test_grouped_navbar_entries(self):
         p = M.Project()
@@ -83,7 +83,7 @@ class TestProject(unittest.TestCase):
 
     def test_social_account(self):
         p = M.Project()
-        self.assertIsNone(p.social_account('Twitter'))
+        assert p.social_account('Twitter') is None
 
         p.set_social_account('Twitter', 'http://twitter.com/allura')
         assert p.social_account('Twitter').accounturl == 'http://twitter.com/allura'

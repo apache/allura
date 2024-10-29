@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from unittest import TestCase
 import errno
 
 from formencode import Invalid
@@ -32,7 +31,7 @@ from allura.lib import helpers as h
 from forgeimporters import base
 
 
-class TestProjectExtractor(TestCase):
+class TestProjectExtractor:
 
     @mock.patch('forgeimporters.base.h.urlopen')
     @mock.patch('urllib.request.Request')
@@ -142,7 +141,7 @@ def ep(name, source=None, importer=None, **kw):
     return mep
 
 
-class TestProjectImporter(TestCase):
+class TestProjectImporter:
 
     @mock.patch.object(base.h, 'iter_entry_points')
     def test_tool_importers(self, iep):
@@ -234,7 +233,7 @@ class TI3(base.ToolImporter):
     target_app = [TA2, TA2]
 
 
-class TestToolImporter(TestCase):
+class TestToolImporter:
 
     @mock.patch.object(base.h, 'iter_entry_points')
     def test_by_name(self, iep):
@@ -261,8 +260,8 @@ class TestToolImporter(TestCase):
             'importer2',
             'importer3',
         }
-        self.assertIsInstance(importers['importer2'], TI2)
-        self.assertIsInstance(importers['importer3'], TI3)
+        assert isinstance(importers['importer2'], TI2)
+        assert isinstance(importers['importer3'], TI3)
 
     def test_tool_label(self):
         assert TI1().tool_label == 'foo'
@@ -275,7 +274,7 @@ class TestToolImporter(TestCase):
         assert TI3().tool_description == 'qux_desc'
 
 
-class TestToolsValidator(TestCase):
+class TestToolsValidator:
 
     def setup_method(self, method):
         self.tv = base.ToolsValidator('good-source')
@@ -288,26 +287,26 @@ class TestToolsValidator(TestCase):
     @mock.patch.object(base.ToolImporter, 'by_name')
     def test_no_ep(self, by_name):
         eps = by_name.return_value = None
-        with self.assertRaises(Invalid) as cm:
+        with pytest.raises(Invalid) as cm:
             self.tv.to_python('my-value')
-        assert cm.exception.msg == 'Invalid tool selected: my-value'
+        assert cm.value.msg == 'Invalid tool selected: my-value'
         by_name.assert_called_once_with('my-value')
 
     @mock.patch.object(base.ToolImporter, 'by_name')
     def test_bad_source(self, by_name):
         eps = by_name.return_value = ep('ep1', 'bad-source').lv
-        with self.assertRaises(Invalid) as cm:
+        with pytest.raises(Invalid) as cm:
             self.tv.to_python('my-value')
-        assert cm.exception.msg == 'Invalid tool selected: my-value'
+        assert cm.value.msg == 'Invalid tool selected: my-value'
         by_name.assert_called_once_with('my-value')
 
     @mock.patch.object(base.ToolImporter, 'by_name')
     def test_multiple(self, by_name):
         eps = by_name.side_effect = [
             ep('ep1', 'bad-source').lv, ep('ep2', 'good-source').lv, ep('ep3', 'bad-source').lv]
-        with self.assertRaises(Invalid) as cm:
+        with pytest.raises(Invalid) as cm:
             self.tv.to_python(['value1', 'value2', 'value3'])
-        assert cm.exception.msg == \
+        assert cm.value.msg == \
                          'Invalid tools selected: value1, value3'
         assert by_name.call_args_list == [
             mock.call('value1'),

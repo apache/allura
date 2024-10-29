@@ -49,7 +49,7 @@ from forgesvn.tests import with_svn
 from allura.tests.decorators import with_tool
 
 
-class TestNewRepo(unittest.TestCase):
+class TestNewRepo:
 
     def setup_method(self, method):
         setup_basic_test()
@@ -104,7 +104,7 @@ class TestNewRepo(unittest.TestCase):
                     'committer', 'added', 'removed', 'renamed', 'modified', 'copied']))
 
 
-class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
+class TestSVNRepo(RepoImplTestBase):
 
     def setup_method(self, method):
         setup_basic_test()
@@ -568,7 +568,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         assert payload == expected_payload
 
 
-class TestSVNRev(unittest.TestCase):
+class TestSVNRev:
 
     def setup_method(self, method):
         setup_basic_test()
@@ -645,7 +645,7 @@ class TestSVNRev(unittest.TestCase):
         assert 'Create readme' in n.text
 
 
-class _Test(unittest.TestCase):
+class _Test:
     idgen = ('obj_%d' % i for i in count())
 
     def _make_tree(self, object_id, **kwargs):
@@ -1016,7 +1016,7 @@ class TestCommit(_TestWithRepo):
         self.ci.context()
 
 
-class TestRename(unittest.TestCase):
+class TestRename:
 
     def setup_method(self, method):
         setup_basic_test()

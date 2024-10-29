@@ -18,7 +18,6 @@
 import pymongo
 import mock
 
-from unittest import TestCase
 
 import allura
 from allura.tests import decorators as td
@@ -72,7 +71,7 @@ def test_extensions_cm_flush_raises():
     assert session._kwargs['extensions'] == []
 
 
-class TestSessionExtension(TestCase):
+class TestSessionExtension:
 
     def _mock_indexable(self, **kw):
         m = mock.Mock(**kw)
@@ -148,7 +147,7 @@ class TestArtifactSessionExtension(TestSessionExtension):
         assert index_tasks.add_artifacts.post.call_count == 0
 
 
-class TestBatchIndexer(TestCase):
+class TestBatchIndexer:
 
     def setup_method(self, method):
         session = mock.Mock()

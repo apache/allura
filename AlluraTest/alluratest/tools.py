@@ -15,10 +15,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 import functools
-import unittest
+import re
 
 from decorator import decorator
-
+import unittest
 testcase = unittest.TestCase(methodName='__init__')  # py2 needs a methodName that is a valid attr :/
 
 

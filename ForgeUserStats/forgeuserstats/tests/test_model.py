@@ -36,7 +36,7 @@ from forgeuserstats.model import stats as USM
 with_git = td.with_tool('test', 'Git', 'git-userstats-model', 'Git', type='git')
 
 
-class TestUserStats(unittest.TestCase):
+class TestUserStats:
 
     def setup_method(self, method):
         setup_basic_test()

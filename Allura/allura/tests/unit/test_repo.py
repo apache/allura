@@ -18,6 +18,7 @@
 import datetime
 import unittest
 
+import pytest
 import six
 from mock import patch, Mock, MagicMock, call
 
@@ -31,7 +32,7 @@ from allura.model.repo_refresh import (
 )
 
 
-class TestTopoSort(unittest.TestCase):
+class TestTopoSort:
 
     def test_commit_dates_out_of_order(self):
         """Commits should be sorted by their parent/child relationships,
@@ -82,7 +83,7 @@ def blob(name, id):
     return b
 
 
-class TestTree(unittest.TestCase):
+class TestTree:
 
     @patch('allura.model.repository.Tree.__getitem__')
     def test_get_obj_by_path(self, getitem):
@@ -99,7 +100,7 @@ class TestTree(unittest.TestCase):
         getitem().__getitem__().__getitem__.assert_called_with('file.txt')
 
 
-class TestBlob(unittest.TestCase):
+class TestBlob:
 
     def test_pypeline_view(self):
         blob = M.repository.Blob(MagicMock(), 'INSTALL.mdown', 'blob1')
@@ -139,7 +140,7 @@ class TestBlob(unittest.TestCase):
         assert blob.has_html_view is True
 
 
-class TestCommit(unittest.TestCase):
+class TestCommit:
 
     def test_activity_extras(self):
         commit = M.repository.Commit()
@@ -240,7 +241,7 @@ class TestCommit(unittest.TestCase):
         commit.get_tree.assert_called_with(create=True)
 
 
-class TestZipDir(unittest.TestCase):
+class TestZipDir:
 
     @patch('allura.model.repository.Popen')
     @patch('allura.model.repository.tg')
@@ -271,7 +272,7 @@ class TestZipDir(unittest.TestCase):
         popen.return_value.returncode = 1
         src = '/fake/path/to/repo'
         zipfile = '/fake/zip/file.tmp'
-        with self.assertRaises(Exception) as cm:
+        with pytest.raises(Exception) as cm:
             zipdir(src, zipfile)
         emsg = str(cm.exception)
         assert \
@@ -282,7 +283,7 @@ class TestZipDir(unittest.TestCase):
         assert "STDERR: 2" in emsg
 
 
-class TestPrefixPathsUnion(unittest.TestCase):
+class TestPrefixPathsUnion:
 
     def test_disjoint(self):
         a = {'a1', 'a2', 'a3'}
