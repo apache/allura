@@ -50,7 +50,7 @@ from tg.support.converters import asint
 
 import allura
 # needed for tg.configuration to work
-from allura.lib import app_globals, helpers
+from allura.lib import helpers
 from allura.lib.package_path_loader import PackagePathLoader
 
 log = logging.getLogger(__name__)

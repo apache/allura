@@ -26,7 +26,6 @@ from webob.exc import HTTPRequestEntityTooLarge
 from paste.deploy.converters import asbool
 import pysolr
 from pysolr import SolrError
-import six
 
 from allura.lib.helpers import shlex_split
 

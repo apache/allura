@@ -26,7 +26,7 @@ from allura.lib.security import Credentials, all_allowed, has_access
 from allura import model as M
 from forgewiki import model as WM
 from allura.lib.security import HIBPClientError, HIBPClient
-from mock import Mock, patch
+from mock import patch
 from requests.exceptions import Timeout
 
 

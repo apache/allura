@@ -36,7 +36,7 @@ import tg
 import pysvn
 from paste.deploy.converters import asbool, asint
 from pymongo.errors import DuplicateKeyError
-from tg import tmpl_context as c, app_globals as g
+from tg import app_globals as g
 
 from ming.base import Object
 from ming.odm import Mapper, FieldProperty
@@ -44,7 +44,6 @@ from ming.utils import LazyProperty
 
 from allura import model as M
 from allura.lib import helpers as h
-from allura.model.auth import User
 from allura.model.repository import zipdir
 from allura.model import repository as RM
 

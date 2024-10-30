@@ -29,7 +29,6 @@ import six.moves.urllib.request
 import six.moves.urllib.error
 
 import oembed
-import jinja2
 import markupsafe
 from operator import attrgetter
 from urllib.parse import urlparse, urlunparse

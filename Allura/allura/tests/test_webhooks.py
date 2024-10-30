@@ -42,7 +42,6 @@ from alluratest.controller import (
     TestController,
     TestRestApiBase,
 )
-import six
 
 
 # important to be distinct from 'test' and 'test2' which ForgeGit and

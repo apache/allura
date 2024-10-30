@@ -15,14 +15,13 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import sys
 import logging
-from ming.odm import ThreadLocalODMSession, session
+from ming.odm import session
 from tg import tmpl_context as c
 from allura import model as M
 from forgediscussion.model import ForumPost
 from allura.lib import utils, security
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, ArgumentTypeError
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
 
 log = logging.getLogger(__name__)

@@ -18,7 +18,6 @@
 import os
 import logging
 
-import six
 import tg
 from paste.script import command
 from paste.deploy import appconfig

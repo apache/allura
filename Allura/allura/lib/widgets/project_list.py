@@ -23,7 +23,6 @@ from paste.deploy.converters import asbool
 
 from allura import model as M
 from allura.lib.security import Credentials
-import six
 
 
 class ProjectSummary(ew_core.Widget):

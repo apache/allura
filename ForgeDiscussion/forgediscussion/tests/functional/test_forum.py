@@ -25,7 +25,6 @@ from email.mime.multipart import MIMEMultipart
 
 import pkg_resources
 import pymongo
-import webtest
 
 from ming.odm import ThreadLocalODMSession
 from tg import tmpl_context as c

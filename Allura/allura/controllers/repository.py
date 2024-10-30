@@ -15,13 +15,11 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import os
 import logging
 import difflib
 
 from allura.lib.utils import permanent_redirect
-from datetime import datetime
-from urllib.parse import quote, unquote
+from urllib.parse import unquote
 from collections import defaultdict, OrderedDict
 
 

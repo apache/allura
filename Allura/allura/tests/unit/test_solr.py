@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import unittest
 
 import mock
 from markupsafe import Markup

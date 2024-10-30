@@ -28,7 +28,6 @@ from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg import tmpl_context as c, app_globals as g
 from paste.deploy.converters import asbool
 from webob import exc
-import jinja2
 import markupsafe
 import pymongo
 
@@ -49,7 +48,6 @@ from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import project_list as plw
 from allura.lib import plugin, exceptions
 from .search import ProjectBrowseController
-from allura.ext.user_profile.user_main import UserProfileApp
 
 log = logging.getLogger(__name__)
 

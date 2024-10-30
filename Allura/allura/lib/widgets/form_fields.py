@@ -23,12 +23,10 @@ from tg import request, url
 import json
 import logging
 
-from formencode import validators as fev
 import paginate
 
 import ew as ew_core
 import ew.jinja2_ew as ew
-import six
 
 from allura.lib import validators as v
 

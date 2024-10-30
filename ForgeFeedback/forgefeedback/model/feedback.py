@@ -16,9 +16,6 @@
 #       under the License.
 
 import logging
-import six.moves.urllib.request
-import six.moves.urllib.parse
-import six.moves.urllib.error
 import typing
 from datetime import datetime
 
@@ -32,9 +29,7 @@ from ming.odm import FieldProperty, ForeignIdProperty, RelationProperty
 
 from allura.model.artifact import VersionedArtifact
 from allura.model.auth import AlluraUserProperty, User
-from allura.model.project import ProjectRole
 from allura.model.timeline import ActivityObject
-from allura.lib import helpers as h
 
 if typing.TYPE_CHECKING:
     from ming.odm.mapper import Query

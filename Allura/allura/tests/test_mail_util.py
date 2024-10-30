@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import unittest
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 

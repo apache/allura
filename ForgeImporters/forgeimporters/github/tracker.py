@@ -19,7 +19,6 @@ import re
 import logging
 from datetime import datetime
 from urllib.error import HTTPError
-import six
 from io import BytesIO
 
 from tg import (

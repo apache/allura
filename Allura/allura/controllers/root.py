@@ -19,7 +19,7 @@
 import logging
 from string import Template
 
-from tg import expose, request, config, session, redirect, flash
+from tg import expose, request, redirect, flash
 from tg.decorators import with_trailing_slash
 from tg import tmpl_context as c
 from tg import response

@@ -24,7 +24,6 @@ from ming.odm.base import ObjectState
 from ming.odm.base import state
 from ming.odm.odmsession import ThreadLocalODMSession, SessionExtension
 from contextlib import contextmanager
-from tg import tmpl_context as c
 
 from allura.lib.utils import chunked_list
 from allura.tasks import index_tasks
@@ -117,7 +116,6 @@ class ArtifactSessionExtension(ManagedSessionExtension):
     def after_flush(self, obj=None):
         "Update artifact references, and add/update this artifact to solr"
         if not getattr(self.session, 'disable_index', False):
-            from tg import app_globals as g
             from .index import ArtifactReference, Shortlink
             from .session import main_orm_session
             # Ensure artifact references & shortlinks exist for new objects

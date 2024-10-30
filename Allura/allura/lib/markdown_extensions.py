@@ -19,7 +19,6 @@ from __future__ import annotations
 import re
 import logging
 import warnings
-from typing import List
 import xml.etree.ElementTree as etree
 
 from urllib.parse import urljoin
@@ -37,7 +36,6 @@ from . import macro
 from . import helpers as h
 from allura import model as M
 from allura.lib.utils import ForgeHTMLSanitizerFilter, is_nofollow_url
-import six
 
 log = logging.getLogger(__name__)
 

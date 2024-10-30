@@ -20,7 +20,6 @@ import re
 import logging
 import os
 import time
-import six.moves.queue
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 import signal

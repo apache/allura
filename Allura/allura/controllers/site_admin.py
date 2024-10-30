@@ -20,7 +20,7 @@ import logging
 from datetime import datetime, timedelta
 import shlex
 
-from tg import expose, validate, flash, config, redirect
+from tg import expose, validate, flash, redirect
 from tg.decorators import with_trailing_slash, without_trailing_slash
 import bson
 import tg

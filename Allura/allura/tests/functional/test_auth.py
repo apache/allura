@@ -34,11 +34,11 @@ from mock import patch, Mock
 import mock
 import pytest
 import webtest
-from tg import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c
 
 from allura.tests import TestController
 from allura.tests import decorators as td
-from allura.tests.decorators import audits, out_audits, assert_logmsg
+from allura.tests.decorators import audits, out_audits
 from alluratest.controller import setup_trove_categories, TestRestApiBase, oauth1_webtest
 from allura import model as M
 from allura.model.oauth import dummy_oauths

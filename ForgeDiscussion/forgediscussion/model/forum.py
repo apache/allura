@@ -15,9 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import re
 import logging
-from itertools import chain
 import typing
 
 import pymongo

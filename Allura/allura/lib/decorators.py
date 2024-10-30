@@ -16,10 +16,8 @@
 #       under the License.
 
 import inspect
-import sys
 import json
 import logging
-import six
 from http.cookies import SimpleCookie as Cookie
 from collections import defaultdict
 from urllib.parse import unquote
@@ -38,7 +36,6 @@ from tg import response
 from webob.exc import HTTPFound, WSGIHTTPException
 
 from allura.lib import helpers as h
-from allura.lib import utils
 
 
 log = logging.getLogger(__name__)

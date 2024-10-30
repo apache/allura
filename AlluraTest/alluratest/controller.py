@@ -25,14 +25,11 @@ import six.moves.urllib.error
 import json
 
 import mock
-import beaker.session
-from bs4 import BeautifulSoup
 from formencode import variabledecode
 from paste.deploy import loadapp
 from paste.deploy.converters import asbool
 from paste.script.appinstall import SetupCommand
-from tg import tmpl_context as c, app_globals as g
-from tg import url, request, response, session
+from tg import tmpl_context as c
 import tg
 from tg.wsgiapp import RequestLocals
 from webob import Response, Request

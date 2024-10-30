@@ -19,7 +19,7 @@ from io import BytesIO
 
 import six
 from tg import expose
-from tg.decorators import without_trailing_slash, with_trailing_slash
+from tg.decorators import without_trailing_slash
 from webob import exc
 
 from tg import app_globals as g

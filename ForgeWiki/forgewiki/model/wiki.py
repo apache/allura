@@ -35,7 +35,6 @@ from allura.model import (
     Snapshot,
     Feed,
     Thread,
-    Post,
     User,
     BaseAttachment,
     Notification,

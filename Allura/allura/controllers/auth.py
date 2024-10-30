@@ -22,7 +22,6 @@ import os
 from base64 import b32encode
 from datetime import datetime
 import re
-import warnings
 from urllib.parse import urlparse, urljoin
 
 import bson

@@ -21,7 +21,6 @@ import sys
 import os
 import os.path
 import difflib
-import jinja2
 
 import urllib.request
 import urllib.parse
@@ -32,13 +31,11 @@ import json
 import logging
 import string
 import random
-import pickle
 from hashlib import sha1
 from datetime import datetime, timedelta
-from collections import defaultdict, OrderedDict
+from collections import defaultdict
 import shlex
 import socket
-from functools import partial
 from io import BytesIO
 import html
 import http.client
@@ -60,10 +57,12 @@ from tg.decorators import before_validate
 from formencode.variabledecode import variable_decode
 import formencode
 from markupsafe import Markup
-from jinja2.filters import escape, do_filesizeformat
+from jinja2.filters import escape
+from jinja2.filters import do_filesizeformat  # noqa: F401 RUF100
 from jinja2.utils import pass_context, htmlsafe_json_dumps
 from paste.deploy.converters import asbool, aslist, asint
-from webhelpers2 import date, text
+from webhelpers2 import date
+from webhelpers2 import text  # noqa: F401 RUF100
 from webob.exc import HTTPUnauthorized
 
 from allura.lib import exceptions as exc
@@ -72,10 +71,9 @@ from allura.lib import validators
 import urllib.parse as urlparse
 from urllib.parse import urlencode
 import math
-from webob.multidict import MultiDict
 
 # import to make available to templates, don't delete:
-from .security import has_access, is_allowed_by_role, is_site_admin
+from .security import has_access, is_allowed_by_role, is_site_admin  # noqa: F401 RUF100
 
 
 log = logging.getLogger(__name__)
@@ -955,7 +953,6 @@ def ming_config(**conf):
     :param \*\*conf: keyword arguments defining the new ming configuration
 
     """
-    import ming
     from ming.session import Session
     datastores = Session._datastores
     try:

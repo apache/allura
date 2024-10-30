@@ -30,7 +30,6 @@ from allura.lib import helpers as h
 from allura.lib.decorators import task
 from allura.lib.exceptions import CompoundError
 from allura.lib.solr import make_solr_from_config
-import six
 
 if typing.TYPE_CHECKING:
     import pysolr

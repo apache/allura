@@ -17,8 +17,6 @@
 
 import os
 from mock import patch
-import pytest
-from webtest.app import AppError
 from ming.odm import session
 
 from allura.tests import TestController

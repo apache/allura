@@ -17,7 +17,6 @@
 
 import re
 from bs4 import BeautifulSoup
-import six
 
 _inline_img = re.compile(r'\[\[(File|Image):([^\]|]+)[^]]*\]\]', re.UNICODE)
 _inline_img_markdown = r'[[img src=\2]]'

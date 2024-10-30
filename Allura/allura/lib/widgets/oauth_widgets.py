@@ -17,7 +17,6 @@
 
 import ew as ew_core
 import ew.jinja2_ew as ew
-from formencode import validators as fev
 
 from allura.lib import validators as V
 

@@ -32,7 +32,6 @@ import pymongo
 from pymongo.errors import OperationFailure
 from tg import tmpl_context as c, app_globals as g
 from paste.deploy.converters import aslist, asbool
-import jinja2
 import markupsafe
 
 from ming import schema

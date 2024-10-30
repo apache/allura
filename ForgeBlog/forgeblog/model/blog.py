@@ -35,7 +35,6 @@ from allura.model.timeline import ActivityObject
 from allura.model.types import MarkdownCache
 from allura.lib import helpers as h
 from allura.lib import utils
-import six
 
 if typing.TYPE_CHECKING:
     from ming.odm.mapper import Query

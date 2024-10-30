@@ -17,7 +17,6 @@
 from tg import tmpl_context as c
 
 from allura.lib.search import search
-import six
 
 
 FACET_PARAMS = {

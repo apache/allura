@@ -29,11 +29,9 @@ import colander as col
 import bson
 import requests
 import formencode
-import six
 from urllib.parse import urlparse
 
 from allura.lib.helpers import slugify
-from allura.model import Neighborhood
 from ming.base import Object
 from ming.odm import ThreadLocalODMSession
 from tg import tmpl_context as c, app_globals as g

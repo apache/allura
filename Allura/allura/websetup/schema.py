@@ -35,7 +35,6 @@ REGISTRY = Registry()
 
 def setup_schema(command, conf, vars):
     """Place any commands to setup allura here"""
-    import ming
     import allura
 
     # turbogears has its own special magic wired up for its globals, can't use a regular Registry

@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import re
 from ming.odm import ThreadLocalODMSession
 from allura import model as M
 

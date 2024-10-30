@@ -16,7 +16,6 @@
 #       under the License.
 
 import logging
-from html import escape as html_escape
 
 import html
 from tg import app_globals as g, tmpl_context as c

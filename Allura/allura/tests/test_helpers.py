@@ -42,7 +42,6 @@ from allura.lib.security import has_access
 from allura.lib.security import Credentials
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test
-import six
 
 # httpbin.org should work, but lately has been unreliable
 # httpbin.io does not allow /redirect-to to localhost

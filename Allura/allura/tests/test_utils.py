@@ -17,11 +17,9 @@
 
 import json
 import time
-import unittest
 import datetime as dt
 from os import path
 
-import six
 import ming
 from ming.odm import session
 from bson import ObjectId

@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import unittest
 
 from tg import tmpl_context as c
 from ming.odm import ThreadLocalODMSession

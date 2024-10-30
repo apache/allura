@@ -48,7 +48,7 @@ from ming import schema as S
 from ming.odm import session
 from ming import Field, collection, Index
 from ming.utils import LazyProperty
-from ming.odm import FieldProperty, session, Mapper, mapper, MappedClass, RelationProperty
+from ming.odm import FieldProperty, session, Mapper, MappedClass, RelationProperty
 from ming.base import Object
 
 from allura.lib import helpers as h

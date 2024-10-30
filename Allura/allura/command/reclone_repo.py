@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import warnings
 
 from tg import tmpl_context as c
 

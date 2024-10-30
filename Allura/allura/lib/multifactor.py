@@ -24,7 +24,6 @@ from collections import OrderedDict
 from base64 import b32decode, b32encode
 from time import time
 import errno
-import warnings
 
 import bson
 from allura.lib.exceptions import InvalidRecoveryCode, MultifactorRateLimitError

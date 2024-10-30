@@ -47,7 +47,6 @@ from .project import AppConfig
 from .notification import MailFooter
 
 from .filesystem import File
-import six
 
 if typing.TYPE_CHECKING:
     from ming.odm.mapper import Query

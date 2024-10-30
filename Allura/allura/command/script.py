@@ -18,7 +18,6 @@
 import sys
 import os.path
 import cProfile
-import warnings
 
 from tg import tmpl_context as c
 import tg

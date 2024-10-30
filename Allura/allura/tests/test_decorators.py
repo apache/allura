@@ -20,7 +20,7 @@ import random
 import gc
 
 from allura.lib.decorators import task, memoize
-from alluratest.controller import setup_basic_test, setup_global_objects
+from alluratest.controller import setup_basic_test
 
 
 class TestTask:

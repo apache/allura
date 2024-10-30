@@ -17,9 +17,7 @@
 
 """Setup the allura application"""
 import os
-import sys
 import logging
-import shutil
 from datetime import datetime
 from textwrap import dedent
 
@@ -28,7 +26,6 @@ from tg import tmpl_context as c, app_globals as g
 from paste.deploy.converters import asbool
 import ew
 
-from allura.lib.decorators import memoize
 from allura.model.oauth import dummy_oauths
 from ming import Session, mim
 from ming.odm import state, session
@@ -43,7 +40,6 @@ from allura.command import CreateTroveCategoriesCommand
 from allura.websetup.schema import REGISTRY
 
 from forgewiki import model as WM
-import six
 
 log = logging.getLogger(__name__)
 

@@ -16,7 +16,6 @@
 #       under the License.
 
 import mock
-import unittest
 
 from ming.odm import ThreadLocalODMSession
 

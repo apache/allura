@@ -25,7 +25,6 @@ from tg import app_globals as g, tmpl_context as c
 
 from allura.tasks import mail_tasks
 from allura.lib.decorators import task
-from allura.lib import helpers as h
 from allura.model.repository import zipdir
 
 

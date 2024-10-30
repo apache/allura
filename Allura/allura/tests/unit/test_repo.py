@@ -16,10 +16,8 @@
 #       under the License.
 
 import datetime
-import unittest
 
 import pytest
-import six
 from mock import patch, Mock, MagicMock, call
 
 from tg import tmpl_context as c

@@ -15,17 +15,13 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import re
 
 import webob
 import tg.decorators
 from decorator import decorator
 from tg import request
-import mock
-import json
 
 from allura.lib import helpers as h
-import six
 
 _patched = False
 def apply():

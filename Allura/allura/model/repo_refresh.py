@@ -22,9 +22,9 @@ import bson
 import tg
 import jinja2
 from paste.deploy.converters import asint
-from tg import tmpl_context as c, app_globals as g
+from tg import app_globals as g
 
-from ming.odm import mapper, session, ThreadLocalODMSession
+from ming.odm import session
 from ming.odm.base import ObjectState, state
 
 from allura.lib import utils

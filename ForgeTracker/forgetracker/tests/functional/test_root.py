@@ -15,9 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 from datetime import datetime
-import six.moves.urllib.request
-import six.moves.urllib.parse
-import six.moves.urllib.error
 import os
 import time
 import json
@@ -48,7 +45,6 @@ from allura.lib.utils import urlencode
 from allura.tests import decorators as td
 from allura.tasks import mail_tasks
 from ming.odm.odmsession import ThreadLocalODMSession
-import six
 
 
 def find(d, pred):

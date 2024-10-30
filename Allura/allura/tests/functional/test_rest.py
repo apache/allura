@@ -19,7 +19,6 @@
 import json
 from datetime import datetime, timedelta
 
-import tg
 from bson import ObjectId
 from tg import app_globals as g
 import mock

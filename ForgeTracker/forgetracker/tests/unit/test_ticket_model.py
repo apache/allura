@@ -17,7 +17,6 @@
 
 from tg import tmpl_context as c
 from datetime import datetime
-from io import BytesIO
 import os
 import six.moves.urllib.parse
 import six.moves.urllib.request

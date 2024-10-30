@@ -16,7 +16,6 @@
 #       under the License.
 
 import shutil
-import unittest
 import os
 
 import tg

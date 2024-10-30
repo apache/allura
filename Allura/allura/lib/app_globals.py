@@ -18,11 +18,9 @@ from __future__ import annotations
 
 import re
 import logging
-import html
 import hashlib
 import json
 import datetime
-from urllib.parse import urlencode
 from subprocess import Popen, PIPE
 import os
 import time
@@ -63,7 +61,6 @@ from allura.lib.macro import uncacheable_macros_names
 from allura.lib.widgets import analytics
 from allura.lib.security import Credentials
 from allura.lib.solr import MockSOLR, make_solr_from_config
-from allura.model.session import artifact_orm_session
 import six
 
 """The application's Globals object"""

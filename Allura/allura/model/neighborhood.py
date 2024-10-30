@@ -27,7 +27,7 @@ from ming.odm.declarative import MappedClass
 from ming.utils import LazyProperty
 
 from tg import request
-from tg import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c
 
 from allura.lib import plugin
 

@@ -26,7 +26,6 @@ from ming.odm.odmsession import ThreadLocalODMSession
 from tg import expose, redirect, validate, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from timermiddleware import Timer
-from paste.deploy.converters import asint
 
 # Pyforge-specific imports
 import allura.tasks.repo_tasks

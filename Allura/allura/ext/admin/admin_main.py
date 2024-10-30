@@ -18,7 +18,6 @@
 import logging
 import re
 import os
-from random import randint
 from collections import OrderedDict
 from datetime import datetime
 from urllib.parse import urlparse
@@ -26,7 +25,7 @@ import json
 from operator import itemgetter, attrgetter
 import pkg_resources
 
-from tg import tmpl_context as c, app_globals as g, response
+from tg import tmpl_context as c, app_globals as g
 from tg import request
 from paste.deploy.converters import asbool, aslist
 from tg import expose, redirect, flash, validate, config, jsonify
@@ -35,13 +34,12 @@ from webob import exc
 from bson import ObjectId
 from ming.odm.odmsession import ThreadLocalODMSession
 from ming.odm import session
-import PIL
 
 from allura.app import Application, DefaultAdminController, SitemapEntry
 from allura.lib import helpers as h
 from allura import version
 from allura import model as M
-from allura.lib.security import has_access, require_access, is_site_admin
+from allura.lib.security import has_access, require_access
 from allura.lib.widgets import form_fields as ffw
 from allura.lib import exceptions as forge_exc
 from allura.lib import plugin

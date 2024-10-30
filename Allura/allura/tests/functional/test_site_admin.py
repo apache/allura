@@ -18,7 +18,6 @@
 import json
 import datetime as dt
 import bson
-import pytest
 
 from mock import patch, MagicMock
 from ming.odm import ThreadLocalODMSession

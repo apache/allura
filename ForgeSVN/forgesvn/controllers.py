@@ -17,7 +17,7 @@
 
 
 from allura.lib.utils import permanent_redirect
-from tg import expose, redirect
+from tg import expose
 from tg.decorators import with_trailing_slash
 from tg import tmpl_context as c
 

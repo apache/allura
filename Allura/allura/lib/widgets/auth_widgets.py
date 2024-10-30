@@ -21,14 +21,12 @@ from ew.core import validator
 
 from tg import request, tmpl_context as c
 from formencode import Invalid
-from formencode import validators as fev
 from webob import exc
 
 from .forms import ForgeForm
 from tg import tmpl_context as c, app_globals as g
 
 from allura.lib import plugin
-from allura import model as M
 
 
 class LoginForm(ForgeForm):

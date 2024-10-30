@@ -33,7 +33,7 @@ from formencode import validators
 from webob import exc
 import pymongo
 
-from allura.lib.security import require_access, has_access, require_authenticated
+from allura.lib.security import require_access, has_access
 from allura.lib.search import search_app
 from allura.lib import helpers as h
 from allura.lib import validators as v

@@ -15,12 +15,9 @@
 #       specific language governing permissions and limitations
 #       under the License.
 import html
-from datetime import datetime, timedelta
 from io import BytesIO
 from unittest import skipIf
 import pkg_resources
-import mock
-import feedparser
 from mock import patch
 
 from ming.odm.odmsession import ThreadLocalODMSession

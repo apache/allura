@@ -23,7 +23,7 @@ from datetime import datetime, timedelta
 import typing
 
 import pymongo
-from tg import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c
 from tg import config
 from paste.deploy.converters import asbool
 

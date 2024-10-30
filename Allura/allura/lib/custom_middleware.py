@@ -34,7 +34,7 @@ from allura.lib import helpers as h
 from allura.lib.utils import is_ajax
 from allura import model as M
 import allura.model.repository
-from tg import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c
 
 log = logging.getLogger(__name__)
 

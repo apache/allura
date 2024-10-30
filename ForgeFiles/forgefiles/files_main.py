@@ -23,7 +23,7 @@ from urllib.parse import unquote
 from tg import config, redirect, expose, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg import tmpl_context as c, app_globals as g
-from tg import request, response
+from tg import request
 from jinja2.exceptions import TemplateNotFound
 
 from allura.app import Application

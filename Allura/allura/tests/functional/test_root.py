@@ -27,7 +27,6 @@ Please read http://pythonpaste.org/webtest/ for more information.
 
 """
 import os
-import re
 from unittest import skipIf
 
 import pytest

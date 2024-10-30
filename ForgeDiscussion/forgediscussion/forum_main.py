@@ -20,7 +20,6 @@ import six.moves.urllib.request
 import six.moves.urllib.parse
 import six.moves.urllib.error
 import json
-import os
 
 # Non-stdlib imports
 from tg import tmpl_context as c, app_globals as g

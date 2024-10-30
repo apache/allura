@@ -19,7 +19,7 @@ from __future__ import annotations
 import html
 import contextlib
 import logging
-from collections.abc import Iterable, Generator
+from collections.abc import Iterable
 
 import sxsdiff
 from diff_match_patch import diff_match_patch

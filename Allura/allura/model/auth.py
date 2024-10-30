@@ -18,10 +18,8 @@
 from __future__ import annotations
 
 import logging
-import calendar
 import typing
 
-import six
 from markupsafe import Markup
 from urllib.parse import urlparse
 from email import header
@@ -38,7 +36,6 @@ from tg import config
 from tg import tmpl_context as c, app_globals as g
 from tg import request
 from ming import schema as S
-from ming import Field
 from ming.odm import session, state
 from ming.odm import FieldProperty, RelationProperty, ForeignIdProperty
 from ming.odm.declarative import MappedClass
@@ -52,7 +49,6 @@ from allura.lib import utils
 from allura.lib.decorators import memoize
 from allura.lib.search import SearchIndexable
 from .session import main_orm_session, main_explicitflush_orm_session
-from .session import project_orm_session
 from .timeline import ActivityNode, ActivityObject
 
 

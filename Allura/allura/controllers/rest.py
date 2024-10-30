@@ -20,7 +20,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import datetime, timedelta
-from urllib.parse import unquote, urlparse, parse_qs, parse_qsl
+from urllib.parse import unquote, parse_qs
 
 import oauthlib.oauth1
 import oauthlib.oauth2
@@ -31,7 +31,6 @@ import tg
 from tg import expose, flash, redirect, config
 from tg import tmpl_context as c, app_globals as g
 from tg import request, response
-from tg.decorators import without_trailing_slash
 import colander
 from ming.odm import session
 

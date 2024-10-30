@@ -42,7 +42,6 @@ from allura.lib import validators as v
 from allura.lib.decorators import require_post, task
 from allura.lib.utils import DateJSONEncoder
 from allura import model as M
-import six
 
 
 log = logging.getLogger(__name__)

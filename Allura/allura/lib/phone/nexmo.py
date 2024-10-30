@@ -21,7 +21,6 @@ import html
 import json
 
 import requests
-import jinja2
 import markupsafe
 
 from allura.lib.phone import PhoneService

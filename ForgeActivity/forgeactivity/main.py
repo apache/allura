@@ -26,7 +26,7 @@ from tg import tmpl_context as c, app_globals as g
 from tg import request, response
 from tg import expose, validate, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from paste.deploy.converters import asbool, asint
+from paste.deploy.converters import asbool
 from webob import exc
 import feedgenerator as FG
 from activitystream.storage.mingstorage import Activity

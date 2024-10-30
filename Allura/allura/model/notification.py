@@ -35,7 +35,6 @@ Periodically:
 '''
 
 import logging
-from allura.lib.decorators import memoize
 from bson import ObjectId
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -58,7 +57,6 @@ import allura.tasks.mail_tasks
 
 from .session import main_orm_session
 from .auth import User, AlluraUserProperty
-import six
 
 if typing.TYPE_CHECKING:
     from ming.odm.mapper import Query

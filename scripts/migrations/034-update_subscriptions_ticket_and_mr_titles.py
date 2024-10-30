@@ -22,7 +22,6 @@ from tg import tmpl_context as c
 from bson import ObjectId
 
 from ming.odm import session
-from ming.odm import ThreadLocalODMSession
 
 from allura import model as M
 from forgetracker import model as TM

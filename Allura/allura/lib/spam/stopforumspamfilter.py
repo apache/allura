@@ -24,7 +24,6 @@ from tg import request
 
 from allura.lib import utils
 from allura.lib.spam import SpamFilter
-import six
 
 log = logging.getLogger(__name__)
 

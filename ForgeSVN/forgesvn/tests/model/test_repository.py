@@ -17,7 +17,6 @@
 
 import os
 import shutil
-import unittest
 from unittest import skipUnless
 
 import pkg_resources

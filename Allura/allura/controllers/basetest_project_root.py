@@ -27,12 +27,10 @@ from tg import TGController
 from paste.deploy.converters import asbool
 
 from allura.lib.security import require, require_authenticated, require_access, has_access
-from allura.lib import helpers as h
 from allura.lib import plugin
 from allura import model as M
 from .root import RootController
 from .project import ProjectController
-from .rest import RestController
 
 __all__ = ['RootController']
 

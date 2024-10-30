@@ -18,7 +18,6 @@
 from datetime import datetime
 from collections import defaultdict, OrderedDict
 
-import unittest
 import mock
 import pytest
 from tg import tmpl_context as c

@@ -21,7 +21,6 @@ from datetime import datetime
 from tempfile import mkdtemp
 from shutil import rmtree
 
-import six
 
 from bs4 import BeautifulSoup
 import git

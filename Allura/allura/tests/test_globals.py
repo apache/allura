@@ -22,9 +22,7 @@ from textwrap import dedent
 import pytest
 
 import allura
-import unittest
 import hashlib
-import six
 from mock import patch, Mock
 
 from bson import ObjectId
@@ -37,7 +35,6 @@ from alluratest.controller import (
     setup_basic_test,
     setup_global_objects,
     setup_unit_test,
-    setup_functional_test,
     setup_trove_categories,
 )
 

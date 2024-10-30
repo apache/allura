@@ -31,7 +31,6 @@ from allura.lib.security import require_authenticated, require_site_admin
 from allura.lib.widgets import forms
 from allura.lib.plugin import SiteAdminExtension
 from allura.app import SitemapEntry
-import six
 
 
 class F:

@@ -31,7 +31,6 @@ from allura.lib.plugin import ImportIdConverter
 
 # Local imports
 from forgetracker import model as TM
-import six
 
 try:
     from forgeimporters.base import ProjectExtractor

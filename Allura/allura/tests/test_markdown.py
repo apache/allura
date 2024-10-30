@@ -102,7 +102,6 @@ class TestCommitMessageExtension:
     @mock.patch('allura.lib.markdown_extensions.TracRef2.get_comment_slug')
     @mock.patch('allura.lib.markdown_extensions.M.Shortlink.lookup')
     def test_convert(self, lookup, get_comment_slug):
-        from allura.lib.app_globals import ForgeMarkdown
 
         shortlink = mock.Mock(url='/p/project/tool/artifact/')
         shortlink.ref.artifact.deleted = False

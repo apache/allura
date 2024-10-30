@@ -20,12 +20,10 @@ import logging
 from datetime import datetime
 import typing
 
-import jinja2
 import markupsafe
 import pymongo
 from pymongo.errors import DuplicateKeyError
 from tg import tmpl_context as c, app_globals as g
-import tg
 
 from ming import schema
 from ming.odm.base import session

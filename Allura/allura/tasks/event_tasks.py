@@ -19,7 +19,6 @@ import sys
 
 from allura.lib.decorators import task, event_handler
 from allura.lib.exceptions import CompoundError
-import six
 
 
 @task

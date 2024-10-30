@@ -20,7 +20,6 @@ import base64
 from collections.abc import Iterable, Mapping, MutableMapping
 from contextlib import contextmanager
 import time
-import string
 import hashlib
 import binascii
 import logging.handlers
@@ -29,11 +28,10 @@ import datetime
 import random
 import mimetypes
 import re
-from typing import Type, TypeVar
+from typing import TypeVar
 import magic
 from itertools import groupby
 import operator as op
-import collections
 import ming
 from urllib.parse import urlparse
 import six.moves.urllib.request

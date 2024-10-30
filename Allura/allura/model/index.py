@@ -39,7 +39,6 @@ from allura.lib import helpers as h
 
 from .session import main_orm_session
 from .project import Project
-import six
 
 if typing.TYPE_CHECKING:
     from ming.odm.mapper import Query

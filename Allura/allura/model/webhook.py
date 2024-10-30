@@ -25,7 +25,6 @@ from tg import config
 
 from allura.model import Artifact
 from allura.lib import helpers as h
-import six
 
 if typing.TYPE_CHECKING:
     from ming.odm.mapper import Query

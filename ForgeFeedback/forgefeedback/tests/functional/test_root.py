@@ -15,14 +15,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 from tg import tmpl_context as c
-from tg import config
 
 from allura import model as M
 from alluratest.controller import TestController
-from allura.lib import helpers as h
-from allura.tests import decorators as td
 
-from forgefeedback import model as FM
 
 
 class TestFeedback(TestController):

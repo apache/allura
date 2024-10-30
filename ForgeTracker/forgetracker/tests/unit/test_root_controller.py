@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import unittest
 
 from mock import Mock, patch
 from ming.odm.odmsession import session

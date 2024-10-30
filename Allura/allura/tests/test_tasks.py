@@ -19,7 +19,6 @@ import email.iterators
 import operator
 import shutil
 from textwrap import dedent
-import unittest
 
 import six
 from base64 import b64encode

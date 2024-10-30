@@ -15,14 +15,13 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from urllib.parse import unquote, urlsplit, parse_qs
+from urllib.parse import unquote
 from datetime import datetime
 import logging
 
 import pymongo
 from tg import expose, redirect, validate, request, flash, response
-from tg.decorators import with_trailing_slash, without_trailing_slash, before_render, before_validate
-from decorator import decorator
+from tg.decorators import with_trailing_slash, without_trailing_slash
 
 from tg import tmpl_context as c, app_globals as g
 from webob import exc
@@ -44,7 +43,6 @@ from allura.lib.widgets import discuss as DW
 from allura.lib.widgets import form_fields as ffw
 
 from allura.model.auth import User
-from allura.model.artifact import ArtifactReference
 from .attachments import AttachmentsController, AttachmentController
 from .feed import FeedArgs, FeedController
 import six

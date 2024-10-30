@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 from datetime import datetime
-import re
 
 from tg import expose, validate, redirect
 from tg.decorators import with_trailing_slash

@@ -26,7 +26,6 @@ from tg import tmpl_context as c
 from allura import model as M
 
 from forgediscussion import model as DM
-import six
 
 log = logging.getLogger(__name__)
 

@@ -20,7 +20,6 @@ import ew.jinja2_ew as ew
 
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import forms
-import six
 
 
 

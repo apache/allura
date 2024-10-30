@@ -20,7 +20,7 @@ import pymongo
 
 # Non-stdlib imports
 
-from tg import expose, flash, url, config, request, redirect
+from tg import expose, flash, redirect
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg import tmpl_context as c, app_globals as g
 from ming.odm import session
@@ -39,8 +39,7 @@ from allura.app import (
 from allura.controllers import BaseController
 from allura.controllers.feed import FeedController
 from allura.lib.decorators import require_post
-from allura.lib.security import (require_access, has_access)
-from allura.model import project
+from allura.lib.security import (require_access)
 
 # Local imports
 

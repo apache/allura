@@ -17,7 +17,7 @@
 
 import logging
 
-from ming.odm import ThreadLocalODMSession, state
+from ming.odm import ThreadLocalODMSession
 
 from allura.lib import utils
 from allura import model as M

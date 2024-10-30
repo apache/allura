@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import sys
 from collections import defaultdict
 from contextlib import contextmanager
 from itertools import groupby
@@ -32,7 +31,6 @@ from allura.lib.exceptions import CompoundError
 from allura.lib import helpers as h
 from allura.lib import utils
 from . import base
-import six
 
 
 class ShowModelsCommand(base.Command):

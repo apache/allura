@@ -25,10 +25,8 @@ from allura.lib import validators as V
 from allura.lib.widgets import discuss as DW
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.forms import CsrfForm
-from allura.lib.widgets.subscriptions import SubscribeForm
 
 from forgediscussion import model as M
-import six
 
 
 class _ThreadsTable(DW._ThreadsTable):

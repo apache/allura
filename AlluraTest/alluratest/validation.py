@@ -18,19 +18,14 @@
 """
 Functions to syntax-validate output content
 """
-from os import path
 import os
 import sys
 import logging
 import tempfile
 import subprocess
 import json
-import six.moves.urllib.parse
-import six.moves.urllib.request
-import six.moves.urllib.error
 import re
 import pkg_resources
-import six
 
 import webtest
 from webtest import TestApp, TestResponse

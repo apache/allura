@@ -18,13 +18,11 @@
 
 import ast
 import re
-import socket
 from logging import getLogger
 
 
 import bson
 import markdown
-import jinja2
 import markupsafe
 from tg import redirect, url
 from tg import tmpl_context as c, app_globals as g
@@ -34,7 +32,6 @@ from pysolr import SolrError
 from allura.lib import helpers as h
 from allura.lib.solr import escape_solr_arg
 from allura.lib.utils import urlencode
-import six
 
 log = getLogger(__name__)
 

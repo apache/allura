@@ -19,7 +19,6 @@
 import os
 import shutil
 import stat
-import unittest
 import pkg_resources
 import datetime
 import email.iterators

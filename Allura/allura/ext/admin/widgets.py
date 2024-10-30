@@ -14,7 +14,6 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-import tg
 from tg import tmpl_context as c
 
 import ew as ew_core
@@ -28,7 +27,6 @@ from allura.lib.widgets import forms as ff
 from allura.lib.widgets import form_fields as ffw
 
 from bson import ObjectId
-from paste.deploy.converters import aslist
 
 
 class CardField(ew._Jinja2Widget):

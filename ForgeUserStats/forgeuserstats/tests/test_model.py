@@ -16,7 +16,6 @@
 #       under the License.
 
 import pkg_resources
-import unittest
 from datetime import datetime, timedelta
 
 from tg import tmpl_context as c

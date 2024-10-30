@@ -24,8 +24,6 @@ import os
 import logging
 import subprocess
 import string
-import random
-import sys
 import warnings
 from contextlib import contextmanager
 from urllib.parse import urlparse
@@ -49,7 +47,7 @@ except ImportError:
     ldap = modlist = None
 import pkg_resources
 import tg
-from tg import config, request, redirect, response, flash
+from tg import config, request, redirect, response
 from tg import tmpl_context as c, app_globals as g
 from webob import exc, Request
 from paste.deploy.converters import asbool, asint, aslist

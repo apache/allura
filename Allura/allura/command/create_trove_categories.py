@@ -25,7 +25,6 @@ from mock import patch, Mock
 from . import base
 
 from allura import model as M
-import six
 
 log = logging.getLogger(__name__)
 

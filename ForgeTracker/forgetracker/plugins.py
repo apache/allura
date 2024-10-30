@@ -17,7 +17,5 @@
 
 import logging
 
-from tg import config
-from tg import app_globals as g
 
 log = logging.getLogger(__name__)

@@ -24,8 +24,6 @@ import pickle
 import re
 import warnings
 
-import six
-import tg
 import pkg_resources
 from tg import config
 from paste.deploy.converters import asbool, aslist, asint
@@ -38,7 +36,6 @@ from werkzeug.debug import DebuggedApplication
 import activitystream
 import ew
 import formencode
-import ming
 from ming.odm.middleware import MingMiddleware
 from beaker_session_jwt import JWTCookieSession
 

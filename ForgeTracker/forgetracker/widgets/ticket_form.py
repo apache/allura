@@ -26,7 +26,6 @@ from allura import model as M
 from allura.lib.widgets import form_fields as ffw
 from allura.lib import helpers as h
 from allura.lib import validators as v
-import six
 
 
 class TicketCustomFields(ew.CompoundField):

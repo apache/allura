@@ -27,7 +27,6 @@ from tg import tmpl_context as c, app_globals as g
 from pytz import timezone
 from tg import expose, redirect, validate, flash
 from tg.decorators import without_trailing_slash
-from decorator import decorator
 from webob import exc
 
 from allura import version
@@ -40,7 +39,7 @@ from allura.lib.decorators import require_post
 from allura.lib.plugin import AuthenticationProvider
 from allura.lib.security import require_access
 from allura.lib.widgets.user_profile import SendMessageForm, SectionsUtil, SectionBase, ProjectsSectionBase
-from allura.model import User, ACE, ProjectRole
+from allura.model import ACE, ProjectRole
 
 log = logging.getLogger(__name__)
 
