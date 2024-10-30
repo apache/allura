@@ -303,7 +303,7 @@ urllib3==1.26.20
     #   requests
 virtualenv==20.26.6
     # via pre-commit
-waitress==2.1.2
+waitress==3.0.1
     # via webtest
 webencodings==0.5.1
     # via
