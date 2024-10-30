@@ -170,7 +170,7 @@ class Shortlink(MappedClass):
             result = {}
             # Parse all the links
             parsed_links = {link: cls._parse_link(link)
-                                for link in links}
+                            for link in links}
             links_by_artifact = defaultdict(list)
             project_ids = set()
             for link, d in list(parsed_links.items()):

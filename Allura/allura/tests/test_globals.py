@@ -792,7 +792,7 @@ class TestCachedMarkdown:
         html = self.md.cached_convert(self.post, 'text')
         assert html == self.expected_html
         assert html == self.post.text_cache.html
-        assert hashlib.md5(self.post.text.encode('utf-8')).hexdigest()  == self.post.text_cache.md5
+        assert hashlib.md5(self.post.text.encode('utf-8')).hexdigest() == self.post.text_cache.md5
         assert self.post.text_cache.render_time > 0
 
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='-0.01')

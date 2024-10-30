@@ -638,9 +638,9 @@ class TestLocalAuthenticationProvider:
         assert ep('test_pass', '0000') == ('sha2560000j7pRjKKZ5L8G0jScZKja9ECmYF2zBV82Mi+E3wkop30=', 'allura_sha256')
 
     @pytest.mark.parametrize('algorithm,rounds,specific_salt,salt_len,expected_config', [
-        ('sha512_crypt', None,None, None, '$6$rounds=656000$'),
-        ('pbkdf2_sha256', None,None, None, '$pbkdf2-sha256$29000$'),
-        ('pbkdf2_sha512', None,None, None, '$pbkdf2-sha512$25000$'),
+        ('sha512_crypt', None, None, None, '$6$rounds=656000$'),
+        ('pbkdf2_sha256', None, None, None, '$pbkdf2-sha256$29000$'),
+        ('pbkdf2_sha512', None, None, None, '$pbkdf2-sha512$25000$'),
         # test with explicit # of rounds & salt_len
         ('pbkdf2_sha512', 26789, None, 50, '$pbkdf2-sha512$26789$'),
         ('bcrypt_sha256', None, 'O'*22, None, '$bcrypt-sha256$v=2,t=2b,r=12$'),

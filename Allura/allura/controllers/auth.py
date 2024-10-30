@@ -1545,6 +1545,7 @@ class OAuthController(BaseController):
         flash('Authorization revoked')
         redirect('.')
 
+
 class OAuth2AuthorizationController(BaseController):
     def _check_security(self):
         require_authenticated()

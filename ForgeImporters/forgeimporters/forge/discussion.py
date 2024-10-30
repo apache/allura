@@ -68,10 +68,10 @@ class ForgeDiscussionImportController(ToolImportController):
     def create(self, discussions_json, mount_point, mount_label, **kw):
         if self.importer.enforce_limit(c.project):
             save_importer_upload(
-                            c.project,
-                            'discussions.json',
-                            json.dumps(discussions_json)
-                        )
+                c.project,
+                'discussions.json',
+                json.dumps(discussions_json)
+            )
             self.importer.post(mount_point=mount_point, mount_label=mount_label)
             flash('Discussion import has begun. Your new discussion will be available when the import is complete')
         else:
@@ -113,15 +113,15 @@ class ForgeDiscussionImporter(AlluraImporter):
                 for forum_json in discussion_json['forums']:
 
                     new_forum = dict(
-                                    app_config_id=app.config._id,
-                                    shortname=forum_json['shortname'],
-                                    description=forum_json['description'],
-                                    name=forum_json['name'],
-                                    create='on',
-                                    parent='',
-                                    members_only=False,
-                                    anon_posts=False,
-                                    monitoring_email=None,
+                        app_config_id=app.config._id,
+                        shortname=forum_json['shortname'],
+                        description=forum_json['description'],
+                        name=forum_json['name'],
+                        create='on',
+                        parent='',
+                        members_only=False,
+                        anon_posts=False,
+                        monitoring_email=None,
                     )
 
                     forum = utils.create_forum(app, new_forum=new_forum)
@@ -194,19 +194,19 @@ class ForgeDiscussionImporter(AlluraImporter):
                                 break
 
                 p = thread.add_post(
-                        subject=post_json['subject'],
-                        text=self.annotate_text(post_json['text'], user, username),
-                        timestamp=timestamp,
-                        ignore_security=True,
-                        parent_id=parent_id
+                    subject=post_json['subject'],
+                    text=self.annotate_text(post_json['text'], user, username),
+                    timestamp=timestamp,
+                    ignore_security=True,
+                    parent_id=parent_id
                 )
 
                 if ("last_edited" in post_json) and (post_json["last_edited"] is not None):
                     p.last_edit_date = parse(post_json["last_edited"])
 
                 p.add_multiple_attachments(
-                        [File(a["url"]) for a in post_json["attachments"]]
-                    )
+                    [File(a["url"]) for a in post_json["attachments"]]
+                )
 
                 if slug != '':
                     created_posts.append({slug: p})

@@ -61,7 +61,7 @@ def main():
             p = thd.post(subject, 'a new topic 2')
 
             for j in range(randint(1, 5)):
-                new_post = {'text':'comment text'}
+                new_post = {'text': 'comment text'}
                 # post = thd.add_post(**new_post)
                 post = thd.add_post(text='comment text for real', subject="test subject")
 

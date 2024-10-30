@@ -131,7 +131,7 @@ class RootController(BaseController, FeedController):
     @expose('jinja:forgefeedback:templates/feedback/index.html')
     def get_review_list(self, **kw):
         self.review_list = Feedback.query.find({'project_id': c.project._id})\
-                            .sort('created_date', pymongo.DESCENDING).all()
+            .sort('created_date', pymongo.DESCENDING).all()
         return self.review_list
 
     """ The new feedback given by the logged in user which includes
@@ -163,8 +163,8 @@ class RootController(BaseController, FeedController):
     @expose('jinja:forgefeedback:templates/feedback/edit_feedback.html')
     def edit_feedback(self, **kw):
         self.review = Feedback.query.find(
-                {'reported_by_id': c.user._id, 'project_id': c.project._id}
-                ).first()
+            {'reported_by_id': c.user._id, 'project_id': c.project._id}
+        ).first()
         return dict(description=self.review.description,
                     rating=self.review.rating)
 
@@ -192,7 +192,7 @@ class RootController(BaseController, FeedController):
     def delete_feedback(self, **kw):
         user_review = Feedback.query.find(
             {'reported_by_id': c.user._id, 'project_id': c.project._id}
-            ).first()
+        ).first()
         if user_review:
             Feedback.query.remove(dict(
                 {'reported_by_id': c.user._id, 'project_id': c.project._id}))
@@ -216,6 +216,7 @@ class RootController(BaseController, FeedController):
 
     """ This method count the number of stars finds their sum and
     calculates the average of all the star rating count """
+
     def getRating(self, **kw):
         onestarcount = TM.Feedback.query.find(
             {'rating': '1', 'project_id': c.project._id}).count()

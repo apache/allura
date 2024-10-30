@@ -47,7 +47,7 @@ def main():
             continue
         new_title = 'Ticket #%d: %s' % (ticket.ticket_num, ticket.summary)
         log.info('"%s" --> "%s"', sub.artifact_title, new_title)
-        if(task != 'diff'):
+        if (task != 'diff'):
             sub.artifact_title = new_title
         session(sub).flush(sub)
 

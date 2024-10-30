@@ -297,4 +297,5 @@ class WikiAttachment(BaseAttachment):
 
     attachment_type = FieldProperty(str, if_missing='WikiAttachment')
 
+
 Mapper.compile_all()

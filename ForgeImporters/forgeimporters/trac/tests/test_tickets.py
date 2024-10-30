@@ -18,7 +18,7 @@
 import json
 import os
 
-from unittest import  skipIf
+from unittest import skipIf
 
 import pytest
 from mock import Mock, patch
@@ -142,9 +142,9 @@ class TestTracTicketImportController(TestController):
         assert \
             'mylabel' == import_tool.post.call_args[1]['mount_label']
         assert '{"orig_user": "new_user"}' == \
-                         import_tool.post.call_args[1]['user_map']
+            import_tool.post.call_args[1]['user_map']
         assert 'http://example.com/trac/url/' == \
-                         import_tool.post.call_args[1]['trac_url']
+            import_tool.post.call_args[1]['trac_url']
 
     @with_tracker
     @patch('forgeimporters.trac.requests.head')
@@ -191,6 +191,7 @@ class TestTracTicketImportController(TestController):
                       mount_point='mymount')
         r = self.app.post('/p/test/admin/ext/import/trac-tickets/create', params, status=200)
         assert 'Invalid URL' in r.text
+
 
 class TestTracImportSupport:
 
@@ -288,7 +289,7 @@ class TestTracImportSupportFunctional(TestRestApiBase):
         ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
                                      ticket_num=390)
         assert 'To reproduce:  \n\\- open an mzML file' in \
-                      ticket.description
+            ticket.description
         assert 'duplicate of:  \n\\- [#316](316 "defect: SpectraViewWidget is' in \
-                      ticket.discussion_thread.find_posts()[0].text
+            ticket.discussion_thread.find_posts()[0].text
         assert 'will crash TOPPView.' in ticket.description

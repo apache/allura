@@ -81,4 +81,3 @@ class OAuth2ApplicationForm(ForgeForm):
             attrs=dict(type='url', style='min-width:25em; margin-left: 162px;',  # match grid-4 label width
                        pattern='https://.*', title='must start with https://'),
         )
-

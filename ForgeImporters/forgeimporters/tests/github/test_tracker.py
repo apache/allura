@@ -97,7 +97,7 @@ class TestTrackerImporter:
             importer.process_fields(extractor, ticket, issue)
             assert ticket.summary == 'title'
             assert ticket.description == \
-                             '*Originally created by:* [creator](https://github.com/creator)\n*Originally owned by:* [owner](https://github.com/owner)\n\nhello'
+                '*Originally created by:* [creator](https://github.com/creator)\n*Originally owned by:* [owner](https://github.com/owner)\n\nhello'
             assert ticket.status == 'New'
             assert ticket.created_date == 'created_at'
             assert ticket.mod_date == 'updated_at'

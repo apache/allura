@@ -405,7 +405,7 @@ class Thread(Artifact, ActivityObject):
             if (has_access(self, 'moderate', u)
                 and Mailbox.subscribed(user_id=u._id,
                                        app_config_id=post.app_config_id)):
-                    n.send_direct(str(u._id))
+                n.send_direct(str(u._id))
 
     def update_stats(self):
         self.num_replies = self.post_class().query.find(

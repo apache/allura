@@ -35,5 +35,6 @@ def main():
             state(user).status = state(user).dirty
             ThreadLocalODMSession.flush_all()
 
+
 if __name__ == '__main__':
     main()

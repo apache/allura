@@ -71,7 +71,7 @@ class TestFeeds(TestController):
             'title': 'Root',
             'text': '',
             'labels': '',
-            })
+        })
         self.app.get('/wiki/Root/feed.rss')
         self.app.get('/wiki/Root/feed.atom')
 

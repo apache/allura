@@ -405,7 +405,7 @@ class TestProjectAdmin(TestController):
         upload = ('screenshot', file_name, file_data)
 
         self.app.get('/admin/')
-        e_filename, e_fileext =  os.path.splitext(file_name)
+        e_filename, e_fileext = os.path.splitext(file_name)
         with audits('screenshots: added screenshot {}'.format(f"{e_filename}-123{e_fileext}")):
             self.app.post('/admin/add_screenshot', params=dict(
                 caption='test me'),

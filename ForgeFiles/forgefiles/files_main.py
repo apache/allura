@@ -88,7 +88,6 @@ class FilesApp(Application):
 
 
 def get_parent_folders(linked_file_object=None):
-
     '''Returns the list of the parent folders for the current file or folder'''
 
     parent_folder = linked_file_object.parent_folder if linked_file_object else None
@@ -108,7 +107,6 @@ class FilesController(BaseController):
 
     @expose('jinja:forgefiles:templates/files.html')
     def index(self):
-
         '''Index method for the Root controller'''
 
         require_access(c.app, 'read')
@@ -136,7 +134,6 @@ class FilesController(BaseController):
                     subscribed=subscribed, parents=parents)
 
     def get_parent_folder_url(self, parent_folder_id):
-
         ''' Returns the url,parent_folder and id of parent_folder object if object is there'''
 
         if (parent_folder_id == 'None') or (not parent_folder_id):
@@ -152,7 +149,6 @@ class FilesController(BaseController):
     @require_post()
     @expose()
     def create_folder(self, parent_folder_id=None, folder_name=None):
-
         '''Controller method for creating a folder. The folder is stored in UploadFolder collection'''
 
         require_access(c.app, 'create')
@@ -179,7 +175,6 @@ class FilesController(BaseController):
     @require_post()
     @expose()
     def upload_file(self, parent_folder_id=None, file_upload=None, filename=None):
-
         '''Controller method for creating a folder. The folder is stored in UploadFolder collection'''
 
         require_access(c.app, 'create')
@@ -212,7 +207,6 @@ class FilesController(BaseController):
     @require_post()
     @expose()
     def delete_file(self, file_id=None):
-
         '''Controller method to delete a file'''
 
         file_object = UploadFiles.query.get(_id=ObjectId(file_id), app_config_id=c.app.config._id)
@@ -233,7 +227,6 @@ class FilesController(BaseController):
         return redirect(url)
 
     def delete_file_from_db(self, file_id=None):
-
         '''Method to delete a file from db'''
 
         file_object = UploadFiles.query.get(_id=ObjectId(file_id), app_config_id=c.app.config._id)
@@ -241,7 +234,6 @@ class FilesController(BaseController):
         file_object.delete()
 
     def delete_folder_recursively(self, folder_id):
-
         '''This method is called recursively to delete folder in a hierarchy'''
 
         sub_file_objects = UploadFiles.query.find(dict({
@@ -258,7 +250,6 @@ class FilesController(BaseController):
     @require_post()
     @expose('jinja:forgefiles:templates/files.html')
     def delete_folder(self, folder_id=None):
-
         '''Controller method to delete a folder'''
 
         folder_object = UploadFolder.query.get(_id=ObjectId(folder_id), app_config_id=c.app.config._id)
@@ -280,7 +271,6 @@ class FilesController(BaseController):
     @require_post()
     @expose()
     def link_file(self, file_id=None, status=None):
-
         '''Controller method to link a file to the download button'''
 
         linkable_file_object = UploadFiles.query.get(_id=ObjectId(file_id), app_config_id=c.app.config._id)
@@ -297,7 +287,6 @@ class FilesController(BaseController):
 
     @expose()
     def download_file(self, filename=None):
-
         '''Controller method to download a file'''
 
         if filename:
@@ -324,7 +313,6 @@ class FilesController(BaseController):
     @require_post()
     @expose()
     def edit_folder(self, folder_id=None, folder_name=None):
-
         '''Controller method to edit the folder name'''
 
         url = c.app.url
@@ -342,7 +330,6 @@ class FilesController(BaseController):
     @require_post()
     @expose()
     def edit_file(self, file_id=None, file_name=None):
-
         '''Controller method to edit the file name'''
 
         url = c.app.url
@@ -362,7 +349,6 @@ class FilesController(BaseController):
     @require_post()
     @expose()
     def publish_folder(self, folder_id=None, remarks=None):
-
         '''Controller which publishes the folder. It send update about the publishing of the folder.'''
 
         folder_object = UploadFolder.query.get(_id=ObjectId(folder_id), app_config_id=c.app.config._id)
@@ -409,7 +395,6 @@ class FilesController(BaseController):
     @require_post()
     @expose()
     def disable_folder(self, folder_id=None, status=None):
-
         '''Controller method to disable the folder.'''
 
         folder_object = UploadFolder.query.get(_id=ObjectId(folder_id), app_config_id=c.app.config._id)
@@ -440,7 +425,6 @@ class FilesController(BaseController):
     @require_post()
     @expose()
     def disable_file(self, file_id=None, status=None):
-
         '''Controller method to disable the file.'''
 
         file_object = UploadFiles.query.get(_id=ObjectId(file_id), app_config_id=c.app.config._id)
@@ -461,7 +445,6 @@ class FilesController(BaseController):
     @expose('json:')
     @require_post()
     def subscribe(self, subscribe=None, unsubscribe=None):
-
         '''Controller method that subscribes an user to the files plugin.'''
 
         if subscribe:

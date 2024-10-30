@@ -32,6 +32,7 @@ def install_app(*args, **kwargs):
     """
     c.project.install_app(*args, **kwargs)
 
+
 install_app.__doc__ += '''
     Arguments::
 

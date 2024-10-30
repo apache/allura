@@ -93,4 +93,5 @@ class ChatMessage(M.Artifact):
     def timestamp_hour(self):
         return self.timestamp.strftime('%H:%M:%S')
 
+
 Mapper.compile_all()

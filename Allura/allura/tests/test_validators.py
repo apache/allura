@@ -127,7 +127,7 @@ class TestAnonymousValidator:
         c.user = M.User.anonymous()
         with pytest.raises(fe.Invalid) as cm:
             self.val.to_python(True)
-        assert str(cm.value) ==  "Log in to Mark as Private"
+        assert str(cm.value) == "Log in to Mark as Private"
 
 
 class TestMountPointValidator:
@@ -210,7 +210,7 @@ class TestTaskValidator:
     def test_import_failure(self):
         with pytest.raises(fe.Invalid) as cm:
             self.val.to_python('allura.does.not.exist')
-        assert str(cm.value) =='Could not import "allura.does.not.exist"'
+        assert str(cm.value) == 'Could not import "allura.does.not.exist"'
 
     def test_attr_lookup_failure(self):
         with pytest.raises(fe.Invalid) as cm:
@@ -329,7 +329,7 @@ class TestIconValidator:
 
     def test_valid(self):
         input = self._mock('foo.png')
-        assert input  == self.val.to_python(input)
+        assert input == self.val.to_python(input)
 
         input = self._mock('foo.jpg')
         assert input == self.val.to_python(input)

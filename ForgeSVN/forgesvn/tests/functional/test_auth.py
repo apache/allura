@@ -39,7 +39,7 @@ class TestSVNAuth(TestController):
 
         r = self.app.get('/auth/refresh_repo/p/test/src/')
         assert (r.text ==
-                     '<Repository /tmp/svn/p/test/src> refresh queued.\n')
+                '<Repository /tmp/svn/p/test/src> refresh queued.\n')
 
 
 class TestSVNUserPermissions(TestController):

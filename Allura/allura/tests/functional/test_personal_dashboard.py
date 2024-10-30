@@ -87,7 +87,7 @@ class TestMergeRequestsSection(TestController):
         super().setup_method(method)
         setup_unit_test()
         self.setup_with_tools()
-        mr= self.merge_request
+        mr = self.merge_request
         ThreadLocalODMSession.flush_all()
 
     # variation on @with_git but with different project to avoid clashes with other tests using git

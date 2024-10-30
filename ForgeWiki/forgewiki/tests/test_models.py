@@ -42,6 +42,7 @@ class TestPageSnapshots(TestController):
         page.commit()
 
         lock = Lock()
+
         def run(n):
             setup_global_objects()
             for i in range(10):

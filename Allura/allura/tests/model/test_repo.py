@@ -445,14 +445,13 @@ class TestModelCache:
         tr_get.assert_called_once_with(_id='foo')
         assert val == tree1
 
-
     def test_set(self):
         tree = mock.Mock(spec=['_id', 'test_set'], _id='foo', val='test_set')
         self.cache.set(M.repository.Tree, {'val': 'test_set'}, tree)
         assert self.cache._query_cache == \
-                         {M.repository.Tree: {(('val', 'test_set'),): 'foo'}}
+            {M.repository.Tree: {(('val', 'test_set'),): 'foo'}}
         assert self.cache._instance_cache == \
-                         {M.repository.Tree: {'foo': tree}}
+            {M.repository.Tree: {'foo': tree}}
 
     @mock.patch('bson.ObjectId')
     def test_set_none_id(self, obj_id):
@@ -465,7 +464,7 @@ class TestModelCache:
             (('val2', 'test_set2'),): 'OBJID',
         }
         assert self.cache._instance_cache == \
-                         {M.repository.Tree: {'OBJID': tree}}
+            {M.repository.Tree: {'OBJID': tree}}
         tree._id = '_id'
         assert self.cache.get(M.repository.Tree, {'val1': 'test_set1'}) == tree
         assert self.cache.get(M.repository.Tree, {'val2': 'test_set2'}) == tree
@@ -503,7 +502,7 @@ class TestModelCache:
         self.cache.set(M.repository.Tree, {'val': 'tree1'}, tree1)
         self.cache.set(M.repository.Tree, {'val': 'tree2'}, tree2)
         assert set(self.cache.instance_ids(M.repository.Tree)) == \
-                         {'id1', 'id2'}
+            {'id1', 'id2'}
         assert self.cache.instance_ids(M.repository.LastCommit) == []
 
     @mock.patch.object(M.repository.Tree.query, 'find')
@@ -650,9 +649,9 @@ class TestModelCache:
             'tree2': tree2,
         }
         assert session.call_args_list == \
-                         [mock.call(tree1), mock.call(tree2)]
+            [mock.call(tree1), mock.call(tree2)]
         assert session.return_value.flush.call_args_list == \
-                         [mock.call(tree1), mock.call(tree2)]
+            [mock.call(tree1), mock.call(tree2)]
         assert not session.return_value.expunge.called
 
     @mock.patch('allura.model.repository.session')

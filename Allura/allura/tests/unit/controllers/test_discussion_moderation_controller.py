@@ -51,7 +51,7 @@ class TestWhenModerating(WithDatabase):
         post = self.get_post()
         assert post.status == 'ok'
         assert (post.thread.last_post_date.strftime("%Y-%m-%d %H:%M:%S") ==
-                     mod_date.strftime("%Y-%m-%d %H:%M:%S"))
+                mod_date.strftime("%Y-%m-%d %H:%M:%S"))
 
     def test_that_it_can_mark_as_spam(self):
         self.moderate_post(spam=True)

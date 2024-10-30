@@ -41,4 +41,3 @@ def test_run_precommit():
     code, outputs = run(cmd, dir=os.environ.get('ALLURA_GIT_DIR'))
     if code != 0:
         raise Exception(f'pre-commit failed to run: {outputs[0].decode()} {outputs[1].decode()}')
-

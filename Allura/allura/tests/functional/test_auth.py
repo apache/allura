@@ -2184,7 +2184,11 @@ class TestOAuth2(TestController):
             redirect_uris=['https://localhost/']
         )
         ThreadLocalODMSession.flush_all()
-        r = self.app.get('/auth/oauth2/authorize', params={'client_id': 'client_12345', 'response_type': 'code', 'redirect_uri': 'https://localhost/'})
+        r = self.app.get('/auth/oauth2/authorize', params={
+            'client_id': 'client_12345',
+            'response_type': 'code',
+            'redirect_uri': 'https://localhost/',
+        })
         assert 'testoauth2' in r.text
         assert 'client_12345' in r.text
 
@@ -2201,10 +2205,13 @@ class TestOAuth2(TestController):
             redirect_uris=['https://localhost/']
         )
         ThreadLocalODMSession.flush_all()
-        r = self.app.get('/auth/oauth2/authorize', params={'client_id': 'client_12345', 'response_type': 'code', 'redirect_uri': 'https://localhost/'})
+        r = self.app.get('/auth/oauth2/authorize', params={
+            'client_id': 'client_12345',
+            'response_type': 'code',
+            'redirect_uri': 'https://localhost/',
+        })
         r = r.forms[0].submit('no')
         assert M.OAuth2AuthorizationCode.query.get(client_id='client_12345') is None
-
 
     @mock.patch.dict(config, {'auth.oauth2.enabled': True})
     def test_authorize_and_create_access_token(self):
@@ -2225,7 +2232,11 @@ class TestOAuth2(TestController):
         r.mustcontain(no='testoauth2')
 
         # First navigate to the authorization page for the backend to validate the authorization request
-        r = self.app.get('/auth/oauth2/authorize', params={'client_id': 'client_12345', 'response_type': 'code', 'redirect_uri': 'https://localhost/'})
+        r = self.app.get('/auth/oauth2/authorize', params={
+            'client_id': 'client_12345',
+            'response_type': 'code',
+            'redirect_uri': 'https://localhost/',
+        })
         # The submit authorization for the authorization code to be created
         r.forms[0].submit('yes')
 
@@ -2250,7 +2261,6 @@ class TestOAuth2(TestController):
 
         r = self.app.get('/auth/oauth/')
         r.mustcontain('testoauth2')
-
 
     @mock.patch.dict(config, {'auth.oauth2.enabled': True})
     def test_revoke_auth_code(self):
@@ -2286,7 +2296,6 @@ class TestOAuth2(TestController):
 
         r = self.app.get('/auth/oauth/')
         r.mustcontain(no='testoauth2')
-
 
     @mock.patch.dict(config, {'auth.oauth2.enabled': True})
     def test_revoke_access_token(self):
@@ -2332,16 +2341,16 @@ class TestOAuth2(TestController):
         r = self.app.get('/auth/oauth/')
         r.mustcontain(no='testoauth2')
 
-
     @mock.patch.dict(config, {'auth.oauth2.enabled': True})
     def test_pkce(self, mock_client, mock_credentials):
         code_verifier = 'QkatVHgTq_cZj8tTKWPIe78fXpoeszhVq6kLIUxJj8g9tMmfi0XV4dfZHQBXwOiWsLihJotfrOGKR4nZSXA4mA'
         code_challenge = 'BxGpJVKt_l6Srlq3uXPfpxge3TxtxetcWhGXq2958yU'
-        code_challenge_method = 'S256' # Must be uppercase
+        code_challenge_method = 'S256'  # Must be uppercase
 
         # Authorize the app by sending the code challenge and code challenge method as qs param
-        params = dict(client_id='client_12345', response_type='code', redirect_uri='https://localhost/', code_challenge=code_challenge,
-                        code_challenge_method=code_challenge_method)
+        params = dict(client_id='client_12345', response_type='code', redirect_uri='https://localhost/',
+                      code_challenge=code_challenge,
+                      code_challenge_method=code_challenge_method)
         r = self.app.get('/auth/oauth2/authorize', params=params)
 
         # Authorize app
@@ -2352,7 +2361,8 @@ class TestOAuth2(TestController):
         assert ac is not None
 
         # Exchange the authorization code for an access token. It should fail if you do not provide the code verifier
-        body = dict(client_id='client_12345', client_secret='98765', code=ac.authorization_code, grant_type='authorization_code', redirect_uri='https://localhost/')
+        body = dict(client_id='client_12345', client_secret='98765', code=ac.authorization_code,
+                    grant_type='authorization_code', redirect_uri='https://localhost/')
 
         with pytest.raises(webtest.app.AppError) as ex:
             r = self.app.post_json('/rest/oauth2/token', body, extra_environ={'username': '*anonymous'})
@@ -2368,7 +2378,8 @@ class TestOAuth2(TestController):
     def test_refresh_token(self, mock_client, mock_valid_token):
         token = M.OAuth2AccessToken.query.get(client_id='client_12345')
 
-        body = dict(client_id='client_12345', client_secret='98765', grant_type='refresh_token', refresh_token=token.refresh_token)
+        body = dict(client_id='client_12345', client_secret='98765', grant_type='refresh_token',
+                    refresh_token=token.refresh_token)
         r = self.app.post_json('/rest/oauth2/token', body, extra_environ={'username': '*anonymous'})
         assert r.status_int == 200
         assert r.json['access_token'] != token.access_token
@@ -2376,7 +2387,8 @@ class TestOAuth2(TestController):
 
     @mock.patch.dict(config, {'auth.oauth2.enabled': True})
     def test_invalid_refresh_token(self, mock_client, mock_valid_token):
-        body = dict(client_id='client_12345', client_secret='98765', grant_type='refresh_token', refresh_token='invalid_token')
+        body = dict(client_id='client_12345', client_secret='98765', grant_type='refresh_token',
+                    refresh_token='invalid_token')
         with pytest.raises(webtest.app.AppError) as ex:
             r = self.app.post_json('/rest/oauth2/token', body, extra_environ={'username': '*anonymous'})
 
@@ -2387,8 +2399,8 @@ class TestOAuth2(TestController):
         c = M.OAuth2ClientApp.query.get(client_id='client_12345')
         ac = M.OAuth2AuthorizationCode.query.get(client_id='client_12345')
 
-        body = dict(client_id=c.client_id, client_secret=c.client_secret, grant_type='authorization_code', code=ac.authorization_code,
-                        redirect_uri=c.redirect_uris[0])
+        body = dict(client_id=c.client_id, client_secret=c.client_secret, grant_type='authorization_code',
+                    code=ac.authorization_code, redirect_uri=c.redirect_uris[0])
         with pytest.raises(webtest.app.AppError) as ex:
             r = self.app.post_json('/rest/oauth2/token', body, extra_environ={'username': '*anonymous'})
 
@@ -2399,8 +2411,8 @@ class TestOAuth2(TestController):
         c = M.OAuth2ClientApp.query.get(client_id='client_12345')
         ac = M.OAuth2AuthorizationCode.query.get(client_id='client_12345')
 
-        body = dict(client_id=c.client_id, client_secret=c.client_secret, grant_type='authorization_code', code=ac.authorization_code,
-                        redirect_uri='https://invalid.com')
+        body = dict(client_id=c.client_id, client_secret=c.client_secret, grant_type='authorization_code',
+                    code=ac.authorization_code, redirect_uri='https://invalid.com')
         with pytest.raises(webtest.app.AppError) as ex:
             r = self.app.post_json('/rest/oauth2/token', body, extra_environ={'username': '*anonymous'})
 
@@ -2412,8 +2424,8 @@ class TestOAuth2(TestController):
         ac = M.OAuth2AuthorizationCode.query.get(client_id='client_12345')
 
         # First test passing an invalid client id
-        body = dict(client_id='invalid_client_id', client_secret=c.client_secret, grant_type='authorization_code', code=ac.authorization_code,
-                        redirect_uri=c.redirect_uris[0])
+        body = dict(client_id='invalid_client_id', client_secret=c.client_secret, grant_type='authorization_code',
+                    code=ac.authorization_code, redirect_uri=c.redirect_uris[0])
 
         with pytest.raises(webtest.app.AppError) as ex:
             r = self.app.post_json('/rest/oauth2/token', body, extra_environ={'username': '*anonymous'})
@@ -2421,8 +2433,8 @@ class TestOAuth2(TestController):
         assert 'invalid_client' in str(ex.value)
 
         # Now test passing an invalid client secret
-        body = dict(client_id=c.client_id, client_secret='invalid_secret', grant_type='authorization_code', code=ac.authorization_code,
-                        redirect_uri=c.redirect_uris[0])
+        body = dict(client_id=c.client_id, client_secret='invalid_secret', grant_type='authorization_code',
+                    code=ac.authorization_code, redirect_uri=c.redirect_uris[0])
 
         with pytest.raises(webtest.app.AppError) as ex:
             r = self.app.post_json('/rest/oauth2/token', body, extra_environ={'username': '*anonymous'})

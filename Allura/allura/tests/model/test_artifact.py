@@ -51,6 +51,8 @@ class Checkmessage(M.Message):
         super().__init__(**kw)
         if self.slug is not None and self.full_slug is None:
             self.full_slug = datetime.utcnow().strftime('%Y%m%d%H%M%S%f') + ':' + self.slug
+
+
 Mapper.compile_all()
 
 

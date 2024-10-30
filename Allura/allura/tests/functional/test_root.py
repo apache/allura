@@ -191,7 +191,7 @@ class TestRootController(TestController):
     @skipIf(module_not_available('newrelic'), 'requires newrelic')
     def test_newrelic_set_transaction_name(self):
         from allura.controllers.project import NeighborhoodController
-        with mock.patch('newrelic.agent.callable_name') as callable_name,\
+        with mock.patch('newrelic.agent.callable_name') as callable_name, \
                 mock.patch('newrelic.agent.set_transaction_name') as set_transaction_name:
             callable_name.return_value = 'foo'
             self.app.get('/p/')

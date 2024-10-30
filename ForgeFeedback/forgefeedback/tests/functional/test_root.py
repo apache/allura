@@ -20,7 +20,6 @@ from allura import model as M
 from alluratest.controller import TestController
 
 
-
 class TestFeedback(TestController):
 
     def test_feedback(self):

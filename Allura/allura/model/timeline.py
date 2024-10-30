@@ -114,6 +114,7 @@ class TransientActor(NodeBase, ActivityObjectBase):
     """An activity actor which is not a persistent Node in the network.
 
     """
+
     def __init__(self, activity_name):
         NodeBase.__init__(self)
         ActivityObjectBase.__init__(self)

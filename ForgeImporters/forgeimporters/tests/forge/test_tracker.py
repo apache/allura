@@ -299,7 +299,7 @@ class TestTrackerImporter:
         importer.process_comments(ticket, comments)
 
         assert importer.get_user.call_args_list == \
-                         [mock.call('a1'), mock.call('a2')]
+            [mock.call('a1'), mock.call('a2')]
         assert importer.annotate.call_args_list == [
             mock.call('t1', author, 'a1'),
             mock.call('t2', author, 'a2'),
@@ -341,7 +341,7 @@ class TestForgeTrackerImportController(TestController):
         super().setup_method(method)
         from forgetracker.tracker_main import TrackerAdminController
         TrackerAdminController._importer = \
-                tracker.ForgeTrackerImportController(tracker.ForgeTrackerImporter())
+            tracker.ForgeTrackerImportController(tracker.ForgeTrackerImporter())
 
     @with_tracker
     def test_index(self):

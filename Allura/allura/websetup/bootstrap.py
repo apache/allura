@@ -304,8 +304,10 @@ def clear_all_database_tables():
                 continue
             db.drop_collection(coll)
 
+
 # this re-uses hashes for the same pwd, which gives a huge speedup during tests.  Not good for real usage, since salting is the same.
 user_pwd_hash_speedup_cache = {}
+
 
 def fast_set_pwd(user: M.User, password: str):
     if password in user_pwd_hash_speedup_cache:
@@ -314,6 +316,7 @@ def fast_set_pwd(user: M.User, password: str):
     else:
         user.set_password(password)
         user_pwd_hash_speedup_cache[password] = (user.password, user.password_algorithm)
+
 
 def create_user(display_name, username=None, password='foo', make_project=False):  # noqa: S107
     if not username:
@@ -328,7 +331,7 @@ def create_user(display_name, username=None, password='foo', make_project=False)
     em = EmailAddress.get(**kw)
     em.confirmed = True
     em.set_nonce_hash()
-    user.set_pref('email_address',email)
+    user.set_pref('email_address', email)
     fast_set_pwd(user, password)
     return user
 

@@ -51,7 +51,7 @@ class TestGitHubMarkdownConverter:
         text = 'user/p@16c999e8c71134401a78d4d46435517b2271d6ac'
         result = self.conv.convert(text)
         assert (result == '[user/p@16c999]'
-                             '(https://github.com/user/p/commit/16c999e8c71134401a78d4d46435517b2271d6ac)')
+                '(https://github.com/user/p/commit/16c999e8c71134401a78d4d46435517b2271d6ac)')
 
     def test_convert_ticket(self):
         text = 'Ticket #1'

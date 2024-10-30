@@ -472,10 +472,10 @@ class TestUserStats:
         )
         stats.addCommit(newcommit, commit_datetime, project)
         assert stats.general[0].commits[0] == \
-                         {'lines': 3, 'number': 1, 'language': None}
+            {'lines': 3, 'number': 1, 'language': None}
         unified_diff.reset_mock()
         with h.push_config(config, **{'userstats.count_lines_of_code': 'false'}):
             stats.addCommit(newcommit, commit_datetime, project)
         assert stats.general[0].commits[0] == \
-                         {'lines': 3, 'number': 2, 'language': None}
+            {'lines': 3, 'number': 2, 'language': None}
         assert not unified_diff.called

@@ -39,7 +39,7 @@ class BlogPostForm(forms.ForgeForm):
         return ew_core.NameList([
             ew.TextField(name='title',
                          validator=v.UnicodeString(not_empty=True,
-                                                     messages={'empty': "You must provide a Title"}),
+                                                   messages={'empty': "You must provide a Title"}),
                          attrs=dict(placeholder='Enter your title here',
                                     title='Enter your title here',
                                     style='width: 425px')),

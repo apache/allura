@@ -1051,6 +1051,7 @@ class NoInternalHTTPSHandler(urllib.request.HTTPSHandler):
             validators.NonPrivateUrl().to_python(req.full_url, None)
         return super().https_open(req)
 
+
 class UseKnownIPHTTPConnection(http.client.HTTPConnection):
     # only for http, since https requires a valid cert it should be ok
     def __init__(self, *a, known_ip_to_use=None, **kw):
@@ -1072,6 +1073,7 @@ class NotInternalHTTPHandler(urllib.request.HTTPHandler):
             return self.do_open(UseKnownIPHTTPConnection, req, known_ip_to_use=str(ipValidator.ip))
         else:
             return super().http_open(req)
+
 
 urllib.request.install_opener(urllib.request.build_opener(NotInternalHTTPHandler, NoInternalHTTPSHandler))
 

@@ -62,7 +62,7 @@ def escape_solr_arg(term):
     return term
 
 
-def make_solr_from_config(push_servers: Iterable[str], query_server: str|None=None,
+def make_solr_from_config(push_servers: Iterable[str], query_server: str | None = None,
                           push_servers_auths: Iterable[tuple[str, str] | None] = (),
                           query_server_auth: tuple[str, str] | None = None,
                           **kwargs):
@@ -91,7 +91,7 @@ class Solr:
     unless explicitly overridden.
     """
 
-    def __init__(self, push_servers: Iterable[str], query_server: str|None = None,
+    def __init__(self, push_servers: Iterable[str], query_server: str | None = None,
                  push_servers_auths: Iterable[tuple[str, str] | None] = (),
                  query_server_auth: tuple[str, str] | None = None,
                  commit=True, commitWithin=None, **kw):

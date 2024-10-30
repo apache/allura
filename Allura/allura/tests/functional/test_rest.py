@@ -465,7 +465,7 @@ class TestRestHome(TestRestApiBase):
             r = self.api_get('/rest/p/test/wiki/Home')
             params = dict(text=r.json['text'])
             r = self.api_post('/rest/p/test/wiki/Home', params=params)
-            
+
         assert '401 Unauthorized' in str(ex.value)
 
 

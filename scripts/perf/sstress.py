@@ -52,5 +52,6 @@ def stress():
     for x in range(N / C):
         server.sendmail('sstress@localhost', TOADDR, EMAIL_TEXT)
 
+
 if __name__ == '__main__':
     main()

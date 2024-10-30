@@ -22,7 +22,6 @@ from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import forms
 
 
-
 class TicketSearchResults(ew_core.SimpleForm):
     template = 'jinja:forgetracker:templates/tracker_widgets/ticket_search_results.html'
     defaults = dict(

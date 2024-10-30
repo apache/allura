@@ -35,5 +35,6 @@ def main():
         print('Updated: %s' % page.title)
     ThreadLocalODMSession.flush_all()
 
+
 if __name__ == '__main__':
     main()

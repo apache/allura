@@ -48,4 +48,3 @@ class FilesTestWithModel:
 
     def teardown_method(self, method):
         ThreadLocalODMSession.close_all()
-

@@ -273,7 +273,7 @@ task_doc_session = Session.by_name('task')
 main_orm_session = ThreadLocalODMSession(
     doc_session=main_doc_session,
     extensions=[IndexerSessionExtension]
-    )
+)
 main_explicitflush_orm_session = ThreadLocalODMSession(
     doc_session=main_doc_session,
     extensions=[IndexerSessionExtension, ExplicitFlushOnlySessionExtension]

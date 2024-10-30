@@ -220,7 +220,7 @@ class ImportSupport:
             owner = '*Originally owned by:* {}\n'.format(
                     h.really_unicode(ticket_dict['assigned_to']))
         remapped['description'] = '{}{}{}{}'.format(creator, owner,
-                                                         '\n' if creator or owner else '', description)
+                                                    '\n' if creator or owner else '', description)
 
         ticket_num = ticket_dict['id']
         existing_ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,

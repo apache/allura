@@ -94,7 +94,7 @@ def test_pull_rss_feeds(urlopen):
         <title>Test html summary</title>
         <link href="http://example.com/"/>
         <updated>2003-12-13T18:30:02Z</updated>
-        <summary type="html">'''+ html_in_feed + b'''</summary>
+        <summary type="html">''' + html_in_feed + b'''</summary>
       </entry>
     </feed>''')
 

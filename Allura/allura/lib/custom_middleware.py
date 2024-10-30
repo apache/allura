@@ -326,7 +326,7 @@ class AlluraTimerMiddleware(TimerMiddleware):
                   debug_each_call=False),
             Timer('ming', ming.odm.odmsession.ODMSession,
                   'insert_now', 'update_now', 'delete_now',
-                  'find', 'find_one_and_update', 'find_one_and_replace', 'find_one_and_delete', 
+                  'find', 'find_one_and_update', 'find_one_and_replace', 'find_one_and_delete',
                   'remove', 'update', 'update_if_not_modified',
                   'aggregate', 'distinct',
                   ),
@@ -502,7 +502,7 @@ class ContentSecurityPolicyMiddleware:
                 srcs += ' ' + ' '.join(environ['csp_form_actions'])
 
             oauth_endpoints = (
-            '/auth/oauth2/authorize', '/auth/oauth2/do_authorize', '/rest/oauth/authorize', '/rest/oauth/do_authorize')
+                '/auth/oauth2/authorize', '/auth/oauth2/do_authorize', '/rest/oauth/authorize', '/rest/oauth/do_authorize')
             if not req.path.startswith(oauth_endpoints):  # Do not enforce CSP for OAuth1 and OAuth2 authorization
                 if asbool(self.config.get('csp.form_actions_enforce', False)):
                     rules.add(f"form-action {srcs}")

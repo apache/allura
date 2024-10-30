@@ -41,7 +41,7 @@ def query_filter_choices(arg=None, fq=[]):
             'project_id_s:%s' % c.project._id,
             'mount_point_s:%s' % c.app.config.options.mount_point,
             'type_s:Ticket',
-            ] + fq,
+        ] + fq,
         'rows': 0,
     }
     params.update(FACET_PARAMS)

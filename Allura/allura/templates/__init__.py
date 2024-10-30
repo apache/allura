@@ -16,4 +16,3 @@
 #       under the License.
 
 """Templates package for the application."""
-

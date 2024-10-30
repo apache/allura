@@ -48,5 +48,6 @@ def main(repo_dir, sub_dir='', commit=None):
     pprint(result)
     print("Took %f seconds" % timer['result'])
 
+
 if __name__ == '__main__':
     main(*sys.argv[1:])

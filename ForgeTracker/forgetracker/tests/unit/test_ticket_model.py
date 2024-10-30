@@ -230,7 +230,7 @@ class TestTicketModel(TrackerTestWithModel):
         assert f.pubdate == datetime(2012, 10, 29, 9, 57, 21, 465000)
         assert f.title == 'test ticket'
         assert (f.description ==
-                     '<div class="markdown_content"><p>test description</p></div>')
+                '<div class="markdown_content"><p>test description</p></div>')
 
     @td.with_tool('test', 'Tickets', 'bugs', username='test-user')
     @td.with_tool('test', 'Tickets', 'bugs2', username='test-user')

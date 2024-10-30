@@ -16,7 +16,7 @@
 #       under the License.
 
 import io
-from unittest import  skipIf
+from unittest import skipIf
 from os import path
 from datetime import datetime, timedelta
 import time
@@ -46,6 +46,7 @@ from alluratest.controller import setup_basic_test
 # httpbin.org should work, but lately has been unreliable
 # httpbin.io does not allow /redirect-to to localhost
 httpbin_domain = 'httpbin.dev'
+
 
 def setup_module():
     setup_basic_test()
@@ -628,7 +629,7 @@ class TestIterEntryPoints:
 
         with pytest.raises(ImportError, match=r'Ambiguous \[allura\] entry points detected. '
                                               'Multiple entry points with name "myapp".'):
-           list(h.iter_entry_points('allura'))
+            list(h.iter_entry_points('allura'))
 
 
 def test_get_user_status():

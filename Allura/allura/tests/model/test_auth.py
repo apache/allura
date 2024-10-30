@@ -87,19 +87,19 @@ class TestAuth:
 
     def test_email_address_canonical(self):
         assert M.EmailAddress.canonical('nobody@EXAMPLE.COM') == \
-               'nobody@example.com'
+            'nobody@example.com'
         assert M.EmailAddress.canonical('nobody@example.com') == \
-               'nobody@example.com'
+            'nobody@example.com'
         assert M.EmailAddress.canonical('I Am Nobody <nobody@example.com>') == \
-               'nobody@example.com'
+            'nobody@example.com'
         assert M.EmailAddress.canonical('  nobody@example.com\t') == \
-               'nobody@example.com'
+            'nobody@example.com'
         assert M.EmailAddress.canonical('I Am@Nobody <nobody@example.com> ') == \
-               'nobody@example.com'
+            'nobody@example.com'
         assert M.EmailAddress.canonical(' No@body <no@body@example.com> ') == \
-               'no@body@example.com'
+            'no@body@example.com'
         assert M.EmailAddress.canonical('no@body@example.com') == \
-               'no@body@example.com'
+            'no@body@example.com'
         assert M.EmailAddress.canonical('invalid') is None
 
     def test_email_address_send_verification_link(self):

@@ -304,7 +304,7 @@ def debug_obj(obj) -> str:
     return str(obj)
 
 
-def has_access(obj, permission: str, user: M.User | None = None, project: M.Project | None = None, roles = None) -> bool:
+def has_access(obj, permission: str, user: M.User | None = None, project: M.Project | None = None, roles=None) -> bool:
     '''Return whether the given user has the permission name on the given object.
 
     - First, all the roles for a user in the given project context are computed.

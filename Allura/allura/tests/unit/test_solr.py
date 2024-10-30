@@ -49,7 +49,7 @@ class TestSolr:
         calls = [mock.call('server1', auth=None),
                  mock.call('server2', auth=None),
                  mock.call('server3', auth=None),
-        ]
+                 ]
         pysolr.Solr.assert_has_calls(calls)
         assert len(solr.push_pool) == 2
 

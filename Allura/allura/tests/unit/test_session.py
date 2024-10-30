@@ -167,7 +167,7 @@ class TestBatchIndexer:
         find.return_value = [m(_id=i) for i in (7, 8, 9)]
         self.ext.update_index(objs_deleted, arefs)
         assert self.ext.to_delete == \
-                         {o.index_id() for o in objs_deleted}
+            {o.index_id() for o in objs_deleted}
         assert self.ext.to_add == {4, 5, 6}
 
         # test deleting something that was previously added
@@ -175,7 +175,7 @@ class TestBatchIndexer:
         find.return_value = [m(_id=4)]
         self.ext.update_index(objs_deleted, [])
         assert self.ext.to_delete == \
-                         {o.index_id() for o in objs_deleted}
+            {o.index_id() for o in objs_deleted}
         assert self.ext.to_add == {5, 6}
 
     @mock.patch('allura.model.session.index_tasks')

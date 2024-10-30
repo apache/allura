@@ -24,6 +24,8 @@ from tg import request
 from allura.lib import helpers as h
 
 _patched = False
+
+
 def apply():
     global _patched  # noqa: PLW0603
     if _patched:

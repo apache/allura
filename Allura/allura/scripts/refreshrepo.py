@@ -160,7 +160,7 @@ class RefreshRepo(ScriptTask):
         parser.add_argument('--clean-after', metavar='DATETIME', dest='clean_after',
                             type=lambda d: datetime.strptime(d, date_format),
                             help='Like --clean but only docs for commits after date ({} format)'.format(
-                                    date_format.replace('%', '%%')
+                                date_format.replace('%', '%%')
                             ))
         parser.add_argument(
             '--all', action='store_true', dest='all', default=False,

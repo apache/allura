@@ -820,7 +820,6 @@ class LdapAuthenticationProvider(AuthenticationProvider):
                 raise ValueError(f'LDAP algorithms should always start with ldap_ (got {algorithm})')
         return crypt
 
-
     def set_password(self, user, old_password, new_password, set_timestamp=True):
         dn = ldap_user_dn(user.username)
         if old_password is not None:

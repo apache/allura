@@ -15,7 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from unittest import  skipIf
+from unittest import skipIf
 from mock import Mock, patch, call
 from ming.odm import ThreadLocalODMSession
 import git

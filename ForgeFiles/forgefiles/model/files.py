@@ -146,7 +146,6 @@ class UploadFiles(File):
     thumbnail_size = (255, 255)
     ArtifactType = Upload
 
-
     class __mongometa__:
         name = 'upload_files'
         session = project_orm_session
@@ -181,13 +180,11 @@ class UploadFiles(File):
 
     @property
     def artifact(self):
-
         '''Returns the Artifact object'''
 
         return self.ArtifactType.query.get(_id=self.artifact_id)
 
     def url(self):
-
         '''Returns the URL of the uploaded file'''
 
         parent_folder = self.parent_folder

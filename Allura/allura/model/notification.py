@@ -237,7 +237,7 @@ class Notification(MappedClass):
             but the notification still gets sent if there is an error
             '''
             log.warning('Could not render notification template %s' %
-                     artifact.type_s, exc_info=True)
+                        artifact.type_s, exc_info=True)
 
         assert d['reply_to_address'] is not None
         project = c.project
@@ -622,7 +622,7 @@ class Mailbox(MappedClass):
                         queue=[],
                         queue_empty=True,
                         )},
-                )
+            )
             mbox.fire(now)
 
     def fire(self, now):

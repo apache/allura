@@ -150,7 +150,7 @@ class TestProjectImporter:
         pi = base.ProjectImporter(mock.Mock(name='neighborhood'))
         pi.source = 'foo'
         assert pi.tool_importers == \
-                         {'ep1': eps[0].lv, 'ep3': eps[2].lv}
+            {'ep1': eps[0].lv, 'ep3': eps[2].lv}
         iep.assert_called_once_with('allura.importers')
 
     @mock.patch.object(base.ToolImporter, 'by_name')
@@ -307,7 +307,7 @@ class TestToolsValidator:
         with pytest.raises(Invalid) as cm:
             self.tv.to_python(['value1', 'value2', 'value3'])
         assert cm.value.msg == \
-                         'Invalid tools selected: value1, value3'
+            'Invalid tools selected: value1, value3'
         assert by_name.call_args_list == [
             mock.call('value1'),
             mock.call('value2'),

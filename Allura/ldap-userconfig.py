@@ -55,5 +55,6 @@ def upload(uname, pubkey):
     os.chown(keyfile, u.pw_uid, g.gr_gid)
     os.chmod(keyfile, 0o600)
 
+
 if __name__ == '__main__':
     main()

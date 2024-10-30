@@ -113,19 +113,19 @@ class TestDiscussionImporter:
 
         utils.create_forum.assert_called_once_with(app, new_forum=new_forum)
         forum.get_discussion_thread(
-              dict(headers=dict(Subject=_json["forums"][0]["threads"][0]["subject"])))
+            dict(headers=dict(Subject=_json["forums"][0]["threads"][0]["subject"])))
         importer.add_posts.assert_called_once_with(
-                                    thread1,
-                                    _json["forums"][0]["threads"][0]["posts"],
-                                    app
+            thread1,
+            _json["forums"][0]["threads"][0]["posts"],
+            app
         )
 
         m.AuditLog.log.assert_called_once_with(
-                        "import tool mount_point from exported Allura JSON",
-                        project=project,
-                        user=user,
-                        url='foo'
-                    )
+            "import tool mount_point from exported Allura JSON",
+            project=project,
+            user=user,
+            url='foo'
+        )
         g.post_event.assert_called_once_with("project_updated")
 
     @mock.patch.object(discussion, 'c')
@@ -160,10 +160,10 @@ class TestDiscussionImporter:
                             "slug": "0e0e",
                             "subject": "post with un\u00ef\u00e7\u00f8\u2202\u00e9"
                         }],
-                        "page": None,
-                        "subject": "post with un\u00ef\u00e7\u00f8\u2202\u00e9"
-                    }]
+                    "page": None,
+                    "subject": "post with un\u00ef\u00e7\u00f8\u2202\u00e9"
                 }]
+            }]
         }
 
         importer._load_json = mock.Mock(return_value=_json)
@@ -202,7 +202,7 @@ class TestDiscussionImporter:
         utils.create_forum.assert_called_once_with(app, new_forum=new_forum)
         forum.get_discussion_thread.assert_called_once_with(dict(
             headers=dict(Subject=_json["forums"][0]["threads"][0]["subject"])
-            ))
+        ))
 
         importer.get_user.assert_called_once_with('admin1')
 
@@ -220,9 +220,9 @@ class TestDiscussionImporter:
             parent_id=None
         )
         importer.annotate_text.assert_called_once_with(
-                post["text"],
-                admin,
-                post["author"]
+            post["text"],
+            admin,
+            post["author"]
         )
         p.add_multiple_attachments.assert_called_once_with([])
 
@@ -332,29 +332,29 @@ class TestDiscussionImporter:
                             "subject": "Thread0",
                             "posts": []
                         },
-                        {
+                    {
                             "page": None,
                             "subject": "Thread1",
                             "posts": []
-                        },
-                        {
+                            },
+                    {
                             "page": None,
                             "subject": "Thread2",
                             "posts": []
-                        },
-                        {
+                            },
+                    {
                             "page": None,
                             "subject": "Thread3",
                             "posts": []
-                        },
-                        {
+                            },
+                    {
                             "page": None,
                             "subject": "Thread4",
                             "posts": []
-                        }
-                    ]}
-                ]
-            }
+                            }
+                ]}
+            ]
+        }
 
         importer._load_json = mock.Mock(return_value=_json)
         importer.add_posts = mock.Mock()
@@ -380,10 +380,10 @@ class TestDiscussionImporter:
         importer.import_tool(project, user, 'mount_point', 'mount_label')
 
         project.install_app.assert_called_once_with(
-                'discussion',
-                'mount_point',
-                'mount_label',
-                import_id={'source': 'Allura'}
+            'discussion',
+            'mount_point',
+            'mount_label',
+            import_id={'source': 'Allura'}
         )
         h.push_config.assert_called_once_with(c, app=app)
 
@@ -422,7 +422,7 @@ class TestDiscussionImporter:
                 "name": "General Discussion",
                 "import_id": import_id,
                 "threads": []
-                }]
+            }]
         }
 
         importer._load_json = mock.Mock(return_value=_json)
@@ -492,8 +492,8 @@ class TestDiscussionImporter:
                         "posts": [],
                         "subject": "Thread",
                         "import_id": import_id
-                    }]
                 }]
+            }]
         }
 
         importer._load_json = mock.Mock(return_value=_json)
@@ -532,8 +532,8 @@ class TestDiscussionImporter:
                         "limit": None,
                         "posts": [],
                         "subject": "Thread",
-                    }]
                 }]
+            }]
         }
 
         importer._load_json = mock.Mock(return_value=_json)
@@ -635,7 +635,7 @@ class TestDiscussionImporter:
                 "description": "Description of forum",
                 "name": "General Discussion",
                 "threads": [{
-                   "posts": []
+                    "posts": []
                 }]
             }]
         }
@@ -680,11 +680,11 @@ class TestDiscussionImporter:
         importer.get_user.assert_called_once_with('admin1')
         h.push_config.assert_called_once_with(c, user=user, app=app)
         thread.add_post.assert_called_once_with(
-                subject=_json[0]['subject'],
-                text='foo',
-                timestamp=parse(_json[0]['timestamp']),
-                ignore_security=True,
-                parent_id=None
+            subject=_json[0]['subject'],
+            text='foo',
+            timestamp=parse(_json[0]['timestamp']),
+            ignore_security=True,
+            parent_id=None
         )
         post.add_multiple_attachments.assert_called_once_with([])
 
@@ -937,54 +937,54 @@ class TestDiscussionImporter:
 
         _json = [
             {
-              "attachments": [],
-              "author": "admin1",
-              "timestamp": "2020-01-29 22:39:31.483000",
-              "text": "hi",
-              "slug": "0d1d",
-              "subject": "topic with lots of replies"
+                "attachments": [],
+                "author": "admin1",
+                "timestamp": "2020-01-29 22:39:31.483000",
+                "text": "hi",
+                "slug": "0d1d",
+                "subject": "topic with lots of replies"
             },
             {
-              "attachments": [],
-              "author": "admin1",
-              "timestamp": "2020-01-29 22:39:43.525000",
-              "text": "hello",
-              "slug": "0d1d/d421",
-              "subject": "topic with lots of replies"
+                "attachments": [],
+                "author": "admin1",
+                "timestamp": "2020-01-29 22:39:43.525000",
+                "text": "hello",
+                "slug": "0d1d/d421",
+                "subject": "topic with lots of replies"
             },
             {
-              "attachments": [],
-              "author": "admin1",
-              "timestamp": "2020-01-29 22:39:50.086000",
-              "text": "goodbye",
-              "slug": "0d1d/d421/f37d",
-              "subject": "topic with lots of replies"
+                "attachments": [],
+                "author": "admin1",
+                "timestamp": "2020-01-29 22:39:50.086000",
+                "text": "goodbye",
+                "slug": "0d1d/d421/f37d",
+                "subject": "topic with lots of replies"
             },
             {
-              "attachments": [],
-              "author": "admin1",
-              "timestamp": "2020-01-29 22:42:13.740000",
-              "text": "hi again",
-              "slug": "012f",
-              "subject": "topic with lots of replies"
+                "attachments": [],
+                "author": "admin1",
+                "timestamp": "2020-01-29 22:42:13.740000",
+                "text": "hi again",
+                "slug": "012f",
+                "subject": "topic with lots of replies"
             },
             {
-              "attachments": [],
-              "author": "user02",
-              "timestamp": "2020-01-29 22:42:51.645000",
-              "text": "hi there",
-              "slug": "012f/211a",
-              "subject": "topic with lots of replies"
+                "attachments": [],
+                "author": "user02",
+                "timestamp": "2020-01-29 22:42:51.645000",
+                "text": "hi there",
+                "slug": "012f/211a",
+                "subject": "topic with lots of replies"
             },
             {
-              "attachments": [],
-              "author": "user02",
-              "timestamp": "2020-01-29 22:42:58.478000",
-              "text": "hi here",
-              "slug": "0d1d/00a0",
-              "subject": "topic with lots of replies"
+                "attachments": [],
+                "author": "user02",
+                "timestamp": "2020-01-29 22:42:58.478000",
+                "text": "hi here",
+                "slug": "0d1d/00a0",
+                "subject": "topic with lots of replies"
             }
-         ]
+        ]
 
         importer.add_posts(thread, _json, app)
 

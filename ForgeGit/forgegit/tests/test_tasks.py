@@ -99,4 +99,3 @@ class TestCoreAlluraTasks(GitRealDataBaseTestCase):
 
         # mostly just making sure nothing errored, but here's at least one thing we can assert:
         assert repo.status == 'ready'
-

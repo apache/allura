@@ -37,7 +37,7 @@ class ProjectSummary(ew_core.Widget):
         show_proj_icon=True,
         show_download_button=True,
         show_awards_banner=True,
-        )
+    )
 
     def prepare_context(self, context):
         response = super().prepare_context(context)
@@ -84,7 +84,7 @@ class ProjectList(ew_core.Widget):
         show_proj_icon=True,
         show_download_button=True,
         show_awards_banner=True,
-        )
+    )
 
     def prepare_context(self, context):
         response = super().prepare_context(context)

@@ -110,6 +110,7 @@ def tempfile(template, values):
     yield name
     os.remove(name)
 
+
 backend_ldif = string.Template('''
 # Load dynamic backend modules
 dn: cn=module,cn=config

@@ -217,7 +217,7 @@ class TestSVNRepo(RepoImplTestBase):
             os.path.join(g.tmpdir, 'testsvn/hooks/post-commit'), os.X_OK)
         with open(os.path.join(g.tmpdir, 'testsvn/hooks/post-commit')) as f:
             c = f.read()
-        assert  'curl -s http://localhost/auth/refresh_repo/p/test/src/\n' in c
+        assert 'curl -s http://localhost/auth/refresh_repo/p/test/src/\n' in c
         assert 'exec $DIR/post-commit-user "$@"\n' in c
 
         repo.refresh(notify=False)

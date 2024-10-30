@@ -546,6 +546,7 @@ class Oauth2Negotiator:
         response.status_int = status
         return body
 
+
 def rest_has_access(obj, user, perm):
     """
     Helper function that encapsulates common functionality for has_access API

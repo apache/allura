@@ -74,5 +74,6 @@ def print_changelog(version, summaries, changes_without_tickets):
     for change in changes_without_tickets:
         print(f" * {six.ensure_text(change)}")
 
+
 if __name__ == '__main__':
     main()
