@@ -21,6 +21,10 @@
 {% do g.register_forge_css('css/forge/hilite.css', compress=False) %}
 {% do g.register_app_css('css/tracker.css') %}
 
+{% block head %}
+<meta name="robots" content="noindex, follow"/>
+{% endblock %}
+
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Basic Statistics{% endblock %}
 
 {% block header %}Basic Statistics{% endblock %}

@@ -18,6 +18,12 @@
 -#}
 {% extends g.theme.master %}
 
+{% block head %}
+    {% if '/_discuss' in request.url %}
+    <meta name="robots" content="noindex, follow"/>
+    {% endif %}
+{% endblock %}
+
 {% block title %}
 {{c.project.name}} / {{c.app.config.options.mount_label}} / {{post.thread.subject or '(no subject)'}}
 {% endblock %}
