@@ -16,3 +16,10 @@
 #       under the License.
 
 from .wiki import Page, WikiAttachment, Globals, PageHistory
+
+__all__ = [
+    'Page',
+    'WikiAttachment',
+    'Globals',
+    'PageHistory',
+]

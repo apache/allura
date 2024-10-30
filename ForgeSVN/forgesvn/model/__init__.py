@@ -16,3 +16,5 @@
 #       under the License.
 
 from .svn import Repository
+
+__all__ = ['Repository']

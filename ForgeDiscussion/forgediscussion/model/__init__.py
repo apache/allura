@@ -16,3 +16,10 @@
 #       under the License.
 
 from .forum import Forum, ForumThread, ForumPost, ForumAttachment
+
+__all__ = [
+    'Forum',
+    'ForumThread',
+    'ForumPost',
+    'ForumAttachment',
+]

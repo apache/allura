@@ -16,3 +16,8 @@
 #       under the License.
 
 from .files import UploadFolder, UploadFiles
+
+__all__ = [
+    'UploadFolder',
+    'UploadFiles',
+]

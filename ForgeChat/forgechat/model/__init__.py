@@ -16,3 +16,8 @@
 #       under the License.
 
 from .chat import ChatChannel, ChatMessage
+
+__all__ = [
+    'ChatChannel',
+    'ChatMessage',
+]

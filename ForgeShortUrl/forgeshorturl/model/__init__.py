@@ -16,3 +16,5 @@
 #       under the License.
 
 from .shorturl import ShortUrl
+
+__all__ = ['ShortUrl']
