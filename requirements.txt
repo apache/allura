@@ -123,7 +123,7 @@ joserfc==0.9.0
     # via beaker-session-jwt
 lxml==5.3.0
     # via -r requirements.in
-markdown==3.6
+markdown==3.7
     # via
     #   -r requirements.in
     #   markdown-checklist
