@@ -154,7 +154,7 @@ packaging==24.0
     #   pymongocrypt
     #   pytest
     #   pytest-sugar
-paginate==0.5.6
+paginate==0.5.7
     # via -r requirements.in
 passlib==1.7.4
     # via -r requirements.in
