@@ -148,7 +148,7 @@ oauthlib==3.2.2
     # via
     #   -r requirements.in
     #   requests-oauthlib
-packaging==24.0
+packaging==24.1
     # via
     #   gunicorn
     #   pymongocrypt
@@ -173,7 +173,7 @@ pillow==11.0.0
     # via -r requirements.in
 platformdirs==4.2.0
     # via virtualenv
-pluggy==1.4.0
+pluggy==1.5.0
     # via pytest
 pre-commit==3.7.0
     # via -r requirements.in
@@ -197,7 +197,7 @@ pypeline[creole,markdown,rst,textile]==0.6.1
     # via -r requirements.in
 pysolr==3.10.0
     # via -r requirements.in
-pytest==8.1.1
+pytest==8.3.3
     # via
     #   -r requirements.in
     #   pytest-sugar
