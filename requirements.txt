@@ -264,7 +264,7 @@ sniffio==1.3.1
     # via
     #   anyio
     #   httpx
-soupsieve==2.5
+soupsieve==2.6
     # via beautifulsoup4
 sxsdiff==0.3.0
     # via -r requirements.in
@@ -297,14 +297,14 @@ webencodings==0.5.1
     #   tinycss2
 webhelpers2==2.1
     # via -r requirements.in
-webob==1.8.8
+webob==1.8.9
     # via
     #   -r requirements.in
     #   easywidgets
     #   timermiddleware
     #   turbogears2
     #   webtest
-webtest==3.0.0
+webtest==3.0.1
     # via -r requirements.in
 werkzeug==3.1.2
     # via -r requirements.in
