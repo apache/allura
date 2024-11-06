@@ -239,7 +239,7 @@ requests==2.32.3
     #   requests-oauthlib
 requests-oauthlib==2.0.0
     # via -r requirements.in
-ruff==0.5.5
+ruff==0.7.2
     # via -r requirements.in
 s3transfer==0.10.3
     # via boto3
