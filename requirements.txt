@@ -195,8 +195,6 @@ pymongocrypt==1.11.0
     # via pymongo
 pypeline[creole,markdown,rst,textile]==0.6.1
     # via -r requirements.in
-pypng==0.20220715.0
-    # via qrcode
 pysolr==3.10.0
     # via -r requirements.in
 pytest==8.1.1
@@ -224,7 +222,7 @@ pytz==2024.2
     #   ming
 pyyaml==6.0.1
     # via pre-commit
-qrcode==7.4.2
+qrcode==8.0
     # via -r requirements.in
 regex==2024.4.16
     # via
@@ -284,8 +282,6 @@ translationstring==1.4
     # via colander
 turbogears2==2.4.3
     # via -r requirements.in
-typing-extensions==4.12.2
-    # via qrcode
 urllib3==2.2.3
     # via
     #   botocore
