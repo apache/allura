@@ -19,7 +19,7 @@ lxml
 Markdown
 markdown-checklist
 MarkupSafe
-Ming
+Ming==0.15.0
 oauthlib
 paginate
 passlib
@@ -30,7 +30,7 @@ Pillow
 # profanity filter for feedback
 profanityfilter
 Pygments
-pymongo
+pymongo==4.8.0
 Pypeline[creole,markdown,textile,rst]
 pysolr
 python-dateutil
