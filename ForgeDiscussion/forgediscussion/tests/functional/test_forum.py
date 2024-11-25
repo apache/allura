@@ -1001,7 +1001,7 @@ class TestForum(TestController):
             if field.id is None:
                 continue
             if 'attachment' in field.id:
-                form[field.name] = ('myfile.txt', b'foo bar baz')  # webtest.Upload dooesn't work here
+                form[field.name] = [('myfile.txt', b'foo bar baz')]  # webtest.Upload dooesn't work here
         r = form.submit().follow()
         assert 'myfile.txt' in r, r
 

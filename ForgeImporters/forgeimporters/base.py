@@ -376,7 +376,7 @@ class ToolImporterMeta(type):
         if not (hasattr(cls, 'target_app_ep_names')
                 or hasattr(cls, 'target_app')):
             raise AttributeError(f"{name} must define either `target_app` or `target_app_ep_names`")
-        return type.__init__(cls, name, bases, attrs)
+        type.__init__(cls, name, bases, attrs)
 
     def __call__(cls, *args, **kw):
         """ Right before the first instance of cls is created, get
