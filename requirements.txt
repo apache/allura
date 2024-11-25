@@ -200,7 +200,7 @@ pymongo-auth-aws==1.3.0
     # via pymongo
 pymongocrypt==1.11.0
     # via pymongo
-pypeline[creole,markdown,rst,textile]==0.6.1
+pypeline[creole,markdown,rst,textile]==0.7.0
     # via -r requirements.in
 pysolr==3.10.0
     # via -r requirements.in

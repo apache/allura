@@ -151,9 +151,14 @@ class CustomWatchedFileHandler(logging.handlers.WatchedFileHandler):
         context of a taskd process that is currently processing a task.
 
         """
-        title = getproctitle()
-        if title.startswith('taskd:'):
-            record.name = f"{title}:{record.name}"
+        try:
+            title = getproctitle()
+        except SystemError:
+            # can happen when logging happens during process shutdown
+            pass
+        else:
+            if title.startswith('taskd:'):
+                record.name = f"{title}:{record.name}"
         return super().format(record)
 
 
