@@ -145,7 +145,7 @@ markupsafe==3.0.2
     #   turbogears2
     #   webhelpers2
     #   werkzeug
-ming==0.15.0
+ming==0.15.1
     # via -r requirements.in
 mock==5.1.0
     # via -r requirements.in
@@ -285,7 +285,7 @@ timermiddleware==0.6.3
     # via -r requirements.in
 tinycss2==1.1.1
     # via bleach
-tomli==2.0.2
+tomli==2.2.1
     # via pytest
 translationstring==1.4
     # via colander
@@ -321,7 +321,7 @@ werkzeug==3.1.2
     # via -r requirements.in
 wrapt==1.16.0
     # via -r requirements.in
-zipp==3.20.2
+zipp==3.21.0
     # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
