@@ -19,7 +19,7 @@ lxml
 Markdown
 markdown-checklist
 MarkupSafe
-Ming==0.15.0
+Ming
 oauthlib
 paginate
 passlib
