@@ -51,6 +51,7 @@ import allura
 from urllib.parse import urlparse
 import six
 
+from ming.odm.icollection import deinstrument
 
 log = logging.getLogger(__name__)
 
@@ -576,7 +577,12 @@ class TaskManagerController:
             task.app_config = M.AppConfig.query.get(
                 _id=task.context.app_config_id)
             task.user = M.User.query.get(_id=task.context.user_id)
-        return dict(task=task)
+            task_args = [deinstrument(a) for a in task.args]
+            task_kwargs = {k: deinstrument(v) for k,v in task.kwargs.items()}
+        else:
+            task_args = []
+            task_kwargs = {}
+        return dict(task=task, task_args=task_args, task_kwargs=task_kwargs)
 
     @expose('jinja:allura:templates/site_admin_task_new.html')
     @without_trailing_slash

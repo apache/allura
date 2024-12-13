@@ -121,7 +121,7 @@
         </tr>
         <tr>
             <th class="side-header">Project</th>
-            <td>{{ task.project.shortname if task.project }}</td>
+            <td>{{ task.project.url() if task.project }}</td>
             <td class="spacer"></td>
             <th class="second-column-headers side-header">Queued</th>
             <td>{{ task.time_queue.strftime('%Y/%m/%d %H:%M:%S') if task.time_queue }}</td>
@@ -147,16 +147,16 @@
             <td class="second-column-headers"></td>
             <th>Keyword Args</th>
         </tr>
-        {% if task.args|length > task.kwargs|length %}
-            {% set indexes = range(task.args|length) %}
+        {% if task_args|length > task_kwargs|length %}
+            {% set indexes = range(task_args|length) %}
         {% else %}
-            {% set indexes = range(task.kwargs|length) %}
+            {% set indexes = range(task_kwargs|length) %}
         {% endif %}
-        {% set kwargs = task.kwargs.items()|list %}
+        {% set kwargs = task_kwargs.items()|list %}
         {% for i in indexes %}
         <tr>
             <td class="first-column-headers"></td>
-            <td>{{ task.args[i] }}</td>
+            <td>{{ task_args[i] }}</td>
             <td class="spacer"></td>
             {% if kwargs[i] %}
             <th class="second-column-headers side-header">{{ kwargs[i][0] }}</th>
