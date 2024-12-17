@@ -31,7 +31,6 @@ certifi==2024.8.30
     # via
     #   httpcore
     #   httpx
-    #   pymongo
     #   requests
 cffi==1.16.0
     # via
@@ -190,7 +189,7 @@ pycparser==2.22
     # via cffi
 pygments==2.17.2
     # via -r requirements.in
-pymongo[encryption]==4.8.0
+pymongo[encryption]==4.10.1
     # via
     #   -r requirements.in
     #   activitystream

@@ -30,7 +30,7 @@ Pillow
 # profanity filter for feedback
 profanityfilter
 Pygments
-pymongo==4.8.0
+pymongo
 Pypeline[creole,markdown,textile,rst]
 pysolr
 python-dateutil
