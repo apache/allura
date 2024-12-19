@@ -709,6 +709,12 @@ def unique_attachments(attachments):
 def is_ajax(request):
     if request.headers.get('X-Requested-With', None) == 'XMLHttpRequest':
         return True
+    # fetch - see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-Fetch-Mode
+    if (
+        request.headers.get('Sec-Fetch-Mode', None) in ('cors', 'no-cors', 'same-origin')
+        and request.headers.get('Sec-Fetch-Dest', None) == 'empty'
+    ):
+        return True
     return False
 
 
