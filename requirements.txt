@@ -144,7 +144,7 @@ markupsafe==3.0.2
     #   turbogears2
     #   webhelpers2
     #   werkzeug
-ming==0.15.1
+ming==0.15.2
     # via -r requirements.in
 mock==5.1.0
     # via -r requirements.in
