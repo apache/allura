@@ -181,13 +181,13 @@ class AuthenticationProvider:
         '''
         raise NotImplementedError('_login')
 
-    def after_login(self, user, request):
+    def after_login(self, user: M.User, request):
         '''
         This is a hook so that custom AuthenticationProviders can do things after a successful login.
         '''
         pass
 
-    def login(self, user=None, multifactor_success=False):
+    def login(self, user: M.User = None, multifactor_success: bool = False):
         from allura import model as M
         if user is None:
             try:
@@ -234,30 +234,45 @@ class AuthenticationProvider:
         user.track_login(self.request)
         return user
 
-    def login_check_password_change_needed(self, user, password, login_details):
-        if not self.hibp_password_check_enabled() \
-                or not asbool(tg.config.get('auth.hibp_failure_force_pwd_change', False)):
-            return
+    def login_check_password_change_needed(self, user: M.User, password: str, login_details: M.UserLoginDetails) -> str | None:
+        reason = reason_code = None
 
-        try:
-            security.HIBPClient.check_breached_password(password)
-        except security.HIBPClientError as ex:
-            log.error("Error invoking HIBP API", exc_info=ex)
-        except security.HIBPCompromisedCredentials:
-            trusted = False
+        # check setting to force pwd changes after date
+        before = asint(config.get('auth.force_pwd_change_after', 0))
+        if before and self.get_last_password_updated(user) < datetime.utcfromtimestamp(before):
+            reason = 'requiring a password change'
+            reason_code = 'force_pwd_change'
+
+        # check HIBP
+        if self.hibp_password_check_enabled() and asbool(tg.config.get('auth.hibp_failure_force_pwd_change', False)):
             try:
-                trusted = self.trusted_login_source(user, login_details)
+                security.HIBPClient.check_breached_password(password)
+            except security.HIBPClientError as ex:
+                log.error("Error invoking HIBP API", exc_info=ex)
+            except security.HIBPCompromisedCredentials:
+                reason = 'password in HIBP breach database'
+                reason_code = 'hibp'
+
+        # do it
+        if reason:
+
+            # check if we can trust current login
+            trusted: str | False = False
+            if user.get_pref('multifactor'):
+                trusted = 'multifactor success'
+            try:
+                trusted = trusted or self.trusted_login_source(user, login_details)
             except Exception:
                 log.exception('Error checking if login is trusted: %s %s', user.username, login_details)
 
             if trusted:
                 # current user must change password
-                h.auditlog_user('Successful login with password in HIBP breach database, '
-                                'from trusted source (reason: {})'.format(trusted), user=user)
-                return 'hibp'  # reason
+                h.auditlog_user(f'Successful login but {reason}, '
+                                f'from trusted source (reason: {trusted})', user=user)
+                return reason_code
             else:
                 # current user may not continue, must reset password via email
-                h.auditlog_user('Attempted login from untrusted location with password in HIBP breach database',
+                h.auditlog_user(f'Attempted login from untrusted location with {reason}',
                                 user=user)
                 user.send_password_reset_email(subject_tmpl='Update your {site_name} password')
                 raise exc.HTTPBadRequest('To ensure account security, you must reset your password via email.'
@@ -428,7 +443,7 @@ class AuthenticationProvider:
         '''
         return {}
 
-    def is_password_expired(self, user):
+    def is_password_expired(self, user: M.User) -> bool:
         days = asint(config.get('auth.pwdexpire.days', 0))
         before = asint(config.get('auth.pwdexpire.before', 0))
         now = datetime.utcnow()
@@ -499,7 +514,7 @@ class AuthenticationProvider:
             ua=request.headers.get('User-Agent'),
         )
 
-    def trusted_login_source(self, user, login_details):
+    def trusted_login_source(self, user, login_details) -> str | False:
         # TODO: could also factor in User-Agent but hard to know what parts of the UA are meaningful to check here
         from allura import model as M
         for prev_login in M.UserLoginDetails.query.find({'user_id': user._id}):

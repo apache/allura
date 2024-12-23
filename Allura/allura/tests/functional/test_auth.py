@@ -178,7 +178,7 @@ class TestAuth(TestController):
             f[encoded['username']] = 'test-user'
             f[encoded['password']] = 'foo'
 
-            with audits(r'Successful login with password in HIBP breach database, from trusted source '
+            with audits(r'Successful login but password in HIBP breach database, from trusted source '
                         r'\(reason: exact ip\)', user=True):
                 r = f.submit(status=302)
 
