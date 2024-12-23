@@ -187,7 +187,7 @@ class AuthenticationProvider:
         '''
         pass
 
-    def login(self, user: M.User = None, multifactor_success: bool = False):
+    def login(self, user: M.User = None, multifactor_success: bool = False) -> M.User | None:
         from allura import model as M
         if user is None:
             try:
@@ -206,13 +206,13 @@ class AuthenticationProvider:
 
         login_details = self.get_login_detail(self.request, user)
 
+        log.info(f'{multifactor_success=} {user.username=} {login_details=}')
         expire_reason = None
         if self.is_password_expired(user):
             h.auditlog_user('Successful login; Password expired', user=user)
             expire_reason = 'via expiration process'
-        if not expire_reason and 'password' in self.request.params:
-            # password not present with multifactor token; or if login directly after registering is enabled
-            expire_reason = self.login_check_password_change_needed(user, self.request.params['password'],
+        if not expire_reason:
+            expire_reason = self.login_check_password_change_needed(user, self.request.params.get('password'),
                                                                     login_details)
         if expire_reason:
             self.session['pwd-expired'] = True
@@ -234,17 +234,22 @@ class AuthenticationProvider:
         user.track_login(self.request)
         return user
 
-    def login_check_password_change_needed(self, user: M.User, password: str, login_details: M.UserLoginDetails) -> str | None:
+    def login_check_password_change_needed(self, user: M.User, password: str | None, login_details: M.UserLoginDetails) -> str | None:
         reason = reason_code = None
 
         # check setting to force pwd changes after date
         before = asint(config.get('auth.force_pwd_change_after', 0))
+        log.info(f'force_pwd_change_after={datetime.utcfromtimestamp(before)} {self.get_last_password_updated(user)=}')
         if before and self.get_last_password_updated(user) < datetime.utcfromtimestamp(before):
             reason = 'requiring a password change'
             reason_code = 'force_pwd_change'
 
         # check HIBP
-        if self.hibp_password_check_enabled() and asbool(tg.config.get('auth.hibp_failure_force_pwd_change', False)):
+        if (
+            self.hibp_password_check_enabled()
+            and asbool(tg.config.get('auth.hibp_failure_force_pwd_change', False))
+            and password  # not present with multifactor token; or if login directly after registering is enabled
+        ):
             try:
                 security.HIBPClient.check_breached_password(password)
             except security.HIBPClientError as ex:
