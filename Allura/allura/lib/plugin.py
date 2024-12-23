@@ -206,7 +206,6 @@ class AuthenticationProvider:
 
         login_details = self.get_login_detail(self.request, user)
 
-        log.info(f'{multifactor_success=} {user.username=} {login_details=}')
         expire_reason = None
         if self.is_password_expired(user):
             h.auditlog_user('Successful login; Password expired', user=user)
@@ -239,7 +238,6 @@ class AuthenticationProvider:
 
         # check setting to force pwd changes after date
         before = asint(config.get('auth.force_pwd_change_after', 0))
-        log.info(f'force_pwd_change_after={datetime.utcfromtimestamp(before)} {self.get_last_password_updated(user)=}')
         if before and self.get_last_password_updated(user) < datetime.utcfromtimestamp(before):
             reason = 'requiring a password change'
             reason_code = 'force_pwd_change'
