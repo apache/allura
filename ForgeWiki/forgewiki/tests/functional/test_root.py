@@ -21,6 +21,8 @@ import allura
 import json
 
 import PIL
+
+from forgewiki.model import Page
 from ming.odm.odmsession import ThreadLocalODMSession
 from mock import patch
 from tg import config
@@ -261,6 +263,20 @@ class TestRootController(TestController):
         response = self.app.get(h.urlquote('/wiki/tést/') + '?version=1')
         response.mustcontain('text1')
         response.mustcontain(no='text2')
+
+    def test_page_history_missing(self):
+        self.app.get(h.urlquote('/wiki/tést/'))
+        self.app.post(
+            h.urlquote('/wiki/tést/update'),
+            params={
+                'title': 'tést'.encode(),
+                'text': 'text1',
+                'labels': '',
+            })
+        for snapshot in Page.query.get(title='tést').history():
+            snapshot.delete()
+        r = self.app.get(h.urlquote('/wiki/tést/'))
+        r.mustcontain(no='There is a newer version')
 
     def test_page_diff(self):
         self.app.post(

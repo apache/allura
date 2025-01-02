@@ -617,7 +617,7 @@ class PageController(BaseController, FeedController):
         hide_left_bar = not (c.app.show_left_bar)
         subscribed_to_page = M.Mailbox.subscribed(artifact=self.page)
         latest_version = self.page.history().limit(1).first()
-        is_latest_version = cur == latest_version.version
+        is_latest_version = not latest_version or cur == latest_version.version
         return dict(
             page=page,
             cur=cur, prev=prev, next=next,
