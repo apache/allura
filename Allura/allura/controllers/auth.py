@@ -167,7 +167,7 @@ class AuthController(BaseController):
         c.form = F.registration_form
         return dict()
 
-    def _validate_hash(self, hash):
+    def _validate_hash(self, hash) -> M.User:
         login_url = config.get('auth.login_url', '/auth/')
         if not hash:
             redirect(login_url)
@@ -206,7 +206,12 @@ class AuthController(BaseController):
         if not provider.forgotten_password_process:
             raise wexc.HTTPNotFound()
         user = self._validate_hash(hash)
-        enforce_hibp_password_check(provider, pw, f'/auth/forgotten_password/{hash}')
+        restart_url = f'/auth/forgotten_password/{hash}'
+        enforce_hibp_password_check(provider, pw, restart_url)
+
+        if provider._validate_password(user, pw):
+            flash('Your old and new password should not be the same', 'error')
+            redirect(restart_url)
 
         user.set_password(pw)
         user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')  # Clear password reset token

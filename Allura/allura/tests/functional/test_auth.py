@@ -1743,6 +1743,17 @@ To update your password on {}, please visit the following URL:
         assert 'New Password:' in r
         assert 'New Password (again):' in r
         form = r.forms[0]
+        form['pw'] = form['pw2'] = 'foo'  # old password
+        with h.push_config(config, **{'auth.min_password_len': 3}):
+            r = form.submit()
+        print(r)
+        if r.status == 200:
+            assert [] == r.html.findAll(attrs={'class': 'fielderror'})
+        assert 'Your old and new password should not be the same' in self.webflash(r)
+        r = r.follow()
+
+        # fill it out correctly
+        form = r.forms[0]
         form['pw'] = form['pw2'] = new_password = '154321'
         with td.audits(r'Password changed \(through recovery process\)', user=True):
             # escape parentheses, so they would not be treated as regex group
