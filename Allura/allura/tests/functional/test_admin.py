@@ -169,9 +169,9 @@ class TestProjectAdmin(TestController):
                 'features-1.feature': '  ',
                 'features-2.feature': ' Two '})
             if resp.status_int == 200:
-                errors = resp.html.findAll('', attrs={'class': 'fielderror'})
+                errors = resp.html.findAll(attrs={'class': 'fielderror'})
                 assert [] == errors
-                errors = resp.html.findAll('', attrs={'class': 'error'})
+                errors = resp.html.findAll(attrs={'class': 'error'})
                 assert [] == errors
                 raise AssertionError('Should be a 301 not 200 response')
 
