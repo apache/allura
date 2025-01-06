@@ -362,8 +362,10 @@ class AuthController(BaseController):
         redirect('/auth/preferences/')
 
     @expose()
-    def logout(self):
+    def logout(self, return_to=None):
         plugin.AuthenticationProvider.get(request).logout()
+        if return_to:
+            redirect(self._verify_return_to(return_to))
         redirect(config.get('auth.post_logout_url', '/'))
 
     @staticmethod

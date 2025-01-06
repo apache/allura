@@ -95,6 +95,7 @@ class AuthenticationProvider:
     multifactor_allowed_urls = [
         '/auth/multifactor',
         '/auth/do_multifactor',
+        '/auth/logout',
     ]
     cfg_prefix_pwds = 'auth.password.'
     default_pwd_algo = 'scrypt'  # noqa: S105
@@ -129,8 +130,7 @@ class AuthenticationProvider:
 
         if 'multifactor-username' in self.session and request.path not in self.multifactor_allowed_urls:
             # ensure any partially completed multifactor login is not left open, if user goes to any other pages
-            del self.session['multifactor-username']
-            self.session.save()
+            redirect(h.url_return_to(self.multifactor_allowed_urls[0], self.request))
         if user is None:
             return M.User.anonymous()
         if user.disabled or user.pending:

@@ -3163,19 +3163,18 @@ class TestTwoFactor(TestController):
         r = r.follow()
 
         # go to some other page instead of filling out the 2FA code
-        other_r = self.app.get('/')
+        r = self.app.get('/')
+        assert r.location.endswith('/auth/multifactor?return_to=%2F')
 
         # then try to complete the 2FA form
+        r = r.follow()
         totp = TotpService().Totp(self.sample_key)
         code = totp.generate(time_time())
         r.form['code'] = code
         r = r.form.submit()
 
-        # sent back to regular login
-        assert ('Your multifactor login was disrupted, please start over.' ==
-                json.loads(self.webflash(r))['message']), self.webflash(r)
-        r = r.follow()
-        assert 'Password Login' in r
+        # login worked
+        assert r.session['username'] == 'test-admin'
 
     def test_login_recovery_code(self):
         self._init_totp()

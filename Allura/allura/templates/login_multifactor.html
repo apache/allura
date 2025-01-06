@@ -45,6 +45,7 @@
             or <a href="#" class="show-totp">use an authenticator app code</a>
         </span>
     </span>
+        or <a href="/auth/logout?return_to=/auth/">Cancel</a>
     <input type="hidden" name="mode" value="{{ mode }}"/>
     {{ lib.csrf_token() }}
     </p>
