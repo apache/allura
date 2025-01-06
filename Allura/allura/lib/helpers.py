@@ -45,6 +45,7 @@ import tg
 import six
 import cchardet as chardet
 import pkg_resources
+import webob
 from formencode.validators import FancyValidator
 from dateutil.parser import parse
 from bson import ObjectId
@@ -549,6 +550,20 @@ def absurl(url):
         return url
     host = tg.config['base_url'].rstrip('/')
     return host + url
+
+
+def url_return_to(url: str, request: webob.Request | None = None, environ: dict | None = None) -> str:
+    if not environ:
+        environ = request.environ
+    if environ['REQUEST_METHOD'] == 'GET':
+        return_to = environ['PATH_INFO']
+        if environ.get('QUERY_STRING'):
+            return_to += '?' + environ['QUERY_STRING']
+        location = tg.url(url, dict(return_to=return_to))
+    else:
+        # Don't try to re-post; the body has been lost.
+        location = tg.url(url)
+    return location
 
 
 def diff_text(t1, t2, differ=None):

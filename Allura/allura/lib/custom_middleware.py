@@ -157,14 +157,7 @@ class LoginRedirectMiddleware:
         is_api_request = environ.get('PATH_INFO', '').startswith('/rest/')
         if status[:3] == '401' and not is_api_request and not is_ajax(Request(environ)):
             login_url = tg.config.get('auth.login_url', '/auth/')
-            if environ['REQUEST_METHOD'] == 'GET':
-                return_to = environ['PATH_INFO']
-                if environ.get('QUERY_STRING'):
-                    return_to += '?' + environ['QUERY_STRING']
-                location = tg.url(login_url, dict(return_to=return_to))
-            else:
-                # Don't try to re-post; the body has been lost.
-                location = tg.url(login_url)
+            location = h.url_return_to(login_url, environ=environ)
             r = exc.HTTPFound(location=location, headers={'X-Robots-Tag': 'noindex,follow'})
             return r(environ, start_response)
         start_response(status, headers, exc_info)
