@@ -879,7 +879,7 @@ class TestFork(_TestCase):
                           },
                           extra_environ=dict(username='*anonymous'),
                           status=302,
-                          ).follow()
+                          ).follow(extra_environ=dict(username='*anonymous'))
         assert 'Login' in r
 
         r = self.app.post('/p/test/src-git/merge-requests/1/do_request_merge_edit',

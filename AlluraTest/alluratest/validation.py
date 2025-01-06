@@ -266,8 +266,8 @@ class PostParamCheckingTestApp(AntiSpamTestApp):
                 self._validate_val(k, vv, method)
         elif not isinstance(v, (str, bytes, webtest.forms.File, webtest.forms.Upload)):
             raise TypeError(
-                '%s key %s has value %s of type %s, not str. ' %
-                (method, k, v, type(v)))
+                '%s key %r has value %s of type %s, not str. ' %
+                (method.upper(), k, v, type(v)))
 
     def get(self, *args, **kwargs) -> TestResponse:
         params = None

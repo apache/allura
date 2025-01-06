@@ -36,12 +36,10 @@ from allura.lib.plugin import LocalAuthenticationProvider
 class TestSiteAdmin(TestController):
 
     def test_access(self):
-        r = self.app.get('/nf/admin/', extra_environ=dict(
-            username='test-user'), status=403)
+        r = self.app.get('/nf/admin/', extra_environ=dict(username='test-user'), status=403)
 
-        r = self.app.get('/nf/admin/', extra_environ=dict(
-            username='*anonymous'), status=302)
-        r = r.follow()
+        r = self.app.get('/nf/admin/', extra_environ=dict(username='*anonymous'), status=302)
+        r = r.follow(extra_environ=dict(username='*anonymous'))
         assert 'Login' in r
 
     def test_home(self):
@@ -65,8 +63,9 @@ class TestSiteAdmin(TestController):
     def test_new_projects_access(self):
         self.app.get('/nf/admin/new_projects', extra_environ=dict(
             username='test_user'), status=403)
-        r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
-            username='*anonymous'), status=302).follow()
+
+        self.app.extra_environ = {'username': '*anonymous'}
+        r = self.app.get('/nf/admin/new_projects', status=302).follow()
         assert 'Login' in r
 
     def test_new_projects(self):
@@ -107,8 +106,8 @@ class TestSiteAdmin(TestController):
         assert count == 1  # only row with headers - no results
 
     def test_reclone_repo_access(self):
-        r = self.app.get('/nf/admin/reclone_repo', extra_environ=dict(
-            username='*anonymous'), status=302).follow()
+        self.app.extra_environ = dict(username='*anonymous')
+        r = self.app.get('/nf/admin/reclone_repo', status=302).follow()
         assert 'Login' in r
 
     def test_reclone_repo(self):
@@ -187,8 +186,9 @@ class TestSiteAdminNotifications(TestController):
     def test_site_notifications_access(self):
         self.app.get('/nf/admin/site_notifications', extra_environ=dict(
             username='test_user'), status=403)
-        r = self.app.get('/nf/admin/site_notifications', extra_environ=dict(
-            username='*anonymous'), status=302).follow()
+
+        self.app.extra_environ = dict(username='*anonymous')
+        r = self.app.get('/nf/admin/site_notifications', status=302).follow()
         assert 'Login' in r
 
     def test_site_notifications(self):

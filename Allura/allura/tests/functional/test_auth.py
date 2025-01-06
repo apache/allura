@@ -53,19 +53,18 @@ def unentity(s):
 
 class TestAuth(TestController):
     def test_login(self):
-        self.app.get('/auth/')
-        r = self.app.post('/auth/send_verification_link', params=dict(a='test@example.com',
-                                                                      _session_id=self.app.cookies['_session_id']))
+        self.app.get('/auth/preferences/')  # establish session_id cookie
         email = M.User.query.get(username='test-admin').email_addresses[0]
         r = self.app.post('/auth/send_verification_link', params=dict(a=email,
                                                                       _session_id=self.app.cookies['_session_id']))
+        assert json.loads(self.webflash(r))['status'] == 'ok', self.webflash(r)
+
         ThreadLocalODMSession.flush_all()
         r = self.app.get('/auth/verify_addr', params=dict(a='foo'))
         assert json.loads(self.webflash(r))['status'] == 'error', self.webflash(r)
         ea = M.EmailAddress.find({'email': email}).first()
         r = self.app.get('/auth/verify_addr', params=dict(a=ea.nonce))
         assert json.loads(self.webflash(r))['status'] == 'ok', self.webflash(r)
-        r = self.app.get('/auth/logout')
 
         with audits('Successful login', user=True):
             r = self.app.post('/auth/do_login', params=dict(
@@ -84,12 +83,12 @@ class TestAuth(TestController):
         assert wf['message'] == 'Spambot protection engaged'
 
         with audits('Failed login', user=True):
-            r = self.app.post('/auth/do_login', antispam=True, params=dict(
+            r = self.app.post('/auth/do_login', antispam=True, extra_environ=dict(username='*anonymous'), params=dict(
                 username='test-user', password='food',
                 _session_id=self.app.cookies['_session_id']))
             assert 'Invalid login' in str(r), r.showbrowser()
 
-        r = self.app.post('/auth/do_login', antispam=True, params=dict(
+        r = self.app.post('/auth/do_login', antispam=True, extra_environ=dict(username='*anonymous'), params=dict(
             username='test-usera', password='foo',
             _session_id=self.app.cookies['_session_id']))
         assert 'Invalid login' in str(r), r.showbrowser()
@@ -224,6 +223,32 @@ class TestAuth(TestController):
         f[encoded['password']] = 'foo'
         with audits('Successful login', 'Rehashed password automatically', user=True):
             r = f.submit(extra_environ={'username': '*anonymous'})
+
+    def test_login_redirect(self):
+        # show page
+        r = self.app.get('/auth/', extra_environ={'username': '*anonymous'},
+                         status=200)
+
+        # already logged in, so redir
+        r = self.app.get('/auth/', extra_environ={'username': 'test-admin'},
+                         status=302)
+        assert r.location == 'http://localhost/'
+
+        # redir to requested location
+        r = self.app.get('/auth/', extra_environ={'username': 'test-admin'}, params={'return_to': '/p/test/?a=b'},
+                         status=302)
+        assert r.location == 'http://localhost/p/test/?a=b'
+
+        # no redirect loop on /auth/
+        r = self.app.get('/auth/', extra_environ={'username': 'test-admin'}, params={'return_to': '/auth/'},
+                         status=302)
+        assert r.location == 'http://localhost/'
+
+        # no external redirect
+        r = self.app.get('/auth/', extra_environ={'username': 'test-admin'}, params={'return_to': 'http://example.com/x'},
+                         status=302)
+        assert r.location == 'http://localhost/'
+
 
     def test_login_overlay(self):
         r = self.app.get('/auth/login_fragment/', extra_environ={'username': '*anonymous'})
@@ -2878,12 +2903,12 @@ class TestCSRFProtection(TestController):
         assert r.location == 'http://localhost/auth/'
 
     def test_blocks_invalid_on_login(self):
-        r = self.app.get('/auth/')
+        r = self.app.get('/auth/', extra_environ=dict(username='*anonymous'))
         r.form['_session_id'] = 'bogus'
         r.form.submit(status=403)
 
     def test_token_present_on_first_request(self):
-        r = self.app.get('/auth/')
+        r = self.app.get('/auth/', extra_environ=dict(username='*anonymous'))
         assert r.form['_session_id'].value
 
 
@@ -3116,6 +3141,11 @@ class TestTwoFactor(TestController):
         # confirm login and final page
         assert r.session['username'] == 'test-admin'
         assert r.location.endswith('/p/foo'), r
+
+        # if you end up on multifactor page again somehow, redir
+        r = self.app.get('/auth/multifactor?return_to=/p/foo', status=302)
+        assert r.location == 'http://localhost/p/foo'
+
 
     def test_login_rate_limit(self):
         self._init_totp()

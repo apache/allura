@@ -153,6 +153,13 @@ class AuthController(BaseController):
                 return_to = six.ensure_text(request.referer)
             else:
                 return_to = None
+
+        if return_to and return_to.endswith('/auth/'):
+            return_to = None
+
+        if not c.user.is_anonymous():  # already logged in
+            redirect(self._verify_return_to(return_to))
+
         c.form = F.login_form
         return dict(return_to=return_to)
 
@@ -403,6 +410,10 @@ class AuthController(BaseController):
     def multifactor(self, return_to='', mode='totp', **kwargs):
         if not asbool(config.get('auth.multifactor.totp', False)):
             raise wexc.HTTPNotFound
+
+        if not c.user.is_anonymous():
+            # already logged in, no need to do this form
+            redirect(self._verify_return_to(return_to))
 
         return dict(
             return_to=return_to,
