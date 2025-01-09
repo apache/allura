@@ -1005,6 +1005,36 @@ class TestProjectAdmin(TestController):
         r = self.app.get('/p/test/admin/groups/edit_label')
         r.mustcontain('<form method="post" action="/p/test/admin/groups/update_label">')
 
+    def test_project_perms_display(self):
+        # Turn off private
+        neighborhood = M.Neighborhood.query.get(name='Projects')
+        neighborhood.features['private_projects'] = False
+        r = self.app.get('/admin/groups/')
+        groups = r.html.find('table', {'id': 'usergroup_admin'}).select_one('tbody').findAll('tr')[:-1]
+        for gr in groups:
+            group_name = gr.select_one('td').text.strip()
+            group_perms = gr.find('ul', {'class': 'permissions'}).findAll('li')
+            if group_name in ['Authenticated', 'Anonymous']:
+                assert len(group_perms) == 0
+            else:
+                assert len(group_perms) == 3
+
+    def test_private_projects_perms(self):
+        # Turn on private
+        neighborhood = M.Neighborhood.query.get(name='Projects')
+        neighborhood.features['private_projects'] = True
+        r = self.app.get('/admin/groups/')
+        groups = r.html.find('table', {'id': 'usergroup_admin'}).select_one('tbody').findAll('tr')[:-1]
+        for gr in groups:
+            group_name = gr.select_one('td').text.strip()
+            group_perms = gr.find('ul', {'class': 'permissions'}).findAll('li')
+            if group_name not in ['Authenticated', 'Anonymous']:
+                assert len(group_perms) == 4  # read permission is being displayed
+            else:
+                assert len(group_perms) == 1
+                
+                
+
 
 class TestExport(TestController):
 
