@@ -12,7 +12,7 @@ beaker==1.13.0
     # via
     #   -r requirements.in
     #   beaker-session-jwt
-beaker-session-jwt==1.0.1
+beaker-session-jwt==1.0.2
     # via -r requirements.in
 beautifulsoup4==4.12.3
     # via
