@@ -31,14 +31,8 @@
 {% macro show_perms_for_role(role) %}
   <ul class="permissions">
     {% for perm in permissions_by_role[role._id.__str__()] %}
-        {%  set is_auth_or_anon = role.name not in ['Admin', 'Developer', 'Member'] %}
-        {% if (private_projects and not is_auth_or_anon) or (not private_projects and perm['name'] != 'read' and not is_auth_or_anon) or (not private_projects and perm['name'] == 'read' and not is_auth_or_anon) and perm['has'] == 'no'  %}
-            <li class="{{perm['has']}}" data-permission="{{perm['name']}}">
-              {{ g.icons['perm_has_%s'%perm['has']].render(title=perm['text'], closing_tag=False) }}
-                {{perm['name']}}
-              </a> {# close tag, opened by render #}
-            </li>
-        {% elif is_auth_or_anon and perm['name'] == 'read' %}
+        {%  set display_perms = role.name not in ['*authenticated', '*anonymous'] %}
+        {% if display_perms and (private_projects or perm['name'] != 'read' or (perm['name'] == 'read' and perm['has'] == 'no')) %}
             <li class="{{perm['has']}}" data-permission="{{perm['name']}}">
               {{ g.icons['perm_has_%s'%perm['has']].render(title=perm['text'], closing_tag=False) }}
                 {{perm['name']}}
