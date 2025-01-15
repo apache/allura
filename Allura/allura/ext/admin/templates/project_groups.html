@@ -38,6 +38,12 @@
                 {{perm['name']}}
               </a> {# close tag, opened by render #}
             </li>
+        {% elif private_projects and not display_perms and perm['name'] == 'read' %}
+            <li class="{{perm['has']}}" data-permission="{{perm['name']}}">
+              {{ g.icons['perm_has_%s'%perm['has']].render(title=perm['text'], closing_tag=False) }}
+                {{perm['name']}}
+              </a> {# close tag, opened by render #}
+            </li>
         {% endif %}
     {% endfor %}
   </ul>

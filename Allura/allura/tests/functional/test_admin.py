@@ -1029,9 +1029,9 @@ class TestProjectAdmin(TestController):
             group_name = gr.select_one('td').text.strip()
             group_perms = gr.find('ul', {'class': 'permissions'}).findAll('li')
             if group_name not in ['Authenticated', 'Anonymous']:
-                assert len(group_perms) == 4 # read permission is being displayed
+                assert len(group_perms) == 4  # read permission is being displayed
             else:
-                assert len(group_perms) == 0
+                assert len(group_perms) == 1
                 
                 
 
