@@ -3333,3 +3333,127 @@ class TestTwoFactor(TestController):
         assert tasks[0].kwargs['subject'] == 'Two-Factor Authentication Apps'
         assert 'itunes.apple.com' in tasks[0].kwargs['text']
         assert 'play.google.com' in tasks[0].kwargs['text']
+
+
+class TestEmailAuthCode(TestController):
+
+    @mock.patch.dict(config, {'auth.email_auth_code.enabled': True})
+    @patch('allura.tasks.mail_tasks.send_system_mail_to_user')
+    def test_email_auth_code_with_mfa(self, send_system_mail_to_user):
+        self.app.get('/auth/preferences/')  # establish session_id cookie
+        user = M.User.by_username('test-user')
+        user.set_pref('multifactor', True)
+
+        with patch('allura.lib.plugin.AuthenticationProvider.trusted_login_source', return_value=True):
+            extra = {'username': '*anonymous'}
+            r = self.app.get('/auth/', extra_environ=extra)
+
+            f = r.forms[0]
+            encoded = self.app.antispam_field_names(f)
+            f[encoded['username']] = 'test-user'
+            f[encoded['password']] = 'foo'
+            r = f.submit(status=302)
+            assert send_system_mail_to_user.call_count == 0
+            assert r.session.get('mode') is None
+
+    @mock.patch.dict(config, {'auth.email_auth_code.enabled': True})
+    @patch('allura.tasks.mail_tasks.send_system_mail_to_user')
+    def test_email_auth_code_no_mfa(self, send_system_mail_to_user):
+        self.app.get('/auth/preferences/')  # establish session_id cookie
+        self.app.extra_environ = {'username': '*anonymous'}
+        user = M.User.by_username('test-user')
+        user.set_pref('multifactor', False)
+
+        with patch('allura.lib.plugin.AuthenticationProvider.trusted_login_source', return_value=False):
+            r = self.app.get('/auth/')
+            f = r.forms[0]
+            encoded = self.app.antispam_field_names(f)
+            f[encoded['username']] = 'test-user'
+            f[encoded['password']] = 'foo'
+            r = f.submit(status=302)
+            r = r.follow()
+
+            # Validate the email with the auth code was sent
+            args, kwargs = send_system_mail_to_user.call_args
+            assert r.session.get('mode') == 'email_code'
+            assert args[1] == f"{config['site_name']} Authentication Code"
+            assert send_system_mail_to_user.call_count == 1
+
+            # Validate that the user is directed to the authentication code page
+            assert 'Please enter the 6-digit code sent to your email' in r.text
+
+    @mock.patch.dict(config, {'auth.email_auth_code.enabled': True})
+    def test_input_correct_auth_code(self):
+        self.app.get('/auth/preferences/')
+        self.app.extra_environ = {'username': '*anonymous'}
+        user = M.User.by_username('test-user')
+        user.set_pref('multifactor', False)
+
+        with patch('allura.lib.plugin.AuthenticationProvider.trusted_login_source', return_value=False):
+            r = self.app.get('/auth/')
+            f = r.forms[0]
+            encoded = self.app.antispam_field_names(f)
+            f[encoded['username']] = 'test-user'
+            f[encoded['password']] = 'foo'
+            r = f.submit(status=302)
+            r = r.follow()
+
+            user = M.User.by_username('test-user')
+            user_code = user.get_tool_data('AuthEmailCode', 'code')
+            user_expiry_ts = user.get_tool_data('AuthEmailCode', 'code_expiry')
+            # Make sure a 6-digit code was generated
+            assert len(str(user_code)) == 6
+
+            # Validate the auth code is still valid
+            assert int(time_time()) < int(user_expiry_ts)
+
+            # Submit the code and validate the user is logged in
+            r.form['code'] = user_code
+            r = r.form.submit(status=302)
+            assert r.location == 'http://localhost/'
+
+    @mock.patch.dict(config, {'auth.email_auth_code.enabled': True})
+    def test_input_incorrect_auth_code(self):
+        self.app.get('/auth/preferences/')
+        self.app.extra_environ = {'username': '*anonymous'}
+        user = M.User.by_username('test-user')
+        user.set_pref('multifactor', False)
+
+        with patch('allura.lib.plugin.AuthenticationProvider.trusted_login_source', return_value=False):
+            r = self.app.get('/auth/')
+            f = r.forms[0]
+            encoded = self.app.antispam_field_names(f)
+            f[encoded['username']] = 'test-user'
+            f[encoded['password']] = 'foo'
+            r = f.submit(status=302)
+            r = r.follow()
+
+            # Submit an incorrect code
+            r.form['code'] = '1234567'
+            r = r.form.submit()
+            assert 'Invalid code' in r.text
+
+    @mock.patch.dict(config, {'auth.email_auth_code.enabled': True})
+    def test_input_expired_auth_code(self):
+        self.app.get('/auth/preferences/')
+        self.app.extra_environ = {'username': '*anonymous'}
+        user = M.User.by_username('test-user')
+        user.set_pref('multifactor', False)
+
+        with patch('allura.lib.plugin.AuthenticationProvider.trusted_login_source', return_value=False):
+            r = self.app.get('/auth/')
+            f = r.forms[0]
+            encoded = self.app.antispam_field_names(f)
+            f[encoded['username']] = 'test-user'
+            f[encoded['password']] = 'foo'
+            r = f.submit(status=302)
+            r = r.follow()
+
+            # Set the code expiration to 5 minutes ago
+            user = M.User.by_username('test-user')
+            user.set_tool_data('AuthEmailCode', code_expiry=int(time_time()) - 300)
+            user_code = user.get_tool_data('AuthEmailCode', 'code')
+            r.form['code'] = user_code
+            r = r.form.submit()
+
+            assert 'Invalid code' in r.text

@@ -22,7 +22,7 @@ import os
 from base64 import b32encode
 from datetime import datetime
 import re
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urlparse, urljoin, urlunparse
 
 import bson
 import formencode as fe
@@ -43,7 +43,7 @@ from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.lib import validators as V
 from allura.lib.decorators import require_post, reconfirm_auth
-from allura.lib.exceptions import InvalidRecoveryCode, MultifactorRateLimitError
+from allura.lib.exceptions import InvalidRecoveryCode, MultifactorRateLimitError, InvalidEmailAuthCode
 from allura.lib.repository import RepositoryApp
 from allura.lib.security import HIBPClient, HIBPCompromisedCredentials, HIBPClientError
 from allura.lib.widgets import (
@@ -56,7 +56,7 @@ from allura.lib.widgets import (
     DisableAccountForm)
 from allura.lib.widgets import forms, form_fields as ffw
 from allura.lib import mail_util
-from allura.lib.multifactor import TotpService, RecoveryCodeService
+from allura.lib.multifactor import TotpService, RecoveryCodeService, EmailCodeAuthenticationService
 from allura.lib import utils
 from allura.controllers import BaseController
 from allura.tasks.mail_tasks import send_system_mail_to_user
@@ -150,7 +150,13 @@ class AuthController(BaseController):
             if request.referer is not None and six.ensure_text(request.referer).split('/')[-1] == 'neighborhood':
                 return_to = '/'
             elif request.referer:
-                return_to = six.ensure_text(request.referer)
+                parsed_referer = urlparse(request.referer)
+                # Fix return_to url path upon clicking Cancel in multifactor authentication
+                if parsed_referer.path in plugin.AuthenticationProvider.multifactor_allowed_urls:
+                    new_url = parsed_referer._replace(path='/')
+                    return_to = six.ensure_text(urlunparse(new_url))
+                else:
+                    return_to = six.ensure_text(request.referer)
             else:
                 return_to = None
 
@@ -393,7 +399,6 @@ class AuthController(BaseController):
     @utils.AntiSpam.validate('Spambot protection engaged')
     def do_login(self, return_to=None, **kw):
         location = '/'
-
         if session.get('multifactor-username'):
             location = tg.url('/auth/multifactor', dict(return_to=return_to))
         elif session.get('expired-username'):
@@ -414,6 +419,9 @@ class AuthController(BaseController):
         if not c.user.is_anonymous():
             # already logged in, no need to do this form
             redirect(self._verify_return_to(return_to))
+        # currently only email_code mode is set via session
+        if session.get('mode') == 'email_code':
+            mode = 'email_code'
 
         return dict(
             return_to=return_to,
@@ -441,6 +449,10 @@ class AuthController(BaseController):
                 recovery = RecoveryCodeService.get()
                 recovery.verify_and_remove_code(user, code)
                 h.auditlog_user('Logged in using a multifactor recovery code', user=user)
+            elif mode == 'email_code':
+                email_code_service = EmailCodeAuthenticationService()
+                email_code_service.validate_code(user, code)
+                h.auditlog_user('Logged in using email authentication code', user=user)
         except (InvalidToken, InvalidRecoveryCode):
             request.validation.errors['code'] = 'Invalid code, please try again.'
             h.auditlog_user('Multifactor login - invalid code', user=user)
@@ -448,6 +460,10 @@ class AuthController(BaseController):
         except MultifactorRateLimitError:
             request.validation.errors['code'] = 'Multifactor rate limit exceeded, slow down and try again later.'
             h.auditlog_user('Multifactor login - rate limit', user=user)
+            return self.multifactor(mode=mode, **kwargs)
+        except InvalidEmailAuthCode:
+            request.validation.errors['code'] = 'Invalid code, please try again.'
+            h.auditlog_user('Email code login - invalid code', user=user)
             return self.multifactor(mode=mode, **kwargs)
         else:
             plugin.AuthenticationProvider.get(request).login(user=user, multifactor_success=True)

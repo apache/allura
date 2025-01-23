@@ -19,36 +19,57 @@
 {% set hide_left_bar = True %}
 {% extends g.theme.master %}
 
-{% block title %}{{ config['site_name'] }} Multifactor Login{% endblock %}
+{% block title %}{{ config['site_name'] }} Verify Your Account{% endblock %}
 
-{% block header %}Multifactor Login{% endblock %}
+{% block header %}Verify Your Account{% endblock %}
 
 {% block content %}
 <form method="post" action="/auth/do_multifactor">
-    <h2>Enter your Multifactor Authentication Code</h2>
-    <p>
-    <span class="totp">Please enter the {{ config['auth.multifactor.totp.length'] }}-digit code from your authenticator app:</span>
-    <span class="recovery">Please enter a recovery code:</span>
-    <br>
-    {% if request.validation.errors['code'] %}
-        <span class="fielderror">{{ request.validation.errors['code'] }}</span><br>
+    {% if mode == "email_code" %}
+        <h2>E-mail Code Authentication</h2>
+        <p>
+        <span>Please enter the 6-digit code sent to your email:</span>
+        <br>
+        {% if request.validation.errors['code'] %}
+            <span class="fielderror">{{ request.validation.errors['code'] }}</span><br>
+        {% endif %}
+        <input id="auth_code" type="text" name="code" autofocus autocomplete="off"/>
+        <input type="hidden" name="return_to" value="{{ return_to }}"/>
+        <br>
+        <input type="submit" value="Log In">
+        <a href="/auth/logout?return_to=/auth/{{ '?return_to=' + return_to | urlencode }}">
+            <input type="button" value="Cancel">
+        </a>
+        <input type="hidden" name="mode" value="{{ mode }}"/>
+        {{ lib.csrf_token() }}
+        </p>
+    {% else %}
+        <h2>Enter your Multifactor Authentication Code</h2>
+        <p>
+        <span class="totp">Please enter the {{ config['auth.multifactor.totp.length'] }}-digit code from your authenticator app:</span>
+        <span class="recovery">Please enter a recovery code:</span>
+        <br>
+        {% if request.validation.errors['code'] %}
+            <span class="fielderror">{{ request.validation.errors['code'] }}</span><br>
+        {% endif %}
+        <input type="text" name="code" autofocus autocomplete="off"/>
+        <input type="hidden" name="return_to" value="{{ return_to }}"/>
+        <br>
+        <input type="submit" value="Log In">
+        <span class="alternate-links">
+            <span class="totp">
+                or <a href="#" class="show-recovery">use a recovery code</a>
+            </span>
+            <span class="recovery">
+                or <a href="#" class="show-totp">use an authenticator app code</a>
+            </span>
+        </span>
+            or <a href="/auth/logout?return_to=/auth/{{ '?return_to=' + return_to | urlencode }}">Cancel</a>
+        <input type="hidden" name="mode" value="{{ mode }}"/>
+        {{ lib.csrf_token() }}
+        </p>
     {% endif %}
-    <input type="text" name="code" autofocus autocomplete="off"/>
-    <input type="hidden" name="return_to" value="{{ return_to }}"/>
-    <br>
-    <input type="submit" value="Log In">
-    <span class="alternate-links">
-        <span class="totp">
-            or <a href="#" class="show-recovery">use a recovery code</a>
-        </span>
-        <span class="recovery">
-            or <a href="#" class="show-totp">use an authenticator app code</a>
-        </span>
-    </span>
-        or <a href="/auth/logout?return_to=/auth/">Cancel</a>
-    <input type="hidden" name="mode" value="{{ mode }}"/>
-    {{ lib.csrf_token() }}
-    </p>
+
 </form>
 
 {% endblock %}
@@ -62,6 +83,15 @@
         /* align with floated button */
         display: inline-block;
         margin: 6px 10px;
+    }
+
+    input[type="button"] {
+        padding: 1.07143rem;
+        outline: 0;
+        line-height: 1em;
+        min-height: 14px;
+        box-shadow: none;
+        text-align: center;
     }
 </style>
 {% endblock %}

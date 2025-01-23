@@ -47,6 +47,7 @@ from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.lib import utils
 from allura.lib.decorators import memoize
+from allura.lib.multifactor import EmailCodeAuthenticationService
 from allura.lib.search import SearchIndexable
 from .session import main_orm_session, main_explicitflush_orm_session
 from .timeline import ActivityNode, ActivityObject
@@ -428,6 +429,17 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
                            hash_expiry=datetime.utcnow() + expiry_delta)
         reset_url = h.absurl(f'/auth/forgotten_password/{hash}')
         return reset_url
+
+    def send_email_auth_code(self, subject_tmpl='{site_name} Authentication Code'):
+        email_address = self.get_pref('email_address')
+        email_auth_code = EmailCodeAuthenticationService().generate_code(self)
+        subject = subject_tmpl.format(site_name=config['site_name'])
+        text = g.jinja2_env.get_template('allura:templates/mail/authentication_code.txt').render(dict(
+            user=self,
+            config=config,
+            email_auth_code=email_auth_code,
+        ))
+        allura.tasks.mail_tasks.send_system_mail_to_user(email_address, subject, text)
 
     def can_send_user_message(self):
         """Return true if User is permitted to send a mesage to another user.

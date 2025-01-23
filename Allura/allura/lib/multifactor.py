@@ -18,6 +18,7 @@
 import os
 import logging
 import random
+import secrets
 import string
 import tempfile
 from collections import OrderedDict
@@ -26,7 +27,7 @@ from time import time
 import errno
 
 import bson
-from allura.lib.exceptions import InvalidRecoveryCode, MultifactorRateLimitError
+from allura.lib.exceptions import InvalidRecoveryCode, MultifactorRateLimitError, InvalidEmailAuthCode
 from tg import config
 from tg import app_globals as g
 from paste.deploy.converters import asint
@@ -455,3 +456,25 @@ class GoogleAuthenticatorPamFilesystemRecoveryCodeService(GoogleAuthenticatorPam
                 # write both rate limit & recovery code changes
                 self.write_file(user, gaf)
         raise InvalidRecoveryCode
+
+
+class EmailCodeAuthenticationService(MongodbMultifactorCommon):
+    def generate_code(self, user):
+        code_length = 6
+        code_expiration_time = 300 # seconds
+
+        code = ''.join(secrets.choice(string.digits) for i in range(code_length))
+        code_expiration_timestamp = int(time() + code_expiration_time)
+        user.set_tool_data('AuthEmailCode', code=code, code_expiry=code_expiration_timestamp)
+        return code
+
+    def validate_code(self, user, code):
+        user_code = user.get_tool_data('AuthEmailCode', 'code')
+        user_code_expiry = user.get_tool_data('AuthEmailCode', 'code_expiry')
+        if user_code:
+            self.enforce_rate_limit(user)
+            if user_code == code and int(time()) < user_code_expiry :
+                # remove the AuthEmailCode tool data from the user
+                user.set_tool_data('AuthEmailCode', code="", code_expiry=0)
+                return True
+        raise InvalidEmailAuthCode

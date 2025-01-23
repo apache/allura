@@ -92,6 +92,10 @@ class InvalidRecoveryCode(ForgeError):
     pass
 
 
+class InvalidEmailAuthCode(ForgeError):
+    pass
+
+
 class CompoundError(ForgeError):
 
     def __repr__(self):

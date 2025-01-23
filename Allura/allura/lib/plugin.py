@@ -198,6 +198,22 @@ class AuthenticationProvider:
 
         login_details = self.get_login_detail(self.request, user)
 
+        # check if the user doesn't have mfa enabled but is logging in from an unknown location
+        # they'll get an authentication code via email
+        skip_after_login = False
+        if asbool(config.get('auth.email_auth_code.enabled', False)) and not user.get_pref('multifactor') and not self.trusted_login_source(user, login_details) and not multifactor_success:
+            h.auditlog_user('User without MFA attempted to login from untrusted location', user=user)
+            self.session['multifactor-username'] = user.username
+            self.session['mode'] = 'email_code'
+            self.session.save()
+            user.send_email_auth_code()
+            return None
+        else:
+            # Validate if we used an auth code to skip the `after_login` which sends a foreign login email
+            skip_after_login = self.session.get('mode') == 'email_code'
+            self.session.pop('multifactor-username', None)
+            self.session.pop('mode', None)
+
         expire_reason = None
         if self.is_password_expired(user):
             h.auditlog_user('Successful login; Password expired', user=user)
@@ -212,7 +228,9 @@ class AuthenticationProvider:
         else:
             self.session['username'] = user.username
             h.auditlog_user('Successful login', user=user)
-        self.after_login(user, self.request)
+
+        if not skip_after_login:
+            self.after_login(user, self.request)
 
         if 'rememberme' in self.request.params:
             remember_for = int(config.get('auth.remember_for', 365))
