@@ -16,6 +16,7 @@
 #       under the License.
 
 import logging
+import os
 
 from tg import request
 from tg import tmpl_context as c
@@ -25,6 +26,10 @@ from allura.lib import utils
 from allura.lib.spam import SpamFilter
 
 try:
+    if not os.environ.get('PYTHON_AKISMET_TIMEOUT'):
+        # default would be 1 otherwise.  Must be set before import akismet
+        os.environ['PYTHON_AKISMET_TIMEOUT'] = '3'
+
     import akismet
     AKISMET_AVAILABLE = True
 except ImportError:
