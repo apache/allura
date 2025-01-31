@@ -341,7 +341,7 @@ your :file:`development.ini` (8826 by default).
 
 .. code-block:: bash
 
-    python -u -m smtpd -n -c DebuggingServer localhost:8826
+    python -u -m aiosmtpd -n -c alluratest.smtp_debug.BetterDebuggingServer -l 0.0.0.0:8826 -d
 
 This will create a new debugging server that discards messages and prints them to stdout.
 
