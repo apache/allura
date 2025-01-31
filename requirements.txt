@@ -6,8 +6,14 @@
 #
 activitystream==0.5.0
     # via -r requirements.in
+aiosmtpd==1.4.6
+    # via -r requirements.in
 anyio==4.6.0
     # via httpx
+atpublic==5.1
+    # via aiosmtpd
+attrs==25.1.0
+    # via aiosmtpd
 beaker==1.13.0
     # via
     #   -r requirements.in
@@ -31,6 +37,7 @@ certifi==2024.8.30
     # via
     #   httpcore
     #   httpx
+    #   pymongo
     #   requests
 cffi==1.16.0
     # via
@@ -185,6 +192,10 @@ pre-commit==4.0.1
     # via -r requirements.in
 profanityfilter==2.0.6
     # via -r requirements.in
+pyasynchat==1.0.4
+    # via -r requirements.in
+pyasyncore==1.0.4
+    # via pyasynchat
 pycparser==2.22
     # via cffi
 pygments==2.17.2
