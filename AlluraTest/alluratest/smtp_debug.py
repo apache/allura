@@ -15,11 +15,26 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from smtpd import DebuggingServer
+import tg
+from aiosmtpd.handlers import Debugging, Sink
+from aiosmtpd.controller import Controller
+from io import StringIO
+from paste.deploy.converters import asint
 
+class BetterDebuggingServer:
+    
+    def process_message(self,  server, session, envelope):
+        stream = StringIO()
+        handler = Debugging(stream)  # throws away the email
+        hostname = tg.config.get('forgemail.host', '0.0.0.0')
+        port = asint(tg.config.get('forgemail.port', 8825))
+        controller = Controller(handler, hostname=hostname, port=port)
+        controller.start()
 
-class BetterDebuggingServer(DebuggingServer):
-
-    def process_message(self, peer, mailfrom, rcpttos, data, **kwargs):
-        print('TO: ' + ', '.join(rcpttos))
-        super().process_message(peer, mailfrom, rcpttos, data)
+    async def handle_DATA(self,  server, session, envelope):
+        try:
+            rcpttos = envelope.rcpt_tos
+            print('TO: ' + ', '.join(rcpttos))
+        except Exception as error:
+            return f'500 Could not process your message. Error {error}'
+        return '250 OK'
