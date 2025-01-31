@@ -60,6 +60,7 @@ pytest
 pytest-xdist
 pytest-sugar
 docutils
+aiosmtpd
 
 # deployment
 gunicorn

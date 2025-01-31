@@ -64,7 +64,7 @@ services:
     environment: *env
     volumes_from:
       - web
-    command: python -u -m smtpd -n -c alluratest.smtp_debug.BetterDebuggingServer 0.0.0.0:8826
+    command: python -u -m aiosmtpd -n -c alluratest.smtp_debug.BetterDebuggingServer -l 0.0.0.0:8826 -d
     expose:
       - "8826"
 
