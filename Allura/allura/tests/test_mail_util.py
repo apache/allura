@@ -22,9 +22,9 @@ import mock
 import pytest
 from ming.odm import ThreadLocalODMSession
 from tg import config as tg_config
-
+from smtplib import SMTP as SMTPClient
 from alluratest.controller import setup_basic_test, setup_global_objects
-from allura.command.smtp_server import MailServer
+from alluratest.smtp_debug import BetterDebuggingServer
 from allura.lib.utils import ConfigProxy
 from allura.app import Application
 from allura.lib.mail_util import (
@@ -38,7 +38,8 @@ from allura.lib.mail_util import (
 )
 from allura.lib.exceptions import AddressException
 from allura.tests import decorators as td
-
+from paste.deploy.converters import asint
+from aiosmtpd.handlers import Debugging
 
 config = ConfigProxy(
     common_suffix='forgemail.domain',
@@ -334,9 +335,24 @@ class TestMailServer:
 
     @mock.patch('allura.command.base.log', autospec=True)
     def test(self, log):
-        listen_port = ('0.0.0.0', 8825)
-        mailserver = MailServer(listen_port, None)
-        mailserver.process_message('127.0.0.1', 'foo@bar.com', ['1234@tickets.test.p.localhost'],
-                                   'this is the email body with headers and everything ÎÅ¸'.encode())
-        assert [] == log.exception.call_args_list
-        assert log.info.call_args[0][0].startswith('Msg passed along as task '), log.info.call_args
+        mailserver = BetterDebuggingServer()
+        controller, handler = mailserver.start_server()
+        hostname = tg_config.get('forgemail.host', '0.0.0.0')
+        port = asint(tg_config.get('forgemail.port', 8825))
+        with SMTPClient(hostname, port, timeout=0.1) as client:
+            resp = client.docmd("HELP", "HELO")
+            code, msg = client.ehlo("example.com")
+            assert code == 250
+            client.sendmail('aperson@example.com', ['bperson@example.com'],"""
+            From: Anne Person <anne@example.com>
+            To: Bart Person <bart@example.com>
+            Subject: A test
+            Hi Bart, this is Anne.
+            """)
+            assert isinstance(handler, Debugging)
+            text = handler.stream.getvalue()
+            assert 'From: Anne Person <anne@example.com>' in text
+            assert ' To: Bart Person <bart@example.com>' in text
+            assert 'Subject: A test' in text
+            
+            
