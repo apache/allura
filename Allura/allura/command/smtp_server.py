@@ -27,15 +27,8 @@ from paste.deploy.converters import asint
 from aiosmtpd.controller import Controller
 import asyncio
 from tg.wsgiapp import RequestLocals
+import time
 
-
-async def start_server(loop):
-    handler = MailServer()
-    hostname = tg.config.get('forgemail.host', '0.0.0.0')
-    port = asint(tg.config.get('forgemail.port', 8825))
-    controller = Controller(handler, hostname=hostname, port=port)
-    controller.start()
-    
 
 class SMTPServerCommand(base.Command):
     min_args = 1
@@ -50,14 +43,14 @@ class SMTPServerCommand(base.Command):
     def command(self):
         faulthandler.enable()
         self.basic_setup()
-        loop = asyncio.get_event_loop()
-        task = loop.create_task(start_server(loop=loop))
-        try:
-            loop.run_forever()
-        except KeyboardInterrupt:
-            task.cancel()
-        finally:
-            loop.close()
+        handler = MailServer()
+        hostname = tg.config.get('forgemail.host', '0.0.0.0')
+        port = asint(tg.config.get('forgemail.port', 8825))
+        controller = Controller(handler, hostname=hostname, port=port)
+        controller.start()
+        while True:
+            time.sleep(100000)
+            
         
 class MailServer:
     async def handle_DATA(self, server, session, envelope):
@@ -68,6 +61,7 @@ class MailServer:
             data = envelope.content
             base.log.info('Msg Received from %s for %s', mailfrom, rcpttos)
             base.log.info(' (%d bytes)', len(data))
+            # pass the app_globals into the request context again because it's in a different thread
             tgl = RequestLocals()
             tgl.tmpl_context = EmptyClass()
             tgl.app_globals = tg.app_globals
