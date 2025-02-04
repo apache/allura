@@ -105,6 +105,22 @@ class AlluraTemplateConfig(TemplateRenderingConfigurationComponent):
         self.register_engine(AlluraJinjaRenderer)
 
 
+class InMemoryBytecodeCache(jinja2.BytecodeCache):
+    def __init__(self):
+        self.cache = {}
+
+    def load_bytecode(self, bucket):
+        key = bucket.key
+        if key in self.cache:
+            bucket.code = self.cache[key]
+
+    def dump_bytecode(self, bucket):
+        key = bucket.key
+        self.cache[key] = bucket.code
+
+long_term_in_memory_bytecode_cache = InMemoryBytecodeCache()
+
+
 class AlluraJinjaRenderer(JinjaRenderer):
 
     @classmethod
@@ -112,7 +128,10 @@ class AlluraJinjaRenderer(JinjaRenderer):
         cache_type = config.get('jinja_bytecode_cache_type')
         bcc = None
         try:
-            if cache_type == 'memcached' and config.get('memcached_host'):
+            if 'pytest' in sys.modules:
+                # speedup for tests: avoid memcache, avoid loading/dumping bytecode to strings.  Use same one for all tests
+                bcc = long_term_in_memory_bytecode_cache
+            elif cache_type == 'memcached' and config.get('memcached_host'):
                 import pylibmc
                 from jinja2 import MemcachedBytecodeCache
                 client = pylibmc.Client([config['memcached_host']])
