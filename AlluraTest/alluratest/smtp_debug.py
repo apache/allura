@@ -23,18 +23,24 @@ from paste.deploy.converters import asint
 
 class BetterDebuggingServer:
     
-    def process_message(self,  server, session, envelope):
+    def start_server(self):
         stream = StringIO()
         handler = Debugging(stream)  # throws away the email
         hostname = tg.config.get('forgemail.host', '0.0.0.0')
         port = asint(tg.config.get('forgemail.port', 8825))
         controller = Controller(handler, hostname=hostname, port=port)
         controller.start()
+        return controller, handler
+    
 
     async def handle_DATA(self,  server, session, envelope):
         try:
             rcpttos = envelope.rcpt_tos
+            message = envelope.content.decode("utf-8")
+            message = "\n".join(message.split("\r\n"))
             print('TO: ' + ', '.join(rcpttos))
+            print('FROM: ' + envelope.mail_from)
+            print(message)
         except Exception as error:
             return f'500 Could not process your message. Error {error}'
         return '250 OK'
