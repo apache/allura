@@ -167,7 +167,7 @@ pastedeploy==3.1.0
     # via
     #   -r requirements.in
     #   pastescript
-pastescript==3.5.1
+pastescript==3.7.0
     # via -r requirements.in
 pillow==11.0.0
     # via -r requirements.in
