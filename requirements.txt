@@ -27,7 +27,7 @@ botocore==1.35.37
     #   boto3
     #   pymongo-auth-aws
     #   s3transfer
-certifi==2024.8.30
+certifi==2025.1.31
     # via
     #   httpcore
     #   httpx
@@ -38,7 +38,7 @@ cffi==1.17.1
     #   pymongocrypt
 cfgv==3.4.0
     # via pre-commit
-charset-normalizer==3.4.0
+charset-normalizer==3.4.1
     # via requests
 colander==1.8.3
     # via -r requirements.in
@@ -284,7 +284,7 @@ turbogears2==2.4.3
     # via -r requirements.in
 typing-extensions==4.12.2
     # via beautifulsoup4
-urllib3==1.26.20
+urllib3==2.3.0
     # via
     #   botocore
     #   requests
