@@ -75,7 +75,7 @@ feedgenerator==2.1.0
     # via -r requirements.in
 feedparser==6.0.11
     # via -r requirements.in
-filelock==3.16.1
+filelock==3.17.0
     # via virtualenv
 formencode==2.1.1
     # via
@@ -99,7 +99,7 @@ httpcore==1.0.6
     # via httpx
 httpx==0.27.2
     # via pymongocrypt
-identify==2.6.1
+identify==2.6.6
     # via pre-commit
 idna==3.10
     # via
@@ -176,7 +176,7 @@ platformdirs==4.3.6
     # via virtualenv
 pluggy==1.5.0
     # via pytest
-pre-commit==4.0.1
+pre-commit==4.1.0
     # via -r requirements.in
 profanityfilter==2.1.0
     # via -r requirements.in
@@ -288,7 +288,7 @@ urllib3==2.3.0
     # via
     #   botocore
     #   requests
-virtualenv==20.27.1
+virtualenv==20.29.1
     # via pre-commit
 waitress==3.0.2
     # via webtest
