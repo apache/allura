@@ -21,16 +21,8 @@ from aiosmtpd.controller import Controller
 from io import StringIO
 from paste.deploy.converters import asint
 
+
 class BetterDebuggingServer:
-    
-    def start_server(self):
-        stream = StringIO()
-        handler = Debugging(stream)  # throws away the email
-        hostname = tg.config.get('forgemail.host', '0.0.0.0')
-        port = asint(tg.config.get('forgemail.port', 8825))
-        controller = Controller(handler, hostname=hostname, port=port)
-        controller.start()
-        return controller, handler
     
 
     async def handle_DATA(self,  server, session, envelope):

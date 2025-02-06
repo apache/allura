@@ -25,7 +25,6 @@ from allura.command.base import EmptyClass, Command
 from allura.lib import helpers as h
 from paste.deploy.converters import asint
 from aiosmtpd.controller import Controller
-import asyncio
 from tg.wsgiapp import RequestLocals
 import time
 
