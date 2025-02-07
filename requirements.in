@@ -1,4 +1,5 @@
 ActivityStream
+aiosmtpd
 beautifulsoup4
 Beaker
 beaker-session-jwt
@@ -29,6 +30,7 @@ PasteScript
 Pillow
 # profanity filter for feedback
 profanityfilter
+pyasynchat
 Pygments
 pymongo
 Pypeline[creole,markdown,textile,rst]
