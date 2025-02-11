@@ -485,9 +485,9 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
             rewrite = self._rewrite_abs
         else:
             rewrite = self._rewrite
-        for link in soup.findAll('a'):
+        for link in soup.find_all('a'):
             rewrite(link, 'href')
-        for link in soup.findAll('img'):
+        for link in soup.find_all('img'):
             rewrite(link, 'src')
 
         # html5lib parser adds html/head/body tags, so output <body> without its own tags

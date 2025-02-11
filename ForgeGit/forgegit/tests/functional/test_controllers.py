@@ -99,7 +99,7 @@ class TestUIController(TestController):
 
     def test_status_html(self):
         resp = self.app.get('/src-git/ci/e0d7765883017040d53f9ca9c528940a4dd311c6/')
-        sortedCommits = resp.html.findAll('td')
+        sortedCommits = resp.html.find_all('td')
         actualCommit = ['added', 'aaa.txt',
                         'removed', 'bbb.txt',
                         'changed', 'ccc.txt',
@@ -107,7 +107,7 @@ class TestUIController(TestController):
                         'added', 'eee.txt',
                         'added', 'ggg.txt']
         for i, item in enumerate(sortedCommits):
-            assert actualCommit[i] == ''.join(item.findAll(string=True)).strip()
+            assert actualCommit[i] == ''.join(item.find_all(string=True)).strip()
 
 
 class TestRootController(_TestCase):
@@ -172,10 +172,10 @@ class TestRootController(_TestCase):
         assert 'Initial commit' in resp
         assert '<div class="markdown_content"><p>Change README</div>' in resp, resp
         assert 'tree/README?format=raw">Download</a>' not in resp
-        assert 'Tree' in resp.html.findAll('td')[2].text, resp.html.findAll('td')[2].text
-        assert 'by Rick Copeland' in squish_spaces(resp.html.findAll('td')[0].text)
+        assert 'Tree' in resp.html.find_all('td')[2].text, resp.html.find_all('td')[2].text
+        assert 'by Rick Copeland' in squish_spaces(resp.html.find_all('td')[0].text)
         resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/README')
-        assert 'View' in resp.html.findAll('td')[2].text
+        assert 'View' in resp.html.find_all('td')[2].text
         assert 'Change README' in resp
         assert 'tree/README?format=raw">Download</a>' in resp
         assert 'Add README' in resp
@@ -210,7 +210,7 @@ class TestRootController(_TestCase):
     def _get_ci(self, repo='/p/test/src-git/'):
         r = self.app.get(repo + 'ref/master/')
         resp = r.follow()
-        for tag in resp.html.findAll('a'):
+        for tag in resp.html.find_all('a'):
             if tag['href'].startswith(repo + 'ci/'):
                 href = tag['href']
                 if href.endswith('tree/'):
@@ -255,10 +255,10 @@ class TestRootController(_TestCase):
     def test_tree(self):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/')
-        assert len(resp.html.findAll('tr')) == 2, resp.showbrowser()
+        assert len(resp.html.find_all('tr')) == 2, resp.showbrowser()
         resp = self.app.get(ci + 'tree/')
         assert 'README' in resp, resp.showbrowser()
-        links = [a.get('href') for a in resp.html.findAll('a')]
+        links = [a.get('href') for a in resp.html.find_all('a')]
         assert 'README' in links, resp.showbrowser()
         assert 'README/' not in links, resp.showbrowser()
 
@@ -727,7 +727,7 @@ class TestFork(_TestCase):
         r, mr_num = self._request_merge()
         assert 'wants to merge' in r
 
-        merge_instructions = r.html.findAll('textarea')[0].getText()
+        merge_instructions = r.html.find_all('textarea')[0].getText()
         assert 'git checkout master' in merge_instructions
         assert 'git fetch /srv/git/p/test2/code master' in merge_instructions
         c_id = self.forked_repo.get_heads()[0]['object_id']
@@ -749,10 +749,10 @@ class TestFork(_TestCase):
 
         def assert_commit_details(r):
             assert 'Improve documentation' in r.text
-            revs = r.html.findAll('tr', attrs={'class': 'rev'})
+            revs = r.html.find_all('tr', attrs={'class': 'rev'})
             assert len(revs) == 1
-            rev_links = revs[0].findAll('a', attrs={'class': 'rev'})
-            browse_links = revs[0].findAll('a', attrs={'class': 'browse'})
+            rev_links = revs[0].find_all('a', attrs={'class': 'rev'})
+            browse_links = revs[0].find_all('a', attrs={'class': 'browse'})
             assert rev_links[0].get('href') == '/p/test2/code/ci/%s/' % c_id
             assert rev_links[0].getText() == '[%s]' % c_id[:6]
             assert (browse_links[0].get('href') ==
@@ -795,8 +795,8 @@ class TestFork(_TestCase):
         r, mr_num = self._request_merge()
         r = self.app.get('/p/test/src-git/merge-requests/')
         assert 'href="%s/"' % mr_num in r, r
-        assert_regexp_matches(r.html.findAll('span')[-2].getText(), r'[0-9]+ seconds? ago')
-        assert_regexp_matches(r.html.findAll('span')[-1].getText(), r'[0-9]+ seconds? ago')
+        assert_regexp_matches(r.html.find_all('span')[-2].getText(), r'[0-9]+ seconds? ago')
+        assert_regexp_matches(r.html.find_all('span')[-1].getText(), r'[0-9]+ seconds? ago')
 
         r = self.app.get('/p/test/src-git/merge-requests/?status=rejected')
         assert 'href="%s/"' % mr_num not in r, r
@@ -893,7 +893,7 @@ class TestFork(_TestCase):
         assert '[5c4724]' not in r
         assert '<p>changed description</p' in r
         assert 'Merge Request #1: changed summary (open)' in r
-        changes = r.html.findAll('div', attrs={'class': 'markdown_content'})[-1]
+        changes = r.html.find_all('div', attrs={'class': 'markdown_content'})[-1]
         assert str(changes) == """
 <div class="markdown_content"><ul>
 <li>

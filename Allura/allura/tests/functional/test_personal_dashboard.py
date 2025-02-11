@@ -36,7 +36,7 @@ class TestPersonalDashboard(TestController):
     def test_dashboard(self):
         r = self.app.get('/dashboard')
         assert 'Test Admin / Dashboard' == r.html.find('h1', 'project_title').text.strip()
-        sections = {c for s in r.html.findAll(None, 'profile-section') for c in s['class']}
+        sections = {c for s in r.html.find_all(None, 'profile-section') for c in s['class']}
         assert 'tickets' in sections
         assert 'projects' in sections
         assert 'merge_requests' in sections

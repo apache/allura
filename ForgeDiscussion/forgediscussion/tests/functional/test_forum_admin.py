@@ -140,7 +140,7 @@ class TestForumAdmin(TestController):
         r = form.submit()
         r = self.app.get('/admin/discussion/forums')
         soup_form = r.html.find('form', action='update_forums')
-        assert len(soup_form.findAll('input', {'value': 'Delete'})) == 2
+        assert len(soup_form.find_all('input', {'value': 'Delete'})) == 2
         h.set_context('test', 'Forum', neighborhood='Projects')
         frm = FM.Forum.query.get(shortname='testforum')
 
@@ -151,7 +151,7 @@ class TestForumAdmin(TestController):
                                   'forum-0.description': 'My desc'})
         r = self.app.get('/admin/discussion/forums')
         soup_form = r.html.find('form', action='update_forums')
-        assert len(soup_form.findAll('input', {'value': 'Delete'})) == 1
+        assert len(soup_form.find_all('input', {'value': 'Delete'})) == 1
         audit_log = M.AuditLog.query.find({'project_id': project._id}).sort('_id', -1).first()
         assert 'deleted forum "Test Forum"' in audit_log.message
         r = self.app.post('/admin/discussion/update_forums',
@@ -161,7 +161,7 @@ class TestForumAdmin(TestController):
                                   'forum-0.description': 'My desc'})
         r = self.app.get('/admin/discussion/forums')
         soup_form = r.html.find('form', action='update_forums')
-        assert len(soup_form.findAll('input', {'value': 'Delete'})) == 2
+        assert len(soup_form.find_all('input', {'value': 'Delete'})) == 2
         audit_log = M.AuditLog.query.find({'project_id': project._id}).sort('_id', -1).first()
         assert 'undeleted forum "Test Forum"' in audit_log.message
 
@@ -182,7 +182,7 @@ class TestForumAdmin(TestController):
         f = r.html.find(
             'form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -236,7 +236,7 @@ class TestForumAdmin(TestController):
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -261,7 +261,7 @@ class TestForumAdmin(TestController):
         f = r.html.find(
             'form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -304,7 +304,7 @@ class TestForumAdmin(TestController):
         f = r.html.find(
             'form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''

@@ -415,7 +415,7 @@ class GitHubWikiImporter(ToolImporter):
         if not new_prefix.endswith('/'):
             new_prefix += '/'
         soup = BeautifulSoup(html, 'html.parser')
-        for a in soup.findAll('a'):
+        for a in soup.find_all('a'):
             if a.get('href').startswith(prefix):
                 page = a['href'].replace(prefix, '')
                 new_page = self._convert_page_name(page)

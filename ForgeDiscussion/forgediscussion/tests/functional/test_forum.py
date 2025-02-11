@@ -84,8 +84,8 @@ class TestForumEmail(TestController):
             msg)
         r = self.app.get('/p/test/discussion/testforum/')
         assert 'Test Simple Thread' in str(r), r
-        assert len(r.html.findAll('tr')) == 2
-        href = r.html.findAll('tr')[1].find('a')['href']
+        assert len(r.html.find_all('tr')) == 2
+        href = r.html.find_all('tr')[1].find('a')['href']
         r = self.app.get(href)
         assert 'alternate' in str(r)
 
@@ -116,8 +116,8 @@ class TestForumEmail(TestController):
             msg)
         r = self.app.get('/p/test/discussion/testforum/')
         assert 'Test Simple Thread' in str(r)
-        assert len(r.html.findAll('tr')) == 2
-        href = r.html.findAll('tr')[1].find('a')['href']
+        assert len(r.html.find_all('tr')) == 2
+        href = r.html.find_all('tr')[1].find('a')['href']
         r = self.app.get(href)
         assert 'alternate' in str(r)
         assert 'python-logo.png' in str(r)
@@ -244,7 +244,7 @@ class TestForumMessageHandling(TestController):
         r = self.app.get(url)
         f = r.html.find('form', {'action': '/p/test' + url})
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -255,7 +255,7 @@ class TestForumMessageHandling(TestController):
         r = self.app.get(url, params=dict(version='1'))
         post_form = r.html.find('form', {'action': '/p/test' + url + 'reply'})
         params = dict()
-        inputs = post_form.findAll('input')
+        inputs = post_form.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -278,7 +278,7 @@ class TestForumMessageHandling(TestController):
         r = self.app.get(url)
         assert "test1.txt" in r
         assert "test2.txt" in r
-        for link in r.html.findAll('a.btn'):
+        for link in r.html.find_all('a.btn'):
             if 'attachment' in link.get('href', ''):
                 self.app.get(str(link['href']))
                 self.app.post(str(link['href']), params=dict(delete='on'))
@@ -372,7 +372,7 @@ class TestForum(TestController):
         form['add_forum.description'] = '<a href="http://cnn.com">This is CNN</a>'
         form.submit()
         r = self.app.get('/discussion/')
-        assert len(r.html.findAll('a', rel='nofollow')) == 2
+        assert len(r.html.find_all('a', rel='nofollow')) == 2
 
     def test_forum_search(self):
         self.app.get('/discussion/search')
@@ -396,7 +396,7 @@ class TestForum(TestController):
             f = r.html.find(
                 'form', {'action': '/p/test/discussion/save_new_topic'})
             params = dict()
-            inputs = f.findAll('input')
+            inputs = f.find_all('input')
             for field in inputs:
                 if field.has_attr('name'):
                     params[field['name']] = field.get('value') or ''
@@ -455,7 +455,7 @@ class TestForum(TestController):
             f = r.html.find(
                 'form', {'action': '/p/test/discussion/save_new_topic'})
             params = dict()
-            inputs = f.findAll('input')
+            inputs = f.find_all('input')
             for field in inputs:
                 if field.has_attr('name'):
                     params[field['name']] = field.get('value') or ''
@@ -476,7 +476,7 @@ class TestForum(TestController):
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -509,7 +509,7 @@ class TestForum(TestController):
         f = r.html.find(
             'form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -544,7 +544,7 @@ class TestForum(TestController):
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -569,7 +569,7 @@ class TestForum(TestController):
         f = r.html.find('div', {'class': 'comment-row reply_post_form'}).find('form')
         rep_url = f.get('action')
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -637,7 +637,7 @@ class TestForum(TestController):
         f = r.html.find(
             'form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -651,7 +651,7 @@ class TestForum(TestController):
         f = thread.html.find('div', {'class': 'comment-row reply_post_form'}).find('form')
         rep_url = f.get('action')
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -659,9 +659,9 @@ class TestForum(TestController):
         thread = self.app.post(str(rep_url), params=params)
         thread = self.app.get(url)
         # beautiful soup is getting some unicode error here - test without it
-        assert thread.html.findAll(
+        assert thread.html.find_all(
             'div', {'class': 'display_post'})[0].find('p').string == 'aaa'
-        assert thread.html.findAll(
+        assert thread.html.find_all(
             'div', {'class': 'display_post'})[1].find('p').string == 'bbb'
         assert thread.response.text.count(
             '<div class="comment-row reply_post_form') == 2
@@ -673,7 +673,7 @@ class TestForum(TestController):
         reply_form = r.html.find('div', {'class': 'edit_post_form reply'}).find('form')
         post_link = str(reply_form['action'])
         params = dict()
-        inputs = reply_form.findAll('input')
+        inputs = reply_form.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -687,7 +687,7 @@ class TestForum(TestController):
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -701,7 +701,7 @@ class TestForum(TestController):
         f = r.html.find('form', {'class': 'follow_form'})
         subscribe_url = f.get('action')
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -710,7 +710,7 @@ class TestForum(TestController):
         f = thread.html.find('div', {'class': 'comment-row reply_post_form'}).find('form')
         rep_url = f.get('action')
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -721,21 +721,21 @@ class TestForum(TestController):
 
     def get_table_rows(self, response, closest_id):
         tbody = response.html.find('div', {'id': closest_id}).find('tbody')
-        rows = tbody.findAll('tr')
+        rows = tbody.find_all('tr')
         return rows
 
     def check_announcement_table(self, response, topic_name):
         assert response.html.find(string='Announcements')
         rows = self.get_table_rows(response, 'announcements')
         assert len(rows) == 1
-        cell = rows[0].findAll('td', {'class': 'topic'})
+        cell = rows[0].find_all('td', {'class': 'topic'})
         assert topic_name in str(cell)
 
     def test_thread_announcement(self):
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -788,7 +788,7 @@ class TestForum(TestController):
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -802,7 +802,7 @@ class TestForum(TestController):
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -853,7 +853,7 @@ class TestForum(TestController):
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -868,7 +868,7 @@ class TestForum(TestController):
             'div', {'class': 'comment-row reply_post_form'}).find('form')
         rep_url = f.get('action')
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -876,7 +876,7 @@ class TestForum(TestController):
         thread = self.app.post(str(rep_url), params=params)
         thread = self.app.get(url)
         # make sure the posts are in the original thread
-        posts = thread.html.find('div', {'id': 'comment'}).findAll(
+        posts = thread.html.find('div', {'id': 'comment'}).find_all(
             'div', {'class': 'discussion-post'})
         assert len(posts) == 2
         # move the thread
@@ -884,7 +884,7 @@ class TestForum(TestController):
             flags='',
             discussion='general')).follow()
         # make sure all the posts got moved
-        posts = r.html.find('div', {'id': 'comment'}).findAll(
+        posts = r.html.find('div', {'id': 'comment'}).find_all(
             'div', {'class': 'discussion-post'})
         assert len(posts) == 2
 
@@ -893,7 +893,7 @@ class TestForum(TestController):
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -923,7 +923,7 @@ class TestForum(TestController):
         r = self.app.get('/discussion/')
         sidebar = r.html.find('div', {'id': 'sidebar'})
         sidebar_menu = str(sidebar)
-        sidebar_links = [i['href'] for i in sidebar.findAll('a')]
+        sidebar_links = [i['href'] for i in sidebar.find_all('a')]
         assert "/p/test/discussion/create_topic/" in sidebar_links
         assert "/p/test/discussion/new_forum" in sidebar_links
         assert '<h3 class="">Help</h3>' in sidebar_menu
@@ -932,7 +932,7 @@ class TestForum(TestController):
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -947,7 +947,7 @@ class TestForum(TestController):
         r = self.app.get('/discussion/')
         sidebar = r.html.find('div', {'id': 'sidebar'})
         sidebar_menu = str(sidebar)
-        sidebar_links = [i['href'] for i in sidebar.findAll('a')]
+        sidebar_links = [i['href'] for i in sidebar.find_all('a')]
         assert "/p/test/discussion/create_topic/" in sidebar_links
         assert "/p/test/discussion/new_forum" in sidebar_links
         assert '<h3 class="">Help</h3>' in sidebar_menu
@@ -956,7 +956,7 @@ class TestForum(TestController):
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''

@@ -583,7 +583,7 @@ class TestRootController(TestController):
 
         # Make sure thumbnail is absent
         r = self.app.get('/wiki/TEST/')
-        img_srcs = [i['src'] for i in r.html.findAll('img')]
+        img_srcs = [i['src'] for i in r.html.find_all('img')]
         assert ('/p/test/wiki/TEST/attachment/' +
                 filename) not in img_srcs, img_srcs
 
@@ -743,7 +743,7 @@ class TestRootController(TestController):
                       upload_files=[('file_info', 'test_root.py', content)])
         r = self.app.get('/wiki/TEST/')
         found_links = 0
-        for link in r.html.findAll('a'):
+        for link in r.html.find_all('a'):
             if link.contents == ['this page']:
                 assert 'notfound' not in link.get('class', [])
                 found_links += 1
@@ -847,7 +847,7 @@ class TestRootController(TestController):
         self.app.post('/wiki/test_mailto/update', params=params)
         r = self.app.get('/wiki/test_mailto/')
         mailto_links = 0
-        for link in r.html.findAll('a'):
+        for link in r.html.find_all('a'):
             if link.get('href') == 'mailto:darth.vader@deathstar.org':
                 assert 'notfound' not in link.get('class', '')
                 mailto_links += 1
@@ -961,7 +961,7 @@ class TestRootController(TestController):
         r = self.app.get('/p/test/wiki/Home/')
         menu = r.html.find('div', {'id': 'sidebar-admin-menu'})
         assert menu['class'] == ['hidden']  # (not expanded)
-        menu = [li.find('span').getText() for li in menu.findAll('li')]
+        menu = [li.find('span').getText() for li in menu.find_all('li')]
         assert (
             menu ==
             ['Set Home', 'Permissions', 'Options', 'Rename', 'Delete Everything'])

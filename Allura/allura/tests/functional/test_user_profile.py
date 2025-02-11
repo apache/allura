@@ -71,7 +71,7 @@ class TestUserProfile(TestDiscussBase):
         r = self.app.get('/u/test-admin/profile/')
         assert ('Test Admin' ==
                 r.html.find('h1', 'project_title').find('a').text)
-        sections = {c for s in r.html.findAll(None, 'profile-section') for c in s['class']}
+        sections = {c for s in r.html.find_all(None, 'profile-section') for c in s['class']}
         assert 'personal-data' in sections
         assert 'Username:\ntest-admin' in r.html.find(None, 'personal-data').getText().replace(' ', '')
         assert 'projects' in sections

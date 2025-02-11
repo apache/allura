@@ -53,7 +53,7 @@ class TestSiteAdmin(TestController):
         assert 'Forge Site Admin' in r.html.find(
             'h2', {'class': 'dark title'}).find('span').contents[0]
         stats_table = r.html.find('table')
-        cells = stats_table.findAll('td')
+        cells = stats_table.find_all('td')
         assert cells[0].contents[0] == 'Adobe', cells[0].contents[0]
 
     def test_tickets_access(self):
@@ -71,7 +71,7 @@ class TestSiteAdmin(TestController):
     def test_new_projects(self):
         r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
             username='root'))
-        headers = r.html.find('table').findAll('th')
+        headers = r.html.find('table').find_all('th')
         assert headers[1].contents[0] == 'Created'
         assert headers[2].contents[0] == 'Shortname'
         assert headers[3].contents[0] == 'Name'
@@ -84,25 +84,25 @@ class TestSiteAdmin(TestController):
         '''Deleted projects should not be visible here'''
         r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
             username='root'))
-        count = len(r.html.find('table').findAll('tr'))
+        count = len(r.html.find('table').find_all('tr'))
         p = M.Project.query.get(shortname='test')
         p.deleted = True
         ThreadLocalODMSession.flush_all()
         r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
             username='root'))
-        assert len(r.html.find('table').findAll('tr')) == count - 1
+        assert len(r.html.find('table').find_all('tr')) == count - 1
 
     def test_new_projects_daterange_filtering(self):
         r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
             username='root'))
-        count = len(r.html.find('table').findAll('tr'))
+        count = len(r.html.find('table').find_all('tr'))
         assert count == 7
 
         filtr = r.forms[0]
         filtr['start-dt'] = '2000/01/01 10:10:10'
         filtr['end-dt'] = '2000/01/01 09:09:09'
         r = filtr.submit()
-        count = len(r.html.find('table').findAll('tr'))
+        count = len(r.html.find('table').find_all('tr'))
         assert count == 1  # only row with headers - no results
 
     def test_reclone_repo_access(self):
@@ -204,8 +204,8 @@ class TestSiteAdminNotifications(TestController):
         r = self.app.get('/nf/admin/site_notifications/', extra_environ=dict(
             username='root'))
         table = r.html.find('table')
-        headers = table.findAll('th')
-        row = table.findAll('td')
+        headers = table.find_all('th')
+        row = table.find_all('td')
 
         assert headers[0].contents[0] == 'Active'
         assert headers[1].contents[0] == 'Impressions'
@@ -372,9 +372,9 @@ class TestProjectsSearch(TestController):
     def test_default_fields(self, search):
         search.site_admin_search.return_value = self.TEST_HIT
         r = self.app.get('/nf/admin/search_projects?q=fake&f=shortname')
-        options = [o['value'] for o in r.html.findAll('option')]
+        options = [o['value'] for o in r.html.find_all('option')]
         assert options == ['shortname', 'name', '__custom__']
-        ths = [th.text for th in r.html.findAll('th')]
+        ths = [th.text for th in r.html.find_all('th')]
         assert ths == ['Short name', 'Full name', 'Registered', 'Deleted?', 'Details']
 
     @patch('allura.controllers.site_admin.search')
@@ -383,9 +383,9 @@ class TestProjectsSearch(TestController):
         with h.push_config(config, **{'search.project.additional_search_fields': 'private, url',
                                       'search.project.additional_display_fields': 'url'}):
             r = self.app.get('/nf/admin/search_projects?q=fake&f=shortname')
-        options = [o['value'] for o in r.html.findAll('option')]
+        options = [o['value'] for o in r.html.find_all('option')]
         assert options == ['shortname', 'name', 'private', 'url', '__custom__']
-        ths = [th.text for th in r.html.findAll('th')]
+        ths = [th.text for th in r.html.find_all('th')]
         assert ths == ['Short name', 'Full name', 'Registered', 'Deleted?', 'url', 'Details']
 
 
@@ -425,9 +425,9 @@ class TestUsersSearch(TestController):
     def test_default_fields(self, site_admin_search):
         site_admin_search.return_value = self.TEST_HIT
         r = self.app.get('/nf/admin/search_users?q=fake&f=username')
-        options = [o['value'] for o in r.html.findAll('option')]
+        options = [o['value'] for o in r.html.find_all('option')]
         assert options == ['username', 'display_name', '__custom__']
-        ths = [th.text for th in r.html.findAll('th')]
+        ths = [th.text for th in r.html.find_all('th')]
         assert ths == ['Username', 'Display name', 'Email', 'Registered',
                        'Status', 'Details']
 
@@ -437,9 +437,9 @@ class TestUsersSearch(TestController):
         with h.push_config(config, **{'search.user.additional_search_fields': 'email_addresses, url',
                                       'search.user.additional_display_fields': 'url'}):
             r = self.app.get('/nf/admin/search_users?q=fake&f=username')
-        options = [o['value'] for o in r.html.findAll('option')]
+        options = [o['value'] for o in r.html.find_all('option')]
         assert options == ['username', 'display_name', 'email_addresses', 'url', '__custom__']
-        ths = [th.text for th in r.html.findAll('th')]
+        ths = [th.text for th in r.html.find_all('th')]
         assert ths == ['Username', 'Display name', 'Email', 'Registered',
                        'Status', 'url', 'Details']
 
@@ -471,8 +471,8 @@ class TestUserDetails(TestController):
         assert 'IP: 7.7.7.7' in r
         assert 'UA: browser of the future 1.1' in r
         # list of projects
-        projects = r.html.findAll('fieldset')[-1]
-        projects = [e.getText() for e in projects.findAll('li')]
+        projects = r.html.find_all('fieldset')[-1]
+        projects = [e.getText() for e in projects.find_all('li')]
         assert 'Test 2\n\u2013\nAdmin\n' in projects
         assert 'Test Project\n\u2013\nAdmin\n' in projects
         assert 'Adobe project 1\n\u2013\nAdmin\n' in projects
@@ -770,7 +770,7 @@ class TestDeleteProjects(TestController):
             assert confirm_form[f].value == form[f].value
         assert confirm_form['projects'].value == 'p/test    # OK: /p/test/\ndne/dne    # Neighborhood not found'
 
-        confirm_data = r.html.find('table').findAll('td')
+        confirm_data = r.html.find('table').find_all('td')
         assert len(confirm_data) == 4  # 2 projects == 2 rows (2 columns each)
         assert confirm_data[0].getText() == 'p/test'
         assert confirm_data[1].find('a').get('href') == '/p/test/'
@@ -787,7 +787,7 @@ class TestDeleteProjects(TestController):
         r = form.submit()
         expected_href = './?projects=p/test++++%23+OK:+/p/test%0Ap/dne++++%23+Project not found'
         expected_href += '&reason=The+Reason%0AMultiline&disable_users=True'
-        assert r.html.findAll('a', {'href': expected_href}) is not None
+        assert r.html.find_all('a', {'href': expected_href}) is not None
 
     @patch('allura.controllers.site_admin.DeleteProjects', autospec=True)
     def test_reason_passed_to_task(self, dp):

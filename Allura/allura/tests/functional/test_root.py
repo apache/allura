@@ -82,9 +82,9 @@ class TestRootController(TestController):
         response = self.app.get('/neighborhood')
         assert response.html.find('h2', {'class': 'dark title'}).find('span').contents[
             0].strip() == 'All Neighborhoods'
-        nbhds = response.html.findAll('div', {'class': 'nbhd_name'})
+        nbhds = response.html.find_all('div', {'class': 'nbhd_name'})
         assert nbhds[0].find('a').get('href') == '/adobe/'
-        cat_links = response.html.find('div', {'id': 'sidebar'}).findAll('li')
+        cat_links = response.html.find('div', {'id': 'sidebar'}).find_all('li')
         assert len(cat_links) == 4
         assert cat_links[0].find('a').get('href') == '/browse/clustering'
         assert cat_links[0].find('a').find('span').string == 'Clustering'
@@ -130,19 +130,19 @@ class TestRootController(TestController):
                              ).first().category_id = com_cat._id
         response = self.app.get('/browse')
         assert len(
-            response.html.findAll('a', {'href': '/adobe/adobe-1/'})) == 1
+            response.html.find_all('a', {'href': '/adobe/adobe-1/'})) == 1
         assert len(
-            response.html.findAll('a', {'href': '/adobe/adobe-2/'})) == 1
+            response.html.find_all('a', {'href': '/adobe/adobe-2/'})) == 1
         response = self.app.get('/browse/communications')
         assert len(
-            response.html.findAll('a', {'href': '/adobe/adobe-1/'})) == 1
+            response.html.find_all('a', {'href': '/adobe/adobe-1/'})) == 1
         assert len(
-            response.html.findAll('a', {'href': '/adobe/adobe-2/'})) == 0
+            response.html.find_all('a', {'href': '/adobe/adobe-2/'})) == 0
         response = self.app.get('/browse/communications/fax')
         assert len(
-            response.html.findAll('a', {'href': '/adobe/adobe-1/'})) == 0
+            response.html.find_all('a', {'href': '/adobe/adobe-1/'})) == 0
         assert len(
-            response.html.findAll('a', {'href': '/adobe/adobe-2/'})) == 0
+            response.html.find_all('a', {'href': '/adobe/adobe-2/'})) == 0
 
     def test_neighborhood_home(self):
         setup_trove_categories()
@@ -153,9 +153,9 @@ class TestRootController(TestController):
             p.install_app('home', 'home', 'Home', ordinal=0)
 
         response = self.app.get('/adobe/')
-        projects = response.html.findAll('div', {'class': 'list card proj_icon'})
+        projects = response.html.find_all('div', {'class': 'list card proj_icon'})
         assert len(projects) == 2
-        cat_links = response.html.find('div', {'id': 'sidebar'}).findAll('ul')[1].findAll('li')
+        cat_links = response.html.find('div', {'id': 'sidebar'}).find_all('ul')[1].find_all('li')
         assert len(cat_links) == 3, cat_links
         assert cat_links[0].find('a').get('href') == '/adobe/browse/clustering'
         assert cat_links[0].find('a').find('span').string == 'Clustering'
@@ -170,19 +170,19 @@ class TestRootController(TestController):
                              ).first().category_id = fax_cat._id
         response = self.app.get('/adobe/browse')
         assert len(
-            response.html.findAll('a', {'href': '/adobe/adobe-1/'})) == 1
+            response.html.find_all('a', {'href': '/adobe/adobe-1/'})) == 1
         assert len(
-            response.html.findAll('a', {'href': '/adobe/adobe-2/'})) == 1
+            response.html.find_all('a', {'href': '/adobe/adobe-2/'})) == 1
         response = self.app.get('/adobe/browse/communications')
         assert len(
-            response.html.findAll('a', {'href': '/adobe/adobe-1/'})) == 1
+            response.html.find_all('a', {'href': '/adobe/adobe-1/'})) == 1
         assert len(
-            response.html.findAll('a', {'href': '/adobe/adobe-2/'})) == 1
+            response.html.find_all('a', {'href': '/adobe/adobe-2/'})) == 1
         response = self.app.get('/adobe/browse/communications/fax')
         assert len(
-            response.html.findAll('a', {'href': '/adobe/adobe-1/'})) == 0
+            response.html.find_all('a', {'href': '/adobe/adobe-1/'})) == 0
         assert len(
-            response.html.findAll('a', {'href': '/adobe/adobe-2/'})) == 1
+            response.html.find_all('a', {'href': '/adobe/adobe-2/'})) == 1
 
     def test_slash_redirect(self):
         self.app.get('/p', status=301)

@@ -271,13 +271,13 @@ class TestAuth(TestController):
             antispam=True).follow().follow()
 
         logged_in_session = r.session['_id']
-        links = r.html.find(*nav_pattern).findAll('a')
+        links = r.html.find(*nav_pattern).find_all('a')
         assert links[-1].string == "Log Out"
 
         r = self.app.get('/auth/logout').follow().follow()
         logged_out_session = r.session['_id']
         assert logged_in_session is not logged_out_session
-        links = r.html.find(*nav_pattern).findAll('a')
+        links = r.html.find(*nav_pattern).find_all('a')
         assert links[-1].string == 'Log In'
 
     def test_track_login(self):
@@ -1773,7 +1773,7 @@ To update your password on {}, please visit the following URL:
             r = form.submit()
         print(r)
         if r.status == 200:
-            assert [] == r.html.findAll(attrs={'class': 'fielderror'})
+            assert [] == r.html.find_all(attrs={'class': 'fielderror'})
         assert 'Your old and new password should not be the same' in self.webflash(r)
         r = r.follow()
 

@@ -94,7 +94,7 @@ class TestActivityController(TestController):
         })]
         r = self.app.get('/p/test/activity/')
         timeline = r.html.find('ul', 'timeline')
-        assert 1 == len(timeline.findAll('li'))
+        assert 1 == len(timeline.find_all('li'))
         activity = timeline.find('li')
         assert activity.time['title'] == "2013-12-04 21:48:19"
         h1 = """\
