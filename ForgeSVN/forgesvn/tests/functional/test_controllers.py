@@ -137,7 +137,7 @@ class TestRootController(SVNTestController):
 
     def test_commit(self):
         resp = self.app.get('/src/3/tree/')
-        assert len(resp.html.findAll('tr')) == 3, resp.showbrowser()
+        assert len(resp.html.find_all('tr')) == 3, resp.showbrowser()
 
     def test_commit_unicode_and_special_chars(self):
         resp = self.app.get('/src/6/')
@@ -171,9 +171,9 @@ class TestRootController(SVNTestController):
 
     def test_tree(self):
         resp = self.app.get('/src/1/tree/')
-        assert len(resp.html.findAll('tr')) == 2, resp.showbrowser()
+        assert len(resp.html.find_all('tr')) == 2, resp.showbrowser()
         resp = self.app.get('/src/3/tree/a/')
-        assert len(resp.html.findAll('tr')) == 2, resp.showbrowser()
+        assert len(resp.html.find_all('tr')) == 2, resp.showbrowser()
 
     def test_file(self):
         resp = self.app.get('/src/1/tree/README')

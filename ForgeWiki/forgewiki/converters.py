@@ -50,7 +50,7 @@ def _internal_link_markdown(match):
 def _convert_toc(wiki_html):
     """Convert Table of Contents from mediawiki to markdown"""
     soup = BeautifulSoup(wiki_html, 'html.parser')
-    for toc_div in soup.findAll('div', id='toc'):
+    for toc_div in soup.find_all('div', id='toc'):
         toc_div.replaceWith('[TOC]')
     return str(soup)
 

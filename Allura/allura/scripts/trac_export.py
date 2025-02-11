@@ -173,7 +173,7 @@ class TracExport:
             desc.renderContents('utf8').decode('utf8')) if desc else ''
         comments = []
         relative_base_url = six.moves.urllib.parse.urlparse(self.full_url(self.TICKET_URL % '')).path
-        for comment in d.findAll('form', action='#comment'):
+        for comment in d.find_all('form', action='#comment'):
             c = {}
             c['submitter'] = re.sub(
                 r'.* by ', '', comment.find('h3', 'change').text).strip()
@@ -222,7 +222,7 @@ class TracExport:
                 if desc_el:
                     # TODO: Convert to Allura link syntax as needed
                     d['description'] = ''.join(
-                        desc_el.findAll(string=True)).strip()
+                        desc_el.find_all(string=True)).strip()
             list.append(d)
         return list
 
@@ -295,7 +295,7 @@ class TracExport:
     __next__ = next
 
     def clean_missing_wiki_links(self, doc):
-        for link in doc.findAll('a', 'missing wiki'):
+        for link in doc.find_all('a', 'missing wiki'):
             link.string = link.string.rstrip('?')
 
 

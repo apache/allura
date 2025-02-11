@@ -374,7 +374,7 @@ class TestWebhookController(TestController):
 
         r = self.app.get(self.url)
         assert '<h1>repo-push</h1>' in r
-        rows = r.html.find('table').findAll('tr')
+        rows = r.html.find('table').find_all('tr')
         assert len(rows) == 2
         rows = sorted((self._format_row(row) for row in rows), key=lambda rows: rows[0]['text'])
         expected_rows = sorted([
@@ -408,7 +408,7 @@ class TestWebhookController(TestController):
             a = td.find('a')
             return {'href': a.get('href'), 'data-id': a.get('data-id')}
 
-        tds = row.findAll('td')
+        tds = row.find_all('td')
         return [text(tds[0]), text(tds[1]), link(tds[2]), delete_btn(tds[3])]
 
 

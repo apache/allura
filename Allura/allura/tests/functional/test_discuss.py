@@ -42,11 +42,11 @@ class TestDiscussBase(TestController):
     def _make_post(self, text, username='root'):
         thread_link = self._thread_link()
         thread = self.app.get(thread_link, expect_errors=True)
-        for f in thread.html.findAll('form'):
+        for f in thread.html.find_all('form'):
             if f.get('action', '').endswith('/post'):
                 break
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -96,7 +96,7 @@ class TestDiscuss(TestDiscussBase):
         r = self.app.get(post_link)
         post_form = r.html.find('form', {'action': post_link})
         params = dict()
-        inputs = post_form.findAll('input')
+        inputs = post_form.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -110,7 +110,7 @@ class TestDiscuss(TestDiscussBase):
         assert str(r).count('This is a new post') == 3
         post_form = r.html.find('form', {'action': post_link + 'reply'})
         params = dict()
-        inputs = post_form.findAll('input')
+        inputs = post_form.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -121,7 +121,7 @@ class TestDiscuss(TestDiscussBase):
         r = self.app.get(thread_link)
         assert 'Tis a reply' in r, r
         permalinks = [post.find('form')['action']
-                      for post in r.html.findAll('div', {'class': 'edit_post_form reply'})]
+                      for post in r.html.find_all('div', {'class': 'edit_post_form reply'})]
         self.app.post(permalinks[1] + 'flag')
         self.app.post(permalinks[1] + 'moderate', params=dict(delete='delete'))
         self.app.post(permalinks[0] + 'moderate', params=dict(spam='spam'))
@@ -298,7 +298,7 @@ class TestDiscuss(TestDiscussBase):
             params=dict(
                 status=post.status
             ))
-        assert r_no_filtered.html.tbody.findAll('tr') != []
+        assert r_no_filtered.html.tbody.find_all('tr') != []
 
         # filter with existing user
         r_filtered = self.app.get(
@@ -307,8 +307,8 @@ class TestDiscuss(TestDiscussBase):
                 username=post_username,
                 status=post.status
             ))
-        assert r_filtered.html.tbody.findAll('tr') != []
-        assert post_username in r_filtered.html.tbody.findAll('td')[-5].string
+        assert r_filtered.html.tbody.find_all('tr') != []
+        assert post_username in r_filtered.html.tbody.find_all('td')[-5].string
 
         # filter without existing user
         r_bad_filtered = self.app.get(
@@ -317,7 +317,7 @@ class TestDiscuss(TestDiscussBase):
                 username='bad_filtered_user',
                 status=post.status
             ))
-        assert r_bad_filtered.html.tbody.findAll('tr') == []
+        assert r_bad_filtered.html.tbody.find_all('tr') == []
 
     def test_undo(self):
         r = self._make_post('Test post')
@@ -369,7 +369,7 @@ class TestDiscuss(TestDiscussBase):
         assert 'This is a post' in r.html.find('div', {'class': 'display_post'}).text
         assert 'Last edit:' not in r.html.find('div', {'class': 'display_post'}).text
         params = dict()
-        inputs = reply_form.findAll('input')
+        inputs = reply_form.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -400,12 +400,12 @@ class TestAttachment(TestDiscussBase):
         super().setup_method(method)
         self.thread_link = self._thread_link()
         thread = self.app.get(self.thread_link, status=404)
-        for f in thread.html.findAll('form'):
+        for f in thread.html.find_all('form'):
             if f.get('action', '').endswith('/post'):
                 break
         self.post_form_link = f['action']
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -418,7 +418,7 @@ class TestAttachment(TestDiscussBase):
 
     def attach_link(self):
         r = self.app.get(self.thread_link)
-        for alink in r.html.findAll('a'):
+        for alink in r.html.find_all('a'):
             if 'attachment' in alink['href']:
                 alink = str(alink['href'])
                 return alink
@@ -460,7 +460,7 @@ class TestAttachment(TestDiscussBase):
         r = self.app.get(self.thread_link)
         post_form = r.html.find('form', {'action': self.post_link + 'reply'})
         params = dict()
-        inputs = post_form.findAll('input')
+        inputs = post_form.find_all('input')
 
         for field in inputs:
             if field.has_attr('name') and field['name'] != 'file_info':

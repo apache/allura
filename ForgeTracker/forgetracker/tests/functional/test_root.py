@@ -572,7 +572,7 @@ class TestFunctionalController(TrackerTestController):
             params=variable_encode(params))
         r = self.app.get('/p/test/bugs/edit/')
         opts = r.html.find('select', attrs={'name': '_type'})
-        opts = opts.findAll('option')
+        opts = opts.find_all('option')
         assert opts[0].get('value') == ''
         assert opts[0].getText() == 'no change'
         assert opts[1].get('value') == 'Bug'
@@ -876,8 +876,8 @@ class TestFunctionalController(TrackerTestController):
         assert file_name in ticket_editor
         assert '<span>py</span>' not in ticket_editor
         ticket_page = self.app.get('/bugs/1/')
-        diff = ticket_page.html.findAll('div', attrs={'class': 'codehilite'})
-        added = diff[-1].findAll('span', attrs={'class': 'gi'})[-1]
+        diff = ticket_page.html.find_all('div', attrs={'class': 'codehilite'})
+        added = diff[-1].find_all('span', attrs={'class': 'gi'})[-1]
         assert '+test_root.py' in added.getText()
 
     def test_delete_attachment(self):
@@ -891,24 +891,24 @@ class TestFunctionalController(TrackerTestController):
         assert file_name in ticket_editor, ticket_editor.showbrowser()
         req = self.app.get('/bugs/1/')
         form = self._find_update_ticket_form(req)
-        file_link = BeautifulSoup(form.text, features="html5lib").findAll('a')[2]
+        file_link = BeautifulSoup(form.text, features="html5lib").find_all('a')[2]
         assert file_link.string == file_name
         self.app.post(str(file_link['href']), {
             'delete': 'True'
         })
         ticket_page = self.app.get('/bugs/1/')
         assert '/p/test/bugs/1/attachment/test_root.py' not in ticket_page
-        diff = ticket_page.html.findAll('div', attrs={'class': 'codehilite'})
-        removed = diff[-1].findAll('span', attrs={'class': 'gd'})[-1]
+        diff = ticket_page.html.find_all('div', attrs={'class': 'codehilite'})
+        removed = diff[-1].find_all('span', attrs={'class': 'gd'})[-1]
         assert '-test_root.py' in removed.getText()
 
     def test_delete_attachment_from_comments(self):
         ticket_view = self.new_ticket(summary='test ticket').follow()
-        for f in ticket_view.html.findAll('form'):
+        for f in ticket_view.html.find_all('form'):
             if f.get('action', '').endswith('/post'):
                 break
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -934,7 +934,7 @@ class TestFunctionalController(TrackerTestController):
             'summary': 'zzz'
         }, upload_files=[upload]).follow()
         form = self._find_update_ticket_form(ticket_editor)
-        download = self.app.get(str(BeautifulSoup(form.text, features="html5lib").findAll('a')[2]['href']))
+        download = self.app.get(str(BeautifulSoup(form.text, features="html5lib").find_all('a')[2]['href']))
         assert download.body == file_data
 
     def test_two_attachments(self):
@@ -1322,7 +1322,7 @@ class TestFunctionalController(TrackerTestController):
         # set a summary, submit, and check for success
         form['ticket_form.summary'] = summary
         success = form.submit().follow().html
-        assert success.findAll('form', {'action': '/p/test/bugs/1/update_ticket_from_widget'}) is not None
+        assert success.find_all('form', {'action': '/p/test/bugs/1/update_ticket_from_widget'}) is not None
         assert success.find('input', {'name': 'ticket_form.summary'})['value'] == summary
 
     def test_edit_ticket_validation(self):
@@ -1347,7 +1347,7 @@ class TestFunctionalController(TrackerTestController):
         r = form.submit()
         assert r.status_int == 302, r.showbrowser()
         success = r.follow().html
-        assert success.findAll('form', {'action': '/p/test/bugs/1/update_ticket_from_widget'}) is not None
+        assert success.find_all('form', {'action': '/p/test/bugs/1/update_ticket_from_widget'}) is not None
         assert success.find('input', {'name': 'ticket_form.summary'})['value'] == new_summary
 
     def test_home(self):
@@ -1524,12 +1524,12 @@ class TestFunctionalController(TrackerTestController):
     def test_comment_split(self):
         summary = 'new ticket'
         ticket_view = self.new_ticket(summary=summary).follow()
-        for f in ticket_view.html.findAll('form'):
+        for f in ticket_view.html.find_all('form'):
             if f.get('action', '').endswith('/post'):
                 break
         post_content = 'ticket discussion post content'
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -1538,14 +1538,14 @@ class TestFunctionalController(TrackerTestController):
                           headers={'Referer': b'/bugs/1/'})
         r = self.app.get('/bugs/1/', dict(page='1'))
         assert post_content in r
-        assert len(r.html.findAll(attrs={'class': 'discussion-post'})) == 1
+        assert len(r.html.find_all(attrs={'class': 'discussion-post'})) == 1
 
         new_summary = 'old ticket'
-        for f in ticket_view.html.findAll('form'):
+        for f in ticket_view.html.find_all('form'):
             if f.get('action', '').endswith('update_ticket_from_widget'):
                 break
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -1554,17 +1554,17 @@ class TestFunctionalController(TrackerTestController):
                           headers={'Referer': b'/bugs/1/'})
         r = self.app.get('/bugs/1/', dict(page='1'))
         assert summary + ' --&gt; ' + new_summary in r
-        assert len(r.html.findAll(attrs={'class': 'discussion-post meta_post'})) == 1
+        assert len(r.html.find_all(attrs={'class': 'discussion-post meta_post'})) == 1
 
     def test_discussion_paging(self):
         summary = 'test discussion paging'
         ticket_view = self.new_ticket(summary=summary).follow()
-        for f in ticket_view.html.findAll('form'):
+        for f in ticket_view.html.find_all('form'):
             if f.get('action', '').endswith('/post'):
                 break
         post_content = 'ticket discussion post content'
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -1587,12 +1587,12 @@ class TestFunctionalController(TrackerTestController):
     def test_discussion_feed(self):
         summary = 'test discussion paging'
         ticket_view = self.new_ticket(summary=summary).follow()
-        for f in ticket_view.html.findAll('form'):
+        for f in ticket_view.html.find_all('form'):
             if f.get('action', '').endswith('/post'):
                 break
         post_content = 'ticket discussion post content'
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -1606,7 +1606,7 @@ class TestFunctionalController(TrackerTestController):
         post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
         post_form = r.html.find('form', {'action': post_link + 'reply'})
         params = dict()
-        inputs = post_form.findAll('input')
+        inputs = post_form.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -2164,7 +2164,7 @@ class TestFunctionalController(TrackerTestController):
     def test_move_ticket(self):
         self.new_ticket(summary='test')
         r = self.app.get('/p/test/bugs/1/move')
-        trackers = r.html.find('select', {'name': 'tracker'}).findAll('option')
+        trackers = r.html.find('select', {'name': 'tracker'}).find_all('option')
         trackers = {t.text for t in trackers}
         expected = {'test/bugs', 'test/bugs2', 'test2/bugs', 'test2/bugs2'}
         assert trackers == expected, trackers
@@ -2174,7 +2174,7 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.post('/p/test/bugs/1/move/',
                           params={'tracker': str(tracker.config._id)}).follow()
         assert r.request.path == '/p/test2/bugs2/1/'
-        summary = r.html.findAll('h2', {'class': 'dark title'})[0].find('span').contents[0].strip()
+        summary = r.html.find_all('h2', {'class': 'dark title'})[0].find('span').contents[0].strip()
         assert summary == '#1 test'
         ac_id = tracker.config._id
         ticket = tm.Ticket.query.find({
@@ -2212,12 +2212,12 @@ class TestFunctionalController(TrackerTestController):
 
         # post comment and make sure that it appears on the feeds
         r = self.app.get('/p/test2/bugs2/1/')
-        for f in r.html.findAll('form'):
+        for f in r.html.find_all('form'):
             if f.get('action', '').endswith('/post'):
                 break
         post_content = 'ticket discussion post content'
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -2226,7 +2226,7 @@ class TestFunctionalController(TrackerTestController):
                           headers={'Referer': b'/p/test2/bugs2/1/'})
         r = self.app.get('/p/test2/bugs2/1/', dict(page='1'))
         assert post_content in r
-        comments_cnt = len(r.html.findAll(attrs={'class': 'discussion-post'}))
+        comments_cnt = len(r.html.find_all(attrs={'class': 'discussion-post'}))
         assert comments_cnt == 2  # moved auto comment + new comment
         post = ticket.discussion_thread.last_post
         # content and link to the ticket should be in a tracker's feed
@@ -2410,8 +2410,8 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.post('/p/test/bugs/1/move/',
                           params={'tracker': str(bugs2.config._id)}).follow()
 
-        attach_tickets = r.html.findAll('div', attrs={'class': 'attachment_thumb'})
-        attach_comments = r.html.findAll('div', attrs={'class': 'attachment_item'})
+        attach_tickets = r.html.find_all('div', attrs={'class': 'attachment_thumb'})
+        attach_comments = r.html.find_all('div', attrs={'class': 'attachment_item'})
         ta = str(attach_tickets)  # ticket's attachments
         ca = str(attach_comments)  # comment's attachments
         assert '<a href="/p/test2/bugs2/1/attachment/neo-icon-set-454545-256x350.png"' in ta
@@ -2463,11 +2463,11 @@ class TestFunctionalController(TrackerTestController):
 
     def test_rest_tickets(self):
         ticket_view = self.new_ticket(summary='test').follow()
-        for f in ticket_view.html.findAll('form'):
+        for f in ticket_view.html.find_all('form'):
             if f.get('action', '').endswith('/post'):
                 break
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
@@ -2479,7 +2479,7 @@ class TestFunctionalController(TrackerTestController):
         self.app.post(post_link + 'attach',
                       upload_files=[('file_info', 'test.txt', b'test attach')])
         r = self.app.get('/p/test/bugs/1/')
-        discussion_url = r.html.findAll('form')[-1]['action'][:-4]
+        discussion_url = r.html.find_all('form')[-1]['action'][:-4]
         r = self.app.get('/rest/p/test/bugs/1/')
         r = json.loads(r.text)
         assert (r['ticket']['discussion_thread_url'] ==
@@ -2757,8 +2757,8 @@ class TestEmailMonitoring(TrackerTestController):
     def test_set_options(self):
         r = self._set_options()
         r = self.app.get('/admin/bugs/options')
-        email = r.html.findAll(attrs=dict(name='TicketMonitoringEmail'))
-        mtype = r.html.findAll('option', attrs=dict(value='AllTicketChanges'))
+        email = r.html.find_all(attrs=dict(name='TicketMonitoringEmail'))
+        mtype = r.html.find_all('option', attrs=dict(value='AllTicketChanges'))
         assert email[0]['value'] == self.test_email
         assert mtype[0].has_attr('selected')
 
@@ -2817,11 +2817,11 @@ class TestEmailMonitoring(TrackerTestController):
         send_simple.assert_called_with(self.test_email)
         send_simple.reset_mock()
         response = response.follow()
-        for f in response.html.findAll('form'):
+        for f in response.html.find_all('form'):
             # Dirty way to find comment form
             if (('thread' in f['action']) and ('post' in f['action'])):
                 params = {i['name']: i.get('value', '')
-                          for i in f.findAll('input')
+                          for i in f.find_all('input')
                           if i.has_attr('name')}
                 params[f.find('textarea')['name']] = 'foobar'
                 self.app.post(str(f['action']), params)
@@ -2894,7 +2894,7 @@ class TestCustomUserField(TrackerTestController):
         kw = {'custom_fields._code_review': ''}
         ticket_view = self.new_ticket(summary='test custom fields', **kw).follow()
         # summary header shows 'nobody'
-        assert (squish_spaces(ticket_view.html.findAll('label', 'simple', text='Code Review:')[0].parent.text) ==
+        assert (squish_spaces(ticket_view.html.find_all('label', 'simple', text='Code Review:')[0].parent.text) ==
                 ' Code Review: nobody ')
         # form input is blank
         select = ticket_view.html.find('select',
@@ -2909,7 +2909,7 @@ class TestCustomUserField(TrackerTestController):
         kw = {'custom_fields._code_review': 'test-admin'}
         ticket_view = self.new_ticket(summary='test custom fields', **kw).follow()
         # summary header shows 'Test Admin'
-        assert (squish_spaces(ticket_view.html.findAll('label', 'simple', text='Code Review:')[0].parent.text) ==
+        assert (squish_spaces(ticket_view.html.find_all('label', 'simple', text='Code Review:')[0].parent.text) ==
                 ' Code Review: Test Admin ')
         # form input is blank
         select = ticket_view.html.find('select',
@@ -2932,8 +2932,8 @@ class TestCustomUserField(TrackerTestController):
         kw = {'custom_fields._code_review': 'test-admin'}
         self.new_ticket(summary='test custom fields', **kw)
         r = self.app.get('/bugs/')
-        assert r.html.find('table', 'ticket-list').findAll('th')[7].text.strip()[:11] == 'Code Review'
-        assert r.html.find('table', 'ticket-list').tbody.tr.findAll('td')[7].text == 'Test Admin'
+        assert r.html.find('table', 'ticket-list').find_all('th')[7].text.strip()[:11] == 'Code Review'
+        assert r.html.find('table', 'ticket-list').tbody.tr.find_all('td')[7].text == 'Test Admin'
 
 
 class TestHelpTextOptions(TrackerTestController):
@@ -2960,15 +2960,15 @@ class TestHelpTextOptions(TrackerTestController):
         self._set_options()
         r = self.app.get('/bugs/')
         assert len(
-            r.html.findAll(attrs=dict(id='search-ticket-help-msg'))) == 0
+            r.html.find_all(attrs=dict(id='search-ticket-help-msg'))) == 0
         r = self.app.get('/bugs/search/', params=dict(q='test'))
         assert len(
-            r.html.findAll(attrs=dict(id='search-ticket-help-msg'))) == 0
+            r.html.find_all(attrs=dict(id='search-ticket-help-msg'))) == 0
         r = self.app.get('/bugs/milestone/1.0/')
         assert len(
-            r.html.findAll(attrs=dict(id='search-ticket-help-msg'))) == 0
+            r.html.find_all(attrs=dict(id='search-ticket-help-msg'))) == 0
         r = self.app.get('/bugs/new/')
-        assert len(r.html.findAll(attrs=dict(id='new-ticket-help-msg'))) == 0
+        assert len(r.html.find_all(attrs=dict(id='new-ticket-help-msg'))) == 0
 
 
 class TestShowDefaultFields(TrackerTestController):
@@ -3030,7 +3030,7 @@ class TestBulkMove(TrackerTestController):
     def test_ticket_list(self):
         r = self.app.get('/bugs/move/?q=The')
         tickets_table = r.html.find('tbody', attrs={'class': 'ticket-list'})
-        tickets = tickets_table.findAll('tr')
+        tickets = tickets_table.find_all('tr')
         assert len(tickets) == 2
         assert 'The Empire Strikes Back' in tickets_table.text
         assert 'Return Of The Jedi' in tickets_table.text
@@ -3040,7 +3040,7 @@ class TestBulkMove(TrackerTestController):
     @td.with_tool('test2', 'Tickets', 'bugs2')
     def test_controls_present(self):
         r = self.app.get('/bugs/move/')
-        trackers = r.html.find('select', {'name': 'tracker'}).findAll('option')
+        trackers = r.html.find('select', {'name': 'tracker'}).find_all('option')
         trackers = {t.text for t in trackers}
         expected = {'test/bugs', 'test/bugs2', 'test2/bugs', 'test2/bugs2'}
         assert trackers == expected

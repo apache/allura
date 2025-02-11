@@ -56,7 +56,7 @@ class TestImportController(TestRestApiBase):  # TestController):
             r = self.app.get('/p/test/discussion/')
             assert 'Open Discussion' in str(r)
             assert 'Welcome to Open Discussion' in str(r)
-            for link in r.html.findAll('a'):
+            for link in r.html.find_all('a'):
                 if 'Welcome to Open Discussion' in str(link):
                     break
             r = self.app.get(link.get('href'))
@@ -73,7 +73,7 @@ class TestImportController(TestRestApiBase):  # TestController):
             r = self.app.get('/p/test/discussion/')
             assert 'Open Discussion' in str(r)
             assert 'Welcome to Open Discussion' in str(r)
-            for link in r.html.findAll('a'):
+            for link in r.html.find_all('a'):
                 if 'Welcome to Open Discussion' in str(link):
                     break
             r = self.app.get(link.get('href'))
@@ -90,7 +90,7 @@ class TestImportController(TestRestApiBase):  # TestController):
             r = self.app.get('/p/test/discussion/')
             assert 'Open Discussion' in str(r)
             assert 'Welcome to Open Discussion' in str(r)
-            for link in r.html.findAll('a'):
+            for link in r.html.find_all('a'):
                 if 'Welcome to Open Discussion' in str(link):
                     break
             r = self.app.get(link.get('href'))

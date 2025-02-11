@@ -36,7 +36,7 @@ class TestProjectHome(TestController):
         root = self.app.get('/p/test/wiki/').follow()
         assert re.search(r'<!-- Server: \S+ -->',
                          str(root.html)), 'Missing Server comment'
-        nav_links = root.html.find('div', dict(id='top_nav')).findAll('a')
+        nav_links = root.html.find('div', dict(id='top_nav')).find_all('a')
         nav_links = [nl for nl in nav_links if 'add-tool-toggle' not in nl['class']]
         assert len(nav_links) == len(response.json['menu'])
         for nl, entry in zip(nav_links, response.json['menu']):
@@ -208,7 +208,7 @@ class TestProjectHome(TestController):
         assert '<td>Test Admin</td>' in r
         assert '<td><a href="/u/test-admin/profile/">test-admin</a></td>' in r
         assert '<td>Admin</td>' in r
-        tr = r.html.findAll('tr')
+        tr = r.html.find_all('tr')
         assert "<td>Test Admin</td>" in str(tr[1])
         assert "<td>Test User 2</td>" in str(tr[2])
         assert "<td>Test User</td>" in str(tr[3])
@@ -242,7 +242,7 @@ class TestProjectHome(TestController):
         # Install and Verify a Tool in the subproject.
         pr.install_app(ep_name='Wiki', mount_point='test-sub', mount_label='Test Sub', ordinal='1')
         r = self.app.get('/p/test/test-mount/test-sub/').follow()
-        active_link = r.html.findAll('li', {'class': 'selected'})
+        active_link = r.html.find_all('li', {'class': 'selected'})
         assert len(active_link) == 1
         assert active_link[0].contents[1]['href'] == '/p/test/test-mount/test-sub/'
         assert 'Welcome to your wiki!' in r
@@ -267,7 +267,7 @@ class TestProjectHome(TestController):
 
         # Check if the tool is accessed and not the subproject.
         r = self.app.get('/p/test/test-mount/').follow()
-        active_link = r.html.findAll('li', {'class': 'selected'})
+        active_link = r.html.find_all('li', {'class': 'selected'})
         assert len(active_link) == 1
         assert active_link[0].contents[1]['href'] == '/p/test/test-mount/'
         assert 'Welcome to your wiki!' in r

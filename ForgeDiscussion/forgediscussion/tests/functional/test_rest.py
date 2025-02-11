@@ -49,7 +49,7 @@ class TestDiscussionApiBase(TestRestApiBase):
         f = r.html.find(
             'form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
-        inputs = f.findAll('input')
+        inputs = f.find_all('input')
         for field in inputs:
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''

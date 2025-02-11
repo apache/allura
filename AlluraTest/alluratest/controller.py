@@ -198,7 +198,7 @@ class TestController:
         component from the <script> tag
         """
         script = None
-        for s in response.html.findAll('script'):
+        for s in response.html.find_all('script'):
             if s.getText().strip().startswith('document.SUBSCRIPTION_OPTIONS'):
                 script = s
                 break

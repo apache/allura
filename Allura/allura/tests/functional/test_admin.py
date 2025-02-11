@@ -105,7 +105,7 @@ class TestProjectAdmin(TestController):
         assert 'error' not in self.webflash(r)
         # check tool in the nav
         r = self.app.get('/p/test/test-tool/').follow()
-        active_link = r.html.findAll('li', {'class': 'selected'})
+        active_link = r.html.find_all('li', {'class': 'selected'})
         assert len(active_link) == 1
         assert active_link[0].contents[1]['href'] == '/p/test/test-tool/'
         with audits('install tool test-tool2'):
@@ -118,11 +118,11 @@ class TestProjectAdmin(TestController):
         assert 'error' not in self.webflash(r)
         # check the nav - tools of same type are grouped
         r = self.app.get('/p/test/test-tool/Home/')
-        active_link = r.html.findAll('li', {'class': 'selected'})
+        active_link = r.html.find_all('li', {'class': 'selected'})
         assert len(active_link) == 2
         assert active_link[0].contents[1]['href'] == '/p/test/_list/wiki'
-        assert r.html.findAll('a', {'href': '/p/test/test-tool2/'})
-        assert r.html.findAll('a', {'href': '/p/test/test-tool/'})
+        assert r.html.find_all('a', {'href': '/p/test/test-tool2/'})
+        assert r.html.find_all('a', {'href': '/p/test/test-tool/'})
 
         # check can't create dup tool
         r = self.app.post('/admin/update_mounts', params={
@@ -169,15 +169,15 @@ class TestProjectAdmin(TestController):
                 'features-1.feature': '  ',
                 'features-2.feature': ' Two '})
             if resp.status_int == 200:
-                errors = resp.html.findAll(attrs={'class': 'fielderror'})
+                errors = resp.html.find_all(attrs={'class': 'fielderror'})
                 assert [] == errors
-                errors = resp.html.findAll(attrs={'class': 'error'})
+                errors = resp.html.find_all(attrs={'class': 'error'})
                 assert [] == errors
                 raise AssertionError('Should be a 301 not 200 response')
 
         r = self.app.get('/admin/overview')
         features = r.html.find('div', {'id': 'features'})
-        features = features.findAll('input', {'type': 'text'})
+        features = features.find_all('input', {'type': 'text'})
         # two features + extra empty input + stub hidden input for js
         assert len(features) == 2+1+1
         assert features[0]['value'] == 'One'
@@ -317,7 +317,7 @@ class TestProjectAdmin(TestController):
                     'new.mount_label': tool})
             r = self.app.get('/admin/test-%d/permissions' % i)
             cards = [
-                tag for tag in r.html.findAll('input')
+                tag for tag in r.html.find_all('input')
                 if (
                     tag.get('type') == 'hidden' and
                     tag.get('name') and
@@ -625,7 +625,7 @@ class TestProjectAdmin(TestController):
                 'new.mount_point': 'test-subproject',
                 'new.mount_label': 'Test Subproject'})
         r = self.app.get('/test-subproject/admin/permissions/')
-        assert len(r.html.findAll('input', {'name': 'card-0.value'})) == 0
+        assert len(r.html.find_all('input', {'name': 'card-0.value'})) == 0
         select = r.html.find('select', {'name': 'card-0.new'})
         opt_admin = select.find(string='Admin').parent
         opt_developer = select.find(string='Developer').parent
@@ -638,22 +638,22 @@ class TestProjectAdmin(TestController):
                 'card-0.id': 'admin'})
         r = self.app.get('/test-subproject/admin/permissions/')
         assigned_ids = [t['value']
-                        for t in r.html.findAll('input', {'name': 'card-0.value'})]
+                        for t in r.html.find_all('input', {'name': 'card-0.value'})]
         assert len(assigned_ids) == 2
         assert opt_developer['value'] in assigned_ids
         assert opt_admin['value'] in assigned_ids
 
     def test_project_groups(self):
         r = self.app.get('/admin/groups/')
-        dev_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[2]
+        dev_holder = r.html.find('table', {'id': 'usergroup_admin'}).find_all('tr')[2]
         developer_id = dev_holder['data-group']
         with audits('add user test-user to Developer'):
             r = self.app.post('/admin/groups/add_user', params={
                 'role_id': developer_id,
                 'username': 'test-user'})
         r = self.app.get('/admin/groups/')
-        dev_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[2]
-        users = dev_holder.find('ul', {'class': 'users'}).findAll(
+        dev_holder = r.html.find('table', {'id': 'usergroup_admin'}).find_all('tr')[2]
+        users = dev_holder.find('ul', {'class': 'users'}).find_all(
             'li', {'class': 'deleter'})
         assert 'test-user' in users[0]['data-user']
 
@@ -661,7 +661,7 @@ class TestProjectAdmin(TestController):
         """Newly added admin must be subscribed to all the tools in the project"""
         r = self.app.get('/admin/groups/')
         admin_holder = r.html.find(
-            'table', {'id': 'usergroup_admin'}).findAll('tr')[1]
+            'table', {'id': 'usergroup_admin'}).find_all('tr')[1]
         admin_id = admin_holder['data-group']
         with audits('add user test-user to Admin'):
             self.app.post('/admin/groups/add_user', params={
@@ -691,7 +691,7 @@ class TestProjectAdmin(TestController):
         """Newly added user must not be subscribed to all the tools in the project if he is not admin"""
         r = self.app.get('/admin/groups/')
         dev_holder = r.html.find(
-            'table', {'id': 'usergroup_admin'}).findAll('tr')[2]
+            'table', {'id': 'usergroup_admin'}).find_all('tr')[2]
         developer_id = dev_holder['data-group']
         with audits('add user test-user to Developer'):
             self.app.post('/admin/groups/add_user', params={
@@ -709,16 +709,16 @@ class TestProjectAdmin(TestController):
         """Make sure subroles are preserved during group updates."""
         def check_roles(r):
             dev_holder = r.html.find(
-                'table', {'id': 'usergroup_admin'}).findAll('tr')[2]
+                'table', {'id': 'usergroup_admin'}).find_all('tr')[2]
             mem_holder = r.html.find(
-                'table', {'id': 'usergroup_admin'}).findAll('tr')[3]
+                'table', {'id': 'usergroup_admin'}).find_all('tr')[3]
             assert 'All users in Admin group' in dev_holder.text
             assert 'All users in Developer group' in mem_holder.text
 
         r = self.app.get('/admin/groups/')
 
         admin_holder = r.html.find(
-            'table', {'id': 'usergroup_admin'}).findAll('tr')[1]
+            'table', {'id': 'usergroup_admin'}).find_all('tr')[1]
         admin_id = admin_holder['data-group']
         # test that subroles are intact after user added
         with audits('add user test-user to Admin'):
@@ -740,9 +740,9 @@ class TestProjectAdmin(TestController):
         doesn't count)."""
         r = self.app.get('/admin/groups/')
         admin_holder = r.html.find(
-            'table', {'id': 'usergroup_admin'}).findAll('tr')[1]
+            'table', {'id': 'usergroup_admin'}).find_all('tr')[1]
         admin_id = admin_holder['data-group']
-        users = admin_holder.find('ul', {'class': 'users'}).findAll(
+        users = admin_holder.find('ul', {'class': 'users'}).find_all(
             'li', {'class': 'deleter'})
         assert len(users) == 1
         r = self.app.post('/admin/groups/remove_user', params={
@@ -752,15 +752,15 @@ class TestProjectAdmin(TestController):
             'error'] == 'You must have at least one user with the Admin role.'
         r = self.app.get('/admin/groups/')
         admin_holder = r.html.find(
-            'table', {'id': 'usergroup_admin'}).findAll('tr')[1]
-        users = admin_holder.find('ul', {'class': 'users'}).findAll(
+            'table', {'id': 'usergroup_admin'}).find_all('tr')[1]
+        users = admin_holder.find('ul', {'class': 'users'}).find_all(
             'li', {'class': 'deleter'})
         assert len(users) == 1
 
     def test_cannot_add_anon_to_group(self):
         r = self.app.get('/admin/groups/')
         dev_holder = r.html.find(
-            'table', {'id': 'usergroup_admin'}).findAll('tr')[2]
+            'table', {'id': 'usergroup_admin'}).find_all('tr')[2]
         developer_id = dev_holder['data-group']
         r = self.app.post('/admin/groups/add_user', params={
             'role_id': developer_id,
@@ -768,8 +768,8 @@ class TestProjectAdmin(TestController):
         assert r.json['error'] == 'You must choose a user to add.'
         r = self.app.get('/admin/groups/')
         dev_holder = r.html.find(
-            'table', {'id': 'usergroup_admin'}).findAll('tr')[2]
-        users = dev_holder.find('ul', {'class': 'users'}).findAll(
+            'table', {'id': 'usergroup_admin'}).find_all('tr')[2]
+        users = dev_holder.find('ul', {'class': 'users'}).find_all(
             'li', {'class': 'deleter'})
         # no user was added
         assert len(users) == 0
@@ -779,7 +779,7 @@ class TestProjectAdmin(TestController):
 
     def test_project_multi_groups(self):
         r = self.app.get('/admin/groups/')
-        admin_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[1]
+        admin_holder = r.html.find('table', {'id': 'usergroup_admin'}).find_all('tr')[1]
         admin_id = admin_holder['data-group']
         with audits('add user test-user to Admin'):
             r = self.app.post('/admin/groups/add_user', params={
@@ -810,12 +810,12 @@ class TestProjectAdmin(TestController):
             r = self.app.post('/admin/groups/create',
                               params={'name': 'RoleNew1'})
         r = self.app.get('/admin/groups/')
-        role_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[4]
+        role_holder = r.html.find('table', {'id': 'usergroup_admin'}).find_all('tr')[4]
         assert 'RoleNew1' in role_holder.text
         role_id = role_holder['data-group']
 
         # add test-user to role
-        role_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[4]
+        role_holder = r.html.find('table', {'id': 'usergroup_admin'}).find_all('tr')[4]
         with audits('add user test-user to RoleNew1'):
             r = self.app.post('/admin/groups/add_user', params={
                 'role_id': role_id,
@@ -826,7 +826,7 @@ class TestProjectAdmin(TestController):
                 'group_name': 'RoleNew1'})
         assert 'deleted' in self.webflash(r)
         r = self.app.get('/admin/groups/', status=200)
-        roles = [t.text for t in r.html.findAll('td', {'class': 'group'})]
+        roles = [t.text for t in r.html.find_all('td', {'class': 'group'})]
         assert 'RoleNew1' not in roles
 
         # make sure can still access homepage after one of user's roles were
@@ -837,8 +837,8 @@ class TestProjectAdmin(TestController):
 
     def test_change_perms(self):
         r = self.app.get('/admin/groups/')
-        dev_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[2]
-        mem_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[3]
+        dev_holder = r.html.find('table', {'id': 'usergroup_admin'}).find_all('tr')[2]
+        mem_holder = r.html.find('table', {'id': 'usergroup_admin'}).find_all('tr')[3]
         mem_id = mem_holder['data-group']
         # neither group has create permission
         assert dev_holder.select_one('li[data-permission=create]')['class'] == ["no"]
@@ -849,8 +849,8 @@ class TestProjectAdmin(TestController):
             'permission': 'create',
             'allow': 'true'})
         r = self.app.get('/admin/groups/')
-        dev_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[2]
-        mem_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[3]
+        dev_holder = r.html.find('table', {'id': 'usergroup_admin'}).find_all('tr')[2]
+        mem_holder = r.html.find('table', {'id': 'usergroup_admin'}).find_all('tr')[3]
         # Member now has create permission
         assert mem_holder.select_one('li[data-permission=create]')['class'] == ["yes"]
         # Developer has inherited create permission from Member
@@ -861,19 +861,19 @@ class TestProjectAdmin(TestController):
             'permission': 'create',
             'allow': 'false'})
         r = self.app.get('/admin/groups/')
-        dev_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[2]
-        mem_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[3]
+        dev_holder = r.html.find('table', {'id': 'usergroup_admin'}).find_all('tr')[2]
+        mem_holder = r.html.find('table', {'id': 'usergroup_admin'}).find_all('tr')[3]
         # neither group has create permission
         assert dev_holder.select_one('li[data-permission=create]')['class'] == ["no"]
         assert mem_holder.select_one('li[data-permission=create]')['class'] == ["no"]
 
     def test_permission_inherit(self):
         r = self.app.get('/admin/groups/')
-        admin_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[1]
+        admin_holder = r.html.find('table', {'id': 'usergroup_admin'}).find_all('tr')[1]
         admin_id = admin_holder['data-group']
-        mem_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[3]
+        mem_holder = r.html.find('table', {'id': 'usergroup_admin'}).find_all('tr')[3]
         mem_id = mem_holder['data-group']
-        anon_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[5]
+        anon_holder = r.html.find('table', {'id': 'usergroup_admin'}).find_all('tr')[5]
         anon_id = anon_holder['data-group']
         # first remove create from Admin so we can see it inherit
         r = self.app.post('/admin/groups/change_perm', params={
@@ -1010,10 +1010,10 @@ class TestProjectAdmin(TestController):
         neighborhood = M.Neighborhood.query.get(name='Projects')
         neighborhood.features['private_projects'] = False
         r = self.app.get('/admin/groups/')
-        groups = r.html.find('table', {'id': 'usergroup_admin'}).select_one('tbody').findAll('tr')[:-1]
+        groups = r.html.find('table', {'id': 'usergroup_admin'}).select_one('tbody').find_all('tr')[:-1]
         for gr in groups:
             group_name = gr.select_one('td').text.strip()
-            group_perms = gr.find('ul', {'class': 'permissions'}).findAll('li')
+            group_perms = gr.find('ul', {'class': 'permissions'}).find_all('li')
             if group_name in ['Authenticated', 'Anonymous']:
                 assert len(group_perms) == 0
             else:
@@ -1024,10 +1024,10 @@ class TestProjectAdmin(TestController):
         neighborhood = M.Neighborhood.query.get(name='Projects')
         neighborhood.features['private_projects'] = True
         r = self.app.get('/admin/groups/')
-        groups = r.html.find('table', {'id': 'usergroup_admin'}).select_one('tbody').findAll('tr')[:-1]
+        groups = r.html.find('table', {'id': 'usergroup_admin'}).select_one('tbody').find_all('tr')[:-1]
         for gr in groups:
             group_name = gr.select_one('td').text.strip()
-            group_perms = gr.find('ul', {'class': 'permissions'}).findAll('li')
+            group_perms = gr.find('ul', {'class': 'permissions'}).find_all('li')
             if group_name not in ['Authenticated', 'Anonymous']:
                 assert len(group_perms) == 4  # read permission is being displayed
             else:
