@@ -506,8 +506,8 @@ class Stats(MappedClass):
 
 def getElementIndex(el_list, **kw):
     for i in range(len(el_list)):
-        for k in kw:
-            if el_list[i].get(k) != kw[k]:
+        for k, v in kw.items():
+            if el_list[i].get(k) != v:
                 break
         else:
             return i
