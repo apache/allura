@@ -17,6 +17,7 @@
 from __future__ import annotations
 import os
 import logging
+from cgi import FieldStorage
 from datetime import datetime
 import typing
 
@@ -654,14 +655,14 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
                     subject = getattr(artifact, 'email_subject', '')
         return subject or '(no subject)'
 
-    def add_multiple_attachments(self, file_info):
+    def add_multiple_attachments(self, file_info: FieldStorage | list[FieldStorage]):
         if isinstance(file_info, list):
             for fi in file_info:
                 self.add_attachment(fi)
         else:
             self.add_attachment(file_info)
 
-    def add_attachment(self, file_info):
+    def add_attachment(self, file_info: FieldStorage):  # webob provides attachments as FieldStorage via legacy-cgi
         if hasattr(file_info, 'file'):
             mime_type = file_info.type
             if not mime_type or '/' not in mime_type:
