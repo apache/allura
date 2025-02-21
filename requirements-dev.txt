@@ -1,7 +1,7 @@
 # development-only dependencies
 # nothing needed at runtime or for tests
 
-pip-tools
+uv
 q
 sphinx-argparse
 sphinx-rtd-theme
