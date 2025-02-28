@@ -136,6 +136,12 @@ class AuthenticationProvider:
         if user.disabled or user.pending:
             self.logout()
             return M.User.anonymous()
+
+        if asbool(config.get('auth.reject_untracked_sessions', False)) and not user.validate_session(self.session.id):
+            log.info(f'Session ID is not tracked: {self.session.id}')
+            self.logout()
+            return M.User.anonymous()
+
         session_create_date = datetime.utcfromtimestamp(self.session.created)
         if user.is_anonymous():
             sessions_need_reauth = False
@@ -241,6 +247,7 @@ class AuthenticationProvider:
         g.statsUpdater.addUserLogin(user)
         user.add_login_detail(login_details)
         user.track_login(self.request)
+        user.track_session(self.session.id)
         return user
 
     def login_check_password_change_needed(self, user: M.User, password: str | None, login_details: M.UserLoginDetails) -> str | None:
@@ -293,6 +300,12 @@ class AuthenticationProvider:
                                          'Please check your email to continue.')
 
     def logout(self):
+        try:
+            user = c.user
+        except AttributeError:
+            pass
+        else:
+            user.untrack_session(self.session.id)
         self.session.invalidate()
         self.session.save()
         response.set_cookie('memorable_forget', '/', secure=request.environ['beaker.session'].secure)

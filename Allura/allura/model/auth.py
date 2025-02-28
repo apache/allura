@@ -24,6 +24,7 @@ from markupsafe import Markup
 from urllib.parse import urlparse
 from email import header
 from hashlib import sha256
+from collections import deque
 from datetime import timedelta, datetime, time
 import os
 import re
@@ -386,6 +387,25 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             self.last_access['session_ip'] = user_ip
             self.last_access['session_ua'] = user_agent
             session(self).flush(self)
+
+    def track_session(self, session_id):
+        session_ids = deque(self.get_tool_data('web_session', 'ids', []), maxlen=100)
+        if session_id not in session_ids:
+            session_ids.appendleft(session_id)
+            self.set_tool_data('web_session', ids=list(session_ids))
+
+    def untrack_session(self, session_id):
+        session_ids = self.get_tool_data('web_session', 'ids', [])
+        if session_id in session_ids:
+            session_ids.remove(session_id)
+            self.set_tool_data('web_session', ids=session_ids)
+
+    def validate_session(self, session_id):
+        session_ids = self.get_tool_data('web_session', 'ids', [])
+        return session_id in session_ids
+
+    def has_active_sessions(self):
+        return len(self.get_tool_data('web_session', 'ids', [])) > 0
 
     def add_login_detail(self, detail):
         try:

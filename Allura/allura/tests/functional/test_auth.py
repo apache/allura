@@ -3457,3 +3457,69 @@ class TestEmailAuthCode(TestController):
             r = r.form.submit()
 
             assert 'Invalid code' in r.text
+
+
+class TestTrackUserSessions(TestController):
+    def login(self, username='test-user', pwd='foo'):
+        self.app.get('/auth/preferences/')  # establish session_id cookie
+        r = self.app.get('/auth/')
+
+        f = r.forms[0]
+        encoded = self.app.antispam_field_names(f)
+        f[encoded['username']] = username
+        f[encoded['password']] = pwd
+        return f.submit()
+
+    @mock.patch.dict(config, {'auth.reject_untracked_sessions': True})
+    def test_validate_tracked_session(self):
+        r = self.login()
+        session_id = r.session.id
+        user = M.User.by_username('test-user')
+        session_ids = user.get_tool_data('web_session', 'ids')
+        assert session_id in session_ids
+
+    @mock.patch.dict(config, {'auth.reject_untracked_sessions': True})
+    def test_untrack_user_session(self):
+        r = self.login()
+        user = M.User.by_username('test-user')
+        session_ids = user.get_tool_data('web_session', 'ids')
+        assert len(session_ids) == 1
+
+        r = self.app.get('/auth/logout', extra_environ={'username': 'test-user'})
+        user = M.User.by_username('test-user')
+        session_ids = user.get_tool_data('web_session', 'ids')
+        assert len(session_ids) ==  0
+
+
+    @mock.patch.dict(config, {'auth.reject_untracked_sessions': True})
+    def test_navigation(self):
+        r = self.login()
+        r = self.app.get('/auth/preferences/', extra_environ={'username': 'test-user'})
+        assert 'User Preferences for test-user' in r.text
+
+        # Remove tracked session ids
+        user = M.User.by_username('test-user')
+        user.set_tool_data('web_session', ids=[])
+
+        # Without session ids the user should be redirected to the login page
+        r = self.app.get('/auth/preferences/', extra_environ={'username': 'test-user'})
+        assert r.status_int == 302
+        r = r.follow()
+        assert 'Username:' in r.text
+        assert 'Password:' in r.text
+
+    @mock.patch.dict(config, {'auth.reject_untracked_sessions': True})
+    def test_sessions_max_limit(self):
+        user = M.User.by_username('test-user')
+        mock_session_ids = list(range(99, -1, -1))
+        user.set_tool_data('web_session', ids=mock_session_ids)
+
+        r = self.login()
+        session_id = r.session.id
+        user = M.User.by_username('test-user')
+        session_ids = user.get_tool_data('web_session', 'ids')
+
+        # Validate the session size is not exceeded upon adding a new session after login
+        assert len(session_ids) == 100
+        assert session_ids[0] == session_id
+        assert session_ids[-1] == 1
