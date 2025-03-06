@@ -26,6 +26,7 @@ from pymongo.errors import DuplicateKeyError, InvalidDocument, OperationFailure
 
 from ming.odm import mapper, session, Mapper
 from ming.odm.declarative import MappedClass
+import ming.mim
 
 from allura.tasks.index_tasks import add_artifacts
 from allura.lib.exceptions import CompoundError
@@ -362,7 +363,7 @@ class EnsureIndexCommand(base.Command):
         q = collection.find(query, projection=fields).sort(spec)
 
         def keyfunc(doc):
-            return tuple(doc.get(f, None) for f in fields)
+            return tuple(list(ming.mim._lookup(doc, f, None)) for f in fields)
         dupes = []
         for key, doc_iter in groupby(q, key=keyfunc):
             docs = list(doc_iter)
