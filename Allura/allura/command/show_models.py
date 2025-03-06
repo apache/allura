@@ -296,20 +296,20 @@ class EnsureIndexCommand(base.Command):
         # Ensure all indexes
         for keys, idx in uindexes.items():
             base.log.info('...... ensure %s:%s', collection.name, idx)
-            while True:
+            while True:  # loop in case de-duping takes multiple attempts
+                index_options = idx.index_options.copy()
+                if idx.fields == ('_id',):
+                    # as of mongo 3.4 _id fields can't have these options set
+                    # _id is always non-sparse and unique anyway
+                    del index_options['sparse']
+                    del index_options['unique']
                 try:
-                    index_options = idx.index_options.copy()
-                    if idx.fields == ('_id',):
-                        # as of mongo 3.4 _id fields can't have these options set
-                        # _id is always non-sparse and unique anyway
-                        del index_options['sparse']
-                        del index_options['unique']
                     collection.create_index(idx.index_spec, **index_options)
                     break
                 except DuplicateKeyError as err:
                     if self.options.delete_dupes:
                         base.log.warning('Found dupe key(%s), eliminating dupes', err)
-                        self._remove_dupes(collection, idx.index_spec)
+                        self._remove_dupes(collection, idx.index_spec, index_options)
                     else:
                         print('Error creating unique index.  Run with --delete-duplicate-key-records if you want to delete records that violate this index', file=sys.stderr)
                         raise
@@ -350,10 +350,16 @@ class EnsureIndexCommand(base.Command):
                       collection.name, superset_index)
         collection.drop_index(superset_index)
 
-    def _remove_dupes(self, collection, spec):
-        iname = collection.create_index(spec)
+    def _remove_dupes(self, collection, spec, index_options: dict):
+        iname = collection.create_index(spec)  # create it but not unique
         fields = [f[0] for f in spec]
-        q = collection.find({}, projection=fields).sort(spec)
+        query = {}
+        if index_options.get('sparse'):
+            # sparse indexes only apply if the field(s) exist
+            query = {
+                '$or': [{f: {'$exists': True}} for f in fields]
+            }
+        q = collection.find(query, projection=fields).sort(spec)
 
         def keyfunc(doc):
             return tuple(doc.get(f, None) for f in fields)
