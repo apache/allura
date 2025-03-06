@@ -197,7 +197,7 @@ class TestEnsureIndexCommand:
                  index_options={'unique': False, 'sparse': False}),
         ]
         cmd = show_models.EnsureIndexCommand('ensure_index')
-        cmd.options = Object(clean=False)
+        cmd.options = Object(clean=False, delete_dupes=False)
         cmd._update_indexes(collection, indexes)
         assert collection.create_index.called
         assert not collection.drop_index.called
@@ -213,7 +213,7 @@ class TestEnsureIndexCommand:
                  index_options={'unique': False, 'sparse': False}),
         ]
         cmd = show_models.EnsureIndexCommand('ensure_index')
-        cmd.options = Object(clean=True)
+        cmd.options = Object(clean=True, delete_dupes=False)
         cmd._update_indexes(collection, indexes)
 
         collection_call_order = {}

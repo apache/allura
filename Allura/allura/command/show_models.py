@@ -18,6 +18,7 @@
 from collections import defaultdict
 from contextlib import contextmanager
 from itertools import groupby
+import sys
 
 from paste.deploy.converters import asbool
 from tg import tmpl_context as c, app_globals as g
@@ -213,6 +214,8 @@ class EnsureIndexCommand(base.Command):
     parser = base.Command.standard_parser(verbose=True)
     parser.add_option('--clean', action='store_true', dest='clean',
                       help='Drop any unneeded indexes')
+    parser.add_option('--delete-duplicate-key-records', action='store_true', dest='delete_dupes',
+                      help='Delete records that violate unique indexes')
 
     def command(self):
         from allura import model as M
@@ -304,8 +307,12 @@ class EnsureIndexCommand(base.Command):
                     collection.create_index(idx.index_spec, **index_options)
                     break
                 except DuplicateKeyError as err:
-                    base.log.info('Found dupe key(%s), eliminating dupes', err)
-                    self._remove_dupes(collection, idx.index_spec)
+                    if self.options.delete_dupes:
+                        base.log.warning('Found dupe key(%s), eliminating dupes', err)
+                        self._remove_dupes(collection, idx.index_spec)
+                    else:
+                        print('Error creating unique index.  Run with --delete-duplicate-key-records if you want to delete records that violate this index', file=sys.stderr)
+                        raise
         for keys, idx in indexes.items():
             base.log.info('...... ensure %s:%s', collection.name, idx)
             collection.create_index(idx.index_spec, background=True, **idx.index_options)
