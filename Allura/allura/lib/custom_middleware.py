@@ -489,6 +489,13 @@ class ContentSecurityPolicyMiddleware:
             else:
                 report_rules.add(f"frame-src {frame_srcs}")
 
+        if self.config.get('csp.fenced_frame_sources'):
+            fenced_frame_srcs = self.config['csp.fenced_frame_sources']
+            if asbool(self.config.get('csp.fenced_frame_sources_enforce', False)):
+                rules.add(f"fenced-frame-src {fenced_frame_srcs}")
+            else:
+                report_rules.add(f"fenced-frame-src {fenced_frame_srcs}")
+
         if self.config.get('csp.form_action_urls'):
             srcs = self.config['csp.form_action_urls']
             if environ.get('csp_form_actions'):
