@@ -548,11 +548,17 @@ class SetHeadersMiddleware:
         req = Request(environ)
         resp = req.get_response(self.app)
         if self.config.get('permissions_policies', ''):
-            resp.headers.add('Permissions-Policy', f"{self.config['permissions_policies']}")
+            resp.headers.add('Permissions-Policy', self.config['permissions_policies'])
         if self.config.get('features_policies', ''):
-            resp.headers.add('Feature-Policy', f"{self.config['features_policies']}")
+            resp.headers.add('Feature-Policy', self.config['features_policies'])
         if self.config.get('referrer_policy'):
-            resp.headers.add('Referrer-Policy', f"{self.config['referrer_policy']}")
+            resp.headers.add('Referrer-Policy', self.config['referrer_policy'])
+        if self.config.get('cross_origin_opener_policy'):
+            resp.headers.add('Cross-Origin-Opener-Policy', self.config['cross_origin_opener_policy'])
+        if self.config.get('cross_origin_embedder_policy'):
+            resp.headers.add('Cross-Origin-Embedder-Policy', self.config['cross_origin_embedder_policy'])
+        if self.config.get('cross_origin_resource_policy'):
+            resp.headers.add('Cross-Origin-Resource-Policy', self.config['cross_origin_resource_policy'])
         return resp(environ, start_response)
 
 

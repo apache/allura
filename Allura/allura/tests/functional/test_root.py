@@ -244,6 +244,12 @@ class TestRootController(TestController):
         assert all([h.strip() in csp_headers for h in expected_headers.split(';')])
         assert all([h.strip() in csp_report_headers for h in expected_report_headers.split(';')])
 
+    def test_permissions_coop_etc_headers(self):
+        resp = self.app.get("/p/wiki/Home/")
+        assert 'microphone=(), ' in resp.headers['Permissions-Policy']
+        assert "microphone 'none'; " in resp.headers['Feature-Policy']
+        assert resp.headers["Cross-Origin-Opener-Policy"] == "same-origin"
+
 
 class TestRootWithSSLPattern(TestController):
     def setup_method(self, method):
