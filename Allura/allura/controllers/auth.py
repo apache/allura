@@ -434,6 +434,10 @@ class AuthController(BaseController):
         if not asbool(config.get('auth.multifactor.totp', False)):
             raise wexc.HTTPNotFound
 
+        if not c.user.is_anonymous():
+            # already logged in, no need to do this form (it would say it was "disrupted")
+            redirect(self._verify_return_to(kwargs.get('return_to')))
+
         if 'multifactor-username' not in session:
             tg.flash('Your multifactor login was disrupted, please start over.', 'error')
             plugin.AuthenticationProvider.get(request).logout()  # clears all cookies that might be interfering

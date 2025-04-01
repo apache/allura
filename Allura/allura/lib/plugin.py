@@ -128,6 +128,10 @@ class AuthenticationProvider:
         else:
             user = None
 
+        if user and not user.is_anonymous() and 'multifactor-username' in self.session:
+            # already logged-in, get rid of the multifactor-username field that'll mess things up later
+            del self.session['multifactor-username']
+            self.session.save()
         if 'multifactor-username' in self.session and request.path not in self.multifactor_allowed_urls:
             # ensure any partially completed multifactor login is not left open, if user goes to any other pages
             redirect(h.url_return_to(self.multifactor_allowed_urls[0], self.request))
