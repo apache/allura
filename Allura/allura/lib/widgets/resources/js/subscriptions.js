@@ -52,8 +52,8 @@ SubscriptionForm = React.createClass({
   handleClick: function(e) {
     e.preventDefault();
     var url = this.props.url;
-    var csrf = $.cookie('_session_id');
-    var data = {_session_id: csrf};
+    var csrf = $.cookie('_csrf_token');
+    var data = {_csrf_token: csrf};
     if (this.props.subscribed) {
       data.unsubscribe = true;
     } else {

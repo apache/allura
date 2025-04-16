@@ -91,7 +91,7 @@ function reactComment(btn, r) {
         url: btn.data('commentlink') + 'post_reaction',
         data: {
             'r': r,
-            '_session_id': $.cookie('_session_id')
+            '_csrf_token': $.cookie('_csrf_token')
         },
         success: function (res) {
             var react_html = '';

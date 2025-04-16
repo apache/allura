@@ -311,7 +311,7 @@ The wiki uses [Markdown](%s) syntax.
             e.preventDefault();
             var link = this;
             var data = {
-                _session_id: $.cookie('_session_id'),
+                _csrf_token: $.cookie('_csrf_token'),
                 subscribe: '1'
             };
             $.post(this.href, data, function(){
@@ -324,7 +324,7 @@ The wiki uses [Markdown](%s) syntax.
             e.preventDefault();
             var link = this;
             var data = {
-                _session_id: $.cookie('_session_id'),
+                _csrf_token: $.cookie('_csrf_token'),
                 unsubscribe: '1'
             };
             $.post(this.href, data, function(){

@@ -127,13 +127,13 @@ $(window).on('load', function() {
             }
 
             function previewRender(text, preview) {
-              var cval = $.cookie('_session_id');
+              var cval = $.cookie('_csrf_token');
               $.post('/nf/markdown_to_html', {
                 markdown: text,
                 project: $('input.markdown_project', $container).val(),
                 neighborhood: $('input.markdown_neighborhood', $container).val(),
                 app: $('input.markdown_app', $container).val(),
-                _session_id: cval
+                _csrf_token: cval
               },
               function(resp) {
                 preview.innerHTML = resp;

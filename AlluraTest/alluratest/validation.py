@@ -220,7 +220,7 @@ class AntiSpamTestApp(TestApp):
             }
             for k, v in kwargs['params'].items():
                 params[antispam.enc(k)] = v
-            params['_session_id'] = kwargs['params'].get('_session_id')  # exclude csrf token from encryption
+            params['_csrf_token'] = kwargs['params'].get('_csrf_token')  # exclude csrf token from encryption
             kwargs['params'] = params
         return super().post(*args, **kwargs)
 

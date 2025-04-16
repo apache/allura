@@ -69,11 +69,11 @@
             modal.html(dialog_text.html());
 
             modal.find('.continue_confirm').click(function (evt) {
-                var cval = $.cookie('_session_id');
+                var cval = $.cookie('_csrf_token');
                 evt.preventDefault();
                 var _t = $(this);
                 var url = _t.data('href') || _t.attr('href');
-                $.post(url, {_session_id: cval}, function (val) {
+                $.post(url, {_csrf_token: cval}, function (val) {
                     window.location = val.location;
                 }, 'json');
             });

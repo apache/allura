@@ -236,16 +236,16 @@
             return false;
           });
           $('.post-link').click(function(evt) {
-                        var cval = $.cookie('_session_id');
+                        var cval = $.cookie('_csrf_token');
                         evt.preventDefault();
-                        $.post(this.href, {_session_id:cval}, function(val)
+                        $.post(this.href, {_csrf_token:cval}, function(val)
                                 { window.location = val.location; },
                                 'json');
           });
           // delete attachments
           $('div.attachment_thumb a.delete_attachment').click(function () {
-            var cval = $.cookie('_session_id');
-            $.post(this.href, {'delete': 'True','_session_id':cval}, function () {
+            var cval = $.cookie('_csrf_token');
+            $.post(this.href, {'delete': 'True','_csrf_token':cval}, function () {
                 location.reload();
             });
             return false;

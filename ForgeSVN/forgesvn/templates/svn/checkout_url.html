@@ -55,11 +55,11 @@
 {% if allow_config %}
   <script type="text/javascript">
     function save_checkout_url() {
-        var cval = $.cookie('_session_id');
+        var cval = $.cookie('_csrf_token');
         $.post('{{c.project.url()}}admin/{{app.config.options.mount_point}}/set_checkout_url', {
             checkout_url: $('#checkout_url').val(),
             external_checkout_url: $('#external_checkout_url').val(),
-            _session_id:cval
+            _csrf_token:cval
         },
         function () {
             location.reload();

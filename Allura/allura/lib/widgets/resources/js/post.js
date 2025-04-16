@@ -61,14 +61,14 @@
         $('.spam-all-block', post).click(function(e) {
             e.preventDefault();
             var $this = $(this);
-            var cval = $.cookie('_session_id');
+            var cval = $.cookie('_csrf_token');
             $.ajax({
                 type: 'POST',
                 url: $this.attr('data-admin-url') + '/block_user',
                 data: {
                     username: $this.attr('data-user'),
                     perm: 'post',
-                    '_session_id': cval
+                    '_csrf_token': cval
                 },
                 success: function (data, textStatus, jqxhr) {
                     if (data.error) {
@@ -77,7 +77,7 @@
                         flash('User blocked', 'success');
                         // full page form submit
                         $('<form method="POST" action="' + escape_html($this.data('discussion-url'))+'moderate/save_moderation_bulk_user?username=' + escape_html($this.attr('data-user')) + '&spam=1">' +
-                            '<input name="_session_id" type="hidden" value="'+escape_html(cval)+'"></form>')
+                            '<input name="_csrf_token" type="hidden" value="'+escape_html(cval)+'"></form>')
                             .appendTo('body')
                             .submit();
                     } else {

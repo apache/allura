@@ -134,9 +134,9 @@ def check_authentication(req):
         honey1_field: '',
         honey2_field: '',
         'return_to': '/login_successful',
-        '_session_id': 'this-is-our-session',
+        '_csrf_token': 'this-is-our-session',
     }, cookies={
-        '_session_id': 'this-is-our-session',
+        '_csrf_token': 'this-is-our-session',
     })
     if r.status_code == 302 and r.headers['location'].endswith('/login_successful'):
         return True
@@ -153,9 +153,9 @@ def check_authentication(req):
             honey1_field: '',
             honey2_field: '',
             'return_to': '/login_successful',
-            '_session_id': 'this-is-our-session',
+            '_csrf_token': 'this-is-our-session',
         }, cookies={
-            '_session_id': 'this-is-our-session',
+            '_csrf_token': 'this-is-our-session',
         })
         if r.status_code == 302 and '/auth/multifactor' in r.headers['location']:
             multifactor_url = auth_url.replace('do_login', 'do_multifactor')
@@ -163,9 +163,9 @@ def check_authentication(req):
                 'mode': 'totp',
                 'code': code,
                 'return_to': '/login_successful',
-                '_session_id': 'this-is-our-session',
+                '_csrf_token': 'this-is-our-session',
             }, cookies={
-                '_session_id': 'this-is-our-session',
+                '_csrf_token': 'this-is-our-session',
             })
             if r.status_code == 302 and r.headers['location'].endswith('/login_successful'):
                 return True

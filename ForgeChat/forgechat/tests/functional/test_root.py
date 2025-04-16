@@ -36,7 +36,7 @@ class TestRootController(TestController):
     def test_admin_configure(self):
         self.app.get('/').follow()  # establish session
         data = {'channel': 'test channel',
-                '_session_id': self.app.cookies['_session_id']}
+                '_csrf_token': self.app.cookies['_csrf_token']}
         ch = CM.ChatChannel.query.get()
         assert ch.channel == ''
         resp = self.app.post('/p/test/admin/chat/configure', data)

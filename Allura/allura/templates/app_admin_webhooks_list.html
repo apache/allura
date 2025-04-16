@@ -52,8 +52,8 @@ $(function() {
   $('.delete-link').click(function(e) {
     e.preventDefault();
     var id = $(this).attr('data-id');
-    var csrf = $.cookie('_session_id');
-    var data = {'webhook': id, '_session_id': csrf};
+    var csrf = $.cookie('_csrf_token');
+    var data = {'webhook': id, '_csrf_token': csrf};
     var url = $(this).attr('href');
     var $tr = $(this).parents('tr');
     $.post(url, data, function(data) {

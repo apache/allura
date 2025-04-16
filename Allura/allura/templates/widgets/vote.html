@@ -42,7 +42,7 @@
   <div style="clear:both;"></div>
   {% if can_vote %}
   <form action="{{ action }}" method="POST">
-    {# csrf protection will be automatically inserted here (_session_id field) #}
+    {# csrf protection will be automatically inserted here (_csrf_token field) #}
     {{lib.csrf_token()}}
   </form>
   {% endif %}

@@ -56,8 +56,8 @@
 {% block extra_js %}
 <script>
     $('.post-link').click(function() {
-    var cval = $.cookie('_session_id');
-    $.post( '{{c.app.url}}delete_feedback', {'_session_id':cval},
+    var cval = $.cookie('_csrf_token');
+    $.post( '{{c.app.url}}delete_feedback', {'_csrf_token':cval},
         function(){ 
             window.location.href = '{{c.app.url}}';
             }

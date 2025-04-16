@@ -45,10 +45,10 @@ $(function() {
             var $popup_contents = $('#admin_modal_contents');
             $popup_title.html($(link).html());
             $popup_contents.html(data);
-            var csrf_exists = $popup_contents.find('form > input[name="_session_id"]').length;
+            var csrf_exists = $popup_contents.find('form > input[name="_csrf_token"]').length;
             if (!csrf_exists) {
-                var cval = $.cookie('_session_id');
-                var csrf_input = $('<input name="_session_id" type="hidden" value="'+cval+'">');
+                var cval = $.cookie('_csrf_token');
+                var csrf_input = $('<input name="_csrf_token" type="hidden" value="'+cval+'">');
                 $popup_contents.find('form').append(csrf_input);
             }
         });

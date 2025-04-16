@@ -85,7 +85,7 @@
             type: 'POST',
             url: elem.href,
             data: {
-              '_session_id': $.cookie('_session_id')
+              '_csrf_token': $.cookie('_csrf_token')
             },
             success: function(data) {
                 $(elem).parent().parent().remove();

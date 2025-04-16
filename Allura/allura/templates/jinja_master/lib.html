@@ -18,11 +18,11 @@
 -#}
 
 {% macro csrf() -%}
-    {{ request.cookies['_session_id'] or request.environ['_session_id'] }}
+    {{ request.cookies['_csrf_token'] or request.environ['_csrf_token'] }}
 {%- endmacro %}
 
 {% macro csrf_token() -%}
-    <input name="_session_id" type="hidden" value="{{csrf()}}">
+    <input name="_csrf_token" type="hidden" value="{{csrf()}}">
 {%- endmacro %}
 
 {% macro related_artifacts(artifact, user) -%}

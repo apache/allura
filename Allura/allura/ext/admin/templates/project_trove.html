@@ -110,9 +110,9 @@
       var chosen_opts = {search_contains:true};
       $('.trove_add_container form:visible select').chosen(chosen_opts);
 
-      function add_trove(session_id, type, new_id) {
+      function add_trove(_csrf_token, type, new_id) {
         $.post('add_trove_js',{
-          _session_id:session_id,
+          _csrf_token:_csrf_token,
           type:type,
           new_trove:new_id},function(resp){
             if(resp.error_msg){
@@ -140,14 +140,14 @@
         });
       }
 
-      var session_id = $('input[name=_session_id]').val();
+      var _csrf_token = $('input[name=_csrf_token]').val();
       var del_btn = '<a href="#" class="del_btn" title="Delete"><b data-icon="{{g.icons["delete"].char}}" class="ico {{g.icons["delete"].css}}"></b></a>';
       $('form.trove_adder').submit(function(evt){
         evt.preventDefault();
         var $this = $(this);
         var type = $this.find('input[name=type]').val();
         var new_id = $this.find('select').last().val();
-        add_trove(session_id, type, new_id);
+        add_trove(_csrf_token, type, new_id);
       });
       $('form.trove_deleter').each(function(){
         $(this).find('input[type="submit"]').remove();
@@ -158,7 +158,7 @@
         var $form = $(this).closest('form');
         var type = $form.find('input[name="type"]').val();
         $.post('delete_trove',{
-          _session_id:session_id,
+          _csrf_token:_csrf_token,
           type:type,
           trove:$form.find('input[name="trove"]').val()},function(){
             $form.closest('div').remove();
@@ -178,7 +178,7 @@
         e.preventDefault();
         var type = $(this).data('trove');
         var new_id = $(this).data('id');
-        add_trove(session_id, type, new_id);
+        add_trove(_csrf_token, type, new_id);
       })
     });
   </script>

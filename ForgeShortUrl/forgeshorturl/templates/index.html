@@ -91,11 +91,11 @@
             </a>
             <script>
               $(function() {
-                var cval = $.cookie('_session_id');
+                var cval = $.cookie('_csrf_token');
                 $('#remove-url-{{su.short_name}}').click(function() {
                     if (confirm('Remove URL {{su.short_name}}?')) {
                       var row = $(this).parents('tr');
-                      var data = {_session_id: cval, shorturl: '{{ su.short_name }}'};
+                      var data = {_csrf_token: cval, shorturl: '{{ su.short_name }}'};
                       $.post(this.href, data, function(data, status, xhr) {
                         if (data.status == 'ok') row.remove();
                       });

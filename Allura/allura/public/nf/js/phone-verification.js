@@ -134,8 +134,8 @@ var FormStepMixin = {
   callAPI: function() {
     var url = this.getAPIUrl();
     var data = this.getAPIData();
-    var csrf = $.cookie('_session_id');
-    data._session_id = csrf;
+    var csrf = $.cookie('_csrf_token');
+    data._csrf_token = csrf;
     set_state({in_progress: true});
     $.post(url, data, function(resp) {
       if (resp.status == 'ok') {

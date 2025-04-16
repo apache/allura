@@ -165,7 +165,7 @@
     $.ajax({
       type: "POST",
       url: attr_url,
-      data: elem.serialize() +"&_session_id=" + $.cookie('_session_id'),
+      data: elem.serialize() +"&_csrf_token=" + $.cookie('_csrf_token'),
       success:  function() {
         elem.parent().remove();
       }

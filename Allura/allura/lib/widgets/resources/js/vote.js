@@ -22,13 +22,13 @@ $(document).ready(function() {
     var $form = $('#vote form');
     var url = $form.attr('action');
     var method = $form.attr('method');
-    var _session_id = $form.find('input[name="_session_id"]').val();
+    var _csrf_token = $form.find('input[name="_csrf_token"]').val();
     $.ajax({
       url: url,
       type: method,
       data: {
         vote: vote,
-        _session_id: _session_id
+        _csrf_token: _csrf_token
       },
       success: function(data) {
         if (data.status == 'ok') {

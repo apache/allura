@@ -255,7 +255,7 @@ $(function(){
                 url: uri + 'update_markdown',
                 data: {
                     'text' : markdown,
-                    '_session_id' : $.cookie('_session_id')
+                    '_csrf_token' : $.cookie('_csrf_token')
                 },
                 success: callback
             });

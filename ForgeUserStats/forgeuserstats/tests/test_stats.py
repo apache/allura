@@ -41,7 +41,7 @@ class TestStats(TestController):
         self.app.get('/').follow()  # establish session
         self.app.post('/auth/do_login', antispam=True, params=dict(
             username=user.username, password='foo',
-            _session_id=self.app.cookies['_session_id'],
+            _csrf_token=self.app.cookies['_csrf_token'],
         ))
 
         assert user.stats.tot_logins_count == 1 + init_logins

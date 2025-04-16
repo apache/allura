@@ -24,7 +24,7 @@ function removeModalContent(){
     $('#error_message_delete_folder').remove();
 }
 
-var cval = $.cookie('_session_id');
+var cval = $.cookie('_csrf_token');
 
  function ConfirmDisableFolder(folderID,status,parent_status,url)
      {
@@ -42,7 +42,7 @@ var cval = $.cookie('_session_id');
                  var disable_status = 'False';
              }
              if (confirm_resp){
-                $.post(url, {'folder_id':folderID, 'status':disable_status, _session_id:cval}, function() {
+                $.post(url, {'folder_id':folderID, 'status':disable_status, _csrf_token:cval}, function() {
                     location.reload();
                 });
              }
@@ -67,7 +67,7 @@ var cval = $.cookie('_session_id');
                  var disable_status = 'False';
              }
              if (confirm_resp){
-                 $.post(url, {'file_id':fileID, 'status':disable_status, _session_id:cval}, function() {
+                 $.post(url, {'file_id':fileID, 'status':disable_status, _csrf_token:cval}, function() {
                     location.reload();
                 });
              }
@@ -87,7 +87,7 @@ var cval = $.cookie('_session_id');
         var confirm_resp = confirm("Are you sure you want to link to the Downloads?");
         var link_status = 'True';
     }
-    $.post(url, {'file_id':fileID, 'status':link_status, _session_id:cval}, function() {
+    $.post(url, {'file_id':fileID, 'status':link_status, _csrf_token:cval}, function() {
         location.reload();
     })
  }

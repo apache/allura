@@ -495,9 +495,9 @@ var Main = React.createClass({
     onUpdateThreshold: function(event) {
         var thres = event.target.value;
         var url = `${_getProjectUrl()}/admin/configure_tool_grouping`;
-        var csrf = $.cookie('_session_id');
+        var csrf = $.cookie('_csrf_token');
         var data = {
-            _session_id: csrf,
+            _csrf_token: csrf,
             grouping_threshold: thres
         };
         $.post(url, data, () => this.getNavJson());
@@ -510,7 +510,7 @@ var Main = React.createClass({
     onToolReorder: function() {
         $('.react-drag.dragging').removeClass('dragging');
 
-        let params = {_session_id: $.cookie('_session_id')};
+        let params = {_csrf_token: $.cookie('_csrf_token')};
         let toolNodes = $(ReactDOM.findDOMNode(this)).find('span.ordinal-item').not(".toolbar-grouper");
         for (let i = 0; i < toolNodes.length; i++) {
             params[i] = toolNodes[i].dataset.mountPoint;

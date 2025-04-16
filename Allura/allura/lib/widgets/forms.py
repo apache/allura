@@ -1110,12 +1110,12 @@ class CsrfForm(ew.SimpleForm):
 
     @property
     def hidden_fields(self):
-        return [ew.HiddenField(name='_session_id')]
+        return [ew.HiddenField(name='_csrf_token')]
 
     def context_for(self, field):
         ctx = super().context_for(field)
-        if field.name == '_session_id':
-            ctx['value'] = tg.request.cookies.get('_session_id') or tg.request.environ['_session_id']
+        if field.name == '_csrf_token':
+            ctx['value'] = tg.request.cookies.get('_csrf_token') or tg.request.environ['_csrf_token']
         return ctx
 
 

@@ -18,7 +18,7 @@
  */
 $(function() {
     var updateSortOrder = function (e) {
-        var params = {'_session_id': $.cookie('_session_id')};
+        var params = {'_csrf_token': $.cookie('_csrf_token')};
         $(e.to).find('.screenshot').each(function (i) {
             params[$(this).data('ss-id')] = i;
         });

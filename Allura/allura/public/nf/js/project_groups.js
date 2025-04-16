@@ -19,13 +19,13 @@
 /*global privateProjectsAllowed */
 
 $(function() {
-  var cval = $.cookie('_session_id');
+  var cval = $.cookie('_csrf_token');
   // delete a group
   $('a.delete_group').click(function(evt){
     evt.preventDefault();
     var link = this;
-    var csrf = $.cookie('_session_id');
-    var data = {_session_id: csrf};
+    var csrf = $.cookie('_csrf_token');
+    var data = {_csrf_token: csrf};
     if(confirm("Are you sure you want to remove the group? All users and groups in the group will lose their permissions.")){
       $.post(link.href, data, function(resp) {
         $(link).closest('tr').hide('fast');
@@ -39,7 +39,7 @@ $(function() {
     if(confirm("Are you sure you want to remove the user "+user_holder.data('user')+"?")){
         var params = {'role_id': user_holder.closest('tr').data('group'),
                   'username': user_holder.data('user'),
-                  '_session_id': cval};
+                  '_csrf_token': cval};
         var old_html = user_holder.html();
         user_holder.html(spinner_img+' Removing...');
         $.post('remove_user', params, function(data){
@@ -59,7 +59,7 @@ $(function() {
     var item_form = $(this);
     var params = {'role_id': item_form.closest('tr').data('group'),
                   'username': item_form.find('input').val(),
-                  '_session_id': cval};
+                  '_csrf_token': cval};
     var holder = item_form.closest('li');
     holder.html(spinner_img+' Saving...');
     $.post('add_user', params, function(data){
@@ -119,7 +119,7 @@ $(function() {
     var params = {'role_id':$(this).closest('tr').data('group'),
                   'permission':perm_holder.data('permission'),
                   'allow':true,
-                  '_session_id':cval};
+                  '_csrf_token':cval};
     if(perm_holder.hasClass('yes')){
       params['allow']=false;
     }

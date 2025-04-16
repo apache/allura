@@ -34,7 +34,7 @@ $(document).ready(function() {
         e.preventDefault();
         var $link = $(this);
         var data = {
-            '_session_id': $link.data('csrf'),
+            '_csrf_token': $link.data('csrf'),
             'follow': ! $link.data('following')
         };
         $.post(this.href, data, function(result) {

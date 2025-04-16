@@ -304,7 +304,7 @@ $(function() {
             $row.css('background', 'lightgray');
             $.post('delete_item', {
                 activity_id: $row.attr('id'),
-                _session_id: $.cookie('_session_id')
+                _csrf_token: $.cookie('_csrf_token')
             }).done(function() {
                 $('input[name=delete]', $row).remove();
                 $row.css('text-decoration', 'line-through').removeAttr('data-can-delete');

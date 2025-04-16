@@ -153,7 +153,7 @@ def _make_core_app(root, global_conf: dict, **app_conf):
     app = AlluraTimerMiddleware(app, app_conf)
     # Clear cookies when the CSRF field isn't posted
     if not app_conf.get('disable_csrf_protection'):
-        app = CSRFMiddleware(app, '_session_id')
+        app = CSRFMiddleware(app, '_csrf_token')
     if asbool(config.get('cors.enabled', False)):
         # Handle CORS requests
         allowed_methods = aslist(config.get('cors.methods'))
