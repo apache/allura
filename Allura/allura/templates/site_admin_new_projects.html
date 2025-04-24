@@ -71,6 +71,16 @@
       <td><small>{{ p.external_homepage|urlize(22) }}</small></td>
       <td>{% for a in p.admins() %}<small><a href="/nf/admin/user/{{ a.username }}">{{ a.username }}</a></small> {% endfor %}</td>
     </tr>
+    <tr class="tablesorter-childRow">
+        <td colspan="8" class="child-row">
+            {% set note = p.get_tool_data('notes', 'note') %}
+            <a class="add-note" title="click to add a not for this project" data-project="{{ p.shortname }}" href="#"><i class="fa fa-edit"></i> {% if note %}edit note{% else %}add note{%endif %}</a>
+            <br>
+            {% if note %}
+                <strong>Notes:</strong> <span class="project-note">{{ note }}</span>
+            {% endif %}
+        </td>
+    </tr>
     {% endfor %}
   </table>
   {{ _paging() }}
@@ -110,6 +120,11 @@
         background-position: 100% 50%;
         background-color: #6bb3fd;
     }
+    td.child-row{ text-align:center}
+    .note-buttons{
+        display: flex;
+        justify-content: center;
+    }
 </style>
 {% endblock %}
 
@@ -124,5 +139,48 @@
             sortRestart    : false
         });
     });
+    $('.add-note').each(function(el){
+        var el = $(this);
+        el.on('click', function(evt){
+            evt.preventDefault();
+            var project_shortname = el.data('project');
+            var form_exists = el.closest('tr').find('td:first').find('form');
+            var notes = el.closest('tr').find('td:first').find('.project-note')
+           if (form_exists.length > 0) {
+               return;
+           }
+            var form = $('<form></form>')
+            var textarea = $('<textarea class="note" rows="5" cols="100"></textarea>');
+            var submit_btn = $('<button type="submit" class="button blue right">Submit</button>');
+            var cancel_btn = $('<button class="" >Cancel</button>');
+            var div = $('<div class="note-buttons"></div>')
+            if (notes){
+                textarea.val(notes.text());
+            }
+            form.append(textarea)
+            div.append(submit_btn);
+            div.append(cancel_btn);
+            form.append(div);
+            el.closest('tr').find('td:first').append(form)
+            form.on('submit', function(evt){
+                evt.preventDefault();
+                var url = "{{ request.path.replace('new_projects', 'save_project_note')}}";
+                var data = {'_csrf_token': $.cookie('_csrf_token'), 'note': textarea.val(), 'shortname': project_shortname}
+                $.post(url,data).done(function(response){
+                    flash(response.message, 'success');
+                    form.remove();
+                    var td = el.closest('tr').find('td:first');
+                    td.html('<p><strong>Notes:</strong>' + textarea.val() + '</p>');
+                    el.remove();
+                }).fail(function (response){
+                    flash(response.message, 'error');
+                })
+            })
+            cancel_btn.on('click', function(evt){
+                evt.preventDefault();
+                form.remove();
+            })
+        })
+    })
   } );</script>
 {% endblock %}

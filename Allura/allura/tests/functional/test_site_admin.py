@@ -90,13 +90,13 @@ class TestSiteAdmin(TestController):
         ThreadLocalODMSession.flush_all()
         r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
             username='root'))
-        assert len(r.html.find('table').find_all('tr')) == count - 1
+        assert len(r.html.find('table').find_all('tr')) == count - 2
 
     def test_new_projects_daterange_filtering(self):
         r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
             username='root'))
         count = len(r.html.find('table').find_all('tr'))
-        assert count == 7
+        assert count == 1 + (6 * 2)   # header, 6 projects with 2 rows each
 
         filtr = r.forms[0]
         filtr['start-dt'] = '2000/01/01 10:10:10'
@@ -179,7 +179,13 @@ class TestSiteAdmin(TestController):
         r = self.app.get('/nf/admin/task_manager/task_doc', params=dict(
             task_name='allura.tests.functional.test_site_admin.test_task'))
         assert json.loads(r.text)['doc'] == 'test_task doc string'
-
+    
+    def test_project_note(self):
+        note_content = 'this is a test note for project'
+        r = self.app.post('/nf/admin/save_project_note', params=dict(shortname='test', note=note_content), status=200)
+        project = M.Project.query.get(shortname='test')
+        assert note_content == project.get_tool_data('notes', 'note')
+        
 
 class TestSiteAdminNotifications(TestController):
 
