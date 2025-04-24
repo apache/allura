@@ -213,6 +213,18 @@ class SiteAdminController:
             'window_end': end_dt,
         }
 
+    @expose('json:')
+    @require_post()
+    def save_project_note(self, **kwargs):
+        shortname = kwargs.get('shortname')
+        note = kwargs.get('note')
+        nbhd = M.Neighborhood.query.get(name='Projects')
+        c.project = M.Project.query.get(shortname=shortname, neighborhood_id=nbhd._id)
+        if c.project and note:
+            c.project.set_tool_data('allura', notes=note)
+            return {'status': 'ok', 'message': 'Project note updated'}
+        return {'status': 'error', 'message': 'Project note not updated'}
+
     @expose('jinja:allura:templates/site_admin_reclone_repo.html')
     @without_trailing_slash
     @validate(dict(prefix=validators.NotEmpty(),
