@@ -179,7 +179,13 @@ class TestSiteAdmin(TestController):
         r = self.app.get('/nf/admin/task_manager/task_doc', params=dict(
             task_name='allura.tests.functional.test_site_admin.test_task'))
         assert json.loads(r.text)['doc'] == 'test_task doc string'
-
+    
+    def test_project_note(self):
+        note_content = 'this is a test note for project'
+        r = self.app.post('/nf/admin/save_project_note', params=dict(shortname='test', note=note_content), status=200)
+        project = M.Project.query.get(shortname='test')
+        assert note_content == project.get_tool_data('notes', 'note')
+        
 
 class TestSiteAdminNotifications(TestController):
 

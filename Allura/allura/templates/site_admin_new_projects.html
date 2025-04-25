@@ -73,10 +73,11 @@
     </tr>
     <tr class="tablesorter-childRow">
         <td colspan="8" class="child-row">
-            {% if p.get_tool_data('allura', 'notes') %}
-                <strong>Notes:</strong> {{ p.get_tool_data('allura', 'notes') }}
-            {% else %}
-                <a class="add-note" title="click to add a not for this project" data-project="{{ p.shortname }}" href="#"><i class="fa fa-edit"></i> add note</a>
+            {% set note = p.get_tool_data('notes', 'note') %}
+            <a class="add-note" title="click to add a not for this project" data-project="{{ p.shortname }}" href="#"><i class="fa fa-edit"></i> {% if note %}edit note{% else %}add note{%endif %}</a>
+            <br>
+            {% if note %}
+                <strong>Notes:</strong> <span class="project-note">{{ note }}</span>
             {% endif %}
         </td>
     </tr>
@@ -144,6 +145,7 @@
             evt.preventDefault();
             var project_shortname = el.data('project');
             var form_exists = el.closest('tr').find('td:first').find('form');
+            var notes = el.closest('tr').find('td:first').find('.project-note')
            if (form_exists.length > 0) {
                return;
            }
@@ -152,6 +154,9 @@
             var submit_btn = $('<button type="submit" class="button blue right">Submit</button>');
             var cancel_btn = $('<button class="" >Cancel</button>');
             var div = $('<div class="note-buttons"></div>')
+            if (notes){
+                textarea.val(notes.text());
+            }
             form.append(textarea)
             div.append(submit_btn);
             div.append(cancel_btn);

@@ -221,7 +221,7 @@ class SiteAdminController:
         nbhd = M.Neighborhood.query.get(name='Projects')
         c.project = M.Project.query.get(shortname=shortname, neighborhood_id=nbhd._id)
         if c.project and note:
-            c.project.set_tool_data('allura', notes=note)
+            c.project.set_tool_data('notes', note=note)
             return {'status': 'ok', 'message': 'Project note updated'}
         return {'status': 'error', 'message': 'Project note not updated'}
 
