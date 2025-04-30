@@ -303,7 +303,7 @@ tomli==2.2.1 ; python_full_version < '3.11'
     # via pytest
 translationstring==1.4
     # via colander
-turbogears2==2.4.3
+turbogears2==2.5.0
     # via -r requirements.in
 typing-extensions==4.13.2
     # via
