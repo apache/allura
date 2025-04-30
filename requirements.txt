@@ -8,7 +8,7 @@ anyio==4.6.0
     # via httpx
 atpublic==5.1
     # via aiosmtpd
-attrs==25.1.0
+attrs==25.3.0
     # via aiosmtpd
 beaker==1.13.0
     # via
