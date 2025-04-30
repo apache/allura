@@ -244,7 +244,7 @@ pytz==2025.2
     #   ming
 pyyaml==6.0.2
     # via pre-commit
-qrcode==8.0
+qrcode==8.1
     # via -r requirements.in
 regex==2024.11.6
     # via
