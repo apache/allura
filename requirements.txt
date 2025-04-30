@@ -137,7 +137,7 @@ legacy-cgi==2.6.2 ; python_full_version >= '3.13'
     # via
     #   -r requirements.in
     #   webob
-lxml==5.3.1
+lxml==5.4.0
     # via -r requirements.in
 markdown==3.7
     # via
