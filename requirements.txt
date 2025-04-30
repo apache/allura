@@ -29,7 +29,7 @@ botocore==1.35.37
     #   boto3
     #   pymongo-auth-aws
     #   s3transfer
-certifi==2025.1.31
+certifi==2025.4.26
     # via
     #   httpcore
     #   httpx
@@ -309,7 +309,11 @@ typing-extensions==4.13.2
     # via
     #   anyio
     #   beautifulsoup4
-urllib3==1.26.20
+urllib3==1.26.20 ; python_full_version < '3.10'
+    # via
+    #   botocore
+    #   requests
+urllib3==2.4.0 ; python_full_version >= '3.10'
     # via
     #   botocore
     #   requests
