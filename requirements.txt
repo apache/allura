@@ -156,7 +156,7 @@ markupsafe==3.0.2
     #   werkzeug
 ming==0.15.2
     # via -r requirements.in
-mock==5.1.0
+mock==5.2.0
     # via -r requirements.in
 nh3==0.2.21
     # via textile
