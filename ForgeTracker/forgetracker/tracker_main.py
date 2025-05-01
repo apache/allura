@@ -389,7 +389,7 @@ class ForgeTrackerApp(Application):
 
         links += milestones
 
-        if len(search_bins):
+        if search_bins:
             links.append(SitemapEntry('Searches'))
             links = links + search_bins
         links.append(SitemapEntry('Help'))

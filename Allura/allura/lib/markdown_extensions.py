@@ -459,7 +459,7 @@ class ForgeLinkTreeProcessor(markdown.treeprocessors.Treeprocessor):
 class MarkAsSafe(markdown.postprocessors.Postprocessor):
 
     def run(self, text):
-        return Markup(text)
+        return Markup(text)  # noqa: S704
 
 
 class AddCustomClass(markdown.postprocessors.Postprocessor):

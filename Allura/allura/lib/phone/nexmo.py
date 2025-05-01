@@ -57,11 +57,11 @@ class NexmoPhoneService(PhoneService):
             msg = 'Failed sending request to Nexmo'
         if str(code) == '3' and msg.endswith(' number'):
             msg = markupsafe.Markup(
-                '{}{}{}'.format(
-                    html.escape(msg),  # escape it just in case Nexmo sent some HTML we don't want through
-                    '<br>Make sure you include the country code (see examples above)',
-                    '. For US numbers, you must include <code>1-</code> before the area code.' if len(number) == 10 else '',
-                ))
+                '{}{}{}').format(
+                    msg,
+                    markupsafe.Markup('<br>Make sure you include the country code (see examples above)'),
+                    markupsafe.Markup('. For US numbers, you must include <code>1-</code> before the area code.') if len(number) == 10 else '',
+                )
 
         return {'status': 'error', 'error': msg}
 

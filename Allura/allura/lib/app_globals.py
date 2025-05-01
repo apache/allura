@@ -132,7 +132,7 @@ class ForgeMarkdown:
         if cache.md5 is not None:
             md5 = hashlib.md5(source_text.encode('utf-8')).hexdigest()
             if cache.md5 == md5 and getattr(cache, 'fix7528', False) == bugfix_rev:
-                return Markup(cache.html)
+                return Markup(cache.html)  # noqa: S704
 
         # Convert the markdown and time the result.
         start = time.time()
@@ -477,7 +477,7 @@ class Globals:
             # no highlighting, but we should wrap it in a <pre> safely
             return Markup('<pre>{}</pre>').format(text)
         else:
-            return Markup(pygments.highlight(text, lexer, formatter))
+            return Markup(pygments.highlight(text, lexer, formatter))  # noqa: S704
 
     @property
     def markdown(self):
@@ -694,4 +694,4 @@ class Icon:
             visible_title = f'&nbsp;{Markup.escape(title)}'
         closing_tag = f'</{tag}>' if closing_tag else ''
         icon = f'<{tag} {attrs}><i class="{self.css}"></i>{visible_title}{closing_tag}'
-        return Markup(icon)
+        return Markup(icon)  # noqa: S704

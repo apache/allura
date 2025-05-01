@@ -68,7 +68,7 @@ class SxsOutputGenerator(sxsdiff.BaseGenerator):
     def run(self, diff_result: Iterable[LineChange | None]):
         self.out = ''
         super().run(diff_result)
-        return Markup(self.out)  # "safe" because we use html.escape in a few key places below
+        return Markup(self.out)  # noqa: S704 "safe" because we use html.escape in a few key places below
 
     def visit_row(self, line_change: LineChange | None):
         if line_change is None:

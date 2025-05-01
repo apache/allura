@@ -459,7 +459,7 @@ class Globals(MappedClass):
                 # mark changes text as safe, thus it wouldn't be escaped in plain-text emails
                 # html part of email is handled by markdown and it'll be
                 # properly escaped
-                yield (changed_tickets[t_id], markupsafe.Markup(changes[t_id]))
+                yield (changed_tickets[t_id], markupsafe.Markup(changes[t_id]))  # noqa: S704
         mail = dict(
             sender=c.project.app_instance(self.app_config).email_address,
             fromaddr=str(c.user._id),
@@ -482,7 +482,7 @@ class Globals(MappedClass):
                 v = user.display_name if user else v
             head.append(f'- **{cf.label}**: {v}')
         tmpl_context = {'context': c, 'data':
-                        {'header': markupsafe.Markup('\n'.join(['Mass edit changing:', ''] + head))}}
+                        {'header': markupsafe.Markup('\n'.join(['Mass edit changing:', ''] + head))}}  # noqa: S704
         for user in users:
             tmpl_context['data'].update({'changes': changes_iter(user)})
             mail.update(dict(
@@ -501,7 +501,7 @@ class Globals(MappedClass):
                         self.app_config.options.get('TicketMonitoringType') ==
                         'AllTicketChanges'):
                     visible_changes.append(
-                        (changed_tickets[t_id], markupsafe.Markup(changes[t_id])))
+                        (changed_tickets[t_id], markupsafe.Markup(changes[t_id])))  # noqa: S704
             if visible_changes:
                 tmpl_context['data'].update({'changes': visible_changes})
                 mail.update(dict(

@@ -166,7 +166,7 @@ class Shortlink(MappedClass):
     @classmethod
     def from_links(cls, *links):
         '''Convert a sequence of shortlinks to the matching Shortlink objects'''
-        if len(links):
+        if links:
             result = {}
             # Parse all the links
             parsed_links = {link: cls._parse_link(link)

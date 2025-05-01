@@ -18,6 +18,8 @@
 import json
 from mock import patch
 
+import markupsafe
+
 from allura.lib.phone.nexmo import NexmoPhoneService
 
 
@@ -69,6 +71,12 @@ class TestPhoneService:
         assert 'Invalid value for parameter: number' in res['error']
         assert 'country code' in res['error']
         assert 'US' not in res['error']
+
+        # markupsafe testing
+        res = self.phone.error(code='3', msg='nexmo msg 3 > 4 number', number='123<script>foo</script>')
+        assert res['status'] == 'error'
+        assert isinstance(res['error'], markupsafe.Markup)
+        assert res['error'] == 'nexmo msg 3 &gt; 4 number<br>Make sure you include the country code (see examples above)'
 
     def test_ok(self):
         res = self.phone.ok(request_id='123', other='smth')

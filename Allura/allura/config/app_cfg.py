@@ -194,7 +194,7 @@ class JinjaEngine(ew.TemplateEngine):
         context = self.context(context)
         with ew.utils.push_context(ew.widget_context, render_context=context):
             text = template.render(**context)
-            return Markup(text)
+            return Markup(text)  # noqa: S704
 
 
 base_config = ForgeConfig()

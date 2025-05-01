@@ -199,7 +199,7 @@ class TestGitRepo(RepoImplTestBase):
             shutil.rmtree(dirname)
         repo.init()
         repo._impl.clone_from(repo_path)
-        assert len(list(repo.log()))
+        assert list(repo.log())
         assert not os.path.exists(
             os.path.join(g.tmpdir, 'testgit.git/hooks/update'))
         assert not os.path.exists(
@@ -233,7 +233,7 @@ class TestGitRepo(RepoImplTestBase):
             repo.init()
             repo._impl.clone_from(repo_path)
             assert not clone_from.called
-            assert len(list(repo.log()))
+            assert list(repo.log())
             assert os.path.exists(
                 os.path.join(g.tmpdir, 'testgit.git/hooks/update'))
             assert os.path.exists(

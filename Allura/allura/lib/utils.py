@@ -310,7 +310,7 @@ class AntiSpam:
         for fldno in range(self.num_honey):
             fld_name = self.enc('honey%d' % (fldno))
             fld_id = self.enc('honey%d%d' % (self.counter, fldno))
-            yield Markup(self.honey_field_template).format(
+            yield Markup(self.honey_field_template).format(  # noqa: S704
                 honey_class=self.honey_class,
                 fld_id=fld_id,
                 fld_name=fld_name)
