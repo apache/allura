@@ -1083,7 +1083,7 @@ class AuditLog(MappedClass):
             for line in
             with_br.split('<br>\n')
         ])
-        return Markup(message_bold)
+        return Markup(message_bold)  # noqa: S704
 
     @property
     def url_str(self):

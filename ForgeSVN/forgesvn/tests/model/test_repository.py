@@ -171,7 +171,7 @@ class TestSVNRepo(RepoImplTestBase):
         assert 'exec $DIR/post-commit-user "$@"\n' in hook_data
 
         repo.refresh(notify=False)
-        assert len(list(repo.log(limit=100)))
+        assert list(repo.log(limit=100))
 
         shutil.rmtree(dirname)
 
@@ -221,7 +221,7 @@ class TestSVNRepo(RepoImplTestBase):
         assert 'exec $DIR/post-commit-user "$@"\n' in c
 
         repo.refresh(notify=False)
-        assert len(list(repo.log(limit=100)))
+        assert list(repo.log(limit=100))
 
         shutil.rmtree(dirname)
 

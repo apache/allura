@@ -132,7 +132,7 @@ class SectionBase:
             tmpl = g.jinja2_env.get_template(self.template)
             if not self.context:
                 self.setup_context()
-            return Markup(tmpl.render(self.context))
+            return Markup(tmpl.render(self.context))  # noqa: S704
         except Exception as e:
             log.exception('Error rendering section %s: %s', type(self).__name__, e)
             if asbool(tg.config.get('debug')):

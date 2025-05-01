@@ -505,6 +505,6 @@ def embed(url=None):
                 embed_url = embed_url.geturl()
             embed_url = embed_url.replace('www.youtube.com', 'www.youtube-nocookie.com')
             html.find('iframe')['src'] = embed_url
-        return markupsafe.Markup('<p>%s</p>' % html)
+        return markupsafe.Markup('<p>%s</p>' % html)  # noqa: S704
 
     return '[[embed url=%s]]' % url

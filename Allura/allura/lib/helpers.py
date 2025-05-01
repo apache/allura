@@ -593,7 +593,7 @@ def diff_text(t1, t2, differ=None):
             result += ['<ins>'] + escape_list(t2_words[j1:j2]) + ['</ins>']
         if tag == 'equal':
             result += escape_list(t1_words[i1:i2])
-    return Markup(' '.join(result).replace('\n', '<br/>\n'))
+    return Markup(' '.join(result).replace('\n', '<br/>\n'))  # noqa: S704
 
 
 def gen_message_id(_id=None):
@@ -800,7 +800,7 @@ def render_any_markup(name, txt, code_mode=False, linenumbers_style=TABLE):
                 txt = _add_table_line_numbers_to_text(txt)
             else:
                 txt = '<pre>%s</pre>' % txt
-    return Markup(txt)
+    return Markup(txt)  # noqa: S704
 
 
 @pass_context
@@ -828,7 +828,7 @@ def subrender_jinja_filter(context, html_tmpl: str) -> Markup:
 
 def nl2br_jinja_filter(value):
     result = '<br>\n'.join(escape(line) for line in value.split('\n'))
-    return Markup(result)
+    return Markup(result)  # noqa: S704
 
 
 def log_if_changed(artifact, attr, new_val, message):
@@ -1416,6 +1416,4 @@ def parse_fediverse_address(username: str):
 
 def clean_html(value: str) -> Markup:
     from allura.lib.markdown_extensions import HTMLSanitizer
-    return Markup(
-        HTMLSanitizer().run(value)
-    )
+    return Markup(HTMLSanitizer().run(value))  # noqa: S704
