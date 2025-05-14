@@ -274,7 +274,10 @@ class TestAuth(TestController):
         links = r.html.find(*nav_pattern).find_all('a')
         assert links[-1].string == "Log Out"
 
-        r = self.app.get('/auth/logout').follow().follow()
+        r = self.app.get('/auth/logout')
+        assert 'Clear-Site-Data' in r.headers
+
+        r = r.follow().follow()
         logged_out_session = r.session['_id']
         assert logged_in_session is not logged_out_session
         links = r.html.find(*nav_pattern).find_all('a')

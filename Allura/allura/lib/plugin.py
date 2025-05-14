@@ -313,6 +313,8 @@ class AuthenticationProvider:
         self.session.invalidate()
         self.session.save()
         response.set_cookie('memorable_forget', '/', secure=request.environ['beaker.session'].secure)
+        # signal to browser to clear saved data
+        response.headers['Clear-Site-Data'] = '"cookies", "storage"'
 
     def validate_password(self, user: M.User, password: str) -> bool:
         ok = self._validate_password(user, password)
