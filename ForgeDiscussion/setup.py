@@ -17,33 +17,9 @@
 
 from setuptools import setup, find_packages
 
-from forgediscussion.version import __version__
+__version__ = "undefined"
+exec(open('forgediscussion/version.py').read())  # noqa: S102
 
 setup(name='ForgeDiscussion',
       version=__version__,
-      description="",
-      long_description="""\
-""",
-      # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
-      classifiers=[],
-      keywords='',
-      author='',
-      author_email='',
-      url='',
-      license='',
-      packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
-      include_package_data=True,
-      zip_safe=False,
-      install_requires=[
-          # -*- Extra requirements: -*-
-          'Allura',
-      ],
-      entry_points="""
-      # -*- Entry points: -*-
-      [allura]
-      Discussion=forgediscussion.forum_main:ForgeDiscussionApp
-
-      [allura.site_stats]
-      posts_24hr=forgediscussion.site_stats:posts_24hr
-      """,
-      )
+)

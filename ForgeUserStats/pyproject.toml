@@ -15,9 +15,38 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-#       !/bin/python
-from setuptools import setup
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
 
-setup(name='ForgeFiles',
-      version='0.1.0',
-)
+[project]
+name = "ForgeUserStats"
+dynamic = ["version"]
+description = ""
+readme = ""
+authors = [
+    {name = "Allura Team"}
+]
+license = {text = "Apache License, http://www.apache.org/licenses/LICENSE-2.0"}
+keywords = ["allura", "forge"]
+classifiers = [
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+    "License :: OSI Approved :: Apache Software License"
+]
+dependencies = [
+    "allura"
+]
+
+[tool.setuptools.packages.find]
+exclude = ["ez_setup", "examples", "tests"]
+
+[tool.setuptools.package-data]
+"*" = ["*"]
+
+[project.entry-points.allura]
+userstats = "forgeuserstats.main:ForgeUserStatsApp"
+
+[project.entry-points."allura.stats"]
+userstats = "forgeuserstats.main:UserStatsListener"

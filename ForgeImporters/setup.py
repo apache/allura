@@ -18,33 +18,4 @@
 from setuptools import setup, find_packages
 
 
-setup(name='ForgeImporters',
-      description="",
-      long_description="",
-      classifiers=[],
-      keywords='',
-      author='',
-      author_email='',
-      url='',
-      license='',
-      packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
-      include_package_data=True,
-      zip_safe=False,
-      install_requires=['Allura', ],
-      entry_points="""
-      # -*- Entry points: -*-
-      [allura.project_importers]
-      trac = forgeimporters.trac.project:TracProjectImporter
-      github = forgeimporters.github.project:GitHubProjectImporter
-
-      [allura.importers]
-      github-tracker = forgeimporters.github.tracker:GitHubTrackerImporter
-      github-wiki = forgeimporters.github.wiki:GitHubWikiImporter
-      github-repo = forgeimporters.github.code:GitHubRepoImporter
-      trac-tickets = forgeimporters.trac.tickets:TracTicketImporter
-      forge-tracker = forgeimporters.forge.tracker:ForgeTrackerImporter
-      forge-discussion = forgeimporters.forge.discussion:ForgeDiscussionImporter
-
-      [allura.admin]
-      importers = forgeimporters.base:ImportAdminExtension
-      """,)
+setup(name='ForgeImporters')

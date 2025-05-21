@@ -17,34 +17,9 @@
 
 from setuptools import setup, find_packages
 
-from forgegit.version import __version__
+__version__ = "undefined"
+exec(open('forgegit/version.py').read())  # noqa: S102
 
 setup(name='ForgeGit',
       version=__version__,
-      description="",
-      long_description="""\
-""",
-      # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
-      classifiers=[],
-      keywords='',
-      author='',
-      author_email='',
-      url='',
-      license='',
-      packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
-      include_package_data=True,
-      zip_safe=False,
-      install_requires=[
-          # -*- Extra requirements: -*-
-          'Allura',
-      ],
-      entry_points="""
-      # -*- Entry points: -*-
-      [allura]
-      Git=forgegit.git_main:ForgeGitApp
-
-      [allura.timers]
-      git = forgegit.git_main:git_timers
-      forgegit = forgegit.git_main:forgegit_timers
-      """,
-      )
+)
