@@ -1,0 +1,169 @@
+#       Licensed to the Apache Software Foundation (ASF) under one
+#       or more contributor license agreements.  See the NOTICE file
+#       distributed with this work for additional information
+#       regarding copyright ownership.  The ASF licenses this file
+#       to you under the Apache License, Version 2.0 (the
+#       "License"); you may not use this file except in compliance
+#       with the License.  You may obtain a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#       Unless required by applicable law or agreed to in writing,
+#       software distributed under the License is distributed on an
+#       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#       KIND, either express or implied.  See the License for the
+#       specific language governing permissions and limitations
+#       under the License.
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "Allura"
+dynamic = ["version"]
+description = "Base distribution of the Allura development platform"
+readme = ""
+authors = [
+    {name = "Allura Team"}
+]
+license = {text = "Apache License, http://www.apache.org/licenses/LICENSE-2.0"}
+keywords = ["allura", "forge", "turbogears", "jinja2", "mongodb"]
+classifiers = [
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+    "License :: OSI Approved :: Apache Software License"
+]
+dependencies = []
+
+[tool.setuptools.packages.find]
+exclude = ["ez_setup"]
+
+[tool.setuptools.package-data]
+"allura" = [
+    "templates/**.html",
+    "templates/**.py",
+    "templates/**.xml",
+    "templates/**.txt",
+    "public/*/*/*/*/*"
+]
+
+# from https://github.com/python-babel/babel/issues/777
+[[tool.babel.mappings]]
+method = "jinja2"
+pattern = "templates/**.html"
+encoding = "utf-8"
+
+[[tool.babel.mappings]]
+method = "python"
+pattern = "**.py"
+encoding = "utf-8"
+
+[[tool.babel.mappings]]
+method = "ignore"
+pattern = "public/**"
+encoding = "utf-8"
+
+# maybe?
+#[tool.babel.extract_messages]
+#message_extractors = """{
+#"allura": [
+#    "**.py" = "python",
+#    "templates/**.html" = "jinja2",
+#    "public/**" =  "ignore",
+#    ]
+#}"""
+
+
+[project.entry-points."paste.app_factory"]
+main = "allura.config.middleware:make_app"
+
+[project.entry-points."paste.app_install"]
+main = "paste.script.appinstall:Installer"
+
+[project.entry-points.allura]
+profile = "allura.ext.user_profile:UserProfileApp"
+admin = "allura.ext.admin:AdminApp"
+search = "allura.ext.search:SearchApp"
+home = "allura.ext.project_home:ProjectHomeApp"
+
+[project.entry-points."allura.auth"]
+local = "allura.lib.plugin:LocalAuthenticationProvider"
+ldap = "allura.lib.plugin:LdapAuthenticationProvider"
+
+[project.entry-points."allura.user_prefs"]
+local = "allura.lib.plugin:LocalUserPreferencesProvider"
+ldap = "allura.lib.plugin:LdapUserPreferencesProvider"
+
+[project.entry-points."allura.project_registration"]
+local = "allura.lib.plugin:LocalProjectRegistrationProvider"
+
+[project.entry-points."allura.theme"]
+allura = "allura.lib.plugin:ThemeProvider"
+responsive = "allura.lib.plugin:ResponsiveTheme"
+
+[project.entry-points."allura.theme.override"]
+responsive = "allura.templates_responsive.responsive_overrides:ResponsiveOverrides"
+
+[project.entry-points."allura.spam"]
+akismet = "allura.lib.spam.akismetfilter:AkismetSpamFilter"
+stopforumspam = "allura.lib.spam.stopforumspamfilter:StopForumSpamSpamFilter"
+
+[project.entry-points."allura.phone"]
+nexmo = "allura.lib.phone.nexmo:NexmoPhoneService"
+
+[project.entry-points."allura.site_admin"]
+stats = "allura.controllers.site_admin:StatsSiteAdminExtension"
+troves = "allura.controllers.trovecategories:TroveCategorySiteAdminExtension"
+
+[project.entry-points."allura.user_profile.sections"]
+personal-data = "allura.ext.user_profile.user_main:PersonalDataSection"
+projects = "allura.ext.user_profile.user_main:ProjectsSection"
+skills = "allura.ext.user_profile.user_main:SkillsSection"
+tools = "allura.ext.user_profile.user_main:ToolsSection"
+social = "allura.ext.user_profile.user_main:SocialSection"
+
+[project.entry-points."allura.personal_dashboard.sections"]
+projects = "allura.ext.personal_dashboard.dashboard_main:ProjectsSection"
+tickets = "allura.ext.personal_dashboard.dashboard_main:TicketsSection"
+merge_requests = "allura.ext.personal_dashboard.dashboard_main:MergeRequestsSection"
+activity = "allura.ext.personal_dashboard.dashboard_main:ActivitySection"
+
+[project.entry-points."allura.webhooks"]
+repo-push = "allura.webhooks:RepoPushWebhookSender"
+
+[project.entry-points."allura.multifactor.totp"]
+mongodb = "allura.lib.multifactor:MongodbTotpService"
+filesystem-googleauth = "allura.lib.multifactor:GoogleAuthenticatorPamFilesystemTotpService"
+
+[project.entry-points."allura.multifactor.recovery_code"]
+mongodb = "allura.lib.multifactor:MongodbRecoveryCodeService"
+filesystem-googleauth = "allura.lib.multifactor:GoogleAuthenticatorPamFilesystemRecoveryCodeService"
+
+[project.entry-points."paste.paster_command"]
+taskd = "allura.command.taskd:TaskdCommand"
+taskd_cleanup = "allura.command.taskd_cleanup:TaskdCleanupCommand"
+task = "allura.command.taskd:TaskCommand"
+models = "allura.command:ShowModelsCommand"
+reindex = "allura.command:ReindexCommand"
+ensure_index = "allura.command:EnsureIndexCommand"
+script = "allura.command:ScriptCommand"
+set-tool-access = "allura.command:SetToolAccessCommand"
+smtp_server = "allura.command:SMTPServerCommand"
+create-neighborhood = "allura.command:CreateNeighborhoodCommand"
+update-neighborhood-home-tool = "allura.command:UpdateNeighborhoodCommand"
+create-trove-categories = "allura.command:CreateTroveCategoriesCommand"
+set-neighborhood-features = "allura.command:SetNeighborhoodFeaturesCommand"
+reclone-repo = "allura.command.reclone_repo:RecloneRepoCommand"
+
+[project.entry-points."easy_widgets.resources"]
+ew_resources = "allura.config.resources:register_ew_resources"
+
+[project.entry-points."easy_widgets.engines"]
+jinja = "allura.config.app_cfg:JinjaEngine"
+
+[project.entry-points.activitystream]
+storage = "activitystream.storage.mingstorage:MingStorage"
+director = "allura.model.timeline:Director"
+aggregator = "allura.model.timeline:Aggregator"

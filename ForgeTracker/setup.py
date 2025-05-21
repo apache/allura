@@ -17,39 +17,9 @@
 
 from setuptools import setup, find_packages
 
-from forgetracker.version import __version__
+__version__ = "undefined"
+exec(open('forgetracker/version.py').read())  # noqa: S102
 
 setup(name='ForgeTracker',
       version=__version__,
-      description="",
-      long_description="""\
-""",
-      # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
-      classifiers=[],
-      keywords='',
-      author='',
-      author_email='',
-      url='',
-      license='',
-      packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
-      include_package_data=True,
-      zip_safe=False,
-      install_requires=[
-          # -*- Extra requirements: -*-
-          'Allura',
-      ],
-      entry_points="""
-      # -*- Entry points: -*-
-      [allura]
-      Tickets=forgetracker.tracker_main:ForgeTrackerApp
-
-      [allura.site_stats]
-      tickets_24hr=forgetracker.site_stats:tickets_stats_24hr
-
-      [easy_widgets.resources]
-      ew_resources=forgetracker.config.resources:register_ew_resources
-
-      [paste.paster_command]
-      fix-discussion = forgetracker.command.fix_discussion:FixDiscussion
-      """,
-      )
+)

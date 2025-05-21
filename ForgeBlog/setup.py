@@ -15,35 +15,11 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from setuptools import setup, find_packages
+from setuptools import setup
 
-from forgeblog.version import __version__
+__version__ = "undefined"
+exec(open('forgeblog/version.py').read())  # noqa: S102
 
 setup(name='ForgeBlog',
       version=__version__,
-      description="",
-      long_description="""\
-""",
-      # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
-      classifiers=[],
-      keywords='',
-      author='',
-      author_email='',
-      url='',
-      license='',
-      packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
-      include_package_data=True,
-      zip_safe=False,
-      install_requires=[
-          # -*- Extra requirements: -*-
-          'allura',
-      ],
-      entry_points="""
-      # -*- Entry points: -*-
-      [allura]
-      blog=forgeblog.main:ForgeBlogApp
-
-      [paste.paster_command]
-      pull-rss-feeds = forgeblog.command.rssfeeds:RssFeedsCommand
-      """,
-      )
+)

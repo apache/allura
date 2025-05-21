@@ -17,43 +17,9 @@
 
 from setuptools import setup, find_packages
 
-from forgesvn.version import __version__
-
-# "install_requires" can't be safely used with pysvn since pysvn is packaged
-# strangely and is not always known to packaging tools (setup.py, pip) even
-# when it is installed and can be imported and used
-try:
-    import pysvn
-except ImportError:
-    print('\npysvn must be installed for ForgeSVN to work\n')
-    raise
+__version__ = "undefined"
+exec(open('forgesvn/version.py').read())  # noqa: S102
 
 setup(name='ForgeSVN',
       version=__version__,
-      description="",
-      long_description="""\
-""",
-      # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
-      classifiers=[],
-      keywords='',
-      author='',
-      author_email='',
-      url='',
-      license='',
-      packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
-      include_package_data=True,
-      zip_safe=False,
-      install_requires=[
-          # -*- Extra requirements: -*-
-          'Allura'
-      ],
-      entry_points="""
-      # -*- Entry points: -*-
-      [allura]
-      SVN=forgesvn.svn_main:ForgeSVNApp
-
-      [allura.timers]
-      svn = forgesvn.svn_main:svn_timers
-      forgesvn = forgesvn.svn_main:forgesvn_timers
-      """,
-      )
+)
