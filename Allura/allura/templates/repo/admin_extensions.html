@@ -25,6 +25,7 @@
       <input type="text" name="additional_viewable_extensions"
              id="additional_viewable_extensions" placeholder=".ini, .foo, Makefile"
              {% if additional_viewable_extensions %} value="{{additional_viewable_extensions}}"{% endif %}/>
+        (comma-separated, no wildcards)
     {% else %}
       <span>{{additional_viewable_extensions}}</span>
     {% endif %}
