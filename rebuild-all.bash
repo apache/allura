@@ -17,6 +17,8 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+PIP=$(command -v uv >/dev/null 2>&1 && echo "uv pip" || echo "pip")
+
 APPS=(Allura* *Forge*)
 
 # the "${...-e}" magic is inspired by this stack exchange and turns a list into a oneline
@@ -25,10 +27,10 @@ APPS_WITH_DASH_E="${APPS[@]/#/-e ./}"
 
 # don't install ForgeSVN in a main command, since it often is not installable, and its optional
 APPS_DASHE_NO_SVN="${APPS_WITH_DASH_E//-e .\/ForgeSVN/}"  # string replacement
-uv pip install $APPS_DASHE_NO_SVN
+$PIP install $APPS_DASHE_NO_SVN
 main_ret=$?
 
-uv pip install -e ./ForgeSVN
+$PIP install -e ./ForgeSVN
 if [ "$?" -gt 0 ]; then
   echo -e "\nIt is okay that ForgeSVN failed.  It needs pysvn which can be difficult to install."
   echo "You can ignore this error.  If you do want SVN support, see install_each_step.rst notes about SVN."
