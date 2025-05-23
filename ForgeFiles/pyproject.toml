@@ -37,9 +37,6 @@ classifiers = [
 ]
 dependencies = []
 
-[tool.setuptools.packages.find]
-include = ["forgefiles"]
-
 [tool.setuptools.package-data]
 "*" = ["*"]
 

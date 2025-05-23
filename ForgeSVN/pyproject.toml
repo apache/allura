@@ -40,9 +40,6 @@ dependencies = [
     "pysvn",
 ]
 
-[tool.setuptools.packages.find]
-exclude = ["ez_setup", "examples", "tests"]
-
 [tool.setuptools.package-data]
 "*" = ["*"]
 
