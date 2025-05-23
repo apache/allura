@@ -27,13 +27,12 @@ readme = ""
 authors = [
     {name = "Allura Team"}
 ]
-license = {text = "Apache License, http://www.apache.org/licenses/LICENSE-2.0"}
+license = "Apache-2.0"
 keywords = ["allura", "forge"]
 classifiers = [
     "Environment :: Web Environment",
     "Intended Audience :: Developers",
     "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
-    "License :: OSI Approved :: Apache Software License"
 ]
 dependencies = [
     "allura"
