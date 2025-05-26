@@ -71,6 +71,8 @@ encoding = "utf-8"
 #    ]
 #}"""
 
+[tool.paster]
+paster-plugins = ['PasteScript', 'TurboGears2', 'Ming']
 
 [project.entry-points."paste.app_factory"]
 main = "allura.config.middleware:make_app"
