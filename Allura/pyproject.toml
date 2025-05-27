@@ -45,31 +45,6 @@ dependencies = []
     "public/*/*/*/*/*"
 ]
 
-# from https://github.com/python-babel/babel/issues/777
-[[tool.babel.mappings]]
-method = "jinja2"
-pattern = "templates/**.html"
-encoding = "utf-8"
-
-[[tool.babel.mappings]]
-method = "python"
-pattern = "**.py"
-encoding = "utf-8"
-
-[[tool.babel.mappings]]
-method = "ignore"
-pattern = "public/**"
-encoding = "utf-8"
-
-# maybe?
-#[tool.babel.extract_messages]
-#message_extractors = """{
-#"allura": [
-#    "**.py" = "python",
-#    "templates/**.html" = "jinja2",
-#    "public/**" =  "ignore",
-#    ]
-#}"""
 
 [tool.paster]
 paster-plugins = ['PasteScript', 'TurboGears2', 'Ming']
