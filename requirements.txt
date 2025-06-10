@@ -254,7 +254,7 @@ regex-as-re-globally==0.0.3
     # via -r requirements.in
 repoze-lru==0.7
     # via turbogears2
-requests==2.32.3
+requests==2.32.4
     # via
     #   -r requirements.in
     #   pysolr
