@@ -149,7 +149,10 @@ else:
 
         @classmethod
         def main(cls, **extra_kwargs):
-            return defopt.run(cls.execute, no_negated_flags=True, **extra_kwargs)
+            defopt_params = dict(
+                no_negated_flags=True,
+            ) | extra_kwargs
+            return defopt.run(cls.execute, **defopt_params)
 
         @classmethod
         def execute(cls, *args, **kwargs):
