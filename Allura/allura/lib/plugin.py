@@ -142,6 +142,7 @@ class AuthenticationProvider:
             return M.User.anonymous()
 
         if asbool(config.get('auth.reject_untracked_sessions', False)) and not user.validate_session(self.session.id):
+            # does this break login csrf?
             log.info(f'Session ID is not tracked: {self.session.id}')
             self.logout()
             return M.User.anonymous()
