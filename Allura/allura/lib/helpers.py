@@ -1134,7 +1134,7 @@ def urlopen(url: str | urllib.request.Request, retries=3, codes=(408, 500, 502, 
                     body = ''
                 log.exception(
                     'Failed after %s retries on url with a timeout of %s: %s: %s',
-                    attempts, timeout, url_string, body[:250])
+                    attempts, timeout, url_string, body[:500])
                 raise e
 
 
