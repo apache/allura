@@ -203,7 +203,7 @@ pyasyncore==1.0.4
     # via pyasynchat
 pycparser==2.22
     # via cffi
-pygments==2.19.1
+pygments==2.19.2
     # via -r requirements.in
 pymongo==4.13.2
     # via
