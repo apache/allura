@@ -110,7 +110,7 @@ httpcore==1.0.9
     # via httpx
 httpx==0.27.2
     # via pymongocrypt
-identify==2.6.10
+identify==2.6.12
     # via pre-commit
 idna==3.10
     # via
@@ -189,7 +189,7 @@ pastescript==3.7.0
     # via -r requirements.in
 pillow==11.3.0
     # via -r requirements.in
-platformdirs==4.3.7
+platformdirs==4.3.8
     # via virtualenv
 pluggy==1.6.0
     # via pytest
@@ -321,7 +321,7 @@ urllib3==2.5.0 ; python_full_version >= '3.10'
     # via
     #   botocore
     #   requests
-virtualenv==20.30.0
+virtualenv==20.31.2
     # via pre-commit
 waitress==3.0.2
     # via webtest
