@@ -205,7 +205,7 @@ pycparser==2.22
     # via cffi
 pygments==2.19.1
     # via -r requirements.in
-pymongo==4.12.1
+pymongo==4.13.2
     # via
     #   -r requirements.in
     #   activitystream
