@@ -139,7 +139,7 @@ legacy-cgi==2.6.2 ; python_full_version >= '3.13'
     #   webob
 lxml==6.0.0
     # via -r requirements.in
-markdown==3.8
+markdown==3.8.2
     # via
     #   -r requirements.in
     #   markdown-checklist
