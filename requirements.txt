@@ -78,7 +78,7 @@ exceptiongroup==1.2.2 ; python_full_version < '3.11'
     # via
     #   anyio
     #   pytest
-execnet==2.0.2
+execnet==2.1.1
     # via pytest-xdist
 faust-cchardet==2.1.19
     # via -r requirements.in
@@ -228,7 +228,7 @@ pytest==8.4.1
     #   pytest-xdist
 pytest-sugar==1.0.0
     # via -r requirements.in
-pytest-xdist==3.5.0
+pytest-xdist==3.8.0
     # via -r requirements.in
 python-dateutil==2.9.0.post0
     # via
