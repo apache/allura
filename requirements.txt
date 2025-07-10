@@ -6,7 +6,7 @@ aiosmtpd==1.4.6
     # via -r requirements.in
 anyio==4.6.0
     # via httpx
-atpublic==5.1
+atpublic==6.0.1
     # via aiosmtpd
 attrs==25.3.0
     # via aiosmtpd
