@@ -291,7 +291,7 @@ soupsieve==2.7
     # via beautifulsoup4
 sxsdiff==0.3.0
     # via -r requirements.in
-termcolor==3.0.1
+termcolor==3.1.0
     # via pytest-sugar
 testfixtures==8.3.0 ; python_full_version < '3.11'
     # via -r requirements.in
