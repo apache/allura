@@ -31,14 +31,16 @@
 {% macro show_perms_for_role(role) %}
   <ul class="permissions">
     {% for perm in permissions_by_role[role._id.__str__()] %}
-        {%  set display_perms = role.name not in ['*authenticated', '*anonymous'] %}
-        {% if display_perms and (private_projects or perm['name'] != 'read' or (perm['name'] == 'read' and perm['has'] == 'no')) %}
-            <li class="{{perm['has']}}" data-permission="{{perm['name']}}">
-              {{ g.icons['perm_has_%s'%perm['has']].render(title=perm['text'], closing_tag=False) }}
-                {{perm['name']}}
-              </a> {# close tag, opened by render #}
-            </li>
-        {% elif private_projects and not display_perms and perm['name'] == 'read' %}
+        {% if perm['name'] == 'read' %}
+            {# only controllable if private projects permitted, or if it was already false (so user can toggle it back to true) #}
+            {% set show_perm = private_projects or perm['has'] == 'no' %}
+        {% elif perm['name'] in ('admin', 'update', 'create') %}
+            {# not allowed for auth & anon, only the other normal groups  #}
+            {% set show_perm = role.name not in ['*authenticated', '*anonymous'] %}
+        {% else %}
+            {% set show_perm = True %}
+        {% endif %}
+        {% if show_perm %}
             <li class="{{perm['has']}}" data-permission="{{perm['name']}}">
               {{ g.icons['perm_has_%s'%perm['has']].render(title=perm['text'], closing_tag=False) }}
                 {{perm['name']}}
