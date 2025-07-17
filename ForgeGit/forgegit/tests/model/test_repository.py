@@ -774,7 +774,7 @@ By Dave Brondsema''' in text_body
         tmp_repo.git.checkout.assert_called_once_with('target-branch')
         assert (
             tmp_repo.git.config.call_args_list ==
-            [mock.call('user.name', b'Test Admin'),
+            [mock.call('user.name', 'Test Admin'),
              mock.call('user.email', 'allura@localhost')])
         msg = 'Merge downstream-repo-url branch source-branch into target-branch'
         msg += '\n\nhttp://localhost/merge-request/1/'
