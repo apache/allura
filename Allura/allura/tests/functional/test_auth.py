@@ -50,6 +50,15 @@ from allura.lib.multifactor import TotpService, RecoveryCodeService
 def unentity(s):
     return s.replace('&quot;', '"').replace('&#34;', '"')
 
+def login(app, username='test-user', pwd='foo', query_string=''):
+    extra = {'username': '*anonymous', 'REMOTE_ADDR': '127.0.0.1'}
+    r = app.get('/auth/' + query_string, extra_environ=extra)
+    f = r.forms[0]
+    encoded = app.antispam_field_names(f)
+    f[encoded['username']] = username
+    f[encoded['password']] = pwd
+    return f.submit(extra_environ={'username': '*anonymous'})
+
 
 class TestAuth(TestController):
     def test_login(self):
@@ -2687,16 +2696,6 @@ class TestDisableAccount(TestController):
 
 
 class TestPasswordExpire(TestController):
-    def login(self, username='test-user', pwd='foo', query_string=''):
-        extra = {'username': '*anonymous', 'REMOTE_ADDR': '127.0.0.1'}
-        r = self.app.get('/auth/' + query_string, extra_environ=extra)
-
-        f = r.forms[0]
-        encoded = self.app.antispam_field_names(f)
-        f[encoded['username']] = username
-        f[encoded['password']] = pwd
-        return f.submit(extra_environ={'username': '*anonymous'})
-
     def assert_redirects(self, where='/'):
         resp = self.app.get(where, extra_environ={'username': 'test-user'}, status=302)
         assert resp.location == 'http://localhost/auth/pwd_expired?' + urlencode({'return_to': where})
@@ -2705,7 +2704,7 @@ class TestPasswordExpire(TestController):
         self.app.get(where, extra_environ={'username': 'test-user'}, status=200)
 
     def test_disabled(self):
-        r = self.login()
+        r = login(self.app)
         assert not r.session.get('pwd-expired')
         self.assert_not_redirects()
 
@@ -2722,12 +2721,12 @@ class TestPasswordExpire(TestController):
         self.set_expire_for_user()
 
         with h.push_config(config, **{'auth.pwdexpire.days': 180}):
-            r = self.login()
+            r = login(self.app)
             assert not self.expired(r)
             self.assert_not_redirects()
 
         with h.push_config(config, **{'auth.pwdexpire.days': 90}):
-            r = self.login()
+            r = login(self.app)
             assert self.expired(r)
             self.assert_redirects()
 
@@ -2737,21 +2736,21 @@ class TestPasswordExpire(TestController):
         before = datetime.utcnow() - timedelta(days=180)
         before = calendar.timegm(before.timetuple())
         with h.push_config(config, **{'auth.pwdexpire.before': before}):
-            r = self.login()
+            r = login(self.app)
             assert not self.expired(r)
             self.assert_not_redirects()
 
         before = datetime.utcnow() - timedelta(days=90)
         before = calendar.timegm(before.timetuple())
         with h.push_config(config, **{'auth.pwdexpire.before': before}):
-            r = self.login()
+            r = login(self.app)
             assert self.expired(r)
             self.assert_redirects()
 
     def test_logout(self):
         self.set_expire_for_user()
         with h.push_config(config, **{'auth.pwdexpire.days': 90}):
-            r = self.login()
+            r = login(self.app)
             assert self.expired(r)
             self.assert_redirects()
             r = self.app.get('/auth/logout', extra_environ={'username': 'test-user'})
@@ -2761,7 +2760,7 @@ class TestPasswordExpire(TestController):
     def test_change_pwd(self):
         self.set_expire_for_user()
         with h.push_config(config, **{'auth.pwdexpire.days': 90}):
-            r = self.login()
+            r = login(self.app)
             assert self.expired(r)
             self.assert_redirects()
 
@@ -2781,20 +2780,20 @@ class TestPasswordExpire(TestController):
             assert user.password != old_password
 
             # Can log in with new password and change isn't required anymore
-            r = self.login(pwd='qwerty').follow()
+            r = login(self.app, pwd='qwerty').follow()
             assert r.location == 'http://localhost/dashboard'
             assert 'Invalid login' not in r
             assert not self.expired(r)
             self.assert_not_redirects()
 
             # and can't log in with old password
-            r = self.login(pwd='foo')
+            r = login(self.app, pwd='foo')
             assert 'Invalid login' in r
 
     def test_expired_pwd_change_invalidates_token(self):
         self.set_expire_for_user()
         with h.push_config(config, **{'auth.pwdexpire.days': 90}):
-            r = self.login()
+            r = login(self.app)
             assert self.expired(r)
             self.assert_redirects()
             user = M.User.by_username('test-user')
@@ -2842,7 +2841,7 @@ class TestPasswordExpire(TestController):
     def test_change_pwd_validation(self):
         self.set_expire_for_user()
         with h.push_config(config, **{'auth.pwdexpire.days': 90}):
-            r = self.login()
+            r = login(self.app)
             assert self.expired(r)
             self.assert_redirects()
 
@@ -2864,7 +2863,7 @@ class TestPasswordExpire(TestController):
         return_to = '/p/test/tickets/?milestone=1.0&page=2'
         self.set_expire_for_user()
         with h.push_config(config, **{'auth.pwdexpire.days': 90}):
-            r = self.login(query_string='?' + urlencode({'return_to': return_to}))
+            r = login(self.app, query_string='?' + urlencode({'return_to': return_to}))
             # don't go to the return_to yet
             assert r.location == 'http://localhost/auth/pwd_expired?' + urlencode({'return_to': return_to})
 
@@ -3463,19 +3462,9 @@ class TestEmailAuthCode(TestController):
 
 
 class TestTrackUserSessions(TestController):
-    def login(self, username='test-user', pwd='foo'):
-        self.app.get('/auth/preferences/')  # establish session_id cookie
-        r = self.app.get('/auth/')
-
-        f = r.forms[0]
-        encoded = self.app.antispam_field_names(f)
-        f[encoded['username']] = username
-        f[encoded['password']] = pwd
-        return f.submit()
-
     @mock.patch.dict(config, {'auth.reject_untracked_sessions': True})
     def test_validate_tracked_session(self):
-        r = self.login()
+        r = login(self.app)
         session_id = r.session.id
         user = M.User.by_username('test-user')
         session_ids = user.get_tool_data('web_session', 'ids')
@@ -3483,7 +3472,7 @@ class TestTrackUserSessions(TestController):
 
     @mock.patch.dict(config, {'auth.reject_untracked_sessions': True})
     def test_untrack_user_session(self):
-        r = self.login()
+        r = login(self.app)
         user = M.User.by_username('test-user')
         session_ids = user.get_tool_data('web_session', 'ids')
         assert len(session_ids) == 1
@@ -3496,7 +3485,7 @@ class TestTrackUserSessions(TestController):
 
     @mock.patch.dict(config, {'auth.reject_untracked_sessions': True})
     def test_navigation(self):
-        r = self.login()
+        r = login(self.app)
         r = self.app.get('/auth/preferences/', extra_environ={'username': 'test-user'})
         assert 'User Preferences for test-user' in r.text
 
@@ -3504,12 +3493,27 @@ class TestTrackUserSessions(TestController):
         user = M.User.by_username('test-user')
         user.set_tool_data('web_session', ids=[])
 
-        # Without session ids the user should be redirected to the login page
+        # Now that sessions for logged in users are tracked, navigating to a page without a session id should no longer
+        # redirect to the login page
         r = self.app.get('/auth/preferences/', extra_environ={'username': 'test-user'})
-        assert r.status_int == 302
-        r = r.follow()
-        assert 'Username:' in r.text
-        assert 'Password:' in r.text
+        assert r.status_code == 200
+        assert 'User Preferences for test-user' in r.text
+
+    @mock.patch.dict(config, {'auth.reject_untracked_sessions': True})
+    def test_navigation_with_invalid_session(self):
+        # Remove tracked session ids
+        user = M.User.by_username('test-user')
+        user.set_tool_data('web_session', ids=[])
+
+        r = login(self.app)
+
+        # Set a random session id to simulate an invalid session
+        self.app.reset()
+        self.app.set_cookie('beaker.session.id', 'invalid-session-id')
+
+        # Navigating to a page with an invalid session id should redirect to the login page
+        r = self.app.get('/auth/preferences/', extra_environ={'username': 'test-user', 'disable_auth_magic': 'True'}, status=302)
+        assert '/auth/?return_to=%2Fauth%2Fpreferences%2F' in r.location
 
     @mock.patch.dict(config, {'auth.reject_untracked_sessions': True})
     def test_sessions_max_limit(self):
@@ -3517,7 +3521,7 @@ class TestTrackUserSessions(TestController):
         mock_session_ids = list(range(99, -1, -1))
         user.set_tool_data('web_session', ids=mock_session_ids)
 
-        r = self.login()
+        r = login(self.app)
         session_id = r.session.id
         user = M.User.by_username('test-user')
         session_ids = user.get_tool_data('web_session', 'ids')
@@ -3526,3 +3530,21 @@ class TestTrackUserSessions(TestController):
         assert len(session_ids) == 100
         assert session_ids[0] == session_id
         assert session_ids[-1] == 1
+
+    @mock.patch.dict(config, {'auth.reject_untracked_sessions': True})
+    def test_track_session_already_logged_in(self):
+        r = login(self.app)
+        session_id = r.session.id
+        user = M.User.by_username('test-user')
+        session_ids = user.get_tool_data('web_session', 'ids')
+        assert session_id in session_ids
+
+        # Delete the tracked web session to simulate an already logged-in user at the time the feature is enabled
+        user.set_tool_data('web_session', ids=[])
+
+        # Navigate to a page, a web session id should be created and tracked
+        r = self.app.get('/auth/preferences/', extra_environ={'username': 'test-user'})
+
+        user = M.User.by_username('test-user')
+        session_ids = user.get_tool_data('web_session', 'ids')
+        assert len(session_ids) == 1

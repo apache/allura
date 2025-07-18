@@ -141,12 +141,6 @@ class AuthenticationProvider:
             self.logout()
             return M.User.anonymous()
 
-        if asbool(config.get('auth.reject_untracked_sessions', False)) and not user.validate_session(self.session.id):
-            # does this break login csrf?
-            log.info(f'Session ID is not tracked: {self.session.id}')
-            self.logout()
-            return M.User.anonymous()
-
         session_create_date = datetime.utcfromtimestamp(self.session.created)
         if user.is_anonymous():
             sessions_need_reauth = False
@@ -163,6 +157,17 @@ class AuthenticationProvider:
 
         if self.session.get('pwd-expired') and request.path not in self.pwd_expired_allowed_urls:
             redirect(h.url_return_to(self.pwd_expired_allowed_urls[0], self.request))
+
+        # track session for already logged-in users to prevent them from being logged out
+        if user and not user.is_anonymous() and not user.has_active_sessions():
+            user.track_session(self.session.id)
+
+        if asbool(config.get('auth.reject_untracked_sessions', False)) and not user.validate_session(self.session.id):
+            # calling self.logout() would break csrf so we just need to invalidate the session?
+            log.info(f'Session ID is not tracked: {self.session.id}')
+            self.session.invalidate()
+            self.session.save()
+            return M.User.anonymous()
 
         return user
 

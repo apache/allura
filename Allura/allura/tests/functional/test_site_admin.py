@@ -167,7 +167,7 @@ class TestSiteAdmin(TestController):
             user='root',
             path='/p/test/admin',
         ), status=302)
-        task = next(M.MonQTask.query.find({}).sort('_id', -1))
+        task = next(M.MonQTask.query.find({}).sort('_id', 1))
         assert str(task._id) in r.location
         assert task.context['project_id'] == project._id
         assert task.context['app_config_id'] == app.config._id

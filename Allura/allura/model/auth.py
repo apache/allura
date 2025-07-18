@@ -405,7 +405,11 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         return session_id in session_ids
 
     def has_active_sessions(self):
-        return len(self.get_tool_data('web_session', 'ids', [])) > 0
+        """
+        Check if the user has any tracked sessions.
+        """
+        session_ids = self.get_tool_data('web_session', 'ids', [])
+        return bool(session_ids)
 
     def add_login_detail(self, detail):
         try:
