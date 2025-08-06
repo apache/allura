@@ -100,6 +100,13 @@ class AuthenticationProvider:
     cfg_prefix_pwds = 'auth.password.'
     default_pwd_algo = 'scrypt'  # noqa: S105
 
+    # for dev only.  these are some of the bootstrap.py users
+    auth_code_bypass_users = [
+        'root',
+        'admin1',
+        'test-user',
+    ]
+
     def __init__(self, request):
         self.request = request
 
@@ -555,6 +562,11 @@ class AuthenticationProvider:
     def trusted_login_source(self, user, login_details) -> str | False:
         # TODO: could also factor in User-Agent but hard to know what parts of the UA are meaningful to check here
         from allura import model as M
+
+        if asbool(config['debug']) and (not user.has_active_sessions() or user.username in self.auth_code_bypass_users):
+            # make it easier for dev: if never logged-in, or certain test users, allow.
+            return 'dev access'
+
         for prev_login in M.UserLoginDetails.query.find({'user_id': user._id}):
             if prev_login['ip'] == login_details['ip']:
                 return 'exact ip'
