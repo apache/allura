@@ -1,3 +1,108 @@
+Version 1.18.0  (August 2025)
+
+Upgrade Instructions
+
+  Run: `paster ensure_index development.ini` in Allura dir
+
+  Install updated dependencies by running:
+    pip install -r requirements.txt --no-deps --upgrade --upgrade-strategy=only-if-needed
+
+  If using docker, rebuild the allura image and restart containers.
+
+  To upgrade to stronger password hashing, see auth.password.algorithm and .old in development.ini.
+
+  To require logins from new locations with MFA to verify a code by email, set in your .ini file:
+    auth.email_auth_code.enabled = true
+
+  To enforce stricter login session handling, set in your .ini file:
+    auth.reject_untracked_sessions = true
+
+Breaking Changes
+ * Python 3.8 is no longer supported (3.9 through 3.11 are supported)
+
+Security Improvements
+ * [#8566] support newer pwd hashs, remove deprecated 'crypt' AUTH PLUGIN CHANGES
+ * [#8568] support basic auth to solr
+ * [#8572] add more password change settings
+ * Use email authentication code for foreign logins without MFA
+ * Track session ids on user records
+ * Python Package Upgrades
+ * [#8576] upgrade JS libraries a bit
+ * support CSP fenced-frame-src config
+
+Admin & Accounts
+ * [#8577] Allow notes on new projects section
+ * [#8573] Prevent bad permissions setup
+ * fix permissions options to show anonymous/read for private projects
+ * be more forgiving if a multifactor session gets disrupted due to being actually logged in already
+ * [#8579] Set Clear-Site-Data response header upon logout
+ * avoid error in audit-logging if a tool is missing an option field
+ * if you end up on /auth/ or /auth/multifactor already fully logged in, skip that form
+ * incomplete multifactor auth redirs back to form, instead of messing with session (problematic if you have any background requests like images, ajax etc)
+ * task view improvements: show project neighborhood, remove ming I prefixes on args/kwargs
+ * enforce new passwords (not current one again) on pwd reset links
+ * for users its better to link to the Activity rss/atom feed instead of user-project FeedItem feed
+ * rename 'Twitter Handle' -> 'X Handle' on admin metadata page
+ * skip per-user and per-nbhd limit checks when creating a user project
+ * make scripts/add_user_to_group.py work without a --replaces-users value
+
+Code Repositories
+ * remove encoding that turns author string into utf-8 bytes
+ * small hint on repo viewable extensions format
+
+Wikis
+ * fix for wiki pages that don't have any history
+
+Discussion Forums
+ * fix bugs on the discussion moderation form
+
+General
+ * increase akismet default timeout
+ * don't send bytes to akismet, that causes b' prefix to be sent
+
+Solr
+ * add storeOffsetsWithPositions in case "unified" highligher is used in future, it gives better performance
+ * be explicit about docValues for faceting used on tickets
+ * enable autoSoftCommit in config, since commitWithin from code doesn't seem to be working
+ * clean up unused solr fields
+ * set solr.use_new_types=true for tests
+
+For Developers
+ * Convert REST API docs to OpenAPI
+ * [#8574] Update smtpd and asynchat
+ * [#8580] Update method for the installation of packages in editable mode
+ * Update copyright year
+ * for ease of development, make trusted_login_source allow some usernames
+ * update ruff version and ruff rules
+ * include more response text in urlopen error logging
+ * small tweak to allow 'no_negated_flags=False' to defoptscript
+ * Change _session_id cookie to _csrf_token
+ * support configs for COOP/CORP/COEP headers
+ * ensure_index: make deduping work on nested fields like "foo.bar.baz"
+ * ensure_index: deduping on a sparse index only needs to look at records where the field exists
+ * ensure_index: require explicit --delete-duplicate-key-records to delete records
+ * Use "uv" to generate a universal req.txt for 3.9+
+ * speedup functional tests by caching jinja bytecode across tests
+ * update tg_context_patch for python 3.12
+ * create return_to redirect helper
+ * also detect 'fetch()' requests as ajax
+ * fix and simplify beautifulsoup selector
+ * pep8 reformatting
+ * clean up unused imports, mark helpers.py lines that we need to keep
+ * __all__ for model/__init__.py files
+ * Convert unittest assertions -> pytest
+ * test speedup: always use lxml (if html5lib is selected, some tests fail)
+ * test speedup: smarter bs4 parser selection
+ * test speedup: response.html faster parser
+ * run: find Allura* Forge* fuse/ scripts/ -name '*.py' | xargs pyupgrade --py39-plus --keep-mock && git co scripts/ApacheAccessHandler.py
+ * fix attribute errors in @LazyProperty methods
+ * change httpbin service used in a few tests
+ * remove some unneeded warnings filtering
+ * support per-page csp_frame_domains modifier
+ * running with threads is good, for our prod example
+ * publicize security fix in changelog
+
+
 Version 1.17.1  (June 2024)
 
 Upgrade Instructions
