@@ -114,7 +114,7 @@ The KEYS file can be found at:
   https://www.apache.org/dist/allura/KEYS
 
 The release has been signed with key $KEY:
-  http://pgp.mit.edu:11371/pks/lookup?op=vindex&search=0x$KEY
+  https://keys.openpgp.org/search?q=$KEY
 
 Source corresponding to this release can be found at:
   Commit: $COMMIT_SHA
