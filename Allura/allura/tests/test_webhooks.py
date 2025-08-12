@@ -163,10 +163,10 @@ class TestWebhookController(TestController):
     def find_error(self, r, field, msg, form_type='create'):
         form = r.html.find('form', attrs={'action': form_type})
         if field == '_the_form':
-            error = form.findPrevious('div', attrs={'class': 'error'})
+            error = form.find_previous('div', attrs={'class': 'error'})
         else:
             error = form.find('input', attrs={'name': field})
-            error = error.findNext('div', attrs={'class': 'error'})
+            error = error.find_next('div', attrs={'class': 'error'})
         if error:
             assert msg in error.getText()
         else:
