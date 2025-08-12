@@ -26,7 +26,6 @@ import subprocess
 import json
 import re
 import importlib.resources
-import importlib.metadata
 
 import webtest
 from webtest import TestApp, TestResponse
@@ -183,8 +182,7 @@ def validate_js(html_or_response, within_html=False):
     else:
         text = html_or_response
     fname = dump_to_file('eslint-', text, suffix='.html' if within_html else '.js')
-    distribution = importlib.metadata.distribution('allura')
-    eslintrc = os.path.join(distribution.files[0], '../.eslintrc-es5')
+    eslintrc = importlib.resources.files('allura') / '../../.eslintrc-es5'
     cmd = ['npm', 'run', 'eslint', '--',
            '-c', eslintrc,  # since we're in a tmp dir
            '--no-ignore',  # tmp dirs ignored by default

@@ -23,7 +23,7 @@ from collections import defaultdict
 from xml.etree import ElementTree as ET
 from copy import copy
 
-import importlib_resources
+import importlib.resources
 from markupsafe import Markup
 from tg import expose, redirect, flash, validate
 from tg.decorators import without_trailing_slash
@@ -474,7 +474,8 @@ class Application(ActivityObject):
 
         """
         for klass in [o for o in cls.__mro__ if issubclass(o, Application)]:
-            if importlib_resources.files(klass.__module__).joinpath(resource_path).exists():
+            package = klass.__module__.split(".")[0]
+            if importlib.resources.files(package).joinpath(resource_path).exists():
                 return klass
 
     def has_access(self, user, topic):

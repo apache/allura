@@ -588,22 +588,22 @@ class TestIterEntryPoints:
         m.load.return_value = cls
         return m
 
-    @patch('allura.lib.helpers.pkg_resources')
+    @patch('allura.lib.helpers.importlib.metadata')
     @patch.dict(h.tg.config, {'disable_entry_points.allura': 'myapp'})
-    def test_disabled(self, pkg_resources):
-        pkg_resources.iter_entry_points.return_value = [
+    def test_disabled(self, importlib_metadata):
+        importlib_metadata.entry_points.return_value = [
             self._make_ep('myapp', object)]
         assert [] == list(h.iter_entry_points('allura'))
 
-    @patch('allura.lib.helpers.pkg_resources')
-    def test_subclassed_ep(self, pkg_resources):
+    @patch('allura.lib.helpers.importlib.metadata')
+    def test_subclassed_ep(self, importlib_metadata):
         class App:
             pass
 
         class BetterApp(App):
             pass
 
-        pkg_resources.iter_entry_points.return_value = [
+        importlib_metadata.entry_points.return_value = [
             self._make_ep('myapp', App),
             self._make_ep('myapp', BetterApp)]
 
@@ -611,8 +611,8 @@ class TestIterEntryPoints:
         assert len(eps) == 1
         assert BetterApp == eps[0].load()
 
-    @patch('allura.lib.helpers.pkg_resources')
-    def test_ambiguous_eps(self, pkg_resources):
+    @patch('allura.lib.helpers.importlib.metadata')
+    def test_ambiguous_eps(self, importlib_metadata):
         class App:
             pass
 
@@ -622,7 +622,7 @@ class TestIterEntryPoints:
         class BestApp:
             pass
 
-        pkg_resources.iter_entry_points.return_value = [
+        importlib_metadata.entry_points.return_value = [
             self._make_ep('myapp', App),
             self._make_ep('myapp', BetterApp),
             self._make_ep('myapp', BestApp)]

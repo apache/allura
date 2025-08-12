@@ -31,6 +31,7 @@ import json
 import logging
 import string
 import random
+from collections.abc import Iterable
 from hashlib import sha1
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -39,12 +40,13 @@ import socket
 from io import BytesIO
 import html
 import http.client
+import importlib.resources
+import importlib.metadata
 
 import emoji
 import tg
 import six
 import cchardet as chardet
-import pkg_resources
 import webob
 from formencode.validators import FancyValidator
 from dateutil.parser import parse
@@ -988,7 +990,7 @@ def ming_config_from_ini(ini_path):
     :param ini_path: Path to ini file containing the ming configuration
 
     """
-    root = pkg_resources.get_distribution('allura').location
+    root = os.path.dirname(importlib.resources.files('allura'))
     conf = appconfig('config:%s' % os.path.join(root, ini_path))
     with ming_config(**conf):
         yield
@@ -1165,7 +1167,7 @@ def plain2markdown(txt, preserve_multiple_spaces=False, has_html_entities=False)
 OrderedDefaultDict = defaultdict  # py3.7+ dicts are always ordered
 
 
-def iter_entry_points(group, *a, **kw):
+def iter_entry_points(group, name=None) -> Iterable[importlib.metadata.EntryPoint]:
     """Yields entry points that have not been disabled in the config.
 
     If ``group`` is "allura" (Allura tool entry points) or one of subgroups
@@ -1179,13 +1181,16 @@ def iter_entry_points(group, *a, **kw):
     to subclass another tool while reusing the original entry point name.
 
     """
-    def active_eps():
+    def active_eps() -> list[importlib.metadata.EntryPoint]:
         disabled = aslist(
             tg.config.get('disable_entry_points.' + group), sep=',')
-        return [ep for ep in pkg_resources.iter_entry_points(group, *a, **kw)
+        ep_select = {'group': group}
+        if name is not None:
+            ep_select['name'] = name
+        return [ep for ep in importlib.metadata.entry_points(**ep_select)
                 if ep.name not in disabled]
 
-    def unique_eps(entry_points):
+    def unique_eps(entry_points: Iterable[importlib.metadata.EntryPoint]) -> Iterable[importlib.metadata.EntryPoint]:
         by_name = OrderedDefaultDict(list)
         for ep in entry_points:
             by_name[ep.name].append(ep)
@@ -1196,7 +1201,7 @@ def iter_entry_points(group, *a, **kw):
             else:
                 yield subclass(eps)
 
-    def subclass(entry_points):
+    def subclass(entry_points: Iterable[importlib.metadata.EntryPoint]) -> importlib.metadata.EntryPoint:
         loaded = {ep: ep.load() for ep in entry_points}
         for ep, cls in loaded.items():
             others = list(loaded.values())[:]

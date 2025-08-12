@@ -38,9 +38,10 @@ def register_ew_resources(manager):
             resource_path = os.path.join('nf', ep.name.lower())
             resource_cls = app.has_resource(resource_path)
             if resource_cls:
+                package = resource_cls.__module__.split(".")[0]
                 manager.register_directory(
                     'tool/%s' % ep.name.lower(),
-                    importlib.resources.files(__package__).joinpath(resource_path))
+                    importlib.resources.files(package).joinpath(resource_path))
         except ImportError:
             log.warning('Cannot import entry point %s', ep)
             raise

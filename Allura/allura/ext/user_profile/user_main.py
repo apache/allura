@@ -17,7 +17,7 @@
 
 import logging
 
-import pkg_resources
+import importlib.resources
 from datetime import datetime
 
 import six
@@ -67,8 +67,7 @@ class UserProfileApp(Application):
     def __init__(self, user, config):
         Application.__init__(self, user, config)
         self.root = UserProfileController()
-        self.templates = pkg_resources.resource_filename(
-            'allura.ext.user_profile', 'templates')
+        self.templates = str(importlib.resources.files('allura.ext.user_profile') / 'templates')
         self.api_root = UserProfileRestController()
 
     @property

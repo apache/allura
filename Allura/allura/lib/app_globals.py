@@ -25,9 +25,9 @@ from subprocess import Popen, PIPE
 import os
 import time
 import traceback
+import importlib.resources
 
 import activitystream
-import pkg_resources
 import markdown
 import pygments
 import pygments.lexers
@@ -194,8 +194,7 @@ class Globals:
         self.__dict__ = self.__shared_state
         if self.__shared_state:
             return
-        self.allura_templates = pkg_resources.resource_filename(
-            'allura', 'templates')
+        self.allura_templates = str(importlib.resources.files('allura') / 'templates')
         # Setup SOLR
         self.solr_server = aslist(config.get('solr.server'), ',')
         # skip empty strings in case of extra commas

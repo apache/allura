@@ -17,6 +17,7 @@
 
 
 from collections import OrderedDict
+from pathlib import PurePath
 
 import jinja2
 import mock
@@ -28,35 +29,35 @@ from allura.lib.package_path_loader import PackagePathLoader
 
 class TestPackagePathLoader:
 
-    @mock.patch('pkg_resources.resource_filename')
-    @mock.patch('pkg_resources.iter_entry_points')
-    def test_load_paths(self, iter_entry_points, resource_filename):
+    @mock.patch('importlib.resources.files')
+    @mock.patch('importlib.metadata.entry_points')
+    def test_load_paths(self, iter_entry_points, resources_files):
         eps = iter_entry_points.return_value.__iter__.return_value = [
-            mock.Mock(ep_name='ep0', module_name='eps.ep0'),
-            mock.Mock(ep_name='ep1', module_name='eps.ep1'),
-            mock.Mock(ep_name='ep2', module_name='eps.ep2'),
+            mock.Mock(ep_name='ep0', module='eps.ep0'),
+            mock.Mock(ep_name='ep1', module='eps.sub.deeper.ep1'),
+            mock.Mock(ep_name='ep2', module='othereps.ep2'),
         ]
         for ep in eps:
             ep.name = ep.ep_name
-        resource_filename.side_effect = lambda m, r: 'path:' + m
+        resources_files.side_effect = lambda p: PurePath('/fakepath/' + p)
 
         paths = PackagePathLoader()._load_paths()
 
         assert paths == [
             ['site-theme', None],
-            ['ep0', 'path:eps.ep0'],
-            ['ep1', 'path:eps.ep1'],
-            ['ep2', 'path:eps.ep2'],
+            ['ep0', '/fakepath/eps'],
+            ['ep1', '/fakepath/eps/sub/deeper'],
+            ['ep2', '/fakepath/othereps'],
             ['allura', '/'],
         ]
         assert isinstance(paths[0], list)
-        assert resource_filename.call_args_list == [
-            mock.call('eps.ep0', ''),
-            mock.call('eps.ep1', ''),
-            mock.call('eps.ep2', ''),
+        assert resources_files.call_args_list == [
+            mock.call('eps'),
+            mock.call('eps'),
+            mock.call('othereps'),
         ]
 
-    @mock.patch('pkg_resources.iter_entry_points')
+    @mock.patch('importlib.metadata.entry_points')
     def test_load_rules(self, iter_entry_points):
         eps = iter_entry_points.return_value.__iter__.return_value = [
             mock.Mock(ep_name='ep0', rules=[('>', 'allura')]),
@@ -187,17 +188,16 @@ class TestPackagePathLoader:
         fs_loader().get_source.side_effect = [
             jinja2.TemplateNotFound('test'), 'fs_load']
 
-        with mock.patch('pkg_resources.resource_filename') as rf:
-            rf.return_value = 'resource'
+        with mock.patch('importlib.resources.files') as rf:
+            rf.return_value = PurePath('resource')
             # no override, ':' in template
             output = ppl.get_source(
                 'env', 'allura.ext.admin:templates/audit.html')
-            rf.assert_called_once_with(
-                'allura.ext.admin', 'templates/audit.html')
+            rf.assert_called_once_with('allura.ext.admin')
 
         assert output == 'fs_load'
         assert fs_loader().get_source.call_count == 2
-        fs_loader().get_source.assert_called_with('env', 'resource')
+        fs_loader().get_source.assert_called_with('env', 'resource/templates/audit.html')
 
         fs_loader().get_source.reset_mock()
         fs_loader().get_source.side_effect = [

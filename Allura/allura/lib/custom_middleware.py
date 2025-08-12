@@ -20,7 +20,6 @@ import re
 import logging
 
 import tg
-import pkg_resources
 import importlib.resources
 from paste import fileapp
 from paste.deploy.converters import aslist, asbool
@@ -79,7 +78,8 @@ class StaticFilesMiddleware:
                 resource_path = os.path.join('nf', ep.name.lower(), filename)
                 resource_cls = ep.load().has_resource(resource_path)
                 if resource_cls:
-                    file_path = pkg_resources.resource_filename(resource_cls.__module__, resource_path)
+                    package = resource_cls.__module__.split(".")[0]
+                    file_path = str(importlib.resources.files(package) / resource_path)
                     return fileapp.FileApp(file_path, [('Access-Control-Allow-Origin', '*')])
         filename = environ['PATH_INFO'][len(self.script_name):]
         file_path = str(importlib.resources.files('allura')) + '/public/nf/' + filename
@@ -390,7 +390,7 @@ class AlluraTimerMiddleware(TimerMiddleware):
     def entry_point_timers(cls, module_prefix=None):
         timers = []
         for ep in h.iter_entry_points('allura.timers'):
-            if not module_prefix or ep.module_name.startswith(module_prefix):
+            if not module_prefix or ep.module.startswith(module_prefix):
                 func = ep.load()
                 timers += aslist(func())
         return timers

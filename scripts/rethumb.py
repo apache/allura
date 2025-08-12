@@ -118,7 +118,7 @@ class RethumbCommand(base.Command):
                 # Otherwise, we'll take attachment classes belonging to app's
                 # package
                 ep = next(iter_entry_points('allura', app.tool_name))
-                app_package = ep.module_name.split('.', 1)[0]
+                app_package = ep.module.split('.', 1)[0]
                 if app_package == 'allura':
                     # Apps in allura known to not define own attachment types
                     continue
