@@ -200,7 +200,7 @@ class TracExport:
         attach = soup.find('div', id='attachments')
         list = []
         while attach:
-            attach = attach.findNext('dt')
+            attach = attach.find_next('dt')
             if not attach:
                 break
             d = {}
