@@ -122,7 +122,6 @@ The positioners are:
 **TODO:** Support multiple partial themes
 
 """
-import pkg_resources
 import importlib.resources
 import os
 
@@ -165,7 +164,10 @@ class PackagePathLoader(jinja2.BaseLoader):
         """
         paths = self.default_paths[:]  # copy default_paths
         paths[-1:0] = [  # insert all eps just before last item, by default
-            [ep.name, pkg_resources.resource_filename(ep.module_name, "")]
+            [ep.name, str(
+                importlib.resources.files(ep.module.split(".")[0])  # first part gives a pkg, for importlib
+                / '/'.join(ep.module.split(".")[1:-1])  # append the rest (except last part) to match pkg_resources previous behavior.  A bit weird.
+            )]
             for ep in iter_entry_points(self.override_entrypoint)
         ]
         return paths
@@ -279,7 +281,7 @@ class PackagePathLoader(jinja2.BaseLoader):
 
         if ':' in template:
             package, path = template.split(':', 2)
-            filename = pkg_resources.resource_filename(package, path)
+            filename = str(importlib.resources.files(package) / path)
             return self.fs_loader.get_source(environment, filename)
         else:
             return self.fs_loader.get_source(environment, template)

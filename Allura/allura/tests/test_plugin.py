@@ -25,6 +25,8 @@ from tg import tmpl_context as c
 from tg import config
 from webob import Request, exc
 from bson import ObjectId
+
+from allura.app import Application
 from ming.odm.odmsession import ThreadLocalODMSession
 from mock import Mock, MagicMock, patch
 import pytest
@@ -37,13 +39,17 @@ from allura.lib.plugin import ProjectRegistrationProvider, AuthenticationProvide
 from allura.lib.plugin import ThemeProvider
 from allura.lib.exceptions import ProjectConflict, ProjectShortnameInvalid
 from allura.tests.decorators import audits
-from allura.tests.exclude_from_rewrite_hook import ThemeProviderTestApp
 from alluratest.controller import setup_basic_test, setup_global_objects
 
 
 def setup_module(module):
     setup_basic_test()
 
+
+class ThemeProviderTestApp(Application):
+    icons = {
+        24: 'images/testapp_24.png',
+    }
 
 class TestProjectRegistrationProvider:
 

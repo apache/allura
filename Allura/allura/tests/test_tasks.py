@@ -23,7 +23,7 @@ from textwrap import dedent
 import six
 from base64 import b64encode
 import logging
-import pkg_resources
+import importlib.resources
 
 import tg
 import mock
@@ -131,7 +131,7 @@ class TestEventTasks:
     def test_post_event_from_within_task(self):
         # instead of M.MonQTask.run_ready() run real 'taskd' so we get all the setup we need
         taskd = TaskdCommand('taskd')
-        taskd.parse_args([pkg_resources.resource_filename('allura', '../test.ini')])
+        taskd.parse_args([str(importlib.resources.files('allura') / '../test.ini')])
         taskd.keep_running = True
         taskd.restart_when_done = False
         _task_that_creates_event.post('my_event4')
