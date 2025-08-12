@@ -1318,7 +1318,7 @@ class TestFunctionalController(TrackerTestController):
         assert error_message
         assert (error_message.string == 'You must provide a Title' or
                 error_message.string == 'Missing value')
-        assert error_message.findPreviousSibling('input').get('name') == 'ticket_form.summary'
+        assert error_message.find_previous_sibling('input').get('name') == 'ticket_form.summary'
         # set a summary, submit, and check for success
         form['ticket_form.summary'] = summary
         success = form.submit().follow().html
@@ -1340,7 +1340,7 @@ class TestFunctionalController(TrackerTestController):
         error_message = error_form.html.find('div', {'class': 'error'})
         assert error_message
         assert error_message.string == 'You must provide a Title'
-        assert error_message.findPreviousSibling('input').get('name') == 'ticket_form.summary'
+        assert error_message.find_previous_sibling('input').get('name') == 'ticket_form.summary'
         # set a summary, submit, and check for success
         form = self._find_update_ticket_form(error_form)
         form['ticket_form.summary'] = new_summary
@@ -2900,7 +2900,7 @@ class TestCustomUserField(TrackerTestController):
         select = ticket_view.html.find('select',
                                        dict(name='ticket_form.custom_fields._code_review'))
         selected = None
-        for option in select.findChildren():
+        for option in select.find_all():
             if option.has_attr('selected'):
                 selected = option
         assert selected is None
@@ -2915,7 +2915,7 @@ class TestCustomUserField(TrackerTestController):
         select = ticket_view.html.find('select',
                                        dict(name='ticket_form.custom_fields._code_review'))
         selected = None
-        for option in select.findChildren():
+        for option in select.find_all():
             if option.has_attr('selected'):
                 selected = option
         assert selected['value'] == 'test-admin'
