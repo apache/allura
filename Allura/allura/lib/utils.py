@@ -555,7 +555,8 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
 
         # srcset is used in our own project_list/project_summary widgets
         # which are used as macros so go through markdown
-        self.allowed_attributes = html5lib.filters.sanitizer.allowed_attributes | {(None, 'srcset')}
+        excluded_attributes = {(None, 'class'), (None, 'id')}
+        self.allowed_attributes = (html5lib.filters.sanitizer.allowed_attributes | {(None, 'srcset')}) - excluded_attributes
 
         self.valid_iframe_srcs = ('https://www.youtube.com/embed/',
                                   'https://www.youtube-nocookie.com/embed/',
