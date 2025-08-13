@@ -28,7 +28,7 @@ from alluratest.tools import module_not_available
 from forgeimporters.github.wiki import GitHubWikiImporter
 from forgeimporters.github.utils import GitHubMarkdownConverter
 from forgeimporters.github import GitHubOAuthMixin
-
+from alluratest.controller import setup_basic_test
 
 # important to be distinct from 'test' which ForgeWiki uses, so that the
 # tests can run in parallel and not clobber each other

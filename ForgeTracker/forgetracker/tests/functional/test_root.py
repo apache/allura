@@ -803,7 +803,7 @@ class TestFunctionalController(TrackerTestController):
 
         # Make sure the cache has been saved.
         t = tm.Ticket.query.find({'_id': ticket._id}).first()
-        assert '<h1 id="test-markdown-cached_convert">Test markdown cached_convert</h1>' in t.description_cache.html
+        assert '<h1 id="h-test-markdown-cached_convert">Test markdown cached_convert</h1>' in t.description_cache.html
 
     def test_ticket_diffs(self):
         self.new_ticket(summary='difftest', description='1\n2\n3\n')

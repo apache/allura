@@ -33,6 +33,7 @@ import pygments
 import pygments.lexers
 import pygments.formatters
 import pygments.util
+from markdown.extensions import toc
 from tg import config
 from tg import request
 from tg import tmpl_context as c
@@ -80,6 +81,10 @@ class ForgeMarkdown:
         # but ForgeExtension and the classes it makes often save things on `self` which might not be thread safe
         # when multiple threads are using the same instance
         # TestCachedMarkdown re-uses the same instance previously, and had a bug that AddCustomClass wasn't running
+
+        def toc_slugify_with_prefix(value, separator):
+            return 'h-' + toc.slugify(value, separator)
+
         return markdown.Markdown(
             extensions=['markdown.extensions.fenced_code', 'markdown.extensions.codehilite',
                         'markdown.extensions.abbr', 'markdown.extensions.def_list', 'markdown.extensions.footnotes',
@@ -87,7 +92,9 @@ class ForgeMarkdown:
                         ForgeExtension(**forge_ext_kwargs),
                         EmojiExtension(),
                         UserMentionExtension(),
-                        'markdown.extensions.tables', 'markdown.extensions.toc', 'markdown.extensions.nl2br',
+                        'markdown.extensions.tables',
+                        toc.TocExtension(slugify=toc_slugify_with_prefix),
+                        'markdown.extensions.nl2br',
                         'markdown_checklist.extension'],
             output_format='html')
 
@@ -126,7 +133,7 @@ class ForgeMarkdown:
                 field_name, artifact.__class__.__name__)
             return self.convert(source_text)
 
-        bugfix_rev = 4  # increment this if we need all caches to invalidated (e.g. xss in markdown rendering fixed)
+        bugfix_rev = 5  # increment this if we need all caches to invalidated (e.g. xss in markdown rendering fixed)
         md5 = None
         # If a cached version exists and it is valid, return it.
         if cache.md5 is not None:

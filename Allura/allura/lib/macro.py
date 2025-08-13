@@ -288,7 +288,7 @@ def get_projects_for_macro(
             for p in M.Project.query.find(q):
                 if h.has_access(p, 'read'):
                     total = total + 1
-        response = '<p class="macro_projects_total">%s Projects</p>%s' % \
+        response = '<p>%s Projects</p>%s' % \
             (total, response)
     return response
 

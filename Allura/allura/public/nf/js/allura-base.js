@@ -239,6 +239,18 @@ $(function(){
 
         e.preventDefault();
     });
+    // backwards compatibility for old anchors.  If there's an intended target, but not an active one, try again with TOC prefix
+    if (window.location.hash && !document.querySelector(':target')) {
+        var new_hash = window.location.hash.replace('#', '#h-');
+        if (document.querySelector(new_hash)) {
+            window.location.hash = new_hash;
+        } else {
+            new_hash = window.location.hash.replace('#', '#user-content-');
+            if (document.querySelector(new_hash)) {
+                window.location.hash = new_hash;
+            }
+        }
+    }
 });
 
 // Interactive checkboxes

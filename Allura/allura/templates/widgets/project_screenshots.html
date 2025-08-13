@@ -23,9 +23,9 @@
 {% endif %}
 <div class="{% if draggable %}sortable{% endif %}">
   {% for ss in screenshots %}
-  <div data-ss-id="{{ ss._id }}" class="screenshot">
-    <div class="image">
-      <a class="lightbox" href="{{project.url()}}screenshot/{{h.urlquote(ss.filename)}}" ><img src="{{project.url()}}screenshot/{{h.urlquote(ss.filename)}}/thumb" alt="Screenshot thumbnail"/></a>
+  <div data-ss-id="{{ ss._id }}" {% if edit %}class="screenshot"{% endif %}>
+    <div {% if edit %}class="image"{% endif %}>
+      <a {% if edit %}class="lightbox"{% endif %} href="{{project.url()}}screenshot/{{h.urlquote(ss.filename)}}" ><img src="{{project.url()}}screenshot/{{h.urlquote(ss.filename)}}/thumb" alt="Screenshot thumbnail"/></a>
       {% if not edit %}
       <br>
       {{ss.caption}}

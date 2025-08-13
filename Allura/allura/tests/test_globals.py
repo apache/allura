@@ -188,10 +188,10 @@ class Test():
             assert 'alt="Test Project Logo"' in r, r
             assert 'alt="A Subproject Logo"' in r, r
             r = g.markdown_wiki.convert('[[projects show_total=True sort=random]]')
-            assert '<p class="macro_projects_total">3 Projects' in r, r
+            assert '<p>3 Projects' in r, r
             r = g.markdown_wiki.convert(
                 '[[projects show_total=True private=True sort=random]]')
-            assert '<p class="macro_projects_total">1 Projects' in r, r
+            assert '<p>1 Projects' in r, r
             assert 'alt="Test 2 Logo"' in r, r
             assert 'alt="Test Project Logo"' not in r, r
             assert 'alt="A Subproject Logo"' not in r, r
@@ -387,8 +387,8 @@ class Test():
                 ## Header 2"""))
         assert dedent('''\
             <ul>
-            <li><a href="#header-1">Header 1</a><ul>
-            <li><a href="#header-2">Header 2</a></li>
+            <li><a href="#h-header-1">Header 1</a><ul>
+            <li><a href="#h-header-2">Header 2</a></li>
             </ul>
             </li>
             </ul>''') in r
@@ -447,11 +447,11 @@ class Test():
         with h.push_context('test', 'wiki', neighborhood='Projects'):
             text = g.markdown.convert('# Foo!\n[Home]')
             assert (text ==
-                    '<div class="markdown_content"><h1 id="foo">Foo!</h1>\n'
+                    '<div class="markdown_content"><h1 id="h-foo">Foo!</h1>\n'
                     '<p><a class="alink" href="/p/test/wiki/Home/">[Home]</a></p></div>')
             text = g.markdown.convert('# Foo!\n[Rooted]')
             assert (text ==
-                    '<div class="markdown_content"><h1 id="foo">Foo!</h1>\n'
+                    '<div class="markdown_content"><h1 id="h-foo">Foo!</h1>\n'
                     '<p><span>[Rooted]</span></p></div>')
 
         assert (
@@ -476,7 +476,7 @@ class Test():
                 for i in range(10):
                     print i
             ''')) == dedent('''\
-                <div class="markdown_content"><h1 id="header">Header</h1>
+                <div class="markdown_content"><h1 id="h-header">Header</h1>
                 <p>Some text in a regular paragraph</p>
                 <div class="codehilite"><pre><span></span><code><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
                     <span class="nb">print</span> <span class="n">i</span>
@@ -590,6 +590,16 @@ class Test():
                 '''href='http://"&gt;&lt;img%20src=x%20onerror=alert(document.cookie)&gt;' '''
                 'rel="nofollow">xss</a></p></div>' == r)
 
+    def test_markdown_invalid_classes_ids(self):
+        r = g.markdown.convert("# Test message")
+        assert r == '<div class="markdown_content"><h1 id="h-test-message">Test message</h1></div>'
+
+        r = g.markdown.convert('<p class="markdown-class notice" id="markdown-id">This is a test</p>')
+        assert r == '<div class="markdown_content"><p class="notice" id="user-content-markdown-id">This is a test</p>\n</div>'
+
+        r = g.markdown.convert('<i class="fa fa-cog">gear icon</i>')
+        assert r == '<div class="markdown_content"><p><i class="fa fa-cog">gear icon</i></p></div>'
+
     def test_markdown_extremely_slow(self):
         # regex-as-re-globally package mitigates this being slow; also see `NOBRACKET` comments
         g.markdown.convert(inspect.cleandoc('''bonjour, voila ce que j'obtient en voulant ajouter un utilisateur a un groupe de sécurite, que ce soit sur un groupe pre-existant, ou sur un groupe crée.
@@ -606,8 +616,8 @@ class Test():
         assert True   # finished!
 
     def test_macro_include(self):
-        r = g.markdown.convert('[[include ref=Home id=foo]]')
-        assert '<div id="foo">' in r, r
+        r = g.markdown.convert('[[include ref=Home id=foo class=modal data-a=b]]')
+        assert '<div class="" id="user-content-foo">' in r, r
         assert 'href="./foo"' in g.markdown.convert('[My foo](foo)')
         assert 'href="..' not in g.markdown.convert('[My foo](./foo)')
 
