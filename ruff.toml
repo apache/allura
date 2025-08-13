@@ -17,7 +17,7 @@
 
 line-length = 119
 output-format = "full"
-target-version = "py39"
+target-version = "py310"
 
 lint.select = [
     # all flake8 & pep8 (except 'ignore' below)
