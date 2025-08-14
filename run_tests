@@ -121,7 +121,6 @@ def check_packages(packages):
 def run_tests_in_parallel(options, runner_args):
     default_args = [
         # '-c /dev/null',  # pytest's equivalent of nose's NOSE_IGNORE_CONFIG_FILES='1' is '-c /dev/null/'
-        '--disable-warnings',
     ]
 
     def get_pkg_path(pkg):
