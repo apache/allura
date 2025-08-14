@@ -20,6 +20,7 @@ import re
 import logging
 import warnings
 import xml.etree.ElementTree as etree
+import os
 
 from urllib.parse import urljoin
 
@@ -480,7 +481,6 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
 
             soup = BeautifulSoup(text,
                                  'html5lib')  # 'html.parser' parser gives weird </li> behaviour with test_macro_members
-
         if self._make_absolute:
             rewrite = self._rewrite_abs
         else:
@@ -516,7 +516,11 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
             return
         if val.startswith('#'):
             return
-        tag[attr] = '../' + val
+        if val.startswith('../') or val.startswith('./'):
+            return
+        # if none of the above, assume relative to directory link
+        val = os.path.join('.', val)
+        tag[attr] = val
 
     def _rewrite_abs(self, tag, attr):
         self._rewrite(tag, attr)
