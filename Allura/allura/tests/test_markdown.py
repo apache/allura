@@ -19,7 +19,7 @@ import markdown
 import mock
 
 from allura.lib import markdown_extensions as mde
-
+from tg import config as tg_config
 
 class TestTracRef1:
 
@@ -81,6 +81,26 @@ class TestTracRef3:
         assert mde.TracRef3(app).sub('source:file.py@123') == '[source:file.py@123](/p/project/tool/123/tree/file.py)'
         assert mde.TracRef3(app).sub('source:file.py@123#L456') == '[source:file.py@123#L456](/p/project/tool/123/tree/file.py#l456)'
         assert mde.TracRef3(app).sub('source:file.py#L456') == '[source:file.py#L456](/p/project/tool/HEAD/tree/file.py#l456)'
+
+class TestRelativeLinkRewriter:
+
+    @mock.patch.dict(tg_config, {'nofollow_exempt_domains': '', 'domain': 'example.com'})
+    def test_rewrite(self):
+        rewriter = mde.RelativeLinkRewriter()
+        # curent directory link
+        res = rewriter.run('# README <a href="trunk/docs/EXTENSIONS.md">README</a>')
+        assert './trunk/docs/EXTENSIONS.md' in res
+        # parent link
+        res = rewriter.run('# README <a href="../trunk/docs/EXTENSIONS.md">README</a>')
+        assert '../trunk/docs/EXTENSIONS.md' in res
+        # child child to parent link
+        res = rewriter.run('# README <a href="../../docs/EXTENSIONS.md">README</a>')
+        assert '# README <a href="../../docs/EXTENSIONS.md">README</a>' == res
+        res = rewriter.run('# README <a href="https://foo.com">README</a>')
+        assert 'https://foo.com' in res
+        assert './' not in res
+        res = rewriter.run('# README <a href="mailto:foo@bar.com">README</a>')
+        assert 'mailto:' in res
 
 
 class TestPatternReplacingProcessor:

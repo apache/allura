@@ -608,7 +608,7 @@ class Test():
     def test_macro_include(self):
         r = g.markdown.convert('[[include ref=Home id=foo]]')
         assert '<div id="foo">' in r, r
-        assert 'href="../foo"' in g.markdown.convert('[My foo](foo)')
+        assert 'href="./foo"' in g.markdown.convert('[My foo](foo)')
         assert 'href="..' not in g.markdown.convert('[My foo](./foo)')
 
     def test_macro_nbhd_feeds(self):
