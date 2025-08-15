@@ -18,7 +18,6 @@ import os
 import shutil
 from unittest import skipUnless
 
-import importlib.resources
 from itertools import count, product
 from datetime import datetime
 from zipfile import ZipFile
@@ -38,6 +37,7 @@ from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
 from allura.model.repo_refresh import send_notifications
 from allura.lib import helpers as h
+from allura.lib.utils import pkg_file
 from allura.webhooks import RepoPushWebhookSender
 from allura.tests.model.test_repo import RepoImplTestBase
 
@@ -57,7 +57,7 @@ class TestNewRepo:
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src', neighborhood='Projects')
-        repo_dir = str(importlib.resources.files('forgesvn')) + '/tests/data/'
+        repo_dir = pkg_file('forgesvn', 'tests/data/')
         c.app.repo.name = 'testsvn'
         c.app.repo.fs_path = repo_dir
         self.repo = c.app.repo
@@ -111,7 +111,7 @@ class TestSVNRepo(RepoImplTestBase):
     @with_tool('test', 'SVN', 'svn-tags', 'SVN with tags')
     def setup_with_tools(self):
         setup_global_objects()
-        repo_dir = str(importlib.resources.files('forgesvn')) + '/tests/data/'
+        repo_dir = pkg_file('forgesvn', 'tests/data/')
         with h.push_context('test', 'src', neighborhood='Projects'):
             c.app.repo.name = 'testsvn'
             c.app.repo.fs_path = repo_dir
@@ -148,7 +148,7 @@ class TestSVNRepo(RepoImplTestBase):
             url_path='/test/',
             tool='svn',
             status='creating')
-        repo_path = str(importlib.resources.files('forgesvn')) + '/tests/data/testsvn'
+        repo_path = pkg_file('forgesvn', 'tests/data/testsvn/')
         dirname = os.path.join(repo.fs_path, repo.name)
         if os.path.exists(dirname):
             shutil.rmtree(dirname)
@@ -198,7 +198,7 @@ class TestSVNRepo(RepoImplTestBase):
             url_path='/test/',
             tool='svn',
             status='creating')
-        repo_path = str(importlib.resources.files('forgesvn')) + '/tests/data/testsvn'
+        repo_path = pkg_file('forgesvn', 'tests/data/testsvn/')
         dirname = os.path.join(repo.fs_path, repo.name)
         if os.path.exists(dirname):
             shutil.rmtree(dirname)
@@ -408,7 +408,7 @@ class TestSVNRepo(RepoImplTestBase):
         assert entry.message
 
     def test_svn_path_exists(self):
-        repo_path = str(importlib.resources.files('forgesvn')) + '/tests/data/testsvn'
+        repo_path = pkg_file('forgesvn', 'tests/data/testsvn/')
         assert svn_path_exists("file://%s/a" % repo_path)
         assert svn_path_exists("file://%s" % repo_path)
         assert not svn_path_exists("file://%s/badpath" % repo_path)
@@ -571,7 +571,7 @@ class TestSVNRev:
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src', neighborhood='Projects')
-        repo_dir = str(importlib.resources.files('forgesvn')) + '/tests/data/'
+        repo_dir = pkg_file('forgesvn', 'tests/data/')
         c.app.repo.name = 'testsvn'
         c.app.repo.fs_path = repo_dir
         self.repo = c.app.repo
@@ -618,7 +618,7 @@ class TestSVNRev:
     def test_notification_email(self):
         setup_global_objects()
         h.set_context('test', 'src', neighborhood='Projects')
-        repo_dir = str(importlib.resources.files('forgesvn')) + '/tests/data/'
+        repo_dir = pkg_file('forgesvn', 'tests/data/')
         self.repo = SM.Repository(
             name='testsvn',
             fs_path=repo_dir,
@@ -1017,7 +1017,7 @@ class TestRename:
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src', neighborhood='Projects')
-        repo_dir = str(importlib.resources.files('forgesvn')) + '/tests/data/'
+        repo_dir = pkg_file('forgesvn', 'tests/data/')
         c.app.repo.name = 'testsvn-rename'
         c.app.repo.fs_path = repo_dir
         self.repo = c.app.repo
@@ -1052,7 +1052,7 @@ class TestDirectRepoAccess:
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src', neighborhood='Projects')
-        repo_dir = str(importlib.resources.files('forgesvn')) + '/tests/data/'
+        repo_dir = pkg_file('forgesvn', 'tests/data/')
         c.app.repo.name = 'testsvn'
         c.app.repo.fs_path = repo_dir
         self.repo = c.app.repo

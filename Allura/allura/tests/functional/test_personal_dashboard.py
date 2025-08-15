@@ -19,6 +19,7 @@ import importlib.resources
 import mock
 import tg
 
+from allura.lib.utils import pkg_file
 from ming.odm import ThreadLocalODMSession, ThreadLocalODMSession
 from tg import tmpl_context as c
 
@@ -95,7 +96,7 @@ class TestMergeRequestsSection(TestController):
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test2', 'src-git', neighborhood='Projects')
-        repo_dir = str(importlib.resources.files('forgegit') / 'tests/data')
+        repo_dir = pkg_file('forgegit', 'tests/data')
         c.app.repo.fs_path = repo_dir
         c.app.repo.name = 'testgit.git'
         self.repo = c.app.repo

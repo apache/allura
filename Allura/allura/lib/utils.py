@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import base64
+import importlib
 from collections.abc import Iterable, Mapping, MutableMapping
 from contextlib import contextmanager
 import time
@@ -28,6 +29,7 @@ import datetime
 import random
 import mimetypes
 import re
+from pathlib import Path
 from typing import TypeVar
 import magic
 from itertools import groupby
@@ -820,3 +822,23 @@ def socket_default_timeout(timeout):
         yield
     finally:
         socket.setdefaulttimeout(orig_timeout)
+
+
+def join_paths_no_traversal(base: str | Path, *paths: str | Path) -> str:
+    for p in paths:
+        if Path(p).is_absolute():
+            raise ValueError(f"Absolute paths is not allowed: {p}")
+        if any(part == ".." for part in Path(p).parts):
+            raise ValueError(f"Parent directory traversal is not allowed: {p}")
+    base = Path(base)
+    joined = str(base.joinpath(*paths).resolve())
+    base_resolved = str(base.resolve())
+    if not joined.startswith(base_resolved):
+        raise ValueError("Resulting path escapes base directory")
+    if paths and str(paths[-1]).endswith('/'):
+        joined += '/'
+    return joined
+
+
+def pkg_file(pkg_name: str, *paths: str) -> str:
+    return join_paths_no_traversal(importlib.resources.files(pkg_name), *paths)

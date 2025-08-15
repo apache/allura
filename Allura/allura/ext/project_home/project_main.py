@@ -17,7 +17,6 @@
 
 import logging
 
-import importlib.resources
 from tg import tmpl_context as c
 from tg import expose, redirect
 from tg.decorators import with_trailing_slash
@@ -25,9 +24,9 @@ from tg.decorators import with_trailing_slash
 from allura import version
 from allura.app import Application, SitemapEntry
 from allura.lib import helpers as h
+from allura.lib.utils import pkg_file
 from allura.controllers import BaseController
 from allura import model
-
 
 log = logging.getLogger(__name__)
 
@@ -46,7 +45,7 @@ class ProjectHomeApp(Application):
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = ProjectHomeController()
-        self.templates = str(importlib.resources.files('allura.ext.project_home') / 'templates')
+        self.templates = pkg_file('allura.ext.project_home', 'templates')
 
     def is_visible_to(self, user):
         '''Whether the user can view the app.'''

@@ -23,7 +23,6 @@ from collections import defaultdict
 from xml.etree import ElementTree as ET
 from copy import copy
 
-import importlib.resources
 from markupsafe import Markup
 from tg import expose, redirect, flash, validate
 from tg.decorators import without_trailing_slash
@@ -45,7 +44,7 @@ from allura.lib.security import has_access, require_access
 from allura import model
 from allura.controllers import BaseController
 from allura.lib.decorators import require_post, memoize
-from allura.lib.utils import permanent_redirect, ConfigProxy
+from allura.lib.utils import permanent_redirect, ConfigProxy, pkg_file
 from allura import model as M
 from allura.tasks import index_tasks
 import six
@@ -475,7 +474,7 @@ class Application(ActivityObject):
         """
         for klass in [o for o in cls.__mro__ if issubclass(o, Application)]:
             package = klass.__module__.split(".")[0]
-            if importlib.resources.files(package).joinpath(resource_path).exists():
+            if os.path.exists(pkg_file(package, resource_path)):
                 return klass
 
     def has_access(self, user, topic):

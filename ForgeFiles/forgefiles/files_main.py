@@ -368,7 +368,7 @@ class FilesController(BaseController):
             try:
                 for i in user_ids:
                     user_object = M.User.query.get(_id=i)
-                    template_name = 'forgefiles:/templates/mail.html'
+                    template_name = 'forgefiles:templates/mail.html'
                     text = g.jinja2_env.get_template(template_name).render(dict(
                         base_url=config.get('base_url'), user_object=user_object, project=c.project,
                         remarks=remarks, folder_object=folder_object, project_owner=c.user,

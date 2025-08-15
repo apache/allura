@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import os
 import mock
 import pytest
 import random
@@ -24,7 +23,6 @@ from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 
-import importlib.resources
 import pymongo
 
 from ming.odm import ThreadLocalODMSession
@@ -38,6 +36,7 @@ from allura.lib.mail_util import email_policy
 from allura.tasks import mail_tasks
 from alluratest.controller import TestController
 from allura.lib import helpers as h
+from allura.lib.utils import pkg_file
 from allura.tests import decorators as td
 
 from forgediscussion import model as FM
@@ -104,7 +103,7 @@ class TestForumEmail(TestController):
             ],
             policy=email_policy
         )
-        with open(str(importlib.resources.files('forgediscussion')) + '/tests/data/python-logo.png', 'rb') as fp:
+        with open(pkg_file('forgediscussion', 'tests/data/python-logo.png'), 'rb') as fp:
             img = MIMEImage(fp.read(), policy=email_policy)
             img.add_header('Content-Disposition', 'attachment',
                            filename='python-logo.png')

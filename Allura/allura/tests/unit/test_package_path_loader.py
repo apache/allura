@@ -189,7 +189,7 @@ class TestPackagePathLoader:
             jinja2.TemplateNotFound('test'), 'fs_load']
 
         with mock.patch('importlib.resources.files') as rf:
-            rf.return_value = PurePath('resource')
+            rf.return_value = PurePath('/resource')
             # no override, ':' in template
             output = ppl.get_source(
                 'env', 'allura.ext.admin:templates/audit.html')
@@ -197,7 +197,7 @@ class TestPackagePathLoader:
 
         assert output == 'fs_load'
         assert fs_loader().get_source.call_count == 2
-        fs_loader().get_source.assert_called_with('env', 'resource/templates/audit.html')
+        fs_loader().get_source.assert_called_with('env', '/resource/templates/audit.html')
 
         fs_loader().get_source.reset_mock()
         fs_loader().get_source.side_effect = [

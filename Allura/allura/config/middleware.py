@@ -65,7 +65,7 @@ from allura.lib.custom_middleware import ContentSecurityPolicyMiddleware
 from allura.lib.custom_middleware import SetHeadersMiddleware
 from allura.lib.custom_middleware import StatusCodeRedirect
 from allura.lib import helpers as h
-from allura.lib.utils import configure_ming
+from allura.lib.utils import configure_ming, pkg_file
 
 __all__ = ['make_app']
 
@@ -108,7 +108,7 @@ def _make_core_app(root, global_conf: dict, **app_conf):
     under ``[app:main]``.
     """
     # Run all the initialization code here
-    mimetypes.init([str(importlib.resources.files('allura')), 'etc/mime.types'] + mimetypes.knownfiles)
+    mimetypes.init([pkg_file('allura', 'etc/mime.types')] + mimetypes.knownfiles)
 
     # Configure MongoDB
     configure_ming(app_conf)

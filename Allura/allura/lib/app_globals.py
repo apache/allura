@@ -25,7 +25,6 @@ from subprocess import Popen, PIPE
 import os
 import time
 import traceback
-import importlib.resources
 
 import activitystream
 import markdown
@@ -38,6 +37,7 @@ from tg import request
 from tg import tmpl_context as c
 from paste.deploy.converters import asbool, asint, aslist
 from pypeline.markup import markup as pypeline_markup
+
 from ming.odm import session, MappedClass
 
 import ew as ew_core
@@ -53,6 +53,7 @@ from allura.lib.markdown_extensions import (
     EmojiExtension,
     UserMentionExtension
 )
+from allura.lib.utils import pkg_file
 from allura.eventslistener import PostEvent
 
 from allura.lib import gravatar, plugin, utils
@@ -194,7 +195,7 @@ class Globals:
         self.__dict__ = self.__shared_state
         if self.__shared_state:
             return
-        self.allura_templates = str(importlib.resources.files('allura') / 'templates')
+        self.allura_templates = pkg_file('allura', 'templates')
         # Setup SOLR
         self.solr_server = aslist(config.get('solr.server'), ',')
         # skip empty strings in case of extra commas

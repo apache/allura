@@ -16,8 +16,6 @@
 #       under the License.
 
 import logging
-
-import importlib.resources
 from datetime import datetime
 
 import six
@@ -38,6 +36,7 @@ from allura.lib import helpers as h
 from allura.lib.decorators import require_post
 from allura.lib.plugin import AuthenticationProvider
 from allura.lib.security import require_access
+from allura.lib.utils import pkg_file
 from allura.lib.widgets.user_profile import SendMessageForm, SectionsUtil, SectionBase, ProjectsSectionBase
 from allura.model import ACE, ProjectRole
 
@@ -67,7 +66,7 @@ class UserProfileApp(Application):
     def __init__(self, user, config):
         Application.__init__(self, user, config)
         self.root = UserProfileController()
-        self.templates = str(importlib.resources.files('allura.ext.user_profile') / 'templates')
+        self.templates = pkg_file('allura.ext.user_profile', 'templates')
         self.api_root = UserProfileRestController()
 
     @property

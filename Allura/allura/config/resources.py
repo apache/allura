@@ -18,20 +18,19 @@
 import os
 import logging
 
-import importlib.resources
-
 from allura.lib.helpers import iter_entry_points
+from allura.lib.utils import pkg_file
 
 log = logging.getLogger(__name__)
 
 
 def register_ew_resources(manager):
     manager.register_directory(
-        'js', str(importlib.resources.files('allura').joinpath('lib/widgets/resources/js')))
+        'js', pkg_file('allura', 'lib/widgets/resources/js'))
     manager.register_directory(
-        'css', str(importlib.resources.files('allura').joinpath('lib/widgets/resources/css')))
+        'css', pkg_file('allura', 'lib/widgets/resources/css'))
     manager.register_directory(
-        'allura', str(importlib.resources.files('allura').joinpath('public/nf')))
+        'allura', pkg_file('allura', 'public/nf'))
     for ep in iter_entry_points('allura'):
         try:
             app = ep.load()
@@ -41,7 +40,7 @@ def register_ew_resources(manager):
                 package = resource_cls.__module__.split(".")[0]
                 manager.register_directory(
                     'tool/%s' % ep.name.lower(),
-                    importlib.resources.files(package).joinpath(resource_path))
+                    pkg_file(package, resource_path))
         except ImportError:
             log.warning('Cannot import entry point %s', ep)
             raise

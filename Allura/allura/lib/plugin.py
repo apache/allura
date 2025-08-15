@@ -40,12 +40,13 @@ import requests
 import six
 from passlib.context import CryptContext
 
+from allura.lib.utils import pkg_file
+
 try:
     import ldap
     from ldap import modlist
 except ImportError:
     ldap = modlist = None
-import importlib.resources
 import tg
 from tg import config, request, redirect, response
 from tg import tmpl_context as c, app_globals as g
@@ -1471,7 +1472,7 @@ class ThemeProvider:
     def register_ew_resources(cls, manager, name):
         manager.register_directory(
             'theme/%s' % name,
-            str(importlib.resources.files('allura')) + '/nf/' + name)
+            pkg_file('allura', 'nf/' + name))
 
     def href(self, href, theme_name=None):
         '''
