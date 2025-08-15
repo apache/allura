@@ -23,6 +23,8 @@ from unittest import skipUnless
 import tg
 import importlib.resources
 from tg import tmpl_context as c
+
+from allura.lib.utils import pkg_file
 from ming.odm import ThreadLocalODMSession
 from mock import patch
 
@@ -41,7 +43,7 @@ class SVNTestController(TestController):
 
     def _make_app(self, mount_point, name):
         h.set_context('test', mount_point, neighborhood='Projects')
-        repo_dir = str(importlib.resources.files('forgesvn')) + '/tests/data/'
+        repo_dir = pkg_file('forgesvn', 'tests/data/')
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = name
@@ -354,7 +356,7 @@ class SVNTestRenames(TestController):
     @with_svn
     def setup_with_tools(self):
         h.set_context('test', 'src', neighborhood='Projects')
-        repo_dir = str(importlib.resources.files('forgesvn')) + '/tests/data/'
+        repo_dir = pkg_file('forgesvn', 'tests/data/')
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'testsvn'

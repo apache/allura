@@ -20,6 +20,7 @@ import datetime
 
 from testfixtures import OutputCapture
 
+from allura.lib.utils import pkg_file
 from ming.base import Object
 from ming.odm import ThreadLocalODMSession
 from mock import Mock, call, patch
@@ -51,10 +52,9 @@ def setup_module():
 
 def test_script():
     cmd = script.ScriptCommand('script')
-    cmd.run(
-        [test_config, str(importlib.resources.files('allura') / 'tests/tscript.py')])
+    cmd.run([test_config, pkg_file('allura', 'tests/tscript.py')])
     with pytest.raises(ValueError):
-        cmd.run([test_config, str(importlib.resources.files('allura') / 'tests/tscript_error.py')])
+        cmd.run([test_config, pkg_file('allura', 'tests/tscript_error.py')])
 
 
 def test_set_neighborhood_max_projects():

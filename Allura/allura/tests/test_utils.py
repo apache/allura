@@ -19,6 +19,7 @@ import json
 import time
 import datetime as dt
 from os import path
+from pathlib import Path
 
 import ming
 from ming.odm import session
@@ -409,3 +410,22 @@ def test_urlencode():
     # list of pairs - including unicode and bytes
     assert (utils.urlencode([('a', 1), ('b', 'ƒ'), ('c', 'ƒ'.encode())]) ==
             'a=1&b=%C6%92&c=%C6%92')
+
+
+@pytest.mark.parametrize('base, paths, expected', [
+    ('/foo', ['bar'], '/foo/bar'),
+    ('/foo', ['bar/'], '/foo/bar/'),
+    ('/foo', ['bar', 'baz'], '/foo/bar/baz'),
+    (Path('/foo'), [Path('bar')], '/foo/bar'),
+    ('/foo', ['/tmp'], ValueError),
+    ('/foo', ['x', '/tmp'], ValueError),
+    ('/foo', ['..'], ValueError),
+    ('/foo', ['bar/..'], ValueError),
+    ('/foo', ['x', 'bar/../asf'], ValueError),
+])
+def test_join_paths_no_traversal(base, paths, expected: str | type[Exception]):
+    if isinstance(expected, str):
+        assert utils.join_paths_no_traversal(base, *paths) == expected
+    else:
+        with pytest.raises(expected):
+            utils.join_paths_no_traversal(base, *paths)

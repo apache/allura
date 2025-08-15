@@ -20,7 +20,6 @@ import re
 import logging
 
 import tg
-import importlib.resources
 from paste import fileapp
 from paste.deploy.converters import aslist, asbool
 from tg import tmpl_context as c
@@ -31,7 +30,7 @@ import six
 from ming.odm import session
 
 from allura.lib import helpers as h
-from allura.lib.utils import is_ajax
+from allura.lib.utils import is_ajax, pkg_file
 from allura import model as M
 import allura.model.repository
 from tg import tmpl_context as c
@@ -79,10 +78,10 @@ class StaticFilesMiddleware:
                 resource_cls = ep.load().has_resource(resource_path)
                 if resource_cls:
                     package = resource_cls.__module__.split(".")[0]
-                    file_path = str(importlib.resources.files(package) / resource_path)
+                    file_path = pkg_file(package, resource_path)
                     return fileapp.FileApp(file_path, [('Access-Control-Allow-Origin', '*')])
         filename = environ['PATH_INFO'][len(self.script_name):]
-        file_path = str(importlib.resources.files('allura')) + '/public/nf/' + filename
+        file_path = pkg_file('allura', 'public/nf', filename)
         return fileapp.FileApp(file_path, [('Access-Control-Allow-Origin', '*')])
 
 

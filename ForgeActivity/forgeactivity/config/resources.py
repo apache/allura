@@ -15,9 +15,9 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import importlib.resources
+from allura.lib.utils import pkg_file
 
 
 def register_ew_resources(manager):
     manager.register_directory(
-        'activity_js', importlib.resources.files('forgeactivity') / 'widgets/resources/js')
+        'activity_js', pkg_file('forgeactivity', 'widgets/resources/js'))

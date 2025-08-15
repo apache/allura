@@ -18,13 +18,14 @@
 import os
 import shutil
 import stat
-import importlib.resources
 import datetime
 import email.iterators
 import pytest
 import mock
 from tg import tmpl_context as c, app_globals as g
 import tg
+
+from allura.lib.utils import pkg_file
 from ming.base import Object
 from ming.odm import ThreadLocalODMSession, session
 from testfixtures import TempDirectory
@@ -54,7 +55,7 @@ class TestNewGit:
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src-git', neighborhood='Projects')
-        repo_dir = str(importlib.resources.files('forgegit') / 'tests/data')
+        repo_dir = pkg_file('forgegit', 'tests/data')
         c.app.repo.fs_path = repo_dir
         c.app.repo.name = 'testgit.git'
         self.repo = c.app.repo
@@ -130,7 +131,7 @@ class TestGitRepo(RepoImplTestBase):
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src-git', neighborhood='Projects')
-        repo_dir = str(importlib.resources.files('forgegit') / 'tests/data')
+        repo_dir = pkg_file('forgegit', 'tests/data')
         c.app.repo.fs_path = repo_dir
         c.app.repo.name = 'testgit.git'
         self.repo = c.app.repo
@@ -166,7 +167,7 @@ class TestGitRepo(RepoImplTestBase):
             url_path='/test/',
             tool='git',
             status='creating')
-        repo_path = str(importlib.resources.files('forgegit') / 'tests/data/testgit.git')
+        repo_path = pkg_file('forgegit', 'tests/data/testgit.git')
         dirname = os.path.join(repo.fs_path, repo.name)
         if os.path.exists(dirname):
             shutil.rmtree(dirname)
@@ -188,7 +189,7 @@ class TestGitRepo(RepoImplTestBase):
             url_path='/test/',
             tool='git',
             status='creating')
-        repo_path = str(importlib.resources.files('forgegit') / 'tests/data/testgit.git')
+        repo_path = pkg_file('forgegit', 'tests/data/testgit.git')
         dirname = os.path.join(repo.fs_path, repo.name)
         if os.path.exists(dirname):
             shutil.rmtree(dirname)
@@ -220,7 +221,7 @@ class TestGitRepo(RepoImplTestBase):
                 tool='git',
                 status='creating')
             repo.app.config.options['hotcopy'] = True
-            repo_path = str(importlib.resources.files('forgegit') / 'tests/data/testgit.git')
+            repo_path = pkg_file('forgegit', 'tests/data/testgit.git')
             dirname = os.path.join(repo.fs_path, repo.name)
             if os.path.exists(dirname):
                 shutil.rmtree(dirname)
@@ -429,7 +430,7 @@ class TestGitRepo(RepoImplTestBase):
     @td.with_tool('test', 'Git', 'weird-chars', 'WeirdChars', type='git')
     def _setup_weird_chars_repo(self):
         h.set_context('test', 'weird-chars', neighborhood='Projects')
-        repo_dir = str(importlib.resources.files('forgegit') / 'tests/data')
+        repo_dir = pkg_file('forgegit', 'tests/data')
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'weird-chars.git'
@@ -600,7 +601,7 @@ By Dave Brondsema''' in text_body
         assert self.repo.get_default_branch(('main', 'master')) == 'zz'
 
     def test_update_default_branch(self):
-        repo_dir = str(importlib.resources.files('forgegit') / 'tests/data/testgit.git')
+        repo_dir = pkg_file('forgegit', 'tests/data/testgit.git')
         repo = mock.Mock(full_fs_path=repo_dir)
         repo.__ming__ = mock.Mock()
         impl = GM.git_repo.GitImplementation(repo)
@@ -793,7 +794,7 @@ By Dave Brondsema''' in text_body
     def test_paged_diffs(self):
         # setup
         h.set_context('test', 'src-weird', neighborhood='Projects')
-        repo_dir = str(importlib.resources.files('forgegit') / 'tests/data')
+        repo_dir = pkg_file('forgegit', 'tests/data')
         repo = GM.Repository(
             name='weird-chars.git',
             fs_path=repo_dir,
@@ -896,7 +897,7 @@ By Dave Brondsema''' in text_body
     def test_paged_diffs_with_detect_copies(self):
         # setup
         h.set_context('test', 'src-weird', neighborhood='Projects')
-        repo_dir = str(importlib.resources.files('forgegit') / 'tests/data')
+        repo_dir = pkg_file('forgegit', 'tests/data')
         repo = GM.Repository(
             name='weird-chars.git',
             fs_path=repo_dir,
@@ -979,7 +980,7 @@ By Dave Brondsema''' in text_body
 class TestGitImplementation:
 
     def test_branches(self):
-        repo_dir = str(importlib.resources.files('forgegit') / 'tests/data/testgit.git')
+        repo_dir = pkg_file('forgegit', 'tests/data/testgit.git')
         repo = mock.Mock(full_fs_path=repo_dir)
         repo.__ming__ = mock.Mock()
         repo.cached_branches = []
@@ -992,7 +993,7 @@ class TestGitImplementation:
         ]
 
     def test_tags(self):
-        repo_dir = str(importlib.resources.files('forgegit') / 'tests/data/testgit.git')
+        repo_dir = pkg_file('forgegit', 'tests/data/testgit.git')
         repo = mock.Mock(full_fs_path=repo_dir)
         repo.__ming__ = mock.Mock()
         repo.cached_tags = []
@@ -1003,7 +1004,7 @@ class TestGitImplementation:
         ]
 
     def test_last_commit_ids(self):
-        repo_dir = str(importlib.resources.files('forgegit') / 'tests/data/testrename.git')
+        repo_dir = pkg_file('forgegit', 'tests/data/testrename.git')
         repo = mock.Mock(full_fs_path=repo_dir)
         impl = GM.git_repo.GitImplementation(repo)
         def lcd(c, p): return impl.last_commit_ids(mock.Mock(_id=c), p)
@@ -1022,7 +1023,7 @@ class TestGitImplementation:
     @mock.patch('forgegit.model.git_repo.GitImplementation._git', new_callable=mock.PropertyMock)
     def test_last_commit_ids_threaded_error(self, _git):
         with h.push_config(tg.config, lcd_thread_chunk_size=1, lcd_timeout=2):
-            repo_dir = str(importlib.resources.files('forgegit') / 'tests/data/testrename.git')
+            repo_dir = pkg_file('forgegit', 'tests/data/testrename.git')
             repo = mock.Mock(full_fs_path=repo_dir)
             _git.side_effect = ValueError
             impl = GM.git_repo.GitImplementation(repo)
@@ -1041,7 +1042,7 @@ class TestGitCommit:
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src-git', neighborhood='Projects')
-        repo_dir = str(importlib.resources.files('forgegit') / 'tests/data')
+        repo_dir = pkg_file('forgegit', 'tests/data')
         c.app.repo.fs_path = repo_dir
         c.app.repo.name = 'testgit.git'
         self.repo = c.app.repo
@@ -1116,7 +1117,7 @@ class TestGitHtmlView:
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src-git', neighborhood='Projects')
-        repo_dir = str(importlib.resources.files('forgegit') / 'tests/data')
+        repo_dir = pkg_file('forgegit', 'tests/data')
         c.app.repo.fs_path = repo_dir
         c.app.repo.name = 'testmime.git'
         self.repo = c.app.repo
@@ -1146,7 +1147,7 @@ class TestGitRename:
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src-git', neighborhood='Projects')
-        repo_dir = str(importlib.resources.files('forgegit') / 'tests/data')
+        repo_dir = pkg_file('forgegit', 'tests/data')
         c.app.repo.fs_path = repo_dir
         c.app.repo.name = 'testrename.git'
         self.repo = c.app.repo

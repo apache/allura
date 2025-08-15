@@ -15,11 +15,11 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import importlib.resources
+from allura.lib.utils import pkg_file
 
 
 def register_ew_resources(manager):
     manager.register_directory(
-        'tracker_js', str(importlib.resources.files('forgetracker').joinpath('widgets/resources/js')))
+        'tracker_js', pkg_file('forgetracker', 'widgets/resources/js'))
     manager.register_directory(
-        'tracker_css', str(importlib.resources.files('forgetracker').joinpath('widgets/resources/css')))
+        'tracker_css', pkg_file('forgetracker', 'widgets/resources/css'))

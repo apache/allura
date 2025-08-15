@@ -15,10 +15,9 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import importlib.resources
-
 from tg import tmpl_context as c
 
+from allura.lib.utils import pkg_file
 from alluratest.controller import TestController, setup_basic_test, setup_global_objects
 from allura.tests import decorators as td
 from allura.lib import helpers as h
@@ -200,7 +199,7 @@ class TestGitCommit(TestController):
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'git-userstats-stats', neighborhood='Projects')
-        repo_dir = str(importlib.resources.files('forgeuserstats') /'tests/data')
+        repo_dir = pkg_file('forgeuserstats', 'tests/data')
         c.app.repo.fs_path = repo_dir
         c.app.repo.name = 'testgit.git'
         self.repo = c.app.repo

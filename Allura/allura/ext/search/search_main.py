@@ -17,7 +17,6 @@
 
 import logging
 
-import importlib.resources
 from tg import tmpl_context as c
 from tg import expose, validate
 from tg.decorators import with_trailing_slash
@@ -26,6 +25,7 @@ from formencode import validators as V
 from allura.app import Application
 from allura import version
 from allura.lib.search import search_app
+from allura.lib.utils import pkg_file
 from allura.lib.widgets.search import SearchResults, SearchHelp
 from allura.controllers import BaseController
 
@@ -46,7 +46,7 @@ class SearchApp(Application):
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = SearchController()
-        self.templates = str(importlib.resources.files('allura.ext.search') / 'templates')
+        self.templates = pkg_file('allura.ext.search', 'templates')
 
     def main_menu(self):  # pragma no cover
         return []
