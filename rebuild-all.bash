@@ -30,9 +30,11 @@ APPS_DASHE_NO_SVN="${APPS_WITH_DASH_E//-e .\/ForgeSVN/}"  # string replacement
 $PIP install $APPS_DASHE_NO_SVN
 main_ret=$?
 
-$PIP install -e ./ForgeSVN
-if [ "$?" -gt 0 ]; then
-  echo -e "\nIt is okay that ForgeSVN failed.  It needs pysvn which can be difficult to install."
+python -c 'import pysvn; pysvn.Revision'
+if [ "$?" -eq 0 ]; then
+  $PIP install -e ./ForgeSVN
+else
+  echo -e "\nForgeSVN cannot be installed.  It needs pysvn which can be difficult to install."
   echo "You can ignore this error.  If you do want SVN support, see install_each_step.rst notes about SVN."
 fi
 

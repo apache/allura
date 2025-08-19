@@ -57,7 +57,7 @@ Before we begin, you'll need to install some system packages.  Allura currently 
 
 To install MongoDB, follow the instructions `here <https://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/>`_.
 
-Optional, for SVN support:
+Optional, for SVN support install pysvn from https://sourceforge.net/p/pysvn/code/HEAD/tree/trunk/pysvn/Extension/INSTALL.html#l69 or use helper installer from https://github.com/reviewboard/pysvn-installer  Installing a system package might work also:
 
 .. code-block:: bash
 

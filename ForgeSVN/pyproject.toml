@@ -36,7 +36,9 @@ classifiers = [
 ]
 dependencies = [
     "Allura",
-    "pysvn",
+#    "pysvn",  # the one on PyPI is not correct and should not be installed.
+               # https://sourceforge.net/p/pysvn/code/HEAD/tree/trunk/pysvn/Extension/INSTALL.html#l69 is correct
+               # https://github.com/reviewboard/pysvn-installer is helpful
 ]
 
 [tool.setuptools.package-data]
