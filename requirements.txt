@@ -254,7 +254,7 @@ regex==2025.7.34
     # via
     #   regex-as-re-globally
     #   textile
-regex-as-re-globally==0.0.5
+regex-as-re-globally==0.0.6
     # via -r requirements.in
 repoze-lru==0.7
     # via turbogears2
