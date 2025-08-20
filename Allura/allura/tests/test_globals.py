@@ -447,11 +447,11 @@ class Test():
         with h.push_context('test', 'wiki', neighborhood='Projects'):
             text = g.markdown.convert('# Foo!\n[Home]')
             assert (text ==
-                    '<div class="markdown_content"><h1 id="foo">Foo!</h1>\n'
+                    '<div class="markdown_content"><h1 id="h:foo">Foo!</h1>\n'
                     '<p><a class="alink" href="/p/test/wiki/Home/">[Home]</a></p></div>')
             text = g.markdown.convert('# Foo!\n[Rooted]')
             assert (text ==
-                    '<div class="markdown_content"><h1 id="foo">Foo!</h1>\n'
+                    '<div class="markdown_content"><h1 id="h:foo">Foo!</h1>\n'
                     '<p><span>[Rooted]</span></p></div>')
 
         assert (
@@ -476,7 +476,7 @@ class Test():
                 for i in range(10):
                     print i
             ''')) == dedent('''\
-                <div class="markdown_content"><h1 id="header">Header</h1>
+                <div class="markdown_content"><h1 id="h:header">Header</h1>
                 <p>Some text in a regular paragraph</p>
                 <div class="codehilite"><pre><span></span><code><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
                     <span class="nb">print</span> <span class="n">i</span>
