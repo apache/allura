@@ -245,6 +245,11 @@ $(function(){
         var new_hash = window.location.hash.replace('#', '#h:');
         if (document.querySelector(new_hash)) {
             window.location.hash = new_hash;
+        } else {
+            new_hash = window.location.hash.replace('#h:', '#user-content-');
+            if (document.querySelector(new_hash)) {
+                window.location.hash = new_hash;
+            }
         }
     }
 });

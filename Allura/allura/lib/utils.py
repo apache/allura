@@ -555,12 +555,27 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
 
         # srcset is used in our own project_list/project_summary widgets
         # which are used as macros so go through markdown
-        excluded_attributes = {(None, 'class'), (None, 'id')}
-        self.allowed_attributes = (html5lib.filters.sanitizer.allowed_attributes | {(None, 'srcset')}) - excluded_attributes
+        self.allowed_attributes = (html5lib.filters.sanitizer.allowed_attributes | {(None, 'srcset')})
 
         self.valid_iframe_srcs = ('https://www.youtube.com/embed/',
                                   'https://www.youtube-nocookie.com/embed/',
                                   )
+
+        self.valid_class_values = {
+            'markdown_content',  # our wrapper class
+            # standard extensions:
+            'codehilite', 'footnote', 'checklist', 'toc', 'footnote-ref', 'footnote-backref',
+            'alink', # ForgeLinkPattern
+            'user-mention', # UserMentionExtension
+            # our macros:
+            'neighborhood_feed_entry', 'md-users-list', 'md-users-list-more',
+            # codehilite classes:
+            'hll', 'c', 'k', 'o', 'cm', 'cp', 'c1', 'cs', 'gd', 'ge', 'gr', 'gh', 'gi', 'go', 'gp', 'gs', 'gu', 'gt', 'kc', 'kd', 'kn', 'kp', 'kr', 'kt', 'm', 's', 'na', 'nb', 'nc', 'no', 'nd', 'ni', 'ne', 'nf', 'nl', 'nn', 'nt', 'nv', 'ow', 'w', 'mf', 'mh', 'mi', 'mo', 'sb', 'sc', 'sd', 's2', 'se', 'sh', 'si', 'sx', 'sr', 's1', 'ss', 'bp', 'vc', 'vg', 'vi', 'il', 'code_block', 'lineno',
+        }
+        self.valid_id_prefixes = {
+            'h:', # see toc_slugify_with_prefix
+            'fn:', 'fnref:', # from footnotes extension
+        }
         self._prev_token_was_ok_iframe = False
 
     def sanitize_token(self, token):
@@ -584,6 +599,21 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
                 ok_opening_iframe = True
             elif token.get('type') == "EndTag" and self._prev_token_was_ok_iframe:
                 self.allowed_elements.add(iframe_el)
+
+        # sanitize classes and ids
+        if token.get('type') == 'StartTag':
+            classes = token.get('data', {}).get((None, 'class'), '')
+            if classes:
+                classes = classes.split()
+                cleaned_classes = [c for c in classes if c in self.valid_class_values]
+                if cleaned_classes != classes:
+                    log.info(f'Removed invalid classes: {classes} => {cleaned_classes}')
+                token['data'][(None, 'class')] = ' '.join(cleaned_classes)
+
+            id = token.get('data', {}).get((None, 'id'), '')
+            if id:
+                if not any(id.startswith(prefix) for prefix in self.valid_id_prefixes):
+                    token['data'][(None, 'id')] = 'user-content-' + id
 
         self._prev_token_was_ok_iframe = ok_opening_iframe
 

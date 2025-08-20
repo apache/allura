@@ -606,8 +606,8 @@ class Test():
         assert True   # finished!
 
     def test_macro_include(self):
-        r = g.markdown.convert('[[include ref=Home id=foo]]')
-        assert '<div id="foo">' in r, r
+        r = g.markdown.convert('[[include ref=Home id=foo class=modal data-a=b]]')
+        assert '<div class="" id="user-content-foo">' in r, r
         assert 'href="../foo"' in g.markdown.convert('[My foo](foo)')
         assert 'href="..' not in g.markdown.convert('[My foo](./foo)')
 
