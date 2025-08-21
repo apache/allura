@@ -82,9 +82,8 @@ class ForgeMarkdown:
         # when multiple threads are using the same instance
         # TestCachedMarkdown re-uses the same instance previously, and had a bug that AddCustomClass wasn't running
 
-
         def toc_slugify_with_prefix(value, separator):
-            return 'h:' + toc.slugify(value, separator)
+            return 'h-' + toc.slugify(value, separator)
 
         return markdown.Markdown(
             extensions=['markdown.extensions.fenced_code', 'markdown.extensions.codehilite',

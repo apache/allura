@@ -48,7 +48,7 @@ from bs4 import BeautifulSoup
 from tg import redirect, app_globals as g
 from tg.decorators import before_validate
 from tg.controllers.util import etag_cache
-from paste.deploy.converters import asbool, asint
+from paste.deploy.converters import asbool, asint, aslist
 from markupsafe import Markup
 from webob import exc
 from pygments.formatters import HtmlFormatter
@@ -564,16 +564,18 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
         self.valid_class_values = {
             'markdown_content',  # our wrapper class
             # standard extensions:
-            'codehilite', 'footnote', 'checklist', 'toc', 'footnote-ref', 'footnote-backref',
-            'alink', # ForgeLinkPattern
-            'user-mention', # UserMentionExtension
+            'codehilite', 'footnote', 'checklist', 'toc', 'footnote-ref', 'footnote-backref', 'codehilitetable',
+            'user-mention', 'macro_projects_total', 'proj_icon', 'list', 'card', 'feature', 'box', 'notch', 'desc',
+            'strikethrough',
+            'alink', 'notfound', # ForgeLinkPattern
             # our macros:
             'neighborhood_feed_entry', 'md-users-list', 'md-users-list-more',
             # codehilite classes:
-            'hll', 'c', 'k', 'o', 'cm', 'cp', 'c1', 'cs', 'gd', 'ge', 'gr', 'gh', 'gi', 'go', 'gp', 'gs', 'gu', 'gt', 'kc', 'kd', 'kn', 'kp', 'kr', 'kt', 'm', 's', 'na', 'nb', 'nc', 'no', 'nd', 'ni', 'ne', 'nf', 'nl', 'nn', 'nt', 'nv', 'ow', 'w', 'mf', 'mh', 'mi', 'mo', 'sb', 'sc', 'sd', 's2', 'se', 'sh', 'si', 'sx', 'sr', 's1', 'ss', 'bp', 'vc', 'vg', 'vi', 'il', 'code_block', 'lineno',
+            'p', 'n', 'hll', 'c', 'k', 'o', 'cm', 'cp', 'c1', 'cs', 'gd', 'ge', 'gr', 'gh', 'gi', 'go', 'gp', 'gs', 'gu', 'gt', 'kc', 'kd', 'kn', 'kp', 'kr', 'kt', 'm', 's', 'na', 'nb', 'nc', 'no', 'nd', 'ni', 'ne', 'nf', 'nl', 'nn', 'nt', 'nv', 'ow', 'w', 'mf', 'mh', 'mi', 'mo', 'sb', 'sc', 'sd', 's2', 'se', 'sh', 'si', 'sx', 'sr', 's1', 'ss', 'bp', 'vc', 'vg', 'vi', 'il', 'code_block', 'lineno',
         }
+        self.valid_partial_class_prefixes = tuple(aslist(tg.config.get('markdown_valid_partial_class_prefixes', None)))
         self.valid_id_prefixes = {
-            'h:', # see toc_slugify_with_prefix
+            'h-', # see toc_slugify_with_prefix
             'fn:', 'fnref:', # from footnotes extension
         }
         self._prev_token_was_ok_iframe = False
@@ -605,7 +607,7 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
             classes = token.get('data', {}).get((None, 'class'), '')
             if classes:
                 classes = classes.split()
-                cleaned_classes = [c for c in classes if c in self.valid_class_values]
+                cleaned_classes = [c for c in classes if c in self.valid_class_values or c.startswith(self.valid_partial_class_prefixes)]
                 if cleaned_classes != classes:
                     log.info(f'Removed invalid classes: {classes} => {cleaned_classes}')
                 token['data'][(None, 'class')] = ' '.join(cleaned_classes)
