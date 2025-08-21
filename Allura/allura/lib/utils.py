@@ -564,20 +564,27 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
         self.valid_class_values = {
             'markdown_content',  # our wrapper class
             # standard extensions:
-            'codehilite', 'footnote', 'checklist', 'toc', 'footnote-ref', 'footnote-backref', 'codehilitetable',
-            'user-mention', 'macro_projects_total', 'proj_icon', 'list', 'card', 'feature', 'box', 'notch', 'desc',
-            'strikethrough',
-            'alink', 'notfound', # ForgeLinkPattern
-            # our macros:
+            'codehilite', 'footnote', 'checklist', 'toc', 'footnote-ref', 'footnote-backref',
+            # macros:
+            'user-mention', 'proj_icon', 'list', 'card', 'feature', 'box', 'notch', 'desc',
             'neighborhood_feed_entry', 'md-users-list', 'md-users-list-more',
-            # codehilite classes:
-            'p', 'n', 'hll', 'c', 'k', 'o', 'cm', 'cp', 'c1', 'cs', 'gd', 'ge', 'gr', 'gh', 'gi', 'go', 'gp', 'gs', 'gu', 'gt', 'kc', 'kd', 'kn', 'kp', 'kr', 'kt', 'm', 's', 'na', 'nb', 'nc', 'no', 'nd', 'ni', 'ne', 'nf', 'nl', 'nn', 'nt', 'nv', 'ow', 'w', 'mf', 'mh', 'mi', 'mo', 'sb', 'sc', 'sd', 's2', 'se', 'sh', 'si', 'sx', 'sr', 's1', 'ss', 'bp', 'vc', 'vg', 'vi', 'il', 'code_block', 'lineno',
-        }
-        self.valid_partial_class_prefixes = tuple(aslist(tg.config.get('markdown_valid_partial_class_prefixes', None)))
+            # ForgeLinkPattern:
+            'strikethrough', 'alink', 'notfound',
+            # codehilite classes, and our extra related classes:
+            'p', 'n', 'hll', 'c', 'k', 'o', 'cm', 'cp', 'c1', 'cs', 'gd', 'ge', 'gr', 'gh', 'gi', 'go', 'gp', 'gs',
+            'gu', 'gt', 'kc', 'kd', 'kn', 'kp', 'kr', 'kt', 'm', 's', 'na', 'nb', 'nc', 'no', 'nd', 'ni', 'ne', 'nf',
+            'nl', 'nn', 'nt', 'nv', 'ow', 'w', 'mf', 'mh', 'mi', 'mo', 'sb', 'sc', 'sd', 's2', 'se', 'sh', 'si', 'sx',
+            'sr', 's1', 'ss', 'bp', 'vc', 'vg', 'vi', 'il', 'code_block', 'lineno', 'codehilitetable', 'linenodiv',
+            'linenos', 'ch', 'code', 'normal', 'err',
+            # helpful classes:
+            'error', 'notice', 'success', 'ok', 'info',
+            'fa',
+        } | set(aslist(tg.config.get('safe_html.classes', [])))
+        self.valid_partial_class_prefixes = tuple(['fa-'] + aslist(tg.config.get('safe_html.class_prefixes', None)))
         self.valid_id_prefixes = {
             'h-', # see toc_slugify_with_prefix
             'fn:', 'fnref:', # from footnotes extension
-        }
+        } | set(aslist(tg.config.get('safe_html.id_prefixes', [])))
         self._prev_token_was_ok_iframe = False
 
     def sanitize_token(self, token):

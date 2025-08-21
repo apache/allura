@@ -28,42 +28,13 @@ from alluratest.tools import module_not_available
 from forgeimporters.github.wiki import GitHubWikiImporter
 from forgeimporters.github.utils import GitHubMarkdownConverter
 from forgeimporters.github import GitHubOAuthMixin
-from forgewiki import model as WM
-from alluratest.controller import setup_basic_test, setup_unit_test
-from allura.tests import decorators as td
-from allura.lib import helpers as h
-from tg import tmpl_context as c, app_globals as g
-
-from Allura.allura.tests.model.test_artifact import Checkmessage
+from alluratest.controller import setup_basic_test
 
 # important to be distinct from 'test' which ForgeWiki uses, so that the
 # tests can run in parallel and not clobber each other
 test_project_with_wiki = 'test2'
 with_wiki = with_tool(test_project_with_wiki, 'wiki', 'w', 'wiki')
 
-class TestWikiPage:
-
-    def setup_method(self):
-        setup_basic_test()
-        setup_unit_test()
-        self.setup_with_tools()
-
-    @td.with_wiki
-    def setup_with_tools(self):
-        h.set_context('test', 'wiki', neighborhood='Projects')
-        Checkmessage.query.remove({})
-        WM.Page.query.remove({})
-        WM.PageHistory.query.remove({})
-        M.Shortlink.query.remove({})
-        c.user = M.User.query.get(username='test-admin')
-        Checkmessage.project = c.project
-        Checkmessage.app_config = c.app.config
-
-    def test_markdown_excluded_attributes(self):
-        pg = WM.Page(title='TestPage1')
-        pg.text = """# Test message <p class="markdown-class" id="markdown-id">This is a test</p>"""
-        assert "markdown-class" not in pg.html_text
-        assert "markdown-id" not in pg.html_text
 
 class TestGitHubWikiImporter:
 

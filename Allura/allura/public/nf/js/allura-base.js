@@ -245,7 +245,7 @@ $(function(){
         if (document.querySelector(new_hash)) {
             window.location.hash = new_hash;
         } else {
-            new_hash = window.location.hash.replace('#h-', '#user-content-');
+            new_hash = window.location.hash.replace('#', '#user-content-');
             if (document.querySelector(new_hash)) {
                 window.location.hash = new_hash;
             }

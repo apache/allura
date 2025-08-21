@@ -188,10 +188,10 @@ class Test():
             assert 'alt="Test Project Logo"' in r, r
             assert 'alt="A Subproject Logo"' in r, r
             r = g.markdown_wiki.convert('[[projects show_total=True sort=random]]')
-            assert '<p class="macro_projects_total">3 Projects' in r, r
+            assert '<p>3 Projects' in r, r
             r = g.markdown_wiki.convert(
                 '[[projects show_total=True private=True sort=random]]')
-            assert '<p class="macro_projects_total">1 Projects' in r, r
+            assert '<p>1 Projects' in r, r
             assert 'alt="Test 2 Logo"' in r, r
             assert 'alt="Test Project Logo"' not in r, r
             assert 'alt="A Subproject Logo"' not in r, r
@@ -589,6 +589,16 @@ class Test():
         assert ('<div class="markdown_content"><p><a class="" '
                 '''href='http://"&gt;&lt;img%20src=x%20onerror=alert(document.cookie)&gt;' '''
                 'rel="nofollow">xss</a></p></div>' == r)
+
+    def test_markdown_invalid_classes_ids(self):
+        r = g.markdown.convert("# Test message")
+        assert r == '<div class="markdown_content"><h1 id="h-test-message">Test message</h1></div>'
+
+        r = g.markdown.convert('<p class="markdown-class notice" id="markdown-id">This is a test</p>')
+        assert r == '<div class="markdown_content"><p class="notice" id="user-content-markdown-id">This is a test</p>\n</div>'
+
+        r = g.markdown.convert('<i class="fa fa-cog">gear icon</i>')
+        assert r == '<div class="markdown_content"><p><i class="fa fa-cog">gear icon</i></p></div>'
 
     def test_markdown_extremely_slow(self):
         # regex-as-re-globally package mitigates this being slow; also see `NOBRACKET` comments

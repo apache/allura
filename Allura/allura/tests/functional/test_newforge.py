@@ -14,9 +14,10 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
-
+import logging
 from urllib.parse import quote
+
+from testfixtures import LogCapture
 
 from allura.tests import TestController
 from allura.tests import decorators as td
@@ -43,9 +44,13 @@ class TestNewForgeController(TestController):
                          status=400)
 
     def test_markdown_syntax(self):
-        r = self.app.get('/nf/markdown_syntax')
+        with LogCapture(level=logging.INFO) as logs:
+            r = self.app.get('/nf/markdown_syntax')
         r.mustcontain('Markdown Syntax')
         r.mustcontain('href="http://someurl"')
+
+        markdown_invalid_classes = [log[2] for log in logs if 'invalid class' in log[2]]
+        assert not markdown_invalid_classes
 
     def test_markdown_syntax_dialog(self):
         r = self.app.get('/nf/markdown_syntax_dialog')
