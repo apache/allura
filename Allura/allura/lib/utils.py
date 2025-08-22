@@ -575,7 +575,7 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
             'gu', 'gt', 'kc', 'kd', 'kn', 'kp', 'kr', 'kt', 'm', 's', 'na', 'nb', 'nc', 'no', 'nd', 'ni', 'ne', 'nf',
             'nl', 'nn', 'nt', 'nv', 'ow', 'w', 'mf', 'mh', 'mi', 'mo', 'sb', 'sc', 'sd', 's2', 'se', 'sh', 'si', 'sx',
             'sr', 's1', 'ss', 'bp', 'vc', 'vg', 'vi', 'il', 'code_block', 'lineno', 'codehilitetable', 'linenodiv',
-            'linenos', 'ch', 'code', 'normal', 'err',
+            'linenos', 'ch', 'code', 'normal', 'err', 'nx', 'nb-Type', 'n-Quoted', 'cpf',
             # helpful classes:
             'error', 'notice', 'success', 'ok', 'info',
             'fa',
