@@ -27,7 +27,7 @@ from alluratest.tools import module_not_available
 from allura import model as M
 from forgeblog import model as BM
 
-test_config = importlib.resources.files('allura').joinpath('../test.ini#main')
+test_config = str(importlib.resources.files('allura').joinpath('../test.ini#main'))
 
 
 def setup_module(module):
