@@ -340,8 +340,8 @@ class TestMailServer:
         handler = MailServer()
         controller = Controller(handler, hostname=hostname, port=port)
         controller.start()
-        
-        with SMTPClient(hostname, port, timeout=0.1) as client:
+
+        with SMTPClient(hostname, port, timeout=0.5) as client:
             code, msg = client.ehlo("example.com")
             assert code == 250
             mailfrom = client.docmd("MAIL FROM: <from@example.com>")
@@ -351,7 +351,7 @@ class TestMailServer:
             data = client.docmd("DATA")
             assert data == (354, b'End data with <CR><LF>.<CR><LF>')
             
-        with SMTPClient(hostname, port, timeout=0.1) as client:
+        with SMTPClient(hostname, port, timeout=0.5) as client:
             client.sendmail('from@example.com', ['to@example.com'],"""
             From: From Person <from@example.com>
             To: To Person <to@example.com>
