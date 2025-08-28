@@ -119,12 +119,14 @@ class EmailAddress(MappedClass):
             return cls.query.find(q)
         return cls.query.find()
 
-    def claimed_by_user(self, include_pending=False):
+    def claimed_by_user(self, include_pending=False, include_disabled=False):
         q = {'_id': self.claimed_by_user_id,
              'disabled': False,
              'pending': False}
         if include_pending:
             q.pop('pending', None)
+        if include_disabled:
+            q.pop('disabled', None)
         return User.query.get(**q)
 
     @classmethod
