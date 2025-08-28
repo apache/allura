@@ -226,7 +226,9 @@ class AuthenticationProvider:
         # they'll get an authentication code via email
         skip_after_login = False
         if asbool(config.get('auth.email_auth_code.enabled', False)) and not user.get_pref('multifactor') and not self.trusted_login_source(user, login_details) and not multifactor_success:
-            h.auditlog_user('User without MFA attempted to login from untrusted location', user=user)
+            h.auditlog_user('User without MFA attempted to login from untrusted location, '
+                            'sending code via email for them to enter',
+                            user=user)
             self.session['multifactor-username'] = user.username
             self.session['mode'] = 'email_code'
             self.session.save()

@@ -275,9 +275,13 @@ class AuthController(BaseController):
             message = 'A password reset email has been sent, if the given email address is on record in our system.'
             email_record = M.EmailAddress.get(email=email, confirmed=True)
 
-        if user_record and email_record and email_record.confirmed:
-            user_record.send_password_reset_email(email_record.email)
-            h.auditlog_user('Password recovery link sent to: %s', email_record.email, user=user_record)
+        if user_record and email_record:
+            if email_record.confirmed:
+                user_record.send_password_reset_email(email_record.email)
+                h.auditlog_user('Password recovery link sent to: %s', email_record.email, user=user_record)
+            else:
+                h.auditlog_user('Password recovery link NOT sent to: %s because its unconfirmed', email_record.email, user=user_record)
+
         elif is_site_admin(c.user):
             # this can be accessed via a site admin page, and sometimes email records are inconsistent
             # only site admins may be told if accounts exist or not
