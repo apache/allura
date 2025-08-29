@@ -80,8 +80,8 @@ RUN python$PY_VERSION -m venv ${VIRTUAL_ENV}
 
 RUN pip install -U pip wheel \
     && curl https://raw.githubusercontent.com/reviewboard/pysvn-installer/master/install.py | python \
-    && pip install -q -r requirements.txt
-# RUN ./rebuild-all.bash
+    && pip install -q -r requirements.txt \
+    && ./rebuild-all.bash
 
 # if we want more progress displayed:  --loglevel http
 RUN npm ci  \
