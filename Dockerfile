@@ -24,15 +24,14 @@ ARG NODE_MAJOR=16
 # FIXME: change this?
 # Ubunutu 18.04's latest python is 3.6 (and Ubuntu 20.04's is 3.8)
 # In order to get a different python, we must add the deadsnakes apt repo, and install a specific version
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
     && apt-get install gpg gpg-agent software-properties-common -y --no-install-recommends \
     && add-apt-repository ppa:deadsnakes/ppa -y \
     #&& add-apt-repository ppa:git-core/ppa -y \
-    && apt-get update
-    
-RUN apt-get upgrade -y git
-
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    && apt-get update \
+    && apt-get upgrade -y git \
+    && apt-get install -y --no-install-recommends \
         git-core \
         python$PY_VERSION \
         python$PY_VERSION-venv \
@@ -54,9 +53,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         sudo \
     && rm -rf /var/lib/apt/lists/*
 
-# save env var, so init-docker-dev.sh can use it
-ENV PYTHON_EXE=python$PY_VERSION
-
 # up-to-date version of node & npm
 RUN apt-get install -y ca-certificates curl gpg
 RUN mkdir -p /etc/apt/keyrings
@@ -64,6 +60,33 @@ RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg -
 RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
 RUN apt-get update
 RUN apt-get install nodejs -y
+
+
+ARG DATA_DIR=/allura-data
+
+ADD . /allura
+WORKDIR /allura
+
+RUN mkdir -p "${DATA_DIR}/scm/{git,hg,svn,snapshots}" \
+    && mkdir -p "${DATA_DIR}/solr" \
+    && chmod 777 "${DATA_DIR}/solr" \
+    && mkdir -p "${DATA_DIR}/www-misc" \
+    && cp /allura/Allura/allura/public/nf/favicon.ico "${DATA_DIR}/www-misc/favicon.ico"
+
+ENV PYTHON_EXE=python$PY_VERSION
+ENV VIRTUAL_ENV="${DATA_DIR}/virtualenv"
+ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
+RUN python$PY_VERSION -m venv ${VIRTUAL_ENV}
+
+RUN pip install -U pip wheel \
+    && curl https://raw.githubusercontent.com/reviewboard/pysvn-installer/master/install.py | python \
+    && pip install -q -r requirements.txt
+# RUN ./rebuild-all.bash
+
+# if we want more progress displayed:  --loglevel http
+RUN npm ci  \
+    && npm run build
+
 
 # Snapshot generation for SVN (and maybe other SCMs) might fail without this
 RUN locale-gen en_US.UTF-8
@@ -73,6 +96,5 @@ ENV LANG en_US.UTF-8
 # tests). If this is not set, it uses os.getlogin, which fails inside docker.
 ENV USER root
 
-WORKDIR /allura
 ENV PYTHONUNBUFFERED 1
 CMD gunicorn --paste Allura/docker-dev.ini -b :8088 --reload

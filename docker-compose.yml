@@ -15,33 +15,38 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+x-allura-volumes: &allura-volumes
+  - .:/allura  # Allura source code from local host
+  - ${LOCAL_SHARED_DATA_ROOT:-./allura-data}:/allura-data  # for virtualenv, scm repos, etc
+  - ${LOCAL_SHARED_DATA_ROOT:-./allura-data}/root/home:/root  # for persistent home dir, mainly for pudb
+
 services:
   web:
     build: .
     image: allura-web  # default in Compose 2+, makes work in Compose 1.x
-    environment: &env
-      # PATH=/allura-data/virtualenv/bin:$PATH doesn't work; see https://github.com/docker/compose/issues/650
-      - PATH=/allura-data/virtualenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
     ports:
       - "8088:8088"
-    volumes: &volumes
-      - .:/allura  # Allura source code from local host
-      - ${LOCAL_SHARED_DATA_ROOT:-./allura-data}:/allura-data  # for virtualenv, scm repos, etc
-      - ${LOCAL_SHARED_DATA_ROOT:-./allura-data}/root/home:/root  # for persistent home dir, mainly for pudb
-    links:
+    # volumes: *allura-volumes
+    # links:
+    #   - mongo
+    #   - solr
+    depends_on:
       - mongo
       - solr
+    # command: paster serve --reload docker-dev.ini
 
   taskd:
     image: allura-web
     working_dir: /allura/Allura
-    environment: *env
     command: paster taskd docker-dev.ini
-    volumes: *volumes
-    links:
+    # volumes: *allura-volumes
+    # links:
+    #   - mongo
+    #   - solr
+    #   - outmail
+    depends_on:
       - mongo
       - solr
-      - outmail
 
   solr:
     image: solr:6-alpine  # alpine is a very small distro base
@@ -56,12 +61,12 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - ${LOCAL_SHARED_DATA_ROOT:-./allura-data}/mongo:/data/db
+      # - ${LOCAL_SHARED_DATA_ROOT:-./allura-data}/mongo:/data/db
+      - mongo:/data/db
     command: mongod --storageEngine wiredTiger
 
   outmail:
     image: allura-web
-    environment: *env
     volumes_from:
       - web
     command: python -u -m aiosmtpd -n -c alluratest.smtp_debug.BetterDebuggingServer -l 0.0.0.0:8826
@@ -71,19 +76,21 @@ services:
   inmail:
     image: allura-web
     working_dir: /allura/Allura
-    environment: *env
-    volumes: *volumes
+    # volumes: *allura-volumes
     command: paster smtp_server docker-dev.ini
     ports:
       - "8825:8825"
-    links:
-      - mongo
+    # links:
+    #   - mongo
 
   http:
     build: scm_config/git-http/
     ports:
       - "8080:80"
-    volumes: *volumes
-    links:
-      - mongo
-      - web
+    # volumes: *allura-volumes
+    # links:
+    #   - mongo
+    #   - web
+
+volumes:
+  mongo:
