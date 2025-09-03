@@ -70,7 +70,7 @@ docutils==0.21.2
     # via
     #   -r requirements.in
     #   pypeline
-easywidgets==0.4.2
+easywidgets==0.4.3
     # via -r requirements.in
 emoji==2.14.1
     # via -r requirements.in
@@ -273,7 +273,6 @@ six==1.17.0
     # via
     #   -r requirements.in
     #   creoleparser
-    #   easywidgets
     #   genshi
     #   html5lib
     #   python-dateutil
