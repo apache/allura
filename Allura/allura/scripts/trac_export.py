@@ -166,11 +166,11 @@ class TracExport:
         html2text.BODY_WIDTH = 0
         url = self.full_url(self.TICKET_URL % id)
         self.log_url(url)
-        d = BeautifulSoup(urlopen(url))  # noqa: S310
+        d = BeautifulSoup(urlopen(url), 'lxml')  # noqa: S310
         self.clean_missing_wiki_links(d)
         desc = d.find('div', 'description').find('div', 'searchable')
         ticket['description'] = html2text.html2text(
-            desc.renderContents('utf8').decode('utf8')) if desc else ''
+            desc.encode_contents(encoding='utf8').decode('utf8')) if desc else ''
         comments = []
         relative_base_url = six.moves.urllib.parse.urlparse(self.full_url(self.TICKET_URL % '')).path
         for comment in d.find_all('form', action='#comment'):
@@ -181,7 +181,7 @@ class TracExport:
                 comment.find('a', 'timeline')['title'].replace(' in Timeline', '').replace('See timeline at ', ''))
             changes = str(comment.find('ul', 'changes') or '')
             body = comment.find('div', 'comment')
-            body = body.renderContents('utf8').decode('utf8') if body else ''
+            body = body.encode_contents(encoding='utf8').decode('utf8') if body else ''
             body = body.replace(f'href="{relative_base_url}', 'href="')  # crude way to rewrite ticket links
             c['comment'] = html2text.html2text(changes + body)
             c['class'] = 'COMMENT'
@@ -196,7 +196,7 @@ class TracExport:
         url = self.full_url(self.ATTACHMENT_LIST_URL % id)
         self.log_url(url)
         f = urlopen(url)  # noqa: S310
-        soup = BeautifulSoup(f)
+        soup = BeautifulSoup(f, 'lxml')
         attach = soup.find('div', id='attachments')
         list = []
         while attach:
