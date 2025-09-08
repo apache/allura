@@ -88,6 +88,7 @@ class EmailAddress(MappedClass):
     email = FieldProperty(str)
     claimed_by_user_id = FieldProperty(S.ObjectId, if_missing=None)
     confirmed = FieldProperty(bool, if_missing=False)
+    confirmed_date = FieldProperty(datetime)
     nonce = FieldProperty(str)
     valid_address = FieldProperty(bool, if_missing=None)
     valid_details = FieldProperty(S.Anything, if_missing=None)
@@ -188,6 +189,15 @@ please visit the following URL:
             subject='%s - Email address verification' % config['site_name'],
             message_id=h.gen_message_id(),
             text=text)
+
+    @property
+    def confirmed_date_with_fallback(self) -> datetime | None:
+        # since confirmed_date was only added in 2025, use _id as approximate fallback
+        if self.confirmed_date:
+            return self.confirmed_date
+        if self.confirmed and self._id:
+            return self._id.generation_time.replace(tzinfo=None)
+        return None
 
 
 class AuthGlobals(MappedClass):

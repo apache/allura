@@ -360,6 +360,7 @@ class AuthController(BaseController):
                 send_system_mail_to_user(user, 'New Email Address Added', email_body)
 
             addr.confirmed = True
+            addr.confirmed_date = datetime.utcnow()
             flash('Email address confirmed')
             h.auditlog_user('Email address verified: %s',  addr.email, user=user)
             if user.get_pref('email_address') is None:

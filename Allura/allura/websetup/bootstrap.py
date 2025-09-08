@@ -209,6 +209,7 @@ def bootstrap(command, conf, vars):
 
             admin_email = M.EmailAddress.get(email='test-admin@users.localhost')
             admin_email.confirmed = True
+            admin_email.confirmed_date = datetime.utcnow()
         else:
             u_admin = make_user('Admin 1', username='admin1')
             # Admin1 is almost root, with admin access for Users and Projects
@@ -330,6 +331,7 @@ def create_user(display_name, username=None, password='foo', make_project=False)
     kw = {"email": email}
     em = EmailAddress.get(**kw)
     em.confirmed = True
+    em.confirmed_date = datetime.utcnow()
     em.set_nonce_hash()
     user.set_pref('email_address', email)
     fast_set_pwd(user, password)

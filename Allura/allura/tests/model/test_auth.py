@@ -22,6 +22,7 @@ Model tests for auth
 import textwrap
 from datetime import datetime, timedelta
 
+from bson import ObjectId
 from tg import tmpl_context as c, app_globals as g, request as r
 from webob import Request
 from mock import patch, Mock
@@ -112,6 +113,23 @@ class TestAuth:
             M.MonQTask.run_ready()
         return_path, rcpts, body = _client.sendmail.call_args[0]
         assert rcpts == ['test_admin@domain.net']
+
+    def test_email_address_confirmed_date_with_fallback(self):
+        assert M.EmailAddress().confirmed_date_with_fallback is None
+
+        test_date = datetime(2025, 1, 1)
+
+        assert M.EmailAddress(confirmed_date=test_date).confirmed_date_with_fallback == test_date
+
+        assert M.EmailAddress(
+            _id=ObjectId.from_datetime(test_date),
+            confirmed=False,
+        ).confirmed_date_with_fallback is None
+
+        assert M.EmailAddress(
+            _id=ObjectId.from_datetime(test_date),
+            confirmed=True,
+        ).confirmed_date_with_fallback == test_date
 
     @td.with_user_project('test-admin')
     def test_user(self):
