@@ -235,6 +235,7 @@ class AuthController(BaseController):
             config=config
         ))
         send_system_mail_to_user(user, 'Password Changed', email_body)
+        user.add_login_detail(provider.get_login_detail(request, user))  # not a login per-se, but good to record this so they can log in from same location without a pin verification
         flash('Password changed')
         redirect('/auth/?return_to=/')  # otherwise the default return_to would be the forgotten_password referrer page
 

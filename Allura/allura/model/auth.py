@@ -1139,7 +1139,7 @@ class AuditLog(MappedClass):
 
 class UserLoginDetails(MappedClass):
     """
-    Store unique entries for users' previous login details.
+    Store unique entries for users' previous login details.  And other trusted actions like successful password reset
 
     Used to help determine if new logins are suspicious or not
     """
