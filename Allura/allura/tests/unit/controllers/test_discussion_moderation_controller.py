@@ -73,7 +73,7 @@ class TestWhenModerating(WithDatabase):
 
 
 class TestIndexWithNoPosts(WithDatabase):
-    patches = [patches.fake_app_patch]
+    patches = [patches.fake_app_patch, patches.fake_form_request_patch]
 
     def test_that_it_returns_no_posts(self):
         discussion = create_discussion()
@@ -82,7 +82,7 @@ class TestIndexWithNoPosts(WithDatabase):
 
 
 class TestIndexWithAPostInTheDiscussion(WithDatabase):
-    patches = [patches.fake_app_patch]
+    patches = [patches.fake_app_patch, patches.fake_form_request_patch]
 
     def setup_method(self, method):
         super().setup_method(method)

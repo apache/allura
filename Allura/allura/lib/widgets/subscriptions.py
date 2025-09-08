@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import tg
 import ew as ew_core
 import ew.jinja2_ew as ew
 from tg import tmpl_context as c
@@ -90,3 +91,7 @@ class SubscribeForm(ew.SimpleForm):
         yield from super().resources()
         if not c.user.is_anonymous():
             yield ew.JSLink('js/subscriptions.js', location='body_js_tail')  # location, to force after react js files
+
+    def validate(self, value, state=None):
+        state = tg.request if hasattr(tg, 'request') else state
+        return super().validate(value, state)

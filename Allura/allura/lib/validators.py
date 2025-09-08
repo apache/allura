@@ -153,7 +153,7 @@ class NullValidator(fev.Validator):
     def from_python(self, value, state):
         return value
 
-    def validate(self, value, state):
+    def validate(self, value, state=None):
         return value
 
 

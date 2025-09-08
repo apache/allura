@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import tg
 from tg import tmpl_context as c
 from formencode import validators as fev
 import ew as ew_core
@@ -55,3 +56,7 @@ class FollowToggle(ew.SimpleForm):
             action=context['action_label'],
             thing=context['thing'],
         )
+
+    def validate(self, value, state=None):
+        state = tg.request if hasattr(tg, 'request') else state
+        return super().validate(value, state)

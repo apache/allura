@@ -27,6 +27,7 @@ import json
 import re
 import importlib.resources
 
+import tg
 import webtest
 from webtest import TestApp, TestResponse
 from ming.utils import LazyProperty

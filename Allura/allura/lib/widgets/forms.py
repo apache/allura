@@ -117,6 +117,10 @@ class ForgeForm(ew.SimpleForm):
             display += Markup("<div class='error'>{}</div>").format(ctx['errors'])
         return display
 
+    def validate(self, value, state=None):
+        state = getattr(tg, 'request', None)
+        return super().validate(value, state)
+
 
 class ForgeFormResponsive(ForgeForm):
     def __init__(self):
@@ -808,6 +812,10 @@ class RegistrationForm(ForgeForm):
 class AdminForm(ForgeForm):
     template = 'jinja:allura:templates/widgets/admin_form.html'
 
+    def validate(self, value, state=None):
+        state = tg.request if hasattr(state, 'request') else state
+        return super().validate(value, state)
+
 
 class AdminFormResponsive(ForgeForm):
     def __init__(self):
@@ -982,10 +990,11 @@ class NeighborhoodAddProjectForm(ForgeForm):
 
     @ew_core.core.validator
     def validate(self, value, state=None):
+        state = tg.request if hasattr(tg, 'request') else state
         value = super().validate(value, state)
         provider = plugin.ProjectRegistrationProvider.get()
         if not provider.phone_verified(c.user, c.project.neighborhood):
-            raise formencode.Invalid('phone-verification', value, None)
+            raise formencode.Invalid('phone-verification', value, None, error_dict={'phone-verification': 'verification required'})
         return value
 
     def resources(self):
@@ -1117,6 +1126,11 @@ class CsrfForm(ew.SimpleForm):
         if field.name == '_csrf_token':
             ctx['value'] = tg.request.cookies.get('_csrf_token') or tg.request.environ['_csrf_token']
         return ctx
+
+    def validate(self, value, state=None):
+        state = tg.request if hasattr(tg, 'request') else state
+        return super().validate(value, state)
+
 
 
 class AwardGrantForm(ForgeForm):

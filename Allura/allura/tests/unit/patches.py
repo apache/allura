@@ -17,6 +17,7 @@
 
 from mock import Mock, patch, MagicMock
 from tg import tmpl_context as c
+import tg
 
 from allura.tests.unit.factories import (
     create_project,
@@ -62,3 +63,5 @@ def fake_request_patch(test_case):
                  MagicMock(
                      referer='.'
                  ))
+def fake_form_request_patch(test_case):
+    return patch('tg.request', MagicMock(referer='.'))

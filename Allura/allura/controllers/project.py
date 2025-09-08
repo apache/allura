@@ -151,7 +151,7 @@ class NeighborhoodController:
     def add_project(self, **form_data):
         with h.login_overlay():
             require_access(self.neighborhood, 'register')
-        verify = request.validation.errors == {'_the_form': 'phone-verification'}
+        verify = 'phone-verification' in request.validation.errors
         c.show_phone_verification_overlay = verify
         c.add_project = W.add_project
         form_data.setdefault('tools', W.add_project.default_tools)
