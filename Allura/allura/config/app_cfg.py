@@ -40,6 +40,7 @@ from tg.configurator.components.app_globals import AppGlobalsConfigurationCompon
 from tg.configurator.components.helpers import HelpersConfigurationComponent
 from tg.configurator.components.dispatch import DispatchConfigurationComponent
 from tg.configurator.components.rendering import TemplateRenderingConfigurationComponent
+from tg.configurator.components.validation import ValidationConfigurationComponent
 from tg.renderers.jinja import JinjaRenderer
 from tg.renderers.json import JSONRenderer
 
@@ -52,6 +53,8 @@ import allura
 # needed for tg.configuration to work
 from allura.lib import helpers
 from allura.lib.package_path_loader import PackagePathLoader
+import formencode
+
 
 log = logging.getLogger(__name__)
 
@@ -70,6 +73,7 @@ class MinimalApplicationConfiguratorNoRegistry(ApplicationConfigurator):
         self.register(AppGlobalsConfigurationComponent)
         self.register(HelpersConfigurationComponent)
         self.register(TemplateRenderingConfigurationComponent)
+        self.register(ValidationConfigurationComponent)
         # self.register(RegistryConfigurationComponent, after=True)
 
 
@@ -86,6 +90,12 @@ class ForgeConfig(MinimalApplicationConfiguratorNoRegistry):
 
             # prevent dispatcher from striping extensions like '.io' from URLs
             'disable_request_extensions': True,
+            'validation.exceptions': [formencode.Invalid, formencode.api.Invalid],
+             'validation.validators': {
+                formencode.Schema: lambda schema, params: schema.to_python(params, state=tg.request),
+                #formencode.FancyValidator: lambda validator, params: validator.to_python(params, state=tg.request),
+            },
+            'validation.explode': {formencode.Invalid: self.explode_formencode_invalid},
 
             # if left to True (default) would use crank.util.default_path_translator to convert all URL punctuation to "_"
             # which is convenient for /foo-bar to execute a "def foo_bar" method, but is a pretty drastic change for us
@@ -95,6 +105,8 @@ class ForgeConfig(MinimalApplicationConfiguratorNoRegistry):
         })
         self.replace(TemplateRenderingConfigurationComponent.id, AlluraTemplateConfig)
 
+    def explode_formencode_invalid(self, err):
+        return {"errors": err.error_dict, "values": err.value}
 
 class AlluraTemplateConfig(TemplateRenderingConfigurationComponent):
 
