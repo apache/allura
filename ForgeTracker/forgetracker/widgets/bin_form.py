@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import tg
 import ew
 from ew import jinja2_ew
 from allura.lib import validators as v
@@ -39,3 +40,7 @@ class BinForm(ew.SimpleForm):
         terms = jinja2_ew.TextField(
             label='Search Terms',
             validator=v.UnicodeString(not_empty=True))
+
+    def validate(self, value, state=None):
+        state = tg.request if hasattr(tg, 'request') else state
+        return super().validate(value, state)

@@ -52,7 +52,7 @@ log = logging.getLogger(__name__)
 
 
 class pass_validator:
-    def validate(self, v, s):
+    def validate(self, v, s=None):
         return v
 
 

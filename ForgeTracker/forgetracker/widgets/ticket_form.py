@@ -16,6 +16,7 @@
 #       under the License.
 
 
+import tg
 from tg import tmpl_context as c
 from formencode import validators as fev
 from markupsafe import Markup
@@ -139,6 +140,10 @@ class GenericTicketForm(ew.SimpleForm):
                     fields.append(TicketCustomField.make(cf))
                     break
         return ew_core.NameList(fields)
+
+    def validate(self, value, state=None):
+        state = tg.request if hasattr(tg, 'request') else state
+        return super().validate(value, state)
 
 
 class TicketForm(GenericTicketForm):

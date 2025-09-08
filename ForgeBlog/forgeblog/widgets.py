@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import tg
 import ew as ew_core
 import ew.jinja2_ew as ew
 
@@ -67,6 +68,10 @@ class BlogPostForm(forms.ForgeForm):
                 $('input[name="title"]').focus();
             });
         ''')
+
+    def validate(self, value, state=None):
+        state = tg.request if hasattr(tg, 'request') else state
+        return super().validate(value, state)
 
 
 class NewPostForm(BlogPostForm):
