@@ -149,14 +149,15 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         next_page_url = self.get_next_page_url(link)
         return json.loads(page.read().decode('utf8')), next_page_url
 
-    def get_page(self, page_name_or_url, **kw):
+    def get_page(self, page_name_or_url, do_pagination=True, **kw):
         page = super().get_page(
             page_name_or_url, **kw)
         page, next_page_url = page
-        while next_page_url:
-            p = super().get_page(next_page_url, **kw)
-            p, next_page_url = p
-            page += p
+        if do_pagination:
+            while next_page_url:
+                p = super().get_page(next_page_url, **kw)
+                p, next_page_url = p
+                page += p
         self.page = page
         return self.page
 
