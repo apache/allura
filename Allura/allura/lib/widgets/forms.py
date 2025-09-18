@@ -994,7 +994,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
         value = super().validate(value, state)
         provider = plugin.ProjectRegistrationProvider.get()
         if not provider.phone_verified(c.user, c.project.neighborhood):
-            raise formencode.Invalid('phone-verification', value, None)
+            raise formencode.Invalid('phone-verification', value, None, error_dict={'phone-verification': 'verification required'})
         return value
 
     def resources(self):
