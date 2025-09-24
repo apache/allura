@@ -44,7 +44,7 @@
 {%- endmacro %}
 
 <div id="sidebar">
-  {% if c.app and c.app.searchable %}
+  {% if c.app and c.app.searchable and not request.path.startswith(c.app.admin_url) %}
     <form id="search" method="GET" action="{{c.app.url + 'search/'}}">
       <input name="q" type="text" title="Search {{c.app.config.options.mount_label}}" placeholder="Search {{c.app.config.options.mount_label}}">
       <label>
@@ -68,6 +68,9 @@
           {% set admin_menu = c.app.admin_menu() %}
         {% endif %}
         {% if admin_menu %}
+          {% if request.path.startswith(c.app.admin_url) %}
+              <a href="{{ c.project.url() + 'admin/' }}"><h3 style="padding-bottom: 1em; border-bottom: 1px solid lightgray">Admin - Project</h3></a>
+          {% endif %}
           <a id='sidebar-admin-header'
              href='#' {% if request.path.startswith(c.app.admin_url) %}class="expanded"{% endif %}>
             {{sidebar_item(c.app.admin_menu_collapse_button)}}
