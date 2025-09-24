@@ -44,6 +44,7 @@ from allura import model as M
 from allura.lib import helpers as h
 from alluratest.controller import setup_trove_categories
 
+from Allura.allura.tests.functional.test_auth import login
 
 def assert_globals_are_reset():
     # in normal tests the globals 'stacks' are cleared
@@ -303,3 +304,33 @@ class TestErrorMiddleware(TestController):
         assert 'Allura/allura/controllers/project.py' in r.errors
         assert 'CGI Variables' in r.errors
         assert "PATH_INFO: '/p/'" in r.errors
+
+
+class TestEmailVerificationMessage(TestController):
+
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.unconfirmed_email = 'foobar@email.com'
+        u = M.User.query.get(username='test-admin')
+        M.EmailAddress(claimed_by_user_id=u._id, email=self.unconfirmed_email)
+        ThreadLocalODMSession.flush_all()
+
+    def teardown_method(self, method):
+        u = M.User.query.get(username='test-admin')
+        email = M.EmailAddress.query.get(claimed_by_user_id=u._id, email='foobar@email.com')
+        email.delete()
+        ThreadLocalODMSession.flush_all()
+
+    def test_unconfirmed_message(self):
+        login(self.app,username='test-user')
+        r = self.app.get('/p/test/admin/')
+        assert 'Your account email address(es) are out of date or unverified' in r.text
+
+    def test_confirmed_message(self):
+        u = M.User.query.get(username='test-admin')
+        email = M.EmailAddress.query.get(claimed_by_user_id=u._id, email=self.unconfirmed_email)
+        email.confirmed = True
+        ThreadLocalODMSession.flush_all()
+        login(self.app,username='test-admin')
+        r = self.app.get('/p/test/admin/')
+        assert 'Your account email address(es) are out of date or unverified' not in r.text

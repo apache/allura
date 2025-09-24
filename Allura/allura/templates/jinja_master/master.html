@@ -147,6 +147,16 @@
 {% endcall %}
 
 <div id="messages">
+    {% if c.user and not c.user.is_anonymous() %}
+    {# this message appears when a user has unverified email addresses #}
+    {% set verification = h.needs_email_verification(c.user) %}
+        {%  if verification %}
+        <section class="message warning notify-sticky notify-active">
+            <div class="content">{{ verification.message | safe_html }}</div>
+        </section>
+        {% endif %}
+    {% endif %}
+
     {% for n in h.pop_user_notifications() %}
         <section class="message {{ n.subject or 'info' }}">
             <header>Notification:</header>
