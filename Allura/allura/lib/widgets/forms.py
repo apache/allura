@@ -118,7 +118,7 @@ class ForgeForm(ew.SimpleForm):
         return display
 
     def validate(self, value, state=None):
-        state = tg.request if hasattr(tg, 'request') else state
+        state = getattr(tg, 'request', None)
         return super().validate(value, state)
 
 
