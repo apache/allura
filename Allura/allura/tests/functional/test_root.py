@@ -324,7 +324,7 @@ class TestEmailVerificationMessage(TestController):
     def test_unconfirmed_message(self):
         login(self.app,username='test-user')
         r = self.app.get('/p/test/admin/')
-        assert f'<i>{self.unconfirmed_email}</i> have not been verified.' in r.text
+        assert f'<i>{self.unconfirmed_email}</i> has not been verified.' in r.text
 
     def test_confirmed_message(self):
         u = M.User.query.get(username='test-admin')
@@ -333,4 +333,4 @@ class TestEmailVerificationMessage(TestController):
         ThreadLocalODMSession.flush_all()
         login(self.app,username='test-admin')
         r = self.app.get('/p/test/admin/')
-        assert f'<i>{self.unconfirmed_email}</i> have not been verified.' not in r.text
+        assert f'<i>{self.unconfirmed_email}</i> has not been verified.' not in r.text
