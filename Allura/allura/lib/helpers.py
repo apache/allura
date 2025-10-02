@@ -725,7 +725,8 @@ def needs_email_verification(user) -> dict | None:
     email_addresses = M.EmailAddress.find(dict(claimed_by_user_id=user._id, confirmed=False)).all()
     if email_addresses:
         unconfirmed = ', '.join([e.email for e in email_addresses])
-        msg = f'''<i>{unconfirmed}</i> have not been verified. To verify go to your <a href="/auth/preferences/" style="text-decoration:underline">preferences section</a>.'''
+        msg = 'have not been verified' if len(email_addresses) > 1 else 'has not been verified'
+        msg = f'''<i>{unconfirmed}</i> {msg}. To verify go to your <a href="/auth/preferences/" style="text-decoration:underline">preferences section</a>.'''
         return {'message': msg, 'status': 'warning'}
     return None
 
