@@ -147,7 +147,7 @@
 {% endcall %}
 
 <div id="messages">
-    {% if c.user %}
+    {% if c.user and not c.user.is_anonymous() %}
     {# this message appears when a user has unverified email addresses #}
     {% set verification = h.needs_email_verification(c.user) %}
         {%  if verification %}
