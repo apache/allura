@@ -245,17 +245,20 @@ class TestAuth(TestController):
         assert r.location == 'http://localhost/'
 
         # redir to requested location
-        r = self.app.get('/auth/', extra_environ={'username': 'test-admin'}, params={'return_to': '/p/test/?a=b'},
+        r = self.app.get('/auth/', extra_environ={'username': 'test-admin'},
+                         params={'return_to': '/p/test/?a=b'},
                          status=302)
         assert r.location == 'http://localhost/p/test/?a=b'
 
         # no redirect loop on /auth/
-        r = self.app.get('/auth/', extra_environ={'username': 'test-admin'}, params={'return_to': '/auth/'},
+        r = self.app.get('/auth/', extra_environ={'username': 'test-admin'},
+                         params={'return_to': '/auth/'},
                          status=302)
         assert r.location == 'http://localhost/'
 
         # no external redirect
-        r = self.app.get('/auth/', extra_environ={'username': 'test-admin'}, params={'return_to': 'http://example.com/x'},
+        r = self.app.get('/auth/', extra_environ={'username': 'test-admin'},
+                         params={'return_to': 'http://example.com/x'},
                          status=302)
         assert r.location == 'http://localhost/'
 
@@ -3510,7 +3513,9 @@ class TestTrackUserSessions(TestController):
         self.app.set_cookie('beaker.session.id', 'invalid-session-id')
 
         # Navigating to a page with an invalid session id should redirect to the login page
-        r = self.app.get('/auth/preferences/', extra_environ={'username': 'test-user', 'disable_auth_magic': 'True'}, status=302)
+        r = self.app.get('/auth/preferences/',
+                         extra_environ={'username': 'test-user', 'disable_auth_magic': 'True'},
+                         status=302)
         assert '/auth/?return_to=%2Fauth%2Fpreferences%2F' in r.location
 
     @mock.patch.dict(config, {'auth.reject_untracked_sessions': True})
