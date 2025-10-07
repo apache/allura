@@ -188,13 +188,16 @@ def ceil(number):
     return math.ceil(number)
 
 
+bad_unicode_re = re.compile(r'[\x00-\x08\x0B\x0C\x0E-\x1F]')
+
+
 def strip_bad_unicode(s):
     """
     xml doesn't like some control characters: https://www.w3.org/TR/REC-xml/#charsets
     :param s:
     :return:
     """
-    return re.sub('[\x00-\x08\x0B\x0C\x0E-\x1F]', '', s)
+    return bad_unicode_re.sub('', s)
 
 
 def monkeypatch(*objs):

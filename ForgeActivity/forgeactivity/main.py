@@ -82,6 +82,9 @@ class W:
     page_list = PageList()
 
 
+old_default_avatar_re = re.compile(r'([&?])d=[^&]*')
+
+
 class ForgeActivityController(BaseController):
 
     def __init__(self, app, *args, **kw):
@@ -148,9 +151,8 @@ class ForgeActivityController(BaseController):
                     t.actor.activity_extras.icon_url = default_avatar
                 else:
                     # fix gravatar urls with old default avatar urls in them
-                    t.actor.activity_extras.icon_url = re.sub(r'([&?])d=[^&]*',
-                                                              fr'\1d={default_avatar}',
-                                                              t.actor.activity_extras.icon_url)
+                    t.actor.activity_extras.icon_url = old_default_avatar_re.sub(fr'\1d={default_avatar}',
+                                                                                 t.actor.activity_extras.icon_url)
             if t.actor.activity_url:
                 t.actor.activity_url = f'{t.actor.activity_url}profile/'
 
