@@ -22,4 +22,4 @@ exec(open('forgeuserstats/version.py').read())  # noqa: S102
 
 setup(name='ForgeUserStats',
       version=__version__,
-)
+      )

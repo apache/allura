@@ -350,14 +350,13 @@ class TestMailServer:
             assert rcpt == (250, b'OK')
             data = client.docmd("DATA")
             assert data == (354, b'End data with <CR><LF>.<CR><LF>')
-            
+
         with SMTPClient(hostname, port, timeout=0.5) as client:
-            client.sendmail('from@example.com', ['to@example.com'],"""
+            client.sendmail('from@example.com', ['to@example.com'], """
             From: From Person <from@example.com>
             To: To Person <to@example.com>
             Subject: A test
             Hi Bart, this is Anne.
             """)
-            
+
         controller.stop()
-            

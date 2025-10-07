@@ -22,4 +22,4 @@ exec(open('forgeblog/version.py').read())  # noqa: S102
 
 setup(name='ForgeBlog',
       version=__version__,
-)
+      )

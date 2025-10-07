@@ -23,4 +23,4 @@ exec(open('forgefeedback/version.py').read())  # noqa: S102
 
 setup(name='ForgeFeedback',
       version=__version__,
-)
+      )

@@ -91,7 +91,7 @@ class ForgeConfig(MinimalApplicationConfiguratorNoRegistry):
             # prevent dispatcher from striping extensions like '.io' from URLs
             'disable_request_extensions': True,
             'validation.exceptions': [formencode.Invalid, formencode.api.Invalid,],
-             'validation.validators': {
+            'validation.validators': {
                 formencode.Schema: lambda schema, params: schema.to_python(params, state=tg.request),
                 formencode.FancyValidator: lambda validator, params: validator.to_python(params, state=tg.request),
             },
@@ -120,6 +120,7 @@ class ForgeConfig(MinimalApplicationConfiguratorNoRegistry):
         values = {str(k): v for k, v in getattr(err, 'value', {}).items()} if hasattr(err, 'value') and isinstance(err.value, dict) else {}
         return {"errors": errors, "values": values}
 
+
 class AlluraTemplateConfig(TemplateRenderingConfigurationComponent):
 
     def on_bind(self, configurator: ForgeConfig):
@@ -141,6 +142,7 @@ class InMemoryBytecodeCache(jinja2.BytecodeCache):
     def dump_bytecode(self, bucket):
         key = bucket.key
         self.cache[key] = bucket.code
+
 
 long_term_in_memory_bytecode_cache = InMemoryBytecodeCache()
 

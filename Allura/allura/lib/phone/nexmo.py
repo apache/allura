@@ -61,7 +61,7 @@ class NexmoPhoneService(PhoneService):
                     msg,
                     markupsafe.Markup('<br>Make sure you include the country code (see examples above)'),
                     markupsafe.Markup('. For US numbers, you must include <code>1-</code> before the area code.') if len(number) == 10 else '',
-                )
+            )
 
         return {'status': 'error', 'error': msg}
 

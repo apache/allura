@@ -23,7 +23,6 @@ from paste.deploy.converters import asint
 
 
 class BetterDebuggingServer:
-    
 
     async def handle_DATA(self,  server, session, envelope):
         try:

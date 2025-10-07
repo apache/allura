@@ -51,6 +51,7 @@ class ThemeProviderTestApp(Application):
         24: 'images/testapp_24.png',
     }
 
+
 class TestProjectRegistrationProvider:
 
     def setup_method(self, method):

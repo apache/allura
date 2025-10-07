@@ -461,7 +461,7 @@ class GoogleAuthenticatorPamFilesystemRecoveryCodeService(GoogleAuthenticatorPam
 class EmailCodeAuthenticationService(MongodbMultifactorCommon):
     def generate_code(self, user):
         code_length = 6
-        code_expiration_time = 300 # seconds
+        code_expiration_time = 300  # seconds
 
         code = ''.join(secrets.choice(string.digits) for i in range(code_length))
         code_expiration_timestamp = int(time() + code_expiration_time)
@@ -473,7 +473,7 @@ class EmailCodeAuthenticationService(MongodbMultifactorCommon):
         user_code_expiry = user.get_tool_data('AuthEmailCode', 'code_expiry')
         if user_code:
             self.enforce_rate_limit(user)
-            if user_code == code and int(time()) < user_code_expiry :
+            if user_code == code and int(time()) < user_code_expiry:
                 # remove the AuthEmailCode tool data from the user
                 user.set_tool_data('AuthEmailCode', code="", code_expiry=0)
                 return True

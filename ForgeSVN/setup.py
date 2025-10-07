@@ -22,4 +22,4 @@ exec(open('forgesvn/version.py').read())  # noqa: S102
 
 setup(name='ForgeSVN',
       version=__version__,
-)
+      )

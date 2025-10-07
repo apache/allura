@@ -46,6 +46,7 @@ from alluratest.controller import setup_trove_categories
 
 from Allura.allura.tests.functional.test_auth import login
 
+
 def assert_globals_are_reset():
     # in normal tests the globals 'stacks' are cleared
     assert tg.config._object_stack() == []
@@ -322,7 +323,7 @@ class TestEmailVerificationMessage(TestController):
         ThreadLocalODMSession.flush_all()
 
     def test_unconfirmed_message(self):
-        login(self.app,username='test-user')
+        login(self.app, username='test-user')
         r = self.app.get('/p/test/admin/')
         assert 'Your account email address(es) are out of date or unverified' in r.text
 
@@ -331,6 +332,6 @@ class TestEmailVerificationMessage(TestController):
         email = M.EmailAddress.query.get(claimed_by_user_id=u._id, email=self.unconfirmed_email)
         email.confirmed = True
         ThreadLocalODMSession.flush_all()
-        login(self.app,username='test-admin')
+        login(self.app, username='test-admin')
         r = self.app.get('/p/test/admin/')
         assert 'Your account email address(es) are out of date or unverified' not in r.text

@@ -590,7 +590,7 @@ class TaskManagerController:
                 _id=task.context.app_config_id)
             task.user = M.User.query.get(_id=task.context.user_id)
             task_args = [deinstrument(a) for a in task.args]
-            task_kwargs = {k: deinstrument(v) for k,v in task.kwargs.items()}
+            task_kwargs = {k: deinstrument(v) for k, v in task.kwargs.items()}
         else:
             task_args = []
             task_kwargs = {}

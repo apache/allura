@@ -22,4 +22,4 @@ exec(open('forgechat/version.py').read())  # noqa: S102
 
 setup(name='ForgeChat',
       version=__version__,
-)
+      )

@@ -21,6 +21,7 @@ import mock
 from allura.lib import markdown_extensions as mde
 from tg import config as tg_config
 
+
 class TestTracRef1:
 
     @mock.patch('allura.lib.markdown_extensions.M.Shortlink.lookup')
@@ -81,6 +82,7 @@ class TestTracRef3:
         assert mde.TracRef3(app).sub('source:file.py@123') == '[source:file.py@123](/p/project/tool/123/tree/file.py)'
         assert mde.TracRef3(app).sub('source:file.py@123#L456') == '[source:file.py@123#L456](/p/project/tool/123/tree/file.py#l456)'
         assert mde.TracRef3(app).sub('source:file.py#L456') == '[source:file.py#L456](/p/project/tool/HEAD/tree/file.py#l456)'
+
 
 class TestRelativeLinkRewriter:
 

@@ -38,7 +38,7 @@ class SMTPServerCommand(base.Command):
     parser.add_option('-c', '--context', dest='context',
                       help=('The context of the message (path to the project'
                             ' and/or tool'))
-    
+
     def command(self):
         faulthandler.enable()
         self.basic_setup()
@@ -49,8 +49,8 @@ class SMTPServerCommand(base.Command):
         controller.start()
         while True:
             time.sleep(100000)
-            
-        
+
+
 class MailServer:
     async def handle_DATA(self, server, session, envelope):
         try:
@@ -73,4 +73,3 @@ class MailServer:
             return '500 Could not process your message'
 
         return '250 OK'
-

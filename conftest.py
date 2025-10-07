@@ -17,6 +17,8 @@
 import pytest
 
 # should get rid of this once this issue is fixed https://github.com/TurboGears/tg2/issues/136
+
+
 @pytest.fixture(autouse=True, scope='session')
 def tg_context_patch():
     from tg import (

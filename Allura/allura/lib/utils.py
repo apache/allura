@@ -584,8 +584,8 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
         } | set(aslist(tg.config.get('safe_html.classes', [])))
         self.valid_partial_class_prefixes = tuple(['fa-'] + aslist(tg.config.get('safe_html.class_prefixes', None)))
         self.valid_id_prefixes = {
-            'h-', # see toc_slugify_with_prefix
-            'fn:', 'fnref:', # from footnotes extension
+            'h-',  # see toc_slugify_with_prefix
+            'fn:', 'fnref:',  # from footnotes extension
         } | set(aslist(tg.config.get('safe_html.id_prefixes', [])))
         self._prev_token_was_ok_iframe = False
 

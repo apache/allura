@@ -63,5 +63,7 @@ def fake_request_patch(test_case):
                  MagicMock(
                      referer='.'
                  ))
+
+
 def fake_form_request_patch(test_case):
     return patch('tg.request', MagicMock(referer='.'))

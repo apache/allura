@@ -19,4 +19,4 @@ from setuptools import setup
 
 setup(name='AlluraTest',
       version='0.1',
-)
+      )

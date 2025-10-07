@@ -723,6 +723,7 @@ def config_with_prefix(d, prefix):
     return {k[plen:]: v for k, v in d.items()
             if k.startswith(prefix)}
 
+
 def needs_email_verification(user) -> dict | None:
     from allura import model as M
     email_addresses = M.EmailAddress.find(dict(claimed_by_user_id=user._id, confirmed=False)).all()
@@ -730,6 +731,7 @@ def needs_email_verification(user) -> dict | None:
         msg = '''Your account email address(es) are out of date or unverified. Please update in your <a href="/auth/preferences/" style="text-decoration:underline">preferences section</a>.'''
         return {'message': msg, 'status': 'warning'}
     return None
+
 
 def paging_sanitizer(limit, page, total_count=sys.maxsize, zero_based_pages=True):
     """Return limit, page - both converted to int and constrained to

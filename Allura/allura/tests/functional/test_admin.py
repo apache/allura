@@ -1032,8 +1032,6 @@ class TestProjectAdmin(TestController):
                 assert len(group_perms) == 4  # read permission is being displayed
             else:
                 assert len(group_perms) == 1
-                
-                
 
 
 class TestExport(TestController):

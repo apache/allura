@@ -22,4 +22,4 @@ exec(open('forgelink/version.py').read())  # noqa: S102
 
 setup(name='ForgeLink',
       version=__version__,
-)
+      )

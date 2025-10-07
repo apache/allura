@@ -22,4 +22,4 @@ exec(open('forgetracker/version.py').read())  # noqa: S102
 
 setup(name='ForgeTracker',
       version=__version__,
-)
+      )

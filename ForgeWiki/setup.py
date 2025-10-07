@@ -22,4 +22,4 @@ exec(open('forgewiki/version.py').read())  # noqa: S102
 
 setup(name='ForgeWiki',
       version=__version__,
-)
+      )

@@ -1132,7 +1132,6 @@ class CsrfForm(ew.SimpleForm):
         return super().validate(value, state)
 
 
-
 class AwardGrantForm(ForgeForm):
 
     def __init__(self, *args, **kw):

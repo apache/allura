@@ -22,4 +22,4 @@ exec(open('forgediscussion/version.py').read())  # noqa: S102
 
 setup(name='ForgeDiscussion',
       version=__version__,
-)
+      )

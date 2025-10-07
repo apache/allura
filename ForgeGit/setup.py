@@ -22,4 +22,4 @@ exec(open('forgegit/version.py').read())  # noqa: S102
 
 setup(name='ForgeGit',
       version=__version__,
-)
+      )

@@ -20,4 +20,4 @@ from setuptools import setup
 
 setup(name='ForgeFiles',
       version='0.1.0',
-)
+      )

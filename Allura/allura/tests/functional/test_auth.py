@@ -50,6 +50,7 @@ from allura.lib.multifactor import TotpService, RecoveryCodeService
 def unentity(s):
     return s.replace('&quot;', '"').replace('&#34;', '"')
 
+
 def login(app, username='test-user', pwd='foo', query_string=''):
     extra = {'username': '*anonymous', 'REMOTE_ADDR': '127.0.0.1'}
     r = app.get('/auth/' + query_string, extra_environ=extra)
@@ -257,7 +258,6 @@ class TestAuth(TestController):
         r = self.app.get('/auth/', extra_environ={'username': 'test-admin'}, params={'return_to': 'http://example.com/x'},
                          status=302)
         assert r.location == 'http://localhost/'
-
 
     def test_login_overlay(self):
         r = self.app.get('/auth/login_fragment/', extra_environ={'username': '*anonymous'})
@@ -3148,7 +3148,6 @@ class TestTwoFactor(TestController):
         r = self.app.get('/auth/multifactor?return_to=/p/foo', status=302)
         assert r.location == 'http://localhost/p/foo'
 
-
     def test_login_rate_limit(self):
         self._init_totp()
 
@@ -3480,8 +3479,7 @@ class TestTrackUserSessions(TestController):
         r = self.app.get('/auth/logout', extra_environ={'username': 'test-user'})
         user = M.User.by_username('test-user')
         session_ids = user.get_tool_data('web_session', 'ids')
-        assert len(session_ids) ==  0
-
+        assert len(session_ids) == 0
 
     @mock.patch.dict(config, {'auth.reject_untracked_sessions': True})
     def test_navigation(self):

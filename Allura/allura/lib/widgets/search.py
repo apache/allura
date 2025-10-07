@@ -56,7 +56,7 @@ class SearchHelp(ffw.Lightbox):
             autoescape=True,
             loader=jinja2.PackageLoader('allura', 'templates/widgets'))
         self.content = Markup(jinja2_env.get_template('search_help.html').render(dict(  # noqa: S704
-            comments=comments,  
+            comments=comments,
             history=history,
             fields=fields,
         )))
