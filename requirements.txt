@@ -334,7 +334,7 @@ webob==1.8.9
     #   timermiddleware
     #   turbogears2
     #   webtest
-webtest==3.0.6
+webtest==3.0.7
     # via -r requirements.in
 werkzeug==3.1.3
     # via -r requirements.in
