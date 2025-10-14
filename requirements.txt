@@ -29,7 +29,7 @@ botocore==1.35.37
     #   boto3
     #   pymongo-auth-aws
     #   s3transfer
-certifi==2025.7.9
+certifi==2025.10.5
     # via
     #   httpcore
     #   httpx
@@ -41,7 +41,7 @@ cffi==2.0.0
     #   pymongocrypt
 cfgv==3.4.0
     # via pre-commit
-charset-normalizer==3.4.2
+charset-normalizer==3.4.4
     # via requests
 colander==1.8.3
     # via -r requirements.in
@@ -112,7 +112,7 @@ httpx==0.27.2
     # via pymongocrypt
 identify==2.6.12
     # via pre-commit
-idna==3.10
+idna==3.11
     # via
     #   anyio
     #   httpx
@@ -253,7 +253,7 @@ regex-as-re-globally==0.0.6
     # via -r requirements.in
 repoze-lru==0.7
     # via turbogears2
-requests==2.32.4
+requests==2.32.5
     # via
     #   -r requirements.in
     #   pysolr
