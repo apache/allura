@@ -84,7 +84,7 @@ faust-cchardet==2.1.19
     # via -r requirements.in
 feedgenerator==2.2.1
     # via -r requirements.in
-feedparser==6.0.11
+feedparser==6.0.12
     # via -r requirements.in
 filelock==3.18.0
     # via virtualenv
