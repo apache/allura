@@ -62,7 +62,7 @@ decorator==5.2.1
     # via -r requirements.in
 diff-match-patch==20230430
     # via sxsdiff
-distlib==0.3.9
+distlib==0.4.0
     # via virtualenv
 dnspython==2.8.0
     # via pymongo
@@ -86,7 +86,7 @@ feedgenerator==2.2.1
     # via -r requirements.in
 feedparser==6.0.12
     # via -r requirements.in
-filelock==3.18.0
+filelock==3.20.0
     # via virtualenv
 formencode==2.1.1
     # via
@@ -110,7 +110,7 @@ httpcore==1.0.9
     # via httpx
 httpx==0.27.2
     # via pymongocrypt
-identify==2.6.12
+identify==2.6.15
     # via pre-commit
 idna==3.11
     # via
@@ -186,11 +186,11 @@ pastescript==3.7.0
     # via -r requirements.in
 pillow==11.3.0
     # via -r requirements.in
-platformdirs==4.3.8
+platformdirs==4.5.0
     # via virtualenv
 pluggy==1.6.0
     # via pytest
-pre-commit==4.2.0
+pre-commit==4.3.0
     # via -r requirements.in
 profanityfilter==2.1.0
     # via -r requirements.in
@@ -240,7 +240,7 @@ pytz==2025.2
     # via
     #   -r requirements.in
     #   ming
-pyyaml==6.0.2
+pyyaml==6.0.3
     # via pre-commit
 qrcode==8.2
     # via -r requirements.in
@@ -309,13 +309,14 @@ typing-extensions==4.15.0
     #   anyio
     #   beautifulsoup4
     #   cryptography
+    #   virtualenv
 tzdata==2025.2 ; sys_platform == 'win32'
     # via feedgenerator
 urllib3==2.5.0
     # via
     #   botocore
     #   requests
-virtualenv==20.31.2
+virtualenv==20.35.3
     # via pre-commit
 waitress==3.0.2
     # via webtest
