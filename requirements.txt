@@ -35,7 +35,7 @@ certifi==2025.7.9
     #   httpx
     #   pymongo
     #   requests
-cffi==1.17.1
+cffi==2.0.0
     # via
     #   cryptography
     #   pymongocrypt
@@ -53,7 +53,7 @@ crank==0.8.1
     # via turbogears2
 creoleparser==0.7.5
     # via pypeline
-cryptography==45.0.5
+cryptography==46.0.2
     # via
     #   -r requirements.in
     #   joserfc
@@ -129,7 +129,7 @@ jmespath==1.0.1
     # via
     #   boto3
     #   botocore
-joserfc==1.2.1
+joserfc==1.4.0
     # via beaker-session-jwt
 legacy-cgi==2.6.2 ; python_full_version >= '3.13'
     # via
@@ -199,7 +199,7 @@ pyasynchat==1.0.4
     # via -r requirements.in
 pyasyncore==1.0.4
     # via pyasynchat
-pycparser==2.22
+pycparser==2.23 ; implementation_name != 'PyPy'
     # via cffi
 pygments==2.19.2
     # via
@@ -213,7 +213,7 @@ pymongo==4.15.3
     #   ming
 pymongo-auth-aws==1.3.0
     # via pymongo
-pymongocrypt==1.13.0
+pymongocrypt==1.16.0
     # via pymongo
 pypeline==0.7.0
     # via -r requirements.in
@@ -310,6 +310,7 @@ typing-extensions==4.15.0
     # via
     #   anyio
     #   beautifulsoup4
+    #   cryptography
 urllib3==2.5.0
     # via
     #   botocore
