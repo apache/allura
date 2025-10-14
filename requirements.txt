@@ -72,7 +72,7 @@ docutils==0.21.2
     #   pypeline
 easywidgets==0.4.3
     # via -r requirements.in
-emoji==2.14.1
+emoji==2.15.0
     # via -r requirements.in
 exceptiongroup==1.2.2 ; python_full_version < '3.11'
     # via
