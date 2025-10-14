@@ -82,7 +82,7 @@ execnet==2.1.1
     # via pytest-xdist
 faust-cchardet==2.1.19
     # via -r requirements.in
-feedgenerator==2.1.0
+feedgenerator==2.2.1
     # via -r requirements.in
 feedparser==6.0.11
     # via -r requirements.in
@@ -240,7 +240,6 @@ python-oembed==0.2.4
 pytz==2025.2
     # via
     #   -r requirements.in
-    #   feedgenerator
     #   ming
 pyyaml==6.0.2
     # via pre-commit
@@ -311,6 +310,8 @@ typing-extensions==4.15.0
     #   anyio
     #   beautifulsoup4
     #   cryptography
+tzdata==2025.2 ; sys_platform == 'win32'
+    # via feedgenerator
 urllib3==2.5.0
     # via
     #   botocore
