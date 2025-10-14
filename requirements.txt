@@ -144,7 +144,7 @@ markdown==3.8.2
     #   pypeline
 markdown-checklist==0.4.4
     # via -r requirements.in
-markupsafe==3.0.2
+markupsafe==3.0.3
     # via
     #   -r requirements.in
     #   easywidgets
