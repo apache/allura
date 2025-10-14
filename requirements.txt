@@ -169,7 +169,6 @@ packaging==25.0
     #   gunicorn
     #   pymongocrypt
     #   pytest
-    #   pytest-sugar
 paginate==0.5.7
     # via -r requirements.in
 passlib==1.7.4
@@ -224,7 +223,7 @@ pytest==8.4.2
     #   -r requirements.in
     #   pytest-sugar
     #   pytest-xdist
-pytest-sugar==1.0.0
+pytest-sugar==1.1.1
     # via -r requirements.in
 pytest-xdist==3.8.0
     # via -r requirements.in
