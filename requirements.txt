@@ -291,7 +291,7 @@ termcolor==3.1.0
     # via pytest-sugar
 testfixtures==8.3.0 ; python_full_version < '3.11'
     # via -r requirements.in
-testfixtures==9.1.0 ; python_full_version >= '3.11'
+testfixtures==9.2.0 ; python_full_version >= '3.11'
     # via -r requirements.in
 textile==4.0.3
     # via pypeline
