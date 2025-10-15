@@ -66,11 +66,12 @@ class TestFeeds(TestController):
 
     def test_rss_feed_contains_self_link(self):
         r = self.app.get('/blog/feed.rss')
+        print(r.text)
         # atom namespace included
         assert '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">' in r
         # ...and atom:link points to feed url
         assert ('<atom:link href="http://localhost/blog/feed.rss" '
-                'rel="self" type="application/rss+xml"></atom:link>' in r)
+                'rel="self" type="application/rss+xml"/>' in r)
 
     def test_post_feeds(self):
         self._post()

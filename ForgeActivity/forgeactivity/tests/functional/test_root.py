@@ -339,7 +339,7 @@ class TestActivityController(TestController):
         activity = timeline.find('{http://www.w3.org/2005/Atom}entry')
         assert (
             activity.find('{http://www.w3.org/2005/Atom}published').text ==
-            '2013-12-04T21:48:19Z')
+            '2013-12-04T21:48:19.817000Z')
         assert (
             activity.find('{http://www.w3.org/2005/Atom}title').text ==
             'Administrator 1 posted a comment on ticket #34')
@@ -393,7 +393,7 @@ class TestActivityController(TestController):
         activity = timeline.find('{http://www.w3.org/2005/Atom}entry')
         assert (
             activity.find('{http://www.w3.org/2005/Atom}published').text ==
-            '2013-12-04T21:48:19Z')
+            '2013-12-04T21:48:19.817000Z')
         assert (
             activity.find('{http://www.w3.org/2005/Atom}title').text ==
             'Administrator 1 posted a comment on ticket #34')
