@@ -15,11 +15,13 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import functools
 
 import webob
 import tg.decorators
 from decorator import decorator
 from tg import request
+import pygments.plugin
 
 from allura.lib import helpers as h
 
@@ -101,6 +103,9 @@ def apply():
     @h.monkeypatch(tg.jsonify.JSONEncoder)
     def encode(self, o):
         return original_tg_jsonify_JSONEncoder_encode(self, o).replace('<', r'\u003C')
+
+    # can remove if https://github.com/pygments/pygments/pull/2979 is merged and released
+    pygments.plugin.entry_points = functools.cache(pygments.plugin.entry_points)
 
 
 old_controller_call = tg.controllers.DecoratedController._call
