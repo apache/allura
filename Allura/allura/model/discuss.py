@@ -67,7 +67,6 @@ class Discussion(Artifact, ActivityObject):
     description_cache = FieldProperty(MarkdownCache)
     num_topics = FieldProperty(int, if_missing=0)
     num_posts = FieldProperty(int, if_missing=0)
-    subscriptions = FieldProperty({str: bool})
 
     threads = RelationProperty('Thread', via='discussion_id')
     posts = RelationProperty('Post', via='discussion_id')
@@ -177,7 +176,6 @@ class Thread(Artifact, ActivityObject):
     subject = FieldProperty(str, if_missing='')
     num_replies = FieldProperty(int, if_missing=0)
     num_views = FieldProperty(int, if_missing=0)
-    subscriptions = FieldProperty({str: bool})
     first_post_id = ForeignIdProperty('Post')
     last_post_date = FieldProperty(datetime, if_missing=datetime(1970, 1, 1))
     artifact_reference = FieldProperty(schema.Deprecated)
