@@ -6,6 +6,7 @@ beaker-session-jwt
 colander
 cryptography
 decorator
+defopt
 EasyWidgets
 emoji
 faust-cchardet

@@ -63,6 +63,8 @@ import contextlib
 import io
 import logging
 
+import defopt
+
 from allura.lib.decorators import task
 from allura.lib.helpers import shlex_split
 
@@ -113,48 +115,42 @@ class ScriptTask(metaclass=MetaParserDocstring):
         cls.execute(options)
 
 
-try:
-    import defopt
-except ModuleNotFoundError:
-    pass
-else:
+class MetaDefOpt(type):
+    def __new__(meta, classname, bases, classDict):
+        return task(type.__new__(meta, classname, bases, classDict))
 
-    class MetaDefOpt(type):
-        def __new__(meta, classname, bases, classDict):
-            return task(type.__new__(meta, classname, bases, classDict))
-
-        @property
-        def __doc__(cls):
-            with contextlib.redirect_stdout(io.StringIO()) as stderr:
-                try:
-                    cls.main(argv=['--help'])
-                except SystemExit:
-                    pass
-            return stderr.getvalue()
-
-    class DefOptScriptTask(metaclass=MetaDefOpt):
-        """Base class for a command-line script that is also executable as a task."""
-
-        def __new__(cls, arg_string=''):
-            # when taskd calls SomeTaskClass(), then this runs.  Not really the normal way to use __new__
-            # and can't use __init__ since we want to return a value
-            return cls._execute_task(arg_string)
-
-        @classmethod
-        def _execute_task(cls, arg_string):
+    @property
+    def __doc__(cls):
+        with contextlib.redirect_stdout(io.StringIO()) as stderr:
             try:
-                return cls.main(argv=shlex_split(arg_string or ''))
+                cls.main(argv=['--help'])
             except SystemExit:
-                raise Exception("Error parsing args: '%s'" % arg_string)
+                pass
+        return stderr.getvalue()
 
-        @classmethod
-        def main(cls, **extra_kwargs):
-            defopt_params = dict(
-                no_negated_flags=True,
-            ) | extra_kwargs
-            return defopt.run(cls.execute, **defopt_params)
+class DefOptScriptTask(metaclass=MetaDefOpt):
+    """Base class for a command-line script that is also executable as a task."""
 
-        @classmethod
-        def execute(cls, *args, **kwargs):
-            """User code goes here, using defopt kwargs with type annotations"""
-            raise NotImplementedError
+    def __new__(cls, arg_string=''):
+        # when taskd calls SomeTaskClass(), then this runs.  Not really the normal way to use __new__
+        # and can't use __init__ since we want to return a value
+        return cls._execute_task(arg_string)
+
+    @classmethod
+    def _execute_task(cls, arg_string):
+        try:
+            return cls.main(argv=shlex_split(arg_string or ''))
+        except SystemExit:
+            raise Exception("Error parsing args: '%s'" % arg_string)
+
+    @classmethod
+    def main(cls, **extra_kwargs):
+        defopt_params = dict(
+            no_negated_flags=True,
+        ) | extra_kwargs
+        return defopt.run(cls.execute, **defopt_params)
+
+    @classmethod
+    def execute(cls, *args, **kwargs):
+        """User code goes here, using defopt kwargs with type annotations"""
+        raise NotImplementedError
