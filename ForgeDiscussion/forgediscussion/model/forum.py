@@ -57,6 +57,7 @@ class Forum(M.Discussion):
     members_only = FieldProperty(bool, if_missing=False)
     anon_posts = FieldProperty(bool, if_missing=False)
     monitoring_email = FieldProperty(str, if_missing=None)
+    monitoring_email_encrypted = FieldProperty(schema.Binary)
 
     @classmethod
     def attachment_class(cls):
