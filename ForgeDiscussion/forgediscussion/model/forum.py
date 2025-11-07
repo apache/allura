@@ -22,7 +22,7 @@ import pymongo
 from tg import tmpl_context as c
 from ming import schema
 from ming.utils import LazyProperty
-from ming.odm import FieldProperty, RelationProperty, ForeignIdProperty, Mapper
+from ming.odm import FieldProperty, RelationProperty, ForeignIdProperty, Mapper, DecryptedProperty
 
 from tg import config as tg_config
 
@@ -56,7 +56,7 @@ class Forum(M.Discussion):
     posts = RelationProperty('ForumPost', via='discussion_id')
     members_only = FieldProperty(bool, if_missing=False)
     anon_posts = FieldProperty(bool, if_missing=False)
-    monitoring_email = FieldProperty(str, if_missing=None)
+    monitoring_email = DecryptedProperty(str, 'monitoring_email_encrypted')
     monitoring_email_encrypted = FieldProperty(schema.Binary)
 
     @classmethod
