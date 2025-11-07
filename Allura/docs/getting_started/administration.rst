@@ -303,17 +303,6 @@ publicize-neighborhood.py
     :prog: paster script development.ini ../scripts/publicize-neighborhood.py --
 
 
-scrub-allura-data.py
---------------------
-
-*Cannot currently be run as a background task.*
-
-.. argparse::
-    :filename: ../../scripts/scrub-allura-data.py
-    :func: parser
-    :prog: paster script development.ini ../scripts/scrub-allura-data.py --
-
-
 .. _site-notifications:
 
 Site Notifications
