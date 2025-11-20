@@ -601,7 +601,8 @@ class Test():
         assert r == '<div class="markdown_content"><p><i class="fa fa-cog">gear icon</i></p></div>'
 
     def test_markdown_extremely_slow(self):
-        # regex-as-re-globally package mitigates this being slow; also see `NOBRACKET` comments
+        # this used to be extremely slow due to catastrophic backtracking in FORGE_LINK_RE / BRK regex composition
+        # initially mitigated by using the `regex` lib instead of `re` but now is mitigated by possessive quantifiers
         g.markdown.convert(inspect.cleandoc('''bonjour, voila ce que j'obtient en voulant ajouter un utilisateur a un groupe de sécurite, que ce soit sur un groupe pre-existant, ou sur un groupe crée.
     message d'erreur:
 

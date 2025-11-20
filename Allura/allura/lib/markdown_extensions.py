@@ -24,7 +24,6 @@ import os
 
 from urllib.parse import urljoin
 
-import regex
 from tg import config
 from bs4 import BeautifulSoup, MarkupResemblesLocatorWarning
 import html5lib
@@ -49,11 +48,11 @@ SHORT_REF_RE = markdown.inlinepatterns.NOIMG + r'\[([^\]]+)\]'
 
 # FORGE_LINK_RE copied from markdown pre 3.0's LINK_RE
 # TODO: replace these with newer approach, see ForgeLinkPattern
-NOBRACKET = r'[^\]\[]*'  # if not using regex-as-re-globally, must change "*" to {0,50} for performance mitigation
+NOBRACKET = r'[^\]\[]*+'
 BRK = (
     r'\[(' +
     (NOBRACKET + r'(\[')*6 +
-    (NOBRACKET + r'\])*')*6 +
+    (NOBRACKET + r'\])*+')*6 +
     NOBRACKET + r')\]'
 )
 FORGE_LINK_RE = markdown.inlinepatterns.NOIMG + BRK + \
@@ -362,7 +361,6 @@ class ForgeLinkPattern(markdown.inlinepatterns.Pattern):
     def __init__(self, *args, **kwargs):
         self.ext = kwargs.pop('ext')
         super().__init__(*args, **kwargs)
-        self.compiled_re = regex.compile(self.compiled_re.pattern, flags=self.compiled_re.flags)
 
     def handleMatch(self, m):
         el = etree.Element('a')
