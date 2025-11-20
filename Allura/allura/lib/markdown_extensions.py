@@ -47,7 +47,7 @@ MACRO_PATTERN = r'\[\[([^\]\[]+)\]\]'
 SHORT_REF_RE = markdown.inlinepatterns.NOIMG + r'\[([^\]]+)\]'
 
 # FORGE_LINK_RE copied from markdown pre 3.0's LINK_RE
-# TODO: replace these with newer approach, see ForgeLinkPattern
+# TODO: further simplify now that InlineProcessor is used, see ForgeLinkPattern? or not needed since possessive quantifiers are used
 NOBRACKET = r'[^\]\[]*+'
 BRK = (
     r'\[(' +
@@ -56,7 +56,7 @@ BRK = (
     NOBRACKET + r')\]'
 )
 FORGE_LINK_RE = markdown.inlinepatterns.NOIMG + BRK + \
-    r'''\(\s*(<.*?>|((?:(?:\(.*?\))|[^\(\)]))*?)\s*((['"])(.*?)\12\s*)?\)'''
+    r'''\(\s*(<.*?>|((?:(?:\(.*?\))|[^\(\)]))*?)\s*((['"])(.*?)\11\s*)?\)'''
 
 
 def clear_markdown_registry(reg: markdown.util.Registry, keep: list[str] = []):
@@ -286,7 +286,7 @@ class ForgeExtension(markdown.Extension):
         # this has to be before the 'escape' processor, otherwise weird
         # placeholders are inserted for escaped chars within urls, and then the
         # autolink can't match the whole url
-        md.inlinePatterns.register(AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-\\_%?&=+#;~:!@]+)', md),
+        md.inlinePatterns.register(AutolinkPattern(r'(?:(?<=\s)|^)(http(?:s?)://[a-zA-Z0-9./\-\\_%?&=+#;~:!@]+)', md),
                                    'autolink_without_brackets',
                                    185)  # was '<escape' and 'escape' is priority 180; great num runs first, so: 185
         # replace the link pattern with our extended version
@@ -318,11 +318,11 @@ class EmojiExtension(markdown.Extension):
         md.inlinePatterns.register(EmojiInlinePattern(self.EMOJI_RE), 'emoji', 0)
 
 
-class EmojiInlinePattern(markdown.inlinepatterns.Pattern):
+class EmojiInlinePattern(markdown.inlinepatterns.InlineProcessor):
 
-    def handleMatch(self, m):
-        emoji_code = m.group(2)
-        return emoji.emojize(emoji_code, language="alias")
+    def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | None, int | None, int | None]:
+        emoji_code = m.group(1)
+        return emoji.emojize(emoji_code, language="alias"), m.start(0), m.end(0)
 
 
 class UserMentionExtension(markdown.Extension):
@@ -334,10 +334,10 @@ class UserMentionExtension(markdown.Extension):
         md.inlinePatterns.register(UserMentionInlinePattern(self.UM_RE), 'user_mentions', 0)
 
 
-class UserMentionInlinePattern(markdown.inlinepatterns.Pattern):
+class UserMentionInlinePattern(markdown.inlinepatterns.InlineProcessor):
 
-    def handleMatch(self, m):
-        user_name = m.group(2).replace("@", "")
+    def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | None, int | None, int | None]:
+        user_name = m.group(1).replace("@", "")
         user = M.User.by_username(user_name)
         result = None
 
@@ -348,13 +348,14 @@ class UserMentionInlinePattern(markdown.inlinepatterns.Pattern):
             result.set('class', 'user-mention')
         else:
             result = "@%s" % user_name
-        return result
+        return result, m.start(0), m.end(0)
 
 
-class ForgeLinkPattern(markdown.inlinepatterns.Pattern):
-    # TODO: convert from extending Pattern to extending InlineProcessor
-    #  which is how core Markdown library in 3.0 made its base link parsing much faster.
+class ForgeLinkPattern(markdown.inlinepatterns.InlineProcessor):
+    # TODO: consider further changes to align with InlineProcessor patterns
+    # but maybe isn't needed since NOBRACKET and BRK are fast now (see their comments)
     # https://github.com/Python-Markdown/markdown/commit/d18c3d0acab0e7469c3284c897afcb61f9dd1fea
+    # https://github.com/brondsem/allura/pull/1 maybe a starting point
 
     artifact_re = re.compile(r'((.*?):)?((.*?):)?(.+)')
 
@@ -362,26 +363,26 @@ class ForgeLinkPattern(markdown.inlinepatterns.Pattern):
         self.ext = kwargs.pop('ext')
         super().__init__(*args, **kwargs)
 
-    def handleMatch(self, m):
+    def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | None, int | None, int | None]:
         el = etree.Element('a')
-        el.text = m.group(2)
+        el.text = m.group(1)
         is_link_with_brackets = False
         try:
-            href = m.group(9)
+            href = m.group(8)
         except IndexError:
-            href = m.group(2)
+            href = m.group(1)
             is_link_with_brackets = True
             if el.text == 'x' or el.text == ' ':  # skip [ ] and [x] for markdown checklist
-                return '[' + el.text + ']'
+                return None, None, None
         try:
-            title = m.group(13)
+            title = m.group(12)
         except IndexError:
             title = None
 
         classes = ''
         if href:
             if href == 'TOC':
-                return '[TOC]'  # skip TOC
+                return None, None, None
             if self.artifact_re.match(href):
                 href, classes = self._expand_alink(href, is_link_with_brackets)
             el.set('href', self.unescape(href.strip()))
@@ -397,7 +398,7 @@ class ForgeLinkPattern(markdown.inlinepatterns.Pattern):
             text = el.text
             el = etree.Element('span')
             el.text = '[%s]' % text
-        return el
+        return el, m.start(0), m.end(0)
 
     def _expand_alink(self, link, is_link_with_brackets):
         '''Return (href, classes) for an artifact link'''
@@ -426,17 +427,17 @@ class ForgeLinkPattern(markdown.inlinepatterns.Pattern):
         return href, classes
 
 
-class ForgeMacroPattern(markdown.inlinepatterns.Pattern):
+class ForgeMacroPattern(markdown.inlinepatterns.InlineProcessor):
 
     def __init__(self, *args, **kwargs):
         self.ext = kwargs.pop('ext')
         self.macro = macro.parse(self.ext._macro_context)
         super().__init__(*args, **kwargs)
 
-    def handleMatch(self, m):
-        html = self.macro(m.group(2))
+    def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | None, int | None, int | None]:
+        html = self.macro(m.group(1))
         placeholder = self.md.htmlStash.store(html)
-        return placeholder
+        return placeholder, m.start(0), m.end(0)
 
 
 class ForgeLinkTreeProcessor(markdown.treeprocessors.Treeprocessor):
@@ -546,17 +547,10 @@ class HTMLSanitizer(markdown.postprocessors.Postprocessor):
         return s.render(walker)
 
 
-class AutolinkPattern(markdown.inlinepatterns.Pattern):
+class AutolinkPattern(markdown.inlinepatterns.InlineProcessor):
 
-    def __init__(self, pattern, markdown_instance=None):
-        super().__init__(pattern, markdown_instance)
-        # override the complete regex, requiring the preceding text (.*?) to end
-        # with whitespace or beginning of line "\s|^"
-        self.compiled_re = re.compile(r"^(.*?\s|^)%s(.*?)$" % pattern,
-                                      re.DOTALL | re.UNICODE)
-
-    def handleMatch(self, mo):
-        old_link = mo.group(2)
+    def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | None, int | None, int | None]:
+        old_link = m.group(1)
         result = etree.Element('a')
         result.text = old_link
         # since this is run before the builtin 'escape' processor, we have to
@@ -564,7 +558,7 @@ class AutolinkPattern(markdown.inlinepatterns.Pattern):
         for char in self.md.ESCAPED_CHARS:
             old_link = old_link.replace('\\' + char, char)
         result.set('href', old_link)
-        return result
+        return result, m.start(0), m.end(0)
 
 
 class ForgeMacroIncludePreprocessor(markdown.preprocessors.Preprocessor):
