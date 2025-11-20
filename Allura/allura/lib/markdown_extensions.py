@@ -24,6 +24,7 @@ import os
 
 from urllib.parse import urljoin
 
+import regex
 from tg import config
 from bs4 import BeautifulSoup, MarkupResemblesLocatorWarning
 import html5lib
@@ -361,6 +362,7 @@ class ForgeLinkPattern(markdown.inlinepatterns.Pattern):
     def __init__(self, *args, **kwargs):
         self.ext = kwargs.pop('ext')
         super().__init__(*args, **kwargs)
+        self.compiled_re = regex.compile(self.compiled_re.pattern, flags=self.compiled_re.flags)
 
     def handleMatch(self, m):
         el = etree.Element('a')
