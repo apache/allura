@@ -225,5 +225,5 @@ latex_documents = [
 intersphinx_mapping = {'python': ('https://docs.python.org/3/', None)}
 
 rst_prolog = """
-.. |pyversion| replace:: 3.13
+.. |pyversion| replace:: 3.14
 """

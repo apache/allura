@@ -44,7 +44,7 @@ In these instructions, we'll use `VirtualBox <http://www.virtualbox.org>`__ and 
 System Packages
 ^^^^^^^^^^^^^^^
 
-Before we begin, you'll need to install some system packages.  Allura currently supports Python 3.10 through 3.13.  The steps below use Python 3.13.
+Before we begin, you'll need to install some system packages.  Allura currently supports Python 3.10 through 3.14.  The steps below use Python 3.14.
 
 .. code-block:: bash
 
@@ -53,7 +53,7 @@ Before we begin, you'll need to install some system packages.  Allura currently 
     ~$ sudo apt-get install software-properties-common
     ~$ sudo add-apt-repository ppa:deadsnakes/ppa
     ~$ sudo apt-get update
-    ~$ sudo apt-get install git-core python3.13 python3.13-dev gcc libmagic1 libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev libffi-dev
+    ~$ sudo apt-get install git-core python3.14 python3.14-dev gcc libmagic1 libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev libffi-dev
 
 To install MongoDB, follow the instructions `here <https://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/>`_.
 
@@ -70,13 +70,13 @@ The first step to installing the Allura platform is installing a virtual environ
 
 .. code-block:: bash
 
-    ~$ sudo apt-get install python3.13-venv
+    ~$ sudo apt-get install python3.14-venv
 
 Then create a virtual environment.  We'll call our Allura environment 'env-allura'.
 
 .. code-block:: bash
 
-    ~$ python3.13 -m venv env-allura
+    ~$ python3.14 -m venv env-allura
 
 This gives us a nice, clean environment into which we can install all the allura dependencies.
 In order to use the virtual environment, you'll need to activate it:

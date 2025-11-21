@@ -22,7 +22,7 @@
 # Apache Allura
 
 [![Build Status](https://builds.apache.org/buildStatus/icon?job=Allura%2FAllura-py3.10&subject=py3.10)](https://builds.apache.org/job/Allura)
-[![Build Status](https://builds.apache.org/buildStatus/icon?job=Allura%2FAllura-py3.13&subject=py3.13)](https://builds.apache.org/job/Allura)
+[![Build Status](https://builds.apache.org/buildStatus/icon?job=Allura%2FAllura-py3.14&subject=py3.14)](https://builds.apache.org/job/Allura)
 
 Allura is an open source implementation of a software "forge", a web site that manages source code repositories, bug reports, discussions, mailing lists, wiki pages, blogs and more for any number of individual projects.
 
