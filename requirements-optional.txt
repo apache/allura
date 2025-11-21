@@ -10,6 +10,9 @@ mediawiki2html  # GPL
 # for spam checking
 akismet>=1.3
 
-# for this type of password hashing
-bcrypt
+# for these types of password hashing
+#   bcrypt restricted due to:
+#   https://foss.heptapod.net/python-libs/passlib/-/issues/196
+#   https://forge-allura.apache.org/p/allura/tickets/8590/
+bcrypt<5
 argon2-cffi
