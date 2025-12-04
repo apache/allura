@@ -84,7 +84,6 @@ class F:
     remove_socialnetwork_form = forms.RemoveSocialNetworkForm()
     add_telnumber_form = forms.AddTelNumberForm()
     add_website_form = forms.AddWebsiteForm()
-    skype_account_form = forms.SkypeAccountForm()
     remove_textvalue_form = forms.RemoveTextValueForm()
     add_timeslot_form = forms.AddTimeSlotForm()
     remove_timeslot_form = forms.RemoveTimeSlotForm()
@@ -1107,13 +1106,12 @@ class UserContactsController(BaseController):
         require_authenticated()
 
         validator_map = {
-            'Twitter': V.TwitterValidator(),
+            'X': V.XValidator(),
             'Instagram': V.InstagramValidator(),
             'Facebook': V.FacebookValidator(),
             'Mastodon': V.FediverseValidator(),
             'Linkedin': V.LinkedinValidator(),
         }
-
         try:
             Validator = validator_map.get(kw['socialnetwork'])
             kw['accounturl'] = Validator().to_python(kw['accounturl'])
@@ -1171,16 +1169,6 @@ class UserContactsController(BaseController):
         c.user.remove_multivalue_pref('webpages', kw['oldvalue'])
         flash('Your personal contacts were successfully updated!')
         redirect('.')
-
-    @expose()
-    @require_post()
-    @validate(F.skype_account_form, error_handler=index)
-    def skype_account(self, **kw):
-        require_authenticated()
-        c.user.set_pref('skypeaccount', kw['skypeaccount'])
-        flash('Your personal contacts were successfully updated!')
-        redirect('.')
-
 
 class UserAvailabilityController(BaseController):
 

@@ -54,11 +54,6 @@
             {{user.get_pref('telnumbers')|join(', ')}}
         </dd>
         {% endif %}
-        {% if user.get_pref('skypeaccount') %}
-        <dt>Skype:</dt><dd>
-            {{user.get_pref('skypeaccount')}}
-        </dd>
-        {% endif %}
         {% if user.get_pref('webpages') %}
         <dt>Web Site{% if user.get_pref('webpages')|length > 1 %}s{% endif %}:</dt><dd>
             <ol>

@@ -393,7 +393,6 @@ class TestAuth:
         assert 'timezone_s' in idx
         assert 'socialnetworks_t' in idx
         assert 'telnumbers_t' in idx
-        assert 'skypeaccount_s' in idx
         assert 'webpages_t' in idx
         assert 'skills_t' in idx
         assert 'last_access_login_date_dt' in idx

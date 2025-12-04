@@ -307,7 +307,6 @@ class PersonalDataSection(ProfileSectionBase):
             localization=self.user.get_pref('localization')._deinstrument(),
             sex=self.user.get_pref('sex'),
             telnumbers=self.user.get_pref('telnumbers')._deinstrument(),
-            skypeaccount=self.user.get_pref('skypeaccount'),
             webpages=self.user.get_pref('webpages')._deinstrument(),
             availability=self.user.get_pref('availability')._deinstrument())
 

@@ -1514,15 +1514,6 @@ class ThemeProvider:
         return AddWebsiteForm()
 
     @LazyProperty
-    def skype_account_form(self):
-        '''
-        :return: None, or an easywidgets Form to render on the user preferences page to
-                 allow setting the user's Skype account.
-        '''
-        from allura.lib.widgets.forms import SkypeAccountForm
-        return SkypeAccountForm()
-
-    @LazyProperty
     def remove_textvalue_form(self):
         '''
         :return: None, or an easywidgets Form to render on the user preferences page to

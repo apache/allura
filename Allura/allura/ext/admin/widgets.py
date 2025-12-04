@@ -221,7 +221,7 @@ class MetadataAdmin(ff.AdminForm):
             attrs=(dict(placeholder='UA-123456-0', pattern='UA-[0-9]+-[0-9]+')))
         twitter_handle = ew.InputField(
             field_type="text", label='X Handle',
-            validator=V.TwitterValidator)
+            validator=V.XValidator)
 
         facebook_page = ew.InputField(field_type="text", label='Facebook page',
                                       validator=V.FacebookValidator)

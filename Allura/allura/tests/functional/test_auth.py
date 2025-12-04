@@ -1319,14 +1319,8 @@ class TestPreferences(TestController):
 
     @td.with_user_project('test-admin')
     def test_contacts(self):
-        # Add skype account
-        testvalue = 'testaccount'
+        # Get page
         self.app.get('/auth/user_info/contacts/')
-        self.app.post('/auth/user_info/contacts/skype_account',
-                      params=dict(skypeaccount=testvalue, _csrf_token=self.app.cookies['_csrf_token']))
-        user = M.User.query.get(username='test-admin')
-        assert user.skypeaccount == testvalue
-
         # Add social network account
         socialnetwork = 'Facebook'
         accounturl = 'http://www.facebook.com/test'
@@ -1341,8 +1335,8 @@ class TestPreferences(TestController):
         assert user.socialnetworks[0].accounturl == accounturl
 
         # Add second social network account
-        socialnetwork2 = 'Twitter'
-        accounturl2 = 'https://twitter.com/test'
+        socialnetwork2 = 'X'
+        accounturl2 = 'https://x.com/test'
         self.app.post('/auth/user_info/contacts/add_social_network',
                       params=dict(socialnetwork=socialnetwork2,
                                   accounturl='@test',

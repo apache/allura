@@ -513,12 +513,12 @@ class LinkedinValidator(fev.FancyValidator):
         return value
 
 
-class TwitterValidator(fev.FancyValidator):
+class XValidator(fev.FancyValidator):
     def _convert_to_python(self, value, state):
         if value.startswith('@') and not re.match(FEDIVERSE_REGEX, value):
-            value = f'https://twitter.com/{value.replace("@", "")}'
-        elif not value.startswith('http') or 'twitter.com' not in value:
-            raise fe.Invalid('Invalid Twitter address', value, state)
+            value = f'https://x.com/{value.replace("@", "")}'
+        elif not value.startswith('http') or 'x.com' not in value:
+            raise fe.Invalid('Invalid X address', value, state)
         return value
 
 

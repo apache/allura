@@ -981,7 +981,7 @@ class TestProjectAdmin(TestController):
         assert resp.status_int == 200
 
         # valid Twitter
-        resp = self.app.post('/admin/update', params={'twitter_handle': 'https://twitter.com/sourceforge'})
+        resp = self.app.post('/admin/update', params={'twitter_handle': 'https://x.com/sourceforge'})
         assert resp.status_int == 302
         resp = self.app.post('/admin/update', params={'twitter_handle': '@sourceforge'})
         assert resp.status_int == 302

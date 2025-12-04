@@ -3834,7 +3834,6 @@ paths:
                   last_updated: 2015-07-28T16:40:57.701Z
                   name: Apache Allura™
                   summary: Forge software for hosting software projects
-              skypeaccount: null
             type: object
             properties:
               username:
@@ -3983,10 +3982,6 @@ paths:
                     summary:
                       title: Project Summary.
                       type: string
-              skypeaccount:
-                title: Skype Account.
-                description: Skype account username.
-                type: string
       parameters:
         - $ref: '#/parameters/trait:bearerAuth:Authorization'
     parameters:

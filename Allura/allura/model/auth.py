@@ -314,7 +314,6 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     # Additional contacts
     socialnetworks = FieldProperty([dict(socialnetwork=str, accounturl=str)])
     telnumbers = FieldProperty([str])
-    skypeaccount = FieldProperty(str)
     webpages = FieldProperty([str])
 
     # Skills list
@@ -365,7 +364,6 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             timezone_s=self.get_pref('timezone'),
             socialnetworks_t=socialnetworks,
             telnumbers_t=' '.join([t for t in self.get_pref('telnumbers') if t]),
-            skypeaccount_s=self.get_pref('skypeaccount'),
             webpages_t=' '.join([p for p in self.get_pref('webpages') if p]),
             skills_t=' '.join([s['skill'].fullpath for s in self.get_skills() if s.get('skill')]),
             last_access_login_date_dt=self.last_access['login_date'],

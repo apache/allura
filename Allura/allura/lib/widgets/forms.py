@@ -377,22 +377,6 @@ class AddWebsiteForm(ForgeForm):
         self.fields['newwebsite'].attrs['value'] = initial_value
         return super(ForgeForm, self).display(**kw)
 
-
-class SkypeAccountForm(ForgeForm):
-    defaults = dict(ForgeForm.defaults)
-
-    class fields(ew_core.NameList):
-        skypeaccount = ew.TextField(
-            label='Skype account',
-            attrs={'value': ''},
-            validator=V.UnicodeString(not_empty=False))
-
-    def display(self, **kw):
-        initial_value = kw.get('initial_value', '')
-        self.fields['skypeaccount'].attrs['value'] = initial_value
-        return super(ForgeForm, self).display(**kw)
-
-
 class RemoveTextValueForm(ForgeForm):
     defaults = dict(ForgeForm.defaults, submit_text=None, show_errors=False)
 
@@ -435,9 +419,8 @@ class AddSocialNetworkForm(ForgeForm):
     @property
     def fields(self):
         socialnetworks = aslist(tg.config.get('socialnetworks',
-                                              ['Facebook', 'Linkedin', 'Twitter',]),
+                                              ['Facebook', 'Linkedin', 'X',]),
                                 ',')
-
         return [
             ew.SingleSelectField(
                 name='socialnetwork',

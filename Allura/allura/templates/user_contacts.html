@@ -28,11 +28,6 @@
   {{ super() }}
   <div class="grid-20">
     <h2>Personal Contacts</h2>
-    <h3>Skype account</h3>
-
-    {{g.theme.skype_account_form.display(action="skype_account",
-          initial_value=c.user.get_pref('skypeaccount'))}}
-
     {%if c.user.get_pref('socialnetworks') or c.user.get_pref('telnumbers') or c.user.get_pref('webpages') %}
       <h3>Other existing contacts</h3>
         <table>

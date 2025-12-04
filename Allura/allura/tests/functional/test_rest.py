@@ -690,7 +690,6 @@ class TestUserProfile(TestRestApiBase):
         assert 'projects' in json
         assert 'sex' in json
         assert 'skills' in json
-        assert 'skypeaccount' in json
         assert 'socialnetworks' in json
         assert 'telnumbers' in json
         assert 'webpages' in json
