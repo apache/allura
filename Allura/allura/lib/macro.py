@@ -104,8 +104,19 @@ class parse:
             log.warning('macro error.  Upwards stack is %s',
                         ''.join(traceback.format_stack()),
                         exc_info=True)
-            msg = html.escape(f'[[{s}]] ({repr(ex)})')
-            return '\n<div class="error"><pre><code>%s</code></pre></div>' % msg
+            try:
+                current_user = g.user
+            except AttributeError:
+                anon_user = True  # test or background script
+            else:
+                anon_user = current_user.is_anonymous()
+            if anon_user:
+                # show a bit less detail
+                msg = html.escape(f'[[{s}]] (error processing macro)')
+                return f'\n<pre><code>{msg}</code></pre>'
+            else:
+                msg = html.escape(f'[[{s}]] ({ex})')
+                return f'\n<div class="error"><pre><code>{msg}</code></pre></div>'
 
     def _lookup_macro(self, s):
         macro = _macros.get(s)
