@@ -555,7 +555,7 @@ class TestReindexCommand:
         cmd = show_models.ReindexCommand('reindex')
         cmd.options, args = cmd.parser.parse_args([])
         cmd._post_add_artifacts(list(range(5)))
-        kw = {'update_solr': cmd.options.solr, 'update_refs': cmd.options.refs}
+        kw = {'update_solr': cmd.options.solr, 'update_refs': cmd.options.refs, '__task_priority': 5}
         expected = [
             call([0, 1, 2, 3, 4], **kw),
             call([0, 1], **kw),
