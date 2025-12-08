@@ -78,7 +78,8 @@ class ReindexCommand(base.Command):
                            'Note: this is often better, since tasks have "request" objects '
                            'which are needed for some markdown macros to run properly')
     parser.add_option('--solr-hosts', dest='solr_hosts',
-                      help='Override the solr host(s) to post to.  Comma-separated list of solr server URLs')
+                      help='Override the solr host(s) to post to.  Comma-separated list of solr server URLs. '
+                           'Passed through to tasks if --tasks is used.')
     parser.add_option('--solr-creds', dest='solr_creds',
                       help='Creds for the solr host(s).  Comma-separated list of user:pwd strings')
     parser.add_option(
@@ -181,6 +182,7 @@ class ReindexCommand(base.Command):
                 add_artifacts.post(chunk,
                                    update_solr=self.options.solr,
                                    update_refs=self.options.refs,
+                                   __task_priority=5,  # lower than default 10
                                    **self.add_artifact_kwargs)
         except InvalidDocument as e:
             # there are many types of InvalidDocument, only recurse if its
