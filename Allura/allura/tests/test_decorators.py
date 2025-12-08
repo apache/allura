@@ -35,7 +35,7 @@ class TestTask:
         assert hasattr(func, 'post')
 
     def test_with_params(self):
-        @task(disable_notifications=True)
+        @task(notifications_disabled=True)
         def func():
             pass
         assert hasattr(func, 'post')
@@ -43,7 +43,7 @@ class TestTask:
     @patch('allura.lib.decorators.c')
     @patch('allura.model.MonQTask')
     def test_post(self, c, MonQTask):
-        @task(disable_notifications=True)
+        @task(notifications_disabled=True)
         def func(s, foo=None, **kw):
             pass
 
@@ -57,7 +57,7 @@ class TestTask:
 
         c.project.notifications_disabled = False
         MonQTask.post.side_effect = mock_post
-        func.post('test', foo=2, delay=1)
+        func.post('test', foo=2, __task_delay=1)
 
 
 class TestMemoize:

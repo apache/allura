@@ -41,17 +41,21 @@ from allura.lib import helpers as h
 log = logging.getLogger(__name__)
 
 
-def task(*args, **kw):
+def task(*args, notifications_disabled=False):
     """Decorator that adds a ``.post()`` function to the decorated callable.
 
     Calling ``<original_callable>.post(*args, **kw)`` queues the callable for
     execution by a background worker process. All parameters must be
     BSON-serializable.
 
+    ``<original_callable>.post()`` takes optional keyword arguments `__task_delay`, `__task_priority`, and
+    `__task_flush_immediately` which will be passed to :meth:`allura.model.monq_model.MonQTask.post` to control the
+    task.
+
     Example usage::
 
         @task
-        def myfunc():
+        def myfunc(foo):
             pass
 
         @task(notifications_disabled=True)
@@ -59,17 +63,23 @@ def task(*args, **kw):
             # No email notifications will be sent for c.project during this task
             pass
 
+        myfunc.post(foo=bar, __task_delay=10)
+
     """
     def task_(func):
         def post(*args, **kwargs):
-            delay = kwargs.pop('delay', 0)
-            flush_immediately = kwargs.pop('flush_immediately', True)
+            # pass any __task_* kwargs to MonQTask.post instead of task function
+            task_kwargs = {}
+            for k, v in kwargs.copy().items():
+                if k.startswith('__task_'):
+                    task_kwargs[k[7:]] = kwargs.pop(k)
+                if k in ('delay', 'flush_immediately'):  # backwards compatibility for no __task_ prefix
+                    task_kwargs[k] = kwargs.pop(k)
             project = getattr(c, 'project', None)
-            cm = (h.notifications_disabled if project and
-                  kw.get('notifications_disabled') else h.null_contextmanager)
+            cm = h.notifications_disabled if project and notifications_disabled else h.null_contextmanager
             with cm(project):
                 from allura import model as M
-                return M.MonQTask.post(func, args, kwargs, delay=delay, flush_immediately=flush_immediately)
+                return M.MonQTask.post(func, args, kwargs, **task_kwargs)
         # if decorating a class, have to make it a staticmethod
         # or it gets a spurious cls argument
         func.post = staticmethod(post) if inspect.isclass(func) else post
