@@ -113,10 +113,10 @@ class TestEventTasks:
         assert self.called_with == [((1, 2), {'a': 5})], self.called_with
 
     def test_post_event_explicit_flush(self):
-        g.post_event('my_event1', flush_immediately=True)
+        g.post_event('my_event1', __task_flush_immediately=True)
         assert M.MonQTask.query.get(task_name='allura.tasks.event_tasks.event', args=['my_event1'])
 
-        g.post_event('my_event2', flush_immediately=False)
+        g.post_event('my_event2', __task_flush_immediately=False)
         assert not M.MonQTask.query.get(task_name='allura.tasks.event_tasks.event', args=['my_event2'])
         ThreadLocalODMSession.flush_all()
         assert M.MonQTask.query.get(task_name='allura.tasks.event_tasks.event', args=['my_event2'])

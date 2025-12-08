@@ -261,7 +261,7 @@ class Globals(MappedClass):
             return
         self._bin_counts_invalidated = datetime.utcnow()
         from forgetracker import tasks  # prevent circular import
-        tasks.update_bin_counts.post(self.app_config_id, delay=delay)
+        tasks.update_bin_counts.post(self.app_config_id, __task_delay=delay)
 
     def sortable_custom_fields_shown_in_search(self):
         def solr_type(field_name):
