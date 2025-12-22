@@ -322,5 +322,5 @@ def create_project_with_attrs(p, nbhd, update=False, ensure_tools=False):
         if creating:
             g.post_event('project_created')
         else:
-            g.post_event('project_updated')
+            g.post_event('project_updated', __task_delay=5)
     return project
