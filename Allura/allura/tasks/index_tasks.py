@@ -44,7 +44,18 @@ def __get_solr(solr_hosts=None, solr_creds=()):
 
 def __add_objects(objects, solr_hosts=None, solr_creds=()):
     solr_instance = __get_solr(solr_hosts, solr_creds)
-    solr_instance.add([obj.solarize() for obj in objects])
+    try:
+        solr_instance.add([obj.solarize() for obj in objects])
+    except HTTPRequestEntityTooLarge:
+        if len(objects) > 1:
+            log.warning(
+                f"Solr.add raised HTTPRequestEntityTooLarge. Splitting {len(objects)} updates into two batches.")
+            __add_objects(objects[:len(objects) // 2], solr_hosts, solr_creds)
+            __add_objects(objects[len(objects) // 2:], solr_hosts, solr_creds)
+        else:
+            doc = objects[0].solarize()
+            log.info(f"Solr.add raised HTTPRequestEntityTooLarge but there is only one document ({doc.get('id')}). Raising exception.")
+            raise
 
 
 def __del_objects(object_solr_ids):
