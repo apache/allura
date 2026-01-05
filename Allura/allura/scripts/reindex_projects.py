@@ -75,7 +75,9 @@ class ReindexProjects(ScriptTask):
         mongo document is too large.
         """
         try:
-            add_projects.post(chunk)
+            add_projects.post(chunk,
+                              __task_priority=5,  # lower than default 10
+                              )
         except InvalidDocument as e:
             # there are many types of InvalidDocument, only recurse if its
             # expected to help
