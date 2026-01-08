@@ -306,7 +306,7 @@ typing-extensions==4.15.0
     # via beautifulsoup4
 tzdata==2025.2 ; sys_platform == 'win32'
     # via feedgenerator
-urllib3==2.6.0
+urllib3==2.6.3
     # via
     #   botocore
     #   requests
