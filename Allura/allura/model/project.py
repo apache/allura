@@ -960,12 +960,12 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         result = []
         anchored_tools = self.neighborhood.get_anchored_tools()
         i = len(anchored_tools)
-        self.install_anchored_tools()
-
+        new_tools = self.install_anchored_tools()
+        all_configs = self.app_configs + [a.config for a in new_tools]
         for sub in self.direct_subprojects:
             result.append(
                 {'ordinal': int(sub.ordinal + i), 'sub': sub})
-        for ac in self.app_configs:
+        for ac in all_configs:
             App = g.entry_points['tool'].get(ac.tool_name)
             if include_hidden or App and not App.hidden:
                 if not self.is_nbhd_project and (ac.tool_name.lower() in list(anchored_tools.keys())):
