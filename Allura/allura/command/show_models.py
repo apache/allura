@@ -92,16 +92,17 @@ class ReindexCommand(base.Command):
         from allura import model as M
         self.basic_setup()
         graph = build_model_inheritance_graph()
+        q_project = {}
+        if self.options.project and self.options.project_regex:
+            raise Exception('Cannot specify both --project and --project-regex')
         if self.options.project:
-            q_project = dict(shortname=self.options.project)
-        elif self.options.project_regex:
-            q_project = dict(shortname={'$regex': self.options.project_regex})
-        elif self.options.neighborhood:
+            q_project['shortname'] = self.options.project
+        if self.options.project_regex:
+            q_project['shortname'] = {'$regex': self.options.project_regex}
+        if self.options.neighborhood:
             neighborhood_id = M.Neighborhood.query.get(
                 url_prefix='/%s/' % self.options.neighborhood)._id
-            q_project = dict(neighborhood_id=neighborhood_id)
-        else:
-            q_project = {}
+            q_project['neighborhood_id'] = neighborhood_id
 
         # if none specified, do all
         if not self.options.solr and not self.options.refs:
