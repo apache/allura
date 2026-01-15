@@ -648,7 +648,7 @@ class TestFunctionalController(TrackerTestController):
         assert 'Public Ticket' in index_response
         assert 'Private Ticket' in index_response
         # ...and in search results.
-        search_response = self.app.get('/p/test/bugs/search/?q=ticket')
+        search_response = self.app.get('/p/test/bugs/search/?q=open')
         assert '2 results' in search_response
         assert 'Private Ticket' in search_response
         # Unauthorized user doesn't see private ticket on list page...
@@ -657,11 +657,11 @@ class TestFunctionalController(TrackerTestController):
         assert '1 results' in r
         assert 'Private Ticket' not in r
         # ...or in search results...
-        r = self.app.get('/p/test/bugs/search/?q=ticket', extra_environ=env)
+        r = self.app.get('/p/test/bugs/search/?q=open', extra_environ=env)
         assert '1 results' in r
         assert 'Private Ticket' not in r
         # ... or in search feed...
-        r = self.app.get('/p/test/bugs/search_feed?q=ticket',
+        r = self.app.get('/p/test/bugs/search_feed?q=open',
                          extra_environ=env)
         assert 'Private Ticket' not in r
         # ...and can't get to the private ticket directly.

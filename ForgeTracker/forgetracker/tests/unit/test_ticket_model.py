@@ -390,8 +390,55 @@ class TestTicketModel(TrackerTestWithModel):
         assert tsearch.query_filter_choices.call_count == 0
 
     def test_index(self):
-        idx = Ticket(ticket_num=2, summary="ticket2", labels=["mylabel", "other"]).index()
-        assert idx['summary_t'] == 'ticket2'
-        assert idx['labels_t'] == 'mylabel other'
-        assert idx['reported_by_s'] == 'test-user'
-        assert idx['assigned_to_s'] is None  # must exist at least
+        idx = Ticket(
+            ticket_num=2,
+            summary="ticket2",
+            description="this is my descr",
+            milestone='release 1.0',
+            labels=["mylabel", "other"],
+            status='open',
+        ).index()
+        created_date_dt = idx.pop('created_date_dt')
+        assert isinstance(created_date_dt, datetime)
+
+        mod_date_dt = idx.pop('mod_date_dt')
+        assert isinstance(mod_date_dt, datetime)
+
+        assert idx.pop('project_id_s')
+        assert idx.pop('id')
+
+        expected_text = (
+            'mylabel other\n2\nticket2\n'
+            'release 1.0\nopen\nthis is my descr\ntest-user'
+        )
+
+        assert idx == {
+            # base
+            'project_name_t': 'test',
+            'project_shortname_t': 'test',
+            'tool_name_s': 'tickets',
+            'mount_point_s': 'bugs',
+            'is_history_b': False,
+            'url_s': '/p/test/bugs/2/',
+            'type_s': 'Ticket',
+            'labels_t': 'mylabel other',
+            'deleted_b': False,
+            # from Ticket
+            'title': 'Ticket #2: ticket2',
+            'version_i': 0,
+            'ticket_num_i': 2,
+            'summary_t': 'ticket2',
+            'milestone_s': 'release 1.0',
+            'status_s': 'open',
+            'text': expected_text,
+            'snippet_s': 'ticket2',
+            'private_b': False,
+            'discussion_disabled_b': False,
+            'votes_up_i': 0,
+            'votes_down_i': 0,
+            'votes_total_i': 0,
+            'import_id_s': None,
+            # custom fields
+            'reported_by_s': 'test-user',
+            'assigned_to_s': None,
+        }

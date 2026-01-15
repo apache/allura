@@ -588,12 +588,8 @@ class TicketHistory(Snapshot):
             type_s='Ticket Snapshot',
             text=self.data.summary)
         # Tracker uses search with default solr parser. It would match only on
-        # `text`, so we're appending all other field values into `text`, to match on it too.
-        result['text'] += '\n'.join([str(v)
-                                     for k, v
-                                     in result.items()
-                                     if k not in ('id', 'project_id_s')
-                                     ])
+        # `text`, so we're replacing it with many other field values to match on them too
+        result['text'] += Ticket.text_for_solr(result)
         return result
 
 
@@ -718,7 +714,6 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         result.update(
             title='Ticket #%d: %s' % (self.ticket_num, self.summary),
             version_i=self.version,
-            type_s=self.type_s,
             created_date_dt=self.created_date,
             ticket_num_i=self.ticket_num,
             summary_t=self.summary,
@@ -749,14 +744,20 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         result['assigned_to_s'] = self.assigned_to.username if self.assigned_to else None
 
         # Tracker uses search with default solr parser. It would match only on
-        # `text`, so we're appending all other field values into `text`, to
-        # match on it too.
-        result['text'] += '\n'.join([str(v)
-                                     for k, v
-                                     in result.items()
-                                     if k not in ('id', 'project_id_s')
-                                     ])
+        # `text`, so we're replacing it with many other field values to match on them too
+        result['text'] = self.text_for_solr(result)
         return result
+
+    @classmethod
+    def text_for_solr(cls, result: dict) -> str:
+        return '\n'.join([
+            str(v)
+            for k, v in result.items()
+            if k not in ('id', 'mount_point_s', 'url_s', 'type_s', 'title', 'snippet_s')
+            if not k.startswith(('project_', 'tool_'))  # skip project and tool-level stuff
+            if not k.endswith(('_dt', '_b', '_i')) or k == 'ticket_num_i'  # no nums except Ticket#
+            if v  # no None
+        ])
 
     @classmethod
     def attachment_class(cls):
