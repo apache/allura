@@ -333,8 +333,12 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         session_ua=str))
 
     def __repr__(self):
-        return ('<User username={s.username!r} display_name={s.display_name!r} _id={s._id!r} '
-                'disabled={s.disabled!r} pending={s.pending!r}>'.format(s=self))
+        try:
+            display_name = self.display_name
+        except AttributeError:
+            display_name = None
+        return ('<User username={s.username!r} display_name={display_name!r} _id={s._id!r} '
+                'disabled={s.disabled!r} pending={s.pending!r}>'.format(s=self, display_name=display_name))
 
     def index(self):
         provider = plugin.AuthenticationProvider.get(None)  # no need in request here
