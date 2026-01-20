@@ -340,12 +340,12 @@ class TestAuth:
         assert c.user.last_access['session_ip'] is None
         assert c.user.last_access['session_ua'] is None
 
-        req = Mock(headers={'User-Agent': 'browser'}, remote_addr='addr')
+        req = Mock(headers={'User-Agent': 'Mozilla/browser'}, remote_addr='addr')
         c.user.track_active(req)
         c.user = M.User.by_username(c.user.username)
         assert c.user.last_access['session_date'] is not None
         assert c.user.last_access['session_ip'] == 'addr'
-        assert c.user.last_access['session_ua'] == 'browser'
+        assert c.user.last_access['session_ua'] == 'Mozilla/browser'
 
         # ensure that session activity tracked with a whole-day granularity
         prev_date = c.user.last_access['session_date']
@@ -364,12 +364,12 @@ class TestAuth:
         c.user.track_active(req)
         c.user = M.User.by_username(c.user.username)
         assert c.user.last_access['session_ip'] == 'new addr'
-        assert c.user.last_access['session_ua'] == 'browser'
-        req.headers['User-Agent'] = 'new browser'
+        assert c.user.last_access['session_ua'] == 'Mozilla/browser'
+        req.headers['User-Agent'] = 'Mozilla/new browser'
         c.user.track_active(req)
         c.user = M.User.by_username(c.user.username)
         assert c.user.last_access['session_ip'] == 'new addr'
-        assert c.user.last_access['session_ua'] == 'new browser'
+        assert c.user.last_access['session_ua'] == 'Mozilla/new browser'
 
     def test_user_index(self):
         c.user.email_addresses = ['email1', 'email2']

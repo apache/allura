@@ -390,12 +390,14 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 
     def track_active(self, req):
         user_ip = utils.ip_address(req)
-        user_agent = req.headers.get('User-Agent')
+        user_agent = req.headers.get('User-Agent') or ''
         now = datetime.utcnow()
         last_date = self.last_access['session_date']
         date_changed = last_date is None or last_date.date() != now.date()
         ip_changed = user_ip != self.last_access['session_ip']
         ua_changed = user_agent != self.last_access['session_ua']
+        if not user_agent.startswith('Mozilla/'):
+            return
         if date_changed or ip_changed or ua_changed:
             self.last_access['session_date'] = datetime.utcnow()
             self.last_access['session_ip'] = user_ip
@@ -583,7 +585,9 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         return plugin.UserPreferencesProvider.get().get_pref(self, pref_name)
 
     def set_pref(self, pref_name, pref_value):
-        return plugin.UserPreferencesProvider.get().set_pref(self, pref_name, pref_value)
+        ret = plugin.UserPreferencesProvider.get().set_pref(self, pref_name, pref_value)
+        state(self).soil()  # to make sure it gets reindexed in solr (even if pref is not part on the User ming model)
+        return ret
 
     def add_multivalue_pref(self, pref_name, pref_data):
         return plugin.UserPreferencesProvider.get().add_multivalue_pref(self, pref_name, pref_data)
@@ -912,7 +916,8 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         p = plugin.AuthenticationProvider.get(request)
         return p.user_registration_date(self)
 
-    # overriding since the old and new values are not being tracked for changes within a dictionary like preferences
+    # overriding since changed values may not be on User object itself, for example on the EmailAddress collection
+    # or preferences stored externally.
     #  This will ensure any changes get indexed by solr.
     def should_update_index(self, old_doc, new_doc):
         return True
