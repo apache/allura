@@ -96,7 +96,8 @@ class ForgeMarkdown:
                         'markdown.extensions.tables',
                         toc.TocExtension(slugify=toc_slugify_with_prefix),
                         'markdown.extensions.nl2br',
-                        'markdown_checklist.extension'],
+                        'markdown_checklist.extension',
+                        'mdx_breakless_lists',],
             output_format='html')
 
     def convert(self, source, render_limit=True) -> Markup:
