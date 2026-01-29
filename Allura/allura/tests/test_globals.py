@@ -506,36 +506,44 @@ class Test():
     Regular text
     * first item
     * second item''')) ==
-            '<div class="markdown_content"><p>Regular text<br/>\n'
-            '* first item<br/>\n'
-            '* second item</p></div>')
+            '<div class="markdown_content"><p>Regular text</p>\n'
+            '<ul>\n'
+            '<li>first item</li>\n'
+            '<li>second item</li>\n'
+            '</ul></div>')
 
         assert (
             g.markdown.convert(dedent('''\
     Regular text
     - first item
     - second item''')) ==
-            '<div class="markdown_content"><p>Regular text<br/>\n'
-            '- first item<br/>\n'
-            '- second item</p></div>')
+            '<div class="markdown_content"><p>Regular text</p>\n'
+            '<ul>\n'
+            '<li>first item</li>\n'
+            '<li>second item</li>\n'
+            '</ul></div>')
 
         assert (
             g.markdown.convert(dedent('''\
     Regular text
     + first item
     + second item''')) ==
-            '<div class="markdown_content"><p>Regular text<br/>\n'
-            '+ first item<br/>\n'
-            '+ second item</p></div>')
+            '<div class="markdown_content"><p>Regular text</p>\n'
+            '<ul>\n'
+            '<li>first item</li>\n'
+            '<li>second item</li>\n'
+            '</ul></div>')
 
         assert (
             g.markdown.convert(dedent('''\
     Regular text
     1. first item
     2. second item''')) ==
-            '<div class="markdown_content"><p>Regular text<br/>\n'
-            '1. first item<br/>\n'
-            '2. second item</p></div>')
+            '<div class="markdown_content"><p>Regular text</p>\n'
+            '<ol>\n'
+            '<li>first item</li>\n'
+            '<li>second item</li>\n'
+            '</ol></div>')
 
     def test_markdown_autolink(self):
         tgt = 'http://everything2.com/?node=nate+oostendorp'

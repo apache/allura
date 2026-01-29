@@ -470,6 +470,7 @@ By Dave Brondsema''' in text_body
         assert '''<hr/>
 <div class="markdown_content"><p>Add foo.txt.  Commit ref <a class="alink" href="http://localhost/p/test/weird-chars/ci/616d24f8dd4e95cadd8e93df5061f09855d1a066/">[616d24f8dd4e95cadd8e93df5061f09855d1a066]</a> *bold* &lt;b&gt;bold&lt;/b&gt;</p>
 <p>* one<br/>
+
 * two<br/>
 * three</p>
 <p>http://example.com/</p></div>
