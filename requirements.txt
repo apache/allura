@@ -29,7 +29,7 @@ botocore==1.40.51
     #   boto3
     #   pymongo-auth-aws
     #   s3transfer
-certifi==2025.10.5
+certifi==2026.1.4
     # via
     #   httpcore
     #   httpx
@@ -221,7 +221,7 @@ pymongocrypt==1.16.0
     # via pymongo
 pypeline==0.7.0
     # via -r requirements.in
-pysolr==3.10.0
+pysolr==3.11.0
     # via -r requirements.in
 pytest==8.4.2
     # via
