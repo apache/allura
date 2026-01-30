@@ -685,6 +685,8 @@ class ProjectAdminController(BaseController):
                     new_url = new_app.url
                     if callable(new_url):  # subprojects have a method instead of property
                         new_url = new_url()
+                    if isinstance(new_app, M.Project):
+                        new_url += 'admin/'
                     redirect(new_url)
         except forge_exc.ForgeError as exc:
             flash(f'{exc.__class__.__name__}: {exc.args[0]}',
