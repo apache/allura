@@ -332,7 +332,7 @@ webtest==3.0.7
     # via -r requirements.in
 werkzeug==3.1.5
     # via -r requirements.in
-wrapt==1.17.3
+wrapt==2.0.1
     # via -r requirements.in
 
 # The following packages were excluded from the output:
