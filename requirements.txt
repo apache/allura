@@ -20,7 +20,7 @@ beautifulsoup4==4.14.3
     # via
     #   -r requirements.in
     #   webtest
-bleach==6.2.0
+bleach==6.3.0
     # via pypeline
 boto3==1.40.51
     # via pymongo-auth-aws
@@ -159,7 +159,7 @@ ming==0.16.0
     # via -r requirements.in
 mock==5.2.0
     # via -r requirements.in
-nh3==0.3.1
+nh3==0.3.2
     # via textile
 nodeenv==1.9.1
     # via pre-commit
@@ -249,7 +249,7 @@ pyyaml==6.0.3
     # via pre-commit
 qrcode==8.2
     # via -r requirements.in
-regex==2025.9.18 ; implementation_name != 'pypy'
+regex==2026.1.15 ; implementation_name != 'pypy'
     # via textile
 repoze-lru==0.7
     # via turbogears2
