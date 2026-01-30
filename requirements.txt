@@ -206,7 +206,7 @@ pygments==2.19.2
     # via
     #   -r requirements.in
     #   pytest
-pymongo==4.15.3
+pymongo==4.16.0
     # via
     #   -r requirements.in
     #   activitystream
