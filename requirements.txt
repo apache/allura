@@ -199,9 +199,9 @@ pre-commit==4.3.0
     # via -r requirements.in
 profanityfilter==2.1.0
     # via -r requirements.in
-pyasynchat==1.0.4
+pyasynchat==1.0.5
     # via -r requirements.in
-pyasyncore==1.0.4
+pyasyncore==1.0.5
     # via pyasynchat
 pycparser==3.0 ; implementation_name != 'PyPy'
     # via cffi
