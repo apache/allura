@@ -291,7 +291,7 @@ sphinxcontrib-napoleon==0.7
     # via defopt
 sxsdiff==0.3.0
     # via -r requirements.in
-termcolor==3.1.0
+termcolor==3.3.0
     # via pytest-sugar
 testfixtures==10.0.0
     # via -r requirements.in
