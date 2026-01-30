@@ -78,7 +78,7 @@ easywidgets==0.4.3
     # via -r requirements.in
 emoji==2.15.0
     # via -r requirements.in
-execnet==2.1.1
+execnet==2.1.2
     # via pytest-xdist
 faust-cchardet==2.1.19
     # via -r requirements.in
