@@ -69,7 +69,7 @@ distlib==0.4.0
     # via virtualenv
 dnspython==2.8.0
     # via pymongo
-docutils==0.22.2
+docutils==0.22.4
     # via
     #   -r requirements.in
     #   defopt
