@@ -90,15 +90,15 @@ repos:
           - --
 
 - repo:  https://github.com/milin/giticket
-  rev: v1.4
+  rev: v1.5
   hooks:
   - id:  giticket
-    args: ['--mode=regex_match', '--format=[#{ticket}] {commit_msg}', '--regex=[0-9]{4,}']
+    args: ['--mode=regex_match', '--format=[#{ticket}] {commit_msg}', '--regex=[0-9]{4,}', '--format=[#{ticket}] {commit_msg}']
 
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
   # Ruff version.
-  rev: v0.14.0
+  rev: v0.15.0
   hooks:
     - id: ruff
       types: [python]
