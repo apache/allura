@@ -33,9 +33,8 @@ def install_app(*args, **kwargs):
     c.project.install_app(*args, **kwargs)
 
 
+sig = inspect.signature(M.Project.install_app)
 install_app.__doc__ += '''
     Arguments::
 
-        ''' + wrapt.formatargspec(*inspect.getfullargspec(
-    M.Project.install_app
-)).replace('self, ', '')
+        ''' + str(sig).replace('self, ', '')
