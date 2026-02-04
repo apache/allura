@@ -221,12 +221,15 @@ class MetadataAdmin(ff.AdminForm):
             attrs=(dict(placeholder='UA-123456-0', pattern='UA-[0-9]+-[0-9]+')))
         twitter_handle = ew.InputField(
             field_type="text", label='X Handle',
+            attrs={'placeholder': '@yourhandle'},
             validator=V.XValidator)
 
         facebook_page = ew.InputField(field_type="text", label='Facebook page',
+                                      attrs={'placeholder': '@yourhandle'},
                                       validator=V.FacebookValidator)
         instagram_page = ew.InputField(
             field_type="text", label='Instagram page',
+            attrs={'placeholder': '@yourhandle'},
             validator=V.InstagramValidator)
 
         fediverse_address = ew.InputField(field_type="text", label="Mastodon address",
