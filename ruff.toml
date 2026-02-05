@@ -67,6 +67,7 @@ lint.ignore = [
     'PLW2901', # loop var overwritten
     'SIM103', #Return the condition `bool(raised and isinstance(raised, HTTPFound))` directly
     'PLC0415', # ignore imports outside top level scope
+    'PLW0108', # Lambda may be unnecessary; consider inlining inner function
 ]
 
 [lint.per-file-ignores]
