@@ -882,3 +882,57 @@ def join_paths_no_traversal(base: str | Path, *paths: str | Path) -> str:
 
 def pkg_file(pkg_name: str, *paths: str) -> str:
     return join_paths_no_traversal(importlib.resources.files(pkg_name), *paths)
+
+
+def hide_email(email_or_match: str | re.Match | Iterable[str] | None) -> str:
+    hide_name_re = re.compile(r'(\w{2,}.\s+)')
+    hide_email_re = re.compile(r'<?([_a-zA-Z0-9+.=-]+)@([a-zA-Z0-9-]{2}).*>?')
+    hide_email_cleanup_re = re.compile(r'"|=\?.+\?=')
+    """
+    Emails passed to this method may or may not include brackets, but it
+    can't be inferred from just that whether or not they *should* have brackets
+    in the place where it'll be displayed.  So, use the optional kwarg to make that explicit.
+    Possible places include the mailman heading table and the body of individual messages.
+    """
+    def erepl(m):
+        uname = m.group(1)
+        truncate = 2 if len(uname) <= 7 else 3
+        res = '{}...@{}...'.format(m.group(1)[:truncate], m.group(2))
+        if ensure_brackets and not res.startswith('<'):
+            res = f"<{res}>"
+        return res
+
+    def hide(email_address):
+        email = hide_email_re.sub(erepl, email_address)
+        email = hide_email_cleanup_re.sub('', email)
+        return email
+
+    def name_tpl(m):
+        return f'{m.group(1)[:1]}. '
+
+    def hide_name(email_address):
+        str_pieces = email_address.split(' ')
+        if len(str_pieces) == 1:
+            return email_address
+        first_name = str_pieces[0]
+        email_address = email_address.replace(first_name, '', 1)
+        result = hide_name_re.sub(name_tpl, email_address)
+        return f'{first_name}{result}'
+
+    if not email_or_match:
+        return ''
+
+    ensure_brackets = False
+    if isinstance(email_or_match, re.Match):
+        email = email_or_match.group(0)
+    elif isinstance(email_or_match, str):
+        ensure_brackets = True
+        email = email_or_match
+    else:
+        emails = []
+        for address in email_or_match:
+            email = hide(address)
+            emails.append(email)
+        return ', '.join(emails)
+    email = hide_name(email)
+    email = hide(email)

@@ -171,7 +171,7 @@ class EmailAddress(MappedClass):
 
     def send_verification_link(self):
         self.set_nonce_hash()
-        log.info('Sending verification link to %s', self.email)
+        log.info('Sending verification link to %s', utils.hide_email(self.email))
         text = '''
 To verify the email address {} belongs to the user {},
 please visit the following URL:
@@ -181,7 +181,7 @@ please visit the following URL:
             self.claimed_by_user(include_pending=True).username,
             h.absurl(f'/auth/verify_addr?a={h.urlquote(self.nonce)}'),
            )
-        log.info('Verification email:\n%s', text)
+        log.info('Verification email:\n%s', utils.hide_email(self.email))
         allura.tasks.mail_tasks.sendsimplemail.post(
             fromaddr=g.noreply,
             reply_to=g.noreply,
@@ -452,7 +452,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             email_address = self.get_pref('email_address')
         reset_url = self.make_password_reset_url()
 
-        log.info('Sending password recovery link to %s', email_address)
+        log.info('Sending password recovery link to %s', utils.hide_email(email_address))
         subject = subject_tmpl.format(site_name=config['site_name'])
         text = g.jinja2_env.get_template('allura:templates/mail/forgot_password.txt').render(dict(
             user=self,
@@ -733,7 +733,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         users = [u for u in users if u is not None]
         if len(users) > 1:
             log.warning('Multiple active users matching confirmed email: %s %s. '
-                        'Using first one', [u.username for u in users], addr)
+                        'Using first one', [u.username for u in users], utils.hide_email(addr))
         return users[0] if len(users) > 0 else None
 
     @classmethod

@@ -158,7 +158,7 @@ class Oauth1Validator(oauthlib.oauth1.RequestValidator):
             callback=request.oauth_params.get('oauth_callback', 'oob'),
         )
         session(req_token).flush()
-        log.info('Saving new request token with key: %s', req_token.api_key)
+        log.info('Saving new request token with key: %s', req_token.api_key[:(len(req_token.api_key) // 2)])
 
     def verify_request_token(self, token: str, request: oauthlib.common.Request) -> bool:
         return M.OAuthRequestToken.query.get(api_key=token) is not None
@@ -477,7 +477,7 @@ class OAuthNegotiator:
 
         rtok = M.OAuthRequestToken.query.get(api_key=oauth_token)
         if rtok is None:
-            log.error('Invalid token %s', oauth_token)
+            log.error('Invalid token %s', oauth_token[:(len(oauth_token) // 2)])
             raise exc.HTTPUnauthorized
         # store what user this is, so later use of the token can act as them
         rtok.user_id = c.user._id
