@@ -69,3 +69,6 @@ docutils
 # deployment
 gunicorn
 pre-commit
+
+# while we still use PasteScript we need older setuptools to provide 'pkg_resources'
+setuptools<82
