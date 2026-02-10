@@ -462,12 +462,30 @@ Within a paragraph, you can use backquotes to do the same thing.
 
 Within a paragraph, you can use backquotes to do the same thing.
 `This won't be *italic* or **bold** at all.`""")}}
-</div>
+<h2>Preformatted Text Without Code Highlighting</h2>
+<p>You might have noticed in the above examples the tags &lt;b&gt; and &lt;i&gt; are being highlighted.
+    To remove any type of highlighting or prevent the text from being processed when using a code block of tildes or backticks, you can explicitly set the language to <i>text</i>.</p>
+<div class="codehilite"><pre>
+```text
+This <i>line</i> won't *have any markdown* formatting applied.
+```
+</pre></div>
+<br>
+{{ g.markdown.convert("""
+```text
+This <i>line</i> won't *have any markdown* formatting applied.
+```
+""") }}
+<p>View more information about <a href="#md_ex_code">code highlighting</a> or find out more about all the supported languages at <a href="https://pygments.org/docs/lexers/">Pygments docs</a>.</p>
 
+</div>
+<br>
 
 <div class="markdown_syntax_section hidden_in_modal md_ex_lists{{id}}">
 <h2 id="md_ex_lists{{id}}">Lists</h2>
-<div class="codehilite"><pre>* an asterisk starts an unordered list
+<div class="codehilite"><pre>
+This is an example paragraph introducing a list.
+* an asterisk starts an unordered list
 * and this is another item in the list
 + or you can also use the + character
 - or the - character
@@ -490,7 +508,8 @@ To start a check list, write this:
 </pre></div>
 
 <p>Output:</p>
-{{g.markdown.convert('''* an asterisk starts an unordered list
+{{g.markdown.convert('''This is an example paragraph introducing a list.
+* an asterisk starts an unordered list
 * and this is another item in the list
 + or you can also use the + character
 - or the - character
