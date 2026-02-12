@@ -59,7 +59,12 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
   {% if req.downstream_repo %}
     <p>
       <a href="{{req.creator_url}}" rel="nofollow">{{req.creator_name}}</a>
-      wants to merge {{h.text.plural(commits|count, 'commit', 'commits')}}
+      wants to merge
+      {% if commits_task_started %}{# don't have a 'commits' list yet #}
+        commits
+      {% else %}
+        {{h.text.plural(commits|count, 'commit', 'commits')}}
+      {% endif %}
       from <a href="{{req.downstream_url}}" rel="nofollow">{{req.downstream_url}}</a>
       to {{ req.target_branch }},
       {{lib.abbr_date(req.mod_date)}}
