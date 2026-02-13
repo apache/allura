@@ -17,9 +17,9 @@
        under the License.
 -#}
 
-Hello {{ user.display_name }},
+Hello {{ user.display_name|escape_markdown }},
 
-The primary email address on your {{ config['site_name'] }} account "{{ user.username }}" was changed to:  
+The primary email address on your {{ config['site_name'] }} account "{{ user.username|escape_markdown }}" was changed to:  
 
 * {{ addr }}
 

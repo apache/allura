@@ -18,11 +18,11 @@
 --> #}
 {%- for cm in commit_msgs[:max_num_commits] %}
 {%- if cm.branches and cm.show_branch_name|default %}
-## Branch: {% for b in cm.branches %}{{ b }}  {% endfor%}
+## Branch: {% for b in cm.branches %}{{ b|escape_markdown }}  {% endfor%}
 {% endif %}
 {{ cm.summary }}
 
-By {{ cm.author }} on {{ cm.date }}
+By {{ cm.author|escape_markdown }} on {{ cm.date }}
 [**View Changes**]({{ cm.commit_url }})
 
 {% if not loop.last %}-----{% endif %}

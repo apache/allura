@@ -17,9 +17,9 @@
        under the License.
 -#}
 
-Hello {{ user.display_name }},
+Hello {{ user.display_name|escape_markdown }},
 
-The password for your {{ config['site_name'] }} account "{{ user.username }}" has been changed.  This is a confirmation email, you are all set.
+The password for your {{ config['site_name'] }} account "{{ user.username|escape_markdown }}" has been changed.  This is a confirmation email, you are all set.
 
 {% block footer %}
 If you did not do this, please contact us immediately.

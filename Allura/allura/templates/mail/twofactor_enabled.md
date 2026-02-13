@@ -17,7 +17,7 @@
        under the License.
 -#}
 
-Hello {{ user.username }},
+Hello {{ user.username|escape_markdown }},
 
 You have recently set up new two-factor authentication on {{ config['site_name'] }}.  This is a confirmation email, you are all set.
 

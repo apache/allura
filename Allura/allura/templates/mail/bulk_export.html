@@ -17,19 +17,19 @@
        under the License.
 #}
 
-The bulk export for project {{ project.shortname }} is completed.
+The bulk export for project {{ project.shortname|escape_markdown }} is completed.
 
 {% if tools %}
 The following tools were exported:
 {% for tool in tools -%}
-- {{ tool }}
+- {{ tool|escape_markdown }}
 {% endfor %}
 {% endif %}
 
 {% if not_exported_tools %}
 The following tools were not exported:
 {% for tool in not_exported_tools -%}
-- {{ tool }}
+- {{ tool|escape_markdown }}
 {% endfor %}
 {% endif %}
 

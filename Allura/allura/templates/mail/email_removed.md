@@ -17,9 +17,9 @@
        under the License.
 -#}
 
-Hello {{ user.display_name }},
+Hello {{ user.display_name|escape_markdown }},
 
-An email address was removed from your {{ config['site_name'] }} account "{{ user.username }}":  
+An email address was removed from your {{ config['site_name'] }} account "{{ user.username|escape_markdown }}":  
 
 * {{ addr }} 
 

@@ -190,6 +190,7 @@ class AlluraJinjaRenderer(JinjaRenderer):
         jinja2_env.filters['nl2br'] = helpers.nl2br_jinja_filter
         jinja2_env.filters['subrender'] = helpers.subrender_jinja_filter
         jinja2_env.filters['safe_html'] = helpers.clean_html
+        jinja2_env.filters['escape_markdown'] = helpers.escape_markdown
         jinja2_env.globals.update({
             'hasattr': hasattr,
             'h': helpers,

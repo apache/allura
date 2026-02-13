@@ -20,7 +20,7 @@
 
 ---
 
-Sent from {{domain}} because you indicated interest in <{{ prefix }}{{ notification.link }}>
+Sent from {{domain|escape_markdown}} because you indicated interest in <{{ prefix }}{{ notification.link }}>
 
 {% if discussion_disabled %}
 Please do not reply to this message. Discussion is disabled for the <{{ prefix }}{{ notification.link }}>
