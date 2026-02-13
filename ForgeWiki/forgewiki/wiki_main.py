@@ -80,7 +80,7 @@ class W:
     help_modal = SearchHelp(fields={'title': 'title',
                                     'text': '"Page text"',
                                     'mod_date_dt': 'Last modified.  Example: mod_date_dt:[2018-01-01T00:00:00Z TO *]',
-                                    'labels_t': 'labels',
+                                    'labels_ws': 'labels',
                                     'author_user_name_t': 'username (for comments only)',
                                     })
     icons = {

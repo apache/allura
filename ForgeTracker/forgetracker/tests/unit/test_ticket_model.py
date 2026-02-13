@@ -421,7 +421,7 @@ class TestTicketModel(TrackerTestWithModel):
             'is_history_b': False,
             'url_s': '/p/test/bugs/2/',
             'type_s': 'Ticket',
-            'labels_t': 'mylabel other',
+            'labels_ws': 'mylabel other',
             'deleted_b': False,
             # from Ticket
             'title': 'Ticket #2: ticket2',

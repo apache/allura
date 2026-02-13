@@ -82,7 +82,7 @@ class W:
     search_results = SearchResults()
     help_modal = SearchHelp(fields={'title': 'Title',
                                     'text': '"Post text"',
-                                    'labels_t': 'Labels',
+                                    'labels_ws': 'Labels',
                                     'mod_date_dt': 'Last modified.  Example: mod_date_dt:[2018-01-01T00:00:00Z TO *]',
                                     'author_user_name_t': 'username (for comments only)',
                                     })

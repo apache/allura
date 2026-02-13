@@ -189,7 +189,7 @@ class TestRootController(TestController):
                 'text': 'sometext',
                 'labels': 'test label',
             }).follow()
-        assert ('<a href="/p/test/wiki/search/?q=labels_t:%22test label%22&parser=standard">test label (1)</a>' in
+        assert ('<a href="/p/test/wiki/search/?q=labels_ws:%22test label%22&parser=standard">test label (1)</a>' in
                 response)
 
     def test_title_slashes(self):

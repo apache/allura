@@ -346,7 +346,7 @@ class Artifact(MappedClass, SearchIndexable):
             is_history_b=False,
             url_s=self.url(),
             type_s=self.type_s,
-            labels_t=' '.join(l for l in self.labels),
+            labels_ws=' '.join(l for l in self.labels),
             snippet_s='',
             deleted_b=self.deleted)
 

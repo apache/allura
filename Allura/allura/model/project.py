@@ -1248,7 +1248,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                       external_homepage_s=self.external_homepage,
                       # Analyzed fields
                       short_description_t=self.short_description,
-                      labels_t=' '.join(self.labels),
+                      labels_ws=' '.join(self.labels),
                       summary_t=self.summary,
                       category_name_t=self.category.name if self.category else None,
                       category_description_t=self.category.description if self.category else None,
