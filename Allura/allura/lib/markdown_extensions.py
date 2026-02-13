@@ -25,6 +25,7 @@ import os
 from urllib.parse import urljoin
 
 from tg import config
+from tg import tmpl_context as c
 from bs4 import BeautifulSoup, MarkupResemblesLocatorWarning
 import html5lib
 import html5lib.serializer
@@ -383,7 +384,7 @@ class ForgeLinkPattern(markdown.inlinepatterns.InlineProcessor):
         if href:
             if href == 'TOC':
                 return None, None, None
-            if self.artifact_re.match(href):
+            if self.artifact_re.match(href) and c.project:
                 href, classes = self._expand_alink(href, is_link_with_brackets)
             el.set('href', self.unescape(href.strip()))
             el.set('class', classes)

@@ -48,6 +48,7 @@ class TestNewForgeController(TestController):
             r = self.app.get('/nf/markdown_syntax')
         r.mustcontain('Markdown Syntax')
         r.mustcontain('href="http://someurl"')
+        r.mustcontain(no='ERROR')
 
         markdown_invalid_classes = [log[2] for log in logs if 'invalid class' in log[2]]
         assert not markdown_invalid_classes
@@ -56,3 +57,4 @@ class TestNewForgeController(TestController):
         r = self.app.get('/nf/markdown_syntax_dialog')
         r.mustcontain('<h1>Markdown Syntax Guide</h1>')
         r.mustcontain('href="http://someurl"')
+        r.mustcontain(no='ERROR')
