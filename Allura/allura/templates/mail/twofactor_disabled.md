@@ -17,7 +17,7 @@
        under the License.
 -#}
 
-Hello {{ user.username }},
+Hello {{ user.username|escape_markdown }},
 
 You have recently disabled two-factor authentication on {{ config['site_name'] }}.  :(
 

@@ -128,7 +128,6 @@ def create_multipart_msg(text, metalink=None):
                         )
     plain_text = html.unescape(plain_text)  # put literal HTML tags back into plaintext
     plain_msg = mail_util.encode_email_part(plain_text, 'plain')
-
     html_text = ForgeMarkdown(email=True).convert(text)
     if metalink:
         html_text = html_text + mail_meta_content(metalink)

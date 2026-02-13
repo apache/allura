@@ -74,6 +74,7 @@ from allura.lib import validators
 import urllib.parse as urlparse
 from urllib.parse import urlencode
 import math
+import markdown
 
 # import to make available to templates, don't delete:
 from .security import has_access, is_allowed_by_role, is_site_admin  # noqa: F401 RUF100
@@ -1434,3 +1435,19 @@ def parse_fediverse_address(username: str):
 def clean_html(value: str) -> Markup:
     from allura.lib.markdown_extensions import HTMLSanitizer
     return Markup(HTMLSanitizer().run(value))  # noqa: S704
+
+
+def escape_markdown(content: str) -> str:
+    if content is None:
+        return ''
+    md = markdown.Markdown()
+    escaped_chars = md.ESCAPED_CHARS
+    if isinstance(escaped_chars, (list, tuple, set)):
+        escaped_chars = "".join(escaped_chars)
+    else:
+        escaped_chars = str(escaped_chars)
+    # escape html tag like <b> or <img>
+    html_escaped = html.escape(content, quote=True)
+    pattern = re.compile(rf"([{re.escape(escaped_chars)}])")
+    # Escape markdown special characters to prevent unintended formatting
+    return pattern.sub(r"\\\1", html_escaped)

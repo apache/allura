@@ -17,6 +17,6 @@
        under the License.
 #}
 
-You tried to add {{ email.email }} to your {{ config['site_name'] }} account, but it is already claimed by your {{ user.username }} account.
+You tried to add {{ email.email }} to your {{ config['site_name'] }} account, but it is already claimed by your {{ user.username|escape_markdown }} account.
 You should use that account instead, or remove that address from that account.
 If this was not you who attempted this, you can safely ignore this email.

@@ -17,9 +17,9 @@
        under the License.
 -#}
 
-Hello {{ user.display_name }},
+Hello {{ user.display_name|escape_markdown }},
 
-A new email address was added to your {{ config['site_name'] }} account "{{ user.username }}":  
+A new email address was added to your {{ config['site_name'] }} account "{{ user.username|escape_markdown }}":  
 
 * {{ addr }}
 

@@ -111,6 +111,7 @@ class Notification(MappedClass):
         loader=jinja2.PackageLoader('allura', 'templates'),
         auto_reload=asbool(config.get('auto_reload_templates', True)),
     )
+    view.filters['escape_markdown'] = h.escape_markdown
 
     @classmethod
     def post(cls, artifact, topic, additional_artifacts_to_match_subscriptions=None, **kw):
@@ -689,6 +690,7 @@ class MailFooter:
         loader=jinja2.PackageLoader('allura', 'templates'),
         auto_reload=asbool(config.get('auto_reload_templates', True)),
     )
+    view.filters['escape_markdown'] = h.escape_markdown
 
     @classmethod
     def _render(cls, template, **kw):
