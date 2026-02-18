@@ -936,3 +936,4 @@ def hide_email(email_or_match: str | re.Match | Iterable[str] | None) -> str:
         return ', '.join(emails)
     email = hide_name(email)
     email = hide(email)
+    return email
