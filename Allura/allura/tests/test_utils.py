@@ -429,3 +429,9 @@ def test_join_paths_no_traversal(base, paths, expected: str | type[Exception]):
     else:
         with pytest.raises(expected):
             utils.join_paths_no_traversal(base, *paths)
+
+
+def test_hide_email():
+    assert utils.hide_email('foo@bar.com') == '<fo...@ba...>'
+    assert utils.hide_email('email@example.com') == '<em...@ex...>'
+    assert utils.hide_email('email@example') == '<em...@ex...>'
