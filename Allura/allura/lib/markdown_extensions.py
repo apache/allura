@@ -31,6 +31,8 @@ import html5lib
 import html5lib.serializer
 import html5lib.filters.alphabeticalattributes
 import markdown
+import markdown.inlinepatterns
+import markdown.util
 import emoji
 from markupsafe import Markup
 
@@ -43,21 +45,6 @@ log = logging.getLogger(__name__)
 
 
 MACRO_PATTERN = r'\[\[([^\]\[]+)\]\]'
-
-# SHORT_REF_RE copied from markdown pre 3.0
-SHORT_REF_RE = markdown.inlinepatterns.NOIMG + r'\[([^\]]+)\]'
-
-# FORGE_LINK_RE copied from markdown pre 3.0's LINK_RE
-# TODO: further simplify now that InlineProcessor is used, see ForgeLinkPattern? or not needed since possessive quantifiers are used
-NOBRACKET = r'[^\]\[]*+'
-BRK = (
-    r'\[(' +
-    (NOBRACKET + r'(\[')*6 +
-    (NOBRACKET + r'\])*+')*6 +
-    NOBRACKET + r')\]'
-)
-FORGE_LINK_RE = markdown.inlinepatterns.NOIMG + BRK + \
-    r'''\(\s*(<.*?>|((?:(?:\(.*?\))|[^\(\)]))*?)\s*((['"])(.*?)\11\s*)?\)'''
 
 
 def clear_markdown_registry(reg: markdown.util.Registry, keep: list[str] = []):
@@ -112,7 +99,7 @@ class CommitMessageExtension(markdown.Extension):
 
         # remove all inlinepattern processors except short refs and links
         clear_markdown_registry(md.inlinePatterns, keep=['link'])
-        md.inlinePatterns.register(ForgeLinkPattern(SHORT_REF_RE, md, ext=self), 'short_reference', 0)
+        md.inlinePatterns.register(ForgeShortRefPattern(markdown.inlinepatterns.REFERENCE_RE, md, ext=self), 'short_reference', 0)
 
         # remove all default block processors except for paragraph
         clear_markdown_registry(md.parser.blockprocessors, keep=['paragraph'])
@@ -290,9 +277,10 @@ class ForgeExtension(markdown.Extension):
         md.inlinePatterns.register(AutolinkPattern(r'(?:(?<=\s)|^)(http(?:s?)://[a-zA-Z0-9./\-\\_%?&=+#;~:!@]+)', md),
                                    'autolink_without_brackets',
                                    185)  # was '<escape' and 'escape' is priority 180; great num runs first, so: 185
-        # replace the link pattern with our extended version
-        md.inlinePatterns.register(ForgeLinkPattern(FORGE_LINK_RE, md, ext=self), 'link', 160)
-        md.inlinePatterns.register(ForgeLinkPattern(SHORT_REF_RE, md, ext=self), 'short_reference', 130)
+        # replace the 2 link processors with our extended versions
+        md.inlinePatterns.register(ForgeLinkPattern(markdown.inlinepatterns.LINK_RE, md, ext=self), 'link', 160)  # [WikiPage](foobar) or [WikiPage](foobar "title")
+        md.inlinePatterns.register(ForgeShortRefPattern(markdown.inlinepatterns.REFERENCE_RE, md, ext=self), 'short_reference', 130)  # [WikiPage] no parens
+
         # macro must be processed before links
         md.inlinePatterns.register(ForgeMacroPattern(MACRO_PATTERN, md, ext=self), 'macro', 165)  # similar to above
 
@@ -352,80 +340,85 @@ class UserMentionInlinePattern(markdown.inlinepatterns.InlineProcessor):
         return result, m.start(0), m.end(0)
 
 
-class ForgeLinkPattern(markdown.inlinepatterns.InlineProcessor):
-    # TODO: consider further changes to align with InlineProcessor patterns
-    # but maybe isn't needed since NOBRACKET and BRK are fast now (see their comments)
-    # https://github.com/Python-Markdown/markdown/commit/d18c3d0acab0e7469c3284c897afcb61f9dd1fea
-    # https://github.com/brondsem/allura/pull/1 maybe a starting point
+artifact_re = re.compile(r'((.*?):)?((.*?):)?(.+)')
 
-    artifact_re = re.compile(r'((.*?):)?((.*?):)?(.+)')
+
+class ForgeShortRefPattern(markdown.inlinepatterns.ShortReferenceInlineProcessor):
 
     def __init__(self, *args, **kwargs):
         self.ext = kwargs.pop('ext')
         super().__init__(*args, **kwargs)
 
     def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | None, int | None, int | None]:
-        el = etree.Element('a')
-        el.text = m.group(1)
-        is_link_with_brackets = False
-        try:
-            href = m.group(8)
-        except IndexError:
-            href = m.group(1)
-            is_link_with_brackets = True
-            if el.text == 'x' or el.text == ' ':  # skip [ ] and [x] for markdown checklist
-                return None, None, None
-        try:
-            title = m.group(12)
-        except IndexError:
-            title = None
+        text, index, handled = self.getText(data, m.end(0))
+        if not handled:
+            return None, None, None
+        if text == 'TOC':
+            return None, None, None
 
-        classes = ''
-        if href:
-            if href == 'TOC':
-                return None, None, None
-            if self.artifact_re.match(href) and c.project:
-                href, classes = self._expand_alink(href, is_link_with_brackets)
-            el.set('href', self.unescape(href.strip()))
-            el.set('class', classes)
+        if artifact_re.match(text) and c.project:
+            href, classes = _expand_alink(self.ext, text, is_link_with_brackets=True)
+            if 'notfound' in classes and not self.ext._use_wiki:
+                el = etree.Element('span')
+                el.text = '[%s]' % text
+            else:
+                el = self.makeTag(href, title='', text=text)
+                el.set('class', classes)
+            end = index
+            return el, m.start(0), end
         else:
-            el.set('href', '')
+            return None, None, None
 
-        if title:
-            title = markdown.inlinepatterns.dequote(self.unescape(title))
-            el.set('title', title)
 
-        if 'notfound' in classes and not self.ext._use_wiki:
-            text = el.text
-            el = etree.Element('span')
-            el.text = '[%s]' % text
-        return el, m.start(0), m.end(0)
+class ForgeLinkPattern(markdown.inlinepatterns.LinkInlineProcessor):
 
-    def _expand_alink(self, link, is_link_with_brackets):
-        '''Return (href, classes) for an artifact link'''
-        classes = ''
-        if is_link_with_brackets:
-            classes = 'alink'
-        href = link
-        shortlink = M.Shortlink.lookup(link)
-        if shortlink and shortlink.ref and not getattr(shortlink.ref.artifact, 'deleted', False):
-            href = shortlink.url
-            if getattr(shortlink.ref.artifact, 'is_closed', False):
-                classes += ' strikethrough'
-            self.ext.forge_link_tree_processor.alinks.append(shortlink)
-        elif is_link_with_brackets:
-            href = h.urlquote(link)
-            classes += ' notfound'
-        attach_link = link.split('/attachment/')
-        if len(attach_link) == 2 and self.ext._use_wiki:
-            shortlink = M.Shortlink.lookup(attach_link[0])
-            if shortlink:
-                attach_status = ' notfound'
-                for attach in shortlink.ref.artifact.attachments:
-                    if attach.filename == attach_link[1]:
-                        attach_status = ''
-                classes += attach_status
-        return href, classes
+    def __init__(self, *args, **kwargs):
+        self.ext = kwargs.pop('ext')
+        self.extra_allura_classes = ''
+        super().__init__(*args, **kwargs)
+
+    def getLink(self, data, index) -> tuple[str, str | None, int, bool]:
+        href, title, index, handled = super().getLink(data, index)
+
+        if artifact_re.match(href) and c.project:
+            href, self.extra_allura_classes = _expand_alink(self.ext, href, is_link_with_brackets=False)
+            # TODO: some thread-local var instead of self.extra_allura_classes for thread safety?
+
+        return href, title, index, handled
+
+    def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | None, int | None, int | None]:
+        el, start, end = super().handleMatch(m, data)
+        if el is not None:
+            el.set('class', self.extra_allura_classes)
+            self.extra_allura_classes = ''  # reset for next link
+        return el, start, end
+
+
+def _expand_alink(ext: markdown.Extension, link: str, is_link_with_brackets: bool) -> tuple[str, str]:
+    '''Return (href, classes) for an artifact link'''
+    classes = ''
+    if is_link_with_brackets:
+        classes = 'alink'
+    href = link
+    shortlink = M.Shortlink.lookup(link)
+    if shortlink and shortlink.ref and not getattr(shortlink.ref.artifact, 'deleted', False):
+        href = shortlink.url
+        if getattr(shortlink.ref.artifact, 'is_closed', False):
+            classes += ' strikethrough'
+        ext.forge_link_tree_processor.alinks.append(shortlink)
+    elif is_link_with_brackets:
+        href = h.urlquote(link)
+        classes += ' notfound'
+    attach_link = link.split('/attachment/')
+    if len(attach_link) == 2 and ext._use_wiki:
+        shortlink = M.Shortlink.lookup(attach_link[0])
+        if shortlink:
+            attach_status = ' notfound'
+            for attach in shortlink.ref.artifact.attachments:
+                if attach.filename == attach_link[1]:
+                    attach_status = ''
+            classes += attach_status
+    return href, classes
 
 
 class ForgeMacroPattern(markdown.inlinepatterns.InlineProcessor):
