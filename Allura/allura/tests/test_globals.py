@@ -495,6 +495,22 @@ class Test():
                 </code></pre></div>
                 </div>''')
 
+    def test_markdown_link_references(self):
+        assert g.markdown.convert(dedent('''\
+            You can also put the [link URL][1] below the current paragraph like [this][2].
+
+               [1]: http://url
+               [2]: http://another.url "A funky title"
+        ''')) == dedent('''\
+            <div class="markdown_content"><p>You can also put the <a href="http://url" rel="nofollow">link URL</a> below the current paragraph like <a href="http://another.url" rel="nofollow" title="A funky title">this</a>.</p></div>''')
+
+        assert g.markdown.convert(dedent('''\
+            Or you can use a [shortcut][] reference
+
+            [shortcut]: https://example.com/foo
+        ''')) == dedent('''\
+            <div class="markdown_content"><p>Or you can use a <a href="https://example.com/foo" rel="nofollow">shortcut</a> reference</p></div>''')
+
     def test_markdown_list_without_break(self):
         # this is not a valid way to make a list in original Markdown or python-markdown
         #   https://github.com/Python-Markdown/markdown/issues/874
