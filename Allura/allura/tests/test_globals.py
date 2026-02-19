@@ -606,14 +606,14 @@ class Test():
     def test_markdown_invalid_script_in_link(self):
         r = g.markdown.convert('[xss](http://"><a onmouseover=prompt(document.domain)>xss</a>)')
         assert ('<div class="markdown_content"><p><a class="" '
-                '''href='http://"&gt;&lt;a%20onmouseover=prompt(document.domain)&gt;xss&lt;/a&gt;' '''
-                'rel="nofollow">xss</a></p></div>' == r)
+                '''href='http://"&gt;&lt;a%20onmouseover=prompt(document.domain)&gt;xss&lt;/a' '''
+                'rel="nofollow">xss</a>)</p></div>' == r)
 
     def test_markdown_invalid_script_in_link2(self):
         r = g.markdown.convert('[xss](http://"><img src=x onerror=alert(document.cookie)>)')
         assert ('<div class="markdown_content"><p><a class="" '
-                '''href='http://"&gt;&lt;img%20src=x%20onerror=alert(document.cookie)&gt;' '''
-                'rel="nofollow">xss</a></p></div>' == r)
+                '''href='http://"&gt;&lt;img%20src=x%20onerror=alert(document.cookie)' '''
+                'rel="nofollow">xss</a>)</p></div>' == r)
 
     def test_markdown_invalid_classes_ids(self):
         r = g.markdown.convert("# Test message")
