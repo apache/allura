@@ -17,6 +17,7 @@
 import inspect
 import re
 import os
+import time
 from textwrap import dedent
 
 import pytest
@@ -399,8 +400,8 @@ class Test():
         with h.push_context('test', 'wiki', neighborhood='Projects'):
             text = g.markdown.convert('Read [here](Home) about our project')
             assert '<a class="" href="/p/test/wiki/Home/">here</a>' in text
-            text = g.markdown.convert('[Go home](test:wiki:Home)')
-            assert '<a class="" href="/p/test/wiki/Home/">Go home</a>' in text
+            text = g.markdown.convert('[Go home](test:wiki:Home "mytitle")')
+            assert '<a class="" href="/p/test/wiki/Home/" title="mytitle">Go home</a>' in text
             text = g.markdown.convert('See [test:wiki:Home]')
             assert '<a class="alink" href="/p/test/wiki/Home/">[test:wiki:Home]</a>' in text
 
@@ -623,6 +624,22 @@ class Test():
 
     cordialement, julien.'''))
         assert True   # finished!
+
+    def test_markdown_many_bad_links(self):
+
+        def do_test(size: int):
+            text = "[abc](https://example.com/airboot.  " + '[foo](https://example.com/) ' * size
+            t1 = time.perf_counter()
+            r = g.markdown.convert(text)
+            t2 = time.perf_counter()
+            assert r.startswith('<div class="markdown_content"><p><span>[abc]</span>(https://example.com/airboot.  <a class="" href="https://example.com/" rel="nofollow">foo</a> <a class="" href="https://example.com/" rel="nofollow">foo</a>')
+            return t2 - t1
+
+        short_time = do_test(2)
+        long_time = do_test(20)
+
+        slowness = long_time / short_time
+        assert slowness < 10, f"Long markdown took {slowness:.1f}x longer ({long_time:.4f}s vs short text ({short_time:.4f}s)"
 
     def test_macro_include(self):
         r = g.markdown.convert('[[include ref=Home id=foo class=modal data-a=b]]')
