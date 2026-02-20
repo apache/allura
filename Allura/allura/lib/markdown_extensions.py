@@ -309,7 +309,7 @@ class EmojiExtension(markdown.Extension):
 
 class EmojiInlinePattern(markdown.inlinepatterns.InlineProcessor):
 
-    def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | None, int | None, int | None]:
+    def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | str | None, int | None, int | None]:
         emoji_code = m.group(1)
         return emoji.emojize(emoji_code, language="alias"), m.start(0), m.end(0)
 
@@ -325,7 +325,7 @@ class UserMentionExtension(markdown.Extension):
 
 class UserMentionInlinePattern(markdown.inlinepatterns.InlineProcessor):
 
-    def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | None, int | None, int | None]:
+    def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | str | None, int | None, int | None]:
         user_name = m.group(1).replace("@", "")
         user = M.User.by_username(user_name)
         result = None
@@ -429,15 +429,18 @@ class ForgeMacroPattern(markdown.inlinepatterns.InlineProcessor):
         self.macro = macro.parse(self.ext._macro_context)
         super().__init__(*args, **kwargs)
 
-    def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | None, int | None, int | None]:
+    def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | str | None, int | None, int | None]:
         html = self.macro(m.group(1))
         placeholder = self.md.htmlStash.store(html)
         return placeholder, m.start(0), m.end(0)
 
 
 class ForgeLinkTreeProcessor(markdown.treeprocessors.Treeprocessor):
+    '''
+    Wraps artifact links with [] and tracks those artifact links for search.find_shortlinks
 
-    '''Wraps artifact links with []'''
+    The 'alink' class itself is not currently needed for any JS/CSS but ends up in HTML anyway
+    '''
 
     def __init__(self, parent):
         self.parent = parent
@@ -544,7 +547,7 @@ class HTMLSanitizer(markdown.postprocessors.Postprocessor):
 
 class AutolinkPattern(markdown.inlinepatterns.InlineProcessor):
 
-    def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | None, int | None, int | None]:
+    def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | str | None, int | None, int | None]:
         old_link = m.group(1)
         result = etree.Element('a')
         result.text = old_link
