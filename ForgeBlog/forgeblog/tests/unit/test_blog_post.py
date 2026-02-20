@@ -131,6 +131,6 @@ class TestHtmlPreview(BlogTestWithModel):
                     'fugiat nulla pariatur. Excepteur sint occaecat cupidatat '
                     'non proident, sunt in culpa qui officia deserunt mollit '
                     'anim id est laborum.... '
-                    '<a class="" href="/p/test/blog/%s/%02i/untitled/">'
+                    '<a href="/p/test/blog/%s/%02i/untitled/">'
                     'read more</a></p></div>') % (now.year, now.month)
         assert self._make_post(text).html_text_preview == expected

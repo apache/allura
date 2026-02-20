@@ -363,7 +363,8 @@ class ForgeShortRefPattern(markdown.inlinepatterns.ShortReferenceInlineProcessor
                 el.text = '[%s]' % text
             else:
                 el = self.makeTag(href, title='', text=text)
-                el.set('class', classes)
+                if classes:
+                    el.set('class', classes)
             end = index
             return el, m.start(0), end
         else:
@@ -388,7 +389,7 @@ class ForgeLinkPattern(markdown.inlinepatterns.LinkInlineProcessor):
 
     def handleMatch(self, m: re.Match[str], data: str) -> tuple[etree.Element | None, int | None, int | None]:
         el, start, end = super().handleMatch(m, data)
-        if el is not None:
+        if el is not None and self.extra_allura_classes:
             el.set('class', self.extra_allura_classes)
             self.extra_allura_classes = ''  # reset for next link
         return el, start, end

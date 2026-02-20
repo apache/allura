@@ -399,25 +399,25 @@ class Test():
         assert 'See <span>[18:13:49]</span>' in text
         with h.push_context('test', 'wiki', neighborhood='Projects'):
             text = g.markdown.convert('Read [here](Home) about our project')
-            assert '<a class="" href="/p/test/wiki/Home/">here</a>' in text
+            assert '<a href="/p/test/wiki/Home/">here</a>' in text
             text = g.markdown.convert('[Go home](test:wiki:Home "mytitle")')
-            assert '<a class="" href="/p/test/wiki/Home/" title="mytitle">Go home</a>' in text
+            assert '<a href="/p/test/wiki/Home/" title="mytitle">Go home</a>' in text
             text = g.markdown.convert('See [test:wiki:Home]')
             assert '<a class="alink" href="/p/test/wiki/Home/">[test:wiki:Home]</a>' in text
 
     def test_markdown_links(self):
         with patch.dict(tg.config, {'nofollow_exempt_domains': 'foobar.net'}):
             text = g.markdown.convert('Read [here](http://foobar.net/) about our project')
-            assert 'class="" href="http://foobar.net/">here</a> about' in text
+            assert ' href="http://foobar.net/">here</a> about' in text
 
         text = g.markdown.convert('Read [here](http://foobar.net/) about our project')
-        assert 'class="" href="http://foobar.net/" rel="nofollow">here</a> about' in text
+        assert ' href="http://foobar.net/" rel="nofollow">here</a> about' in text
 
         text = g.markdown.convert('Read [here](/p/foobar/blah) about our project')
-        assert 'class="" href="/p/foobar/blah">here</a> about' in text
+        assert ' href="/p/foobar/blah">here</a> about' in text
 
         text = g.markdown.convert('Read [here](/p/foobar/blah/) about our project')
-        assert 'class="" href="/p/foobar/blah/">here</a> about' in text
+        assert ' href="/p/foobar/blah/">here</a> about' in text
 
         text = g.markdown.convert('Read <http://foobar.net/> about our project')
         assert 'href="http://foobar.net/" rel="nofollow">http://foobar.net/</a> about' in text
@@ -605,13 +605,13 @@ class Test():
 
     def test_markdown_invalid_script_in_link(self):
         r = g.markdown.convert('[xss](http://"><a onmouseover=prompt(document.domain)>xss</a>)')
-        assert ('<div class="markdown_content"><p><a class="" '
+        assert ('<div class="markdown_content"><p><a '
                 '''href='http://"&gt;&lt;a%20onmouseover=prompt(document.domain)&gt;xss&lt;/a' '''
                 'rel="nofollow">xss</a>)</p></div>' == r)
 
     def test_markdown_invalid_script_in_link2(self):
         r = g.markdown.convert('[xss](http://"><img src=x onerror=alert(document.cookie)>)')
-        assert ('<div class="markdown_content"><p><a class="" '
+        assert ('<div class="markdown_content"><p><a '
                 '''href='http://"&gt;&lt;img%20src=x%20onerror=alert(document.cookie)' '''
                 'rel="nofollow">xss</a>)</p></div>' == r)
 
@@ -648,7 +648,7 @@ class Test():
             t1 = time.perf_counter()
             r = g.markdown.convert(text)
             t2 = time.perf_counter()
-            assert r.startswith('<div class="markdown_content"><p><span>[abc]</span>(https://example.com/airboot.  <a class="" href="https://example.com/" rel="nofollow">foo</a> <a class="" href="https://example.com/" rel="nofollow">foo</a>')
+            assert r.startswith('<div class="markdown_content"><p><span>[abc]</span>(https://example.com/airboot.  <a href="https://example.com/" rel="nofollow">foo</a> <a href="https://example.com/" rel="nofollow">foo</a>')
             return t2 - t1
 
         short_time = do_test(2)
