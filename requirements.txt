@@ -340,7 +340,7 @@ webob==1.8.9
     #   webtest
 webtest==3.0.7
     # via -r requirements.in
-werkzeug==3.1.5
+werkzeug==3.1.6
     # via -r requirements.in
 wrapt==2.1.0
     # via -r requirements.in
