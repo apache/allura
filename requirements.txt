@@ -129,7 +129,7 @@ jmespath==1.1.0
     # via
     #   boto3
     #   botocore
-joserfc==1.6.1
+joserfc==1.6.3
     # via beaker-session-jwt
 legacy-cgi==2.6.2 ; python_full_version >= '3.13'
     # via
