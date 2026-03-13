@@ -1440,14 +1440,9 @@ def clean_html(value: str) -> Markup:
 def escape_markdown(content: str) -> str:
     if content is None:
         return ''
-    md = markdown.Markdown()
-    escaped_chars = md.ESCAPED_CHARS
-    if isinstance(escaped_chars, (list, tuple, set)):
-        escaped_chars = "".join(escaped_chars)
-    else:
-        escaped_chars = str(escaped_chars)
+    escaped_chars = r"\\`*_{}[]()#!"
     # escape html tag like <b> or <img>
-    html_escaped = html.escape(content, quote=True)
+    html_escaped = html.escape(content, quote=False)
     pattern = re.compile(rf"([{re.escape(escaped_chars)}])")
     # Escape markdown special characters to prevent unintended formatting
     return pattern.sub(r"\\\1", html_escaped)

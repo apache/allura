@@ -17,7 +17,7 @@
 
 from datetime import timedelta
 import collections
-
+import email.iterators
 import pytest
 from tg import tmpl_context as c, app_globals as g
 from ming.odm import ThreadLocalODMSession
@@ -30,6 +30,7 @@ from allura.model.notification import MailFooter
 from allura.lib import helpers as h
 from allura.tests import decorators as td
 from forgewiki import model as WM
+from forgetracker import model as TM
 
 
 class TestNotification:
@@ -284,13 +285,87 @@ class TestPostNotifications:
         footer = MailFooter.standard(M.Notification())
         assert 'Sent from localhost because you indicated interest' in footer
 
+    @pytest.mark.parametrize('markdown, result',
+                             [('![img](https://static.vecteezy.com/system/resources/thumbnails/012/042/301/small_2x/warning-sign-icon-transparent-background-free-png.png)',
+                               'src="https://static.vecteezy.com/system/'),
+                                 ('[link text](https://example.com)', 'href="https://example.com"'),
+                             ])
+    def test_email_markdown_not_parsed(self, markdown, result):
+        """
+        strings like `![img](url)` in Wiki notification body should be converted to HTML
+        (e.g., `<img ...>`).
+        """
+        self._subscribe()  # current user: test-admin
+        self._post_notification(text=markdown, subject=markdown, link='https://example.com')
+        M.MonQTask.run_ready()
+        ThreadLocalODMSession.flush_all()
+
+        with mock.patch('allura.tasks.mail_tasks.smtp_client.sendmail') as sendmail:
+            while M.MonQTask.run_ready():
+                ThreadLocalODMSession.flush_all()
+                # have to run them all multiple times since one task creates another
+                pass
+
+        multipart_msg = sendmail.call_args_list[0][0][6]
+        html_body = next(email.iterators.typed_subpart_iterator(multipart_msg, 'text', 'html'))\
+            .get_payload(decode=True).decode('utf-8')
+        assert result in html_body
+
     def _subscribe(self, **kw):
         self.pg.subscribe(type='direct', **kw)
         ThreadLocalODMSession.flush_all()
         ThreadLocalODMSession.close_all()
 
-    def _post_notification(self):
-        return M.Notification.post(self.pg, 'metadata')
+    def _post_notification(self, **kwargs):
+        return M.Notification.post(self.pg, 'metadata', **kwargs)
+
+
+class TestTicketNotifications(TestPostNotifications):
+
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.setup_with_tools()
+
+    @td.with_tracker
+    def setup_with_tools(self):
+        setup_global_objects()
+        g.set_app('bugs')
+        ticket = TM.Ticket.new()
+        ticket.summary = 'test ticket'
+        ThreadLocalODMSession.flush_all()
+        self.pg = ticket
+        M.notification.MAILBOX_QUIESCENT = None  # disable message combining
+        while M.MonQTask.run_ready('setup'):
+            ThreadLocalODMSession.flush_all()
+
+    @pytest.mark.parametrize('markdown, rendered_snippet',
+        [('![img](https://static.vecteezy.com/system/resources/thumbnails/012/042/301/small_2x/warning-sign-icon-transparent-background-free-png.png)', '<img',), ('[link text](https://example.com)', '<a',), ])
+    def test_ticket_email_markdown_not_parsed(self, markdown, rendered_snippet):
+        self._subscribe()
+        body_link = '[main link](https://wesbite.com)'
+        body_link_rendered = '<a class="" href="https://wesbite.com" rel="nofollow">main link</a>'
+        self.pg.summary = markdown  # should not render to html
+        self.pg.status = markdown  # should not render to html
+        self.pg.ticket_num = getattr(self.pg, 'ticket_num', 1) or 1
+        self.pg.description = body_link  # should render to html
+        self.pg.app_config.options.mount_point = getattr(self.pg.app_config.options, 'mount_point', 'bugs') or 'bugs'
+        ThreadLocalODMSession.flush_all()
+        self._post_notification(text=markdown, subject=markdown, link='https://example.com')
+        while M.MonQTask.run_ready():
+            ThreadLocalODMSession.flush_all()
+
+        with mock.patch('allura.tasks.mail_tasks.smtp_client.sendmail') as sendmail:
+            while M.MonQTask.run_ready():
+                ThreadLocalODMSession.flush_all()
+            assert sendmail.call_count >= 1, "Expected at least one outbound email"
+            multipart_msg = sendmail.call_args_list[0][0][6]
+
+        html_body = next(email.iterators.typed_subpart_iterator(multipart_msg, 'text', 'html')).get_payload(
+            decode=True).decode('utf-8')
+        # Raw markdown must appear in some parts the html body
+        assert markdown in html_body
+        # And also the rendered html should appear in the body
+        assert body_link_rendered in html_body
 
 
 class TestSubscriptionTypes:
