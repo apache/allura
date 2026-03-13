@@ -27,6 +27,6 @@ Diff:
 ~~~~
 
 {% else %}
-- **{{ field }}**: {{ values[0] }} --> {{ values[1] }}
+- **{{ field }}**: {{ values[0] |escape_markdown }} --> {{ values[1] |escape_markdown }}
 {% endif %}
 {% endfor %}

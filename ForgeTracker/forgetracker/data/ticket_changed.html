@@ -31,11 +31,11 @@ Diff:
 {% else -%}
 {% set oldv, newv = values -%}
 {% if key == 'assigned_to' or oldv.type_s == 'User' or newv.type_s == 'User' -%}
-- **{{key}}**: {% if oldv %}{{oldv.get_pref('display_name')}} --> {% endif %}{% if newv %}{{newv.get_pref('display_name')}}{% else %} nobody {% endif %}
+- **{{key}}**: {% if oldv %}{{oldv.get_pref('display_name') |escape_markdown }} --> {% endif %}{% if newv %}{{newv.get_pref('display_name') |escape_markdown }}{% else %} nobody {% endif %}
 {% elif key == 'labels' -%}
-- **{{key}}**: {{', '.join(oldv)}} --> {{', '.join(newv)}}
+- **{{key}}**: {{', '.join(oldv) |escape_markdown }} --> {{', '.join(newv) |escape_markdown }}
 {% else -%}
-- **{{key}}**: {{oldv if oldv is not none else ''}} --> {{newv if newv is not none else ''}}
+- **{{key}}**: {{oldv |escape_markdown if oldv is not none else ''}} --> {{newv |escape_markdown if newv is not none else ''}}
 {% endif -%}
 {% endif -%}
 {% endfor -%}
