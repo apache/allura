@@ -1351,9 +1351,18 @@ class ProjectRegistrationProvider:
             elif 'app_config_id' in m.property_index:
                 # ... and the things related to its apps
                 mcls.query.remove(dict(app_config_id={'$in': app_config_ids}))
+
+        deleted_event_payload = dict(
+            project_id=pid,
+            unix_group_name=project.get_tool_data('sfx', 'unix_group_name'),
+            sfx_group_id=project.get_tool_data('sfx', 'group_id'),
+            name=project.name,
+            reason=reason
+        )
+
         project.delete()
         session(project).flush()
-        g.post_event('project_deleted', project_id=pid, reason=reason)
+        g.post_event('project_deleted', **deleted_event_payload)
 
     def disable_project_users(self, project, reason=None):
         provider = AuthenticationProvider.get(Request.blank('/'))
