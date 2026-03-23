@@ -320,17 +320,23 @@ class TestPostNotifications:
         return M.Notification.post(self.pg, 'metadata', **kwargs)
 
 
-class TestTicketNotifications(TestPostNotifications):
+class TestTicketNotifications():
 
     def setup_method(self, method):
-        super().setup_method(method)
+        setup_basic_test()
         self.setup_with_tools()
+
+    def teardown_method(self, method):
+        TM.Ticket.query.remove()
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
 
     @td.with_tracker
     def setup_with_tools(self):
         setup_global_objects()
         g.set_app('bugs')
         ticket = TM.Ticket.new()
+        ticket.ticket_num = 999
         ticket.summary = 'test ticket'
         ThreadLocalODMSession.flush_all()
         self.pg = ticket
@@ -366,6 +372,15 @@ class TestTicketNotifications(TestPostNotifications):
         assert markdown in html_body
         # And also the rendered html should appear in the body
         assert body_link_rendered in html_body
+
+    def _subscribe(self, **kw):
+        self.pg.subscribe(type='direct', **kw)
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
+
+    def _post_notification(self, **kwargs):
+        return M.Notification.post(self.pg, 'metadata', **kwargs)
+
 
 
 class TestSubscriptionTypes:
