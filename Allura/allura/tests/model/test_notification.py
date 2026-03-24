@@ -349,7 +349,7 @@ class TestTicketNotifications():
     def test_ticket_email_markdown_not_parsed(self, markdown, rendered_snippet):
         self._subscribe()
         body_link = '[main link](https://wesbite.com)'
-        body_link_rendered = '<a class="" href="https://wesbite.com" rel="nofollow">main link</a>'
+        body_link_rendered = '<a href="https://wesbite.com" rel="nofollow">main link</a>'
         self.pg.summary = markdown  # should not render to html
         self.pg.status = markdown  # should not render to html
         self.pg.ticket_num = getattr(self.pg, 'ticket_num', 1) or 1
