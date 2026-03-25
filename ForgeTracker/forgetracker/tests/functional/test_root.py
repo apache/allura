@@ -1711,7 +1711,7 @@ class TestFunctionalController(TrackerTestController):
         ).first()
         expected_text = (
             '**Attachments:**\n\n'
-            '- [tést_root.py]'
+            '- [tést\\_root.py]'
             '(http://localhost/p/test/bugs/1/attachment/t%C3%A9st_root.py)')
         assert expected_text in email.kwargs['text']
 

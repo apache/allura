@@ -35,7 +35,7 @@ Diff:
 {% elif key == 'labels' -%}
 - **{{key}}**: {{', '.join(oldv) |escape_markdown }} --> {{', '.join(newv) |escape_markdown }}
 {% else -%}
-- **{{key}}**: {{oldv |escape_markdown if oldv is not none else ''}} --> {{newv |escape_markdown if newv is not none else ''}}
+- **{{key}}**: {{ (oldv|string) |escape_markdown if oldv is not none else ''}} --> {{ (newv|string) |escape_markdown if newv is not none else ''}}
 {% endif -%}
 {% endif -%}
 {% endfor -%}

@@ -518,7 +518,7 @@ class TestForum(TestController):
         r = self.app.post('/discussion/save_new_topic', params=params)
         n = M.Notification.query.find(
             dict(subject="[test:discussion] this is <h2> o'clock")).first()
-        assert '---\n\n[this is &lt;h2&gt; o&#39;clock]' in n.text
+        assert '---\n\n[this is &lt;h2&gt; o\'clock]' in n.text
 
     def _set_anon_allowed(self):
         r = self.app.get('/admin/discussion/permissions')
