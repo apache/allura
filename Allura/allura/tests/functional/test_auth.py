@@ -22,7 +22,7 @@ from datetime import datetime, time, timedelta
 from time import time as time_time
 import json
 
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, urljoin
 from urllib.parse import urlencode
 
 from bson import ObjectId
@@ -261,6 +261,26 @@ class TestAuth(TestController):
                          params={'return_to': 'http://example.com/x'},
                          status=302)
         assert r.location == 'http://localhost/'
+
+    def test_auth_redirect_attack(self):
+        r = self.app.get('/auth/', extra_environ={'username': 'test-admin'},
+                         params={'return_to': '///evil.com'},
+                         status=302)
+        assert r.location == 'http://localhost/evil.com'
+
+    def test_evil_payloads(self):
+        payloads = ["https://evil.com", "//evil.com", r"\\evil.com",  # backslash variant (sometimes normalized oddly)
+            "/\\evil.com", "///evil.com", "////evil.com", "https:evil.com",  # weird scheme parsing in some libs
+            "http://evil.com", ]
+        base = "http://localhost"
+        base_split = urlparse(base)
+        for p in payloads:
+            r = self.app.get("/auth/", extra_environ={"username": "test-admin"}, params={"return_to": p}, status=302)
+            loc = r.headers["Location"]
+            abs_loc = urljoin(base, loc)
+            loc_split = urlparse(abs_loc)
+            assert loc_split.scheme == base_split.scheme, f"payload={p!r} Location={loc!r}"
+            assert loc_split.netloc == base_split.netloc, f"payload={p!r} Location={loc!r}"
 
     def test_login_overlay(self):
         r = self.app.get('/auth/login_fragment/', extra_environ={'username': '*anonymous'})
