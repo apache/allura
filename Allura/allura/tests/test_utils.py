@@ -32,6 +32,7 @@ import pytest
 from tg import config
 import html5lib
 import html5lib.treewalkers
+import html5lib.serializer
 
 from alluratest.controller import setup_unit_test
 
@@ -242,11 +243,19 @@ class TestCodeStats:
 
 class TestHTMLSanitizer:
 
+    def setup_method(self, method):
+        setup_unit_test()
+
     def walker_from_text(self, text):
         parsed = html5lib.parseFragment(text)
         TreeWalker = html5lib.treewalkers.getTreeWalker("etree")
         walker = TreeWalker(parsed)
         return walker
+
+    def sanitize_html(self, html):
+        with h.push_config(config, domain='mysite.com'):
+            filt = utils.ForgeHTMLSanitizerFilter(self.walker_from_text(html))
+            return html5lib.serializer.HTMLSerializer().render(filt)
 
     def simple_tag_list(self, sanitizer):
         # no attrs, no close tag flag check, just real simple
@@ -284,6 +293,100 @@ class TestHTMLSanitizer:
         walker = self.walker_from_text('<details open="open"><summary>An Summary</summary><ul><li>Bullet Item</li></ul></details>')
         p = utils.ForgeHTMLSanitizerFilter(walker)
         assert self.simple_tag_list(p) == ['details', 'summary', 'summary', 'ul', 'li', 'li', 'ul', 'details']
+
+    def test_misleading_links(self):
+        # OK: generic text
+        assert (self.sanitize_html('<a href="http://evil.com/">click here</a>') ==
+                '<a href="http://evil.com/">click here</a>')
+
+        # OK: domain-like text matching actual link
+        assert (self.sanitize_html('<a href="http://evil.com/path">evil.com</a>') ==
+                '<a href="http://evil.com/path">evil.com</a>')
+
+        # SUFFIX: domain-like text that is a different domain
+        assert (self.sanitize_html('<a href="http://evil.com/">example.com</a>') ==
+                '<a href="http://evil.com/">example.com</a> (evil.com)')
+
+        # SUFFIX: domain with protocol, that is a different URL
+        assert (self.sanitize_html('<a href="http://evil.com/">http://example.com/</a>') ==
+                '<a href="http://evil.com/">http://example.com/</a> (evil.com)')
+
+        # SUFFIX: different protocol variations
+        assert (self.sanitize_html('<a href="//evil.com/">http://example.com/</a>') ==
+                '<a href="//evil.com/">http://example.com/</a> (evil.com)')
+        assert (self.sanitize_html('<a href="///evil.com/">http://example.com/</a>') ==
+                '<a href="///evil.com/">http://example.com/</a> (evil.com)')
+
+        # OK: URL text matching actual link
+        assert (self.sanitize_html('<a href="http://evil.com/">http://evil.com/</a>') ==
+                '<a href="http://evil.com/">http://evil.com/</a>')
+
+        # false-positive SUFFIX due to domain name detection .txt looks like a TLD :(
+        assert (self.sanitize_html('<a href="https://example.com/repo/README.txt">README.txt</a>') ==
+                '<a href="https://example.com/repo/README.txt">README.txt</a> (example.com)')
+
+        # OK: internal/relative links
+        assert (self.sanitize_html('<a href="/p/local/wiki/">example.com</a>') ==
+                '<a href="/p/local/wiki/">example.com</a>')
+
+        # SUFFIX: mismatch domain embedded in a longer sentence
+        assert (self.sanitize_html('<a href="http://evil.com/">visit example.com for more</a>') ==
+                '<a href="http://evil.com/">visit example.com for more</a> (evil.com)')
+
+        # SUFFIX: mismatch domain with path in longer sentence
+        assert (self.sanitize_html('<a href="http://evil.com/">see example.com/some/page for details</a>') ==
+                '<a href="http://evil.com/">see example.com/some/page for details</a> (evil.com)')
+
+        # SUFFIX: mismatch full URL in longer sentence
+        assert (self.sanitize_html('<a href="http://evil.com/">see http://example.com/some/page for details</a>') ==
+                '<a href="http://evil.com/">see http://example.com/some/page for details</a> (evil.com)')
+
+    def test_misleading_links_idn(self):
+        # аpple.com with Cyrillic а (U+0430) — homograph of apple.com
+        cyrillic_a = '\u0430'
+
+        # text and href use same IDN domain: always show punycode suffix for IDN lookalike destinations
+        assert (self.sanitize_html(f'<a href="http://{cyrillic_a}pple.com/">{cyrillic_a}pple.com</a>') ==
+                f'<a href="http://{cyrillic_a}pple.com/">{cyrillic_a}pple.com</a> (xn--pple-43d.com)')
+
+        # lookalike unicode text linking to the real domain: suffix reveals real hostname
+        assert (self.sanitize_html(f'<a href="http://apple.com/">{cyrillic_a}pple.com</a>') ==
+                f'<a href="http://apple.com/">{cyrillic_a}pple.com</a> (apple.com)')
+
+        # real-looking text linking to IDN domain: suffix reveals punycode hostname
+        assert (self.sanitize_html(f'<a href="http://{cyrillic_a}pple.com/">apple.com</a>') ==
+                f'<a href="http://{cyrillic_a}pple.com/">apple.com</a> (xn--pple-43d.com)')
+
+        # even generic link text gets the suffix when destination is IDN lookalike
+        assert (self.sanitize_html(f'<a href="http://{cyrillic_a}pple.com/">click here</a>') ==
+                f'<a href="http://{cyrillic_a}pple.com/">click here</a> (xn--pple-43d.com)')
+
+        # Chinese IDN — not an ASCII lookalike, so treated like a normal domain
+        chinese_domain = '中文.com'
+        # generic text: no suffix (Chinese chars are not ASCII lookalikes)
+        assert (self.sanitize_html(f'<a href="http://{chinese_domain}/">click here</a>') ==
+                '<a href="http://中文.com/">click here</a>')
+        # misleading domain text: suffix shown (same as non-IDN behavior)
+        assert (self.sanitize_html(f'<a href="http://{chinese_domain}/">example.com</a>') ==
+                '<a href="http://中文.com/">example.com</a> (xn--fiq228c.com)')
+        # correct domain text: no suffix
+        assert (self.sanitize_html(f'<a href="http://{chinese_domain}/">{chinese_domain}</a>') ==
+                '<a href="http://中文.com/">中文.com</a>')
+
+
+def test_text_contains_any_url():
+    assert utils.text_contains_any_url('example.com') is True
+    assert utils.text_contains_any_url('foo a1-2-3.space bar') is True
+    assert utils.text_contains_any_url('click here') is False
+    # false positives: file extensions and library names with dots parse as hostnames
+    assert utils.text_contains_any_url('README.md') is True   # .md suffix
+    assert utils.text_contains_any_url('Node.js') is True     # .js suffix
+
+
+def test_text_contains_hostname():
+    assert utils.text_contains_hostname('visit example.com for info', 'example.com') is True
+    assert utils.text_contains_hostname('visit example.com for info', 'example.comevil.org') is False
+    assert utils.text_contains_hostname('click here', 'example.com') is False
 
 
 def test_ip_address():

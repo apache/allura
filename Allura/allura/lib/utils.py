@@ -29,6 +29,7 @@ import datetime
 import random
 import mimetypes
 import re
+import unicodedata
 from pathlib import Path
 from typing import TypeVar
 import magic
@@ -47,6 +48,7 @@ import json
 from collections import OrderedDict
 
 from bs4 import BeautifulSoup
+import idna
 from tg import redirect, app_globals as g
 from tg.decorators import before_validate
 from tg.controllers.util import etag_cache
@@ -588,6 +590,16 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
             'fn:', 'fnref:',  # from footnotes extension
         } | set(aslist(tg.config.get('safe_html.id_prefixes', [])))
         self._prev_token_was_ok_iframe = False
+        self._current_link = None
+        self._pending_link_suffix = None
+
+    def __iter__(self):
+        # override to inject link suffixes in the output
+        for token in super().__iter__():
+            yield token
+            if self._pending_link_suffix is not None:
+                yield self._pending_link_suffix
+                self._pending_link_suffix = None
 
     def sanitize_token(self, token):
         """
@@ -633,7 +645,157 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
             if attrs.get((None, 'type'), '') == "checkbox":
                 self.allowed_elements.add(input_el)
 
-        return super().sanitize_token(token)
+        sanitized = super().sanitize_token(token)
+        self._track_link_target(sanitized)
+        return sanitized
+
+    def _track_link_target(self, token):
+        if token is None:
+            return
+
+        tag_type = token.get('type')
+        tag_name = token.get('name')
+
+        if tag_type == 'StartTag' and tag_name == 'a':
+            href = token.get('data', {}).get((None, 'href'))
+            hostname = hostname_from_url(href)
+            self._current_link = {
+                'href': href,
+                'hostname': hostname,
+                'text_parts': [],
+            }
+            return
+
+        if self._current_link is None:
+            return
+
+        if tag_type in ('Characters', 'SpaceCharacters'):
+            self._current_link['text_parts'].append(token.get('data', ''))
+            return
+
+        if tag_type == 'EndTag' and tag_name == 'a':
+            self._finalize_link_target()
+            self._current_link = None
+
+    def _finalize_link_target(self):
+        href = self._current_link['href']
+        hostname = self._current_link['hostname']
+        if not href or not hostname:
+            return
+
+        visible_text = ''.join(self._current_link['text_parts']).strip()
+        if not visible_text:
+            return
+
+        idn_lookalike = 'xn--' in hostname and idn_uses_lookalike_chars(hostname)
+        if not idn_lookalike:
+            # IDN with ASCII-lookalike chars (e.g. Cyrillic/Greek homographs) always
+            # gets the suffix so the deception is visible; all other links only get it
+            # when the visible text looks like a URL pointing somewhere different.
+            if not text_contains_any_url(visible_text):
+                return
+            if text_contains_hostname(visible_text, hostname):
+                return
+
+        self._pending_link_suffix = {
+            'type': 'Characters',
+            'data': f' ({hostname})',
+        }
+
+
+# Scripts whose characters are visually distinct from ASCII and unlikely to be used
+# in homograph attacks.  Any non-ASCII character whose Unicode name does NOT start
+# with one of these prefixes is treated as a potential ASCII lookalike.
+NON_MISLEADING_IDN_SCRIPTS = frozenset([
+    'CJK', 'HANGUL', 'HIRAGANA', 'KATAKANA',                          # East Asian
+    'ARABIC', 'HEBREW',                                               # Semitic
+    'THAI', 'LAO', 'KHMER', 'MYANMAR', 'TIBETAN',                     # Southeast/Central Asian
+    'DEVANAGARI', 'BENGALI', 'GUJARATI', 'GURMUKHI', 'ORIYA',         # South Asian (Indic)
+    'KANNADA', 'MALAYALAM', 'SINHALA', 'TAMIL', 'TELUGU',
+    'MONGOLIAN', 'ETHIOPIC', 'GEORGIAN',
+])
+
+
+def idn_uses_lookalike_chars(ascii_hostname: str) -> bool:
+    """
+    Return True if any non-ASCII character in the IDN hostname could be visually
+    confused with an ASCII character (e.g. Cyrillic or Greek lookalikes).
+    """
+    try:
+        unicode_hostname = idna.decode(ascii_hostname)
+    except (idna.IDNAError, UnicodeError):
+        return True  # can't decode → assume misleading
+    for char in unicode_hostname:
+        if ord(char) <= 127:
+            continue
+        name = unicodedata.name(char, '')
+        script = name.split()[0] if name else ''
+        if script not in NON_MISLEADING_IDN_SCRIPTS:
+            return True
+    return False
+
+
+def normalize_hostname(hostname: str) -> str:
+    # handles IDN -> ascii punycode
+    if not hostname:
+        return ''
+
+    hostname = hostname.strip().rstrip('.').lower()
+    if not hostname:
+        return ''
+
+    try:
+        return idna.encode(hostname, uts46=True).decode('ascii').lower()
+    except idna.IDNAError:
+        return hostname
+
+
+def hostname_from_url(url: str) -> str:
+    if not url:
+        return ''
+    # Browsers treat ///foo.com as //foo.com (protocol-relative); urlparse does not,
+    # so collapse three or more leading slashes to two before parsing.
+    url = re.sub(r'^/{3,}', '//', url)
+    return normalize_hostname(urlparse(url).hostname)
+
+
+_HOST_TOKEN_RE = re.compile(r'[^\s<>()]+')  # a run of non-whitespace, non <>() characters
+
+
+def text_contains_any_url(text: str) -> bool:
+    """Return True if the visible text appears to contain a URL or domain name."""
+    for token in _HOST_TOKEN_RE.findall(text):
+        candidate = token.strip('\'"[]{}()<>,;!?')
+        if not candidate or ('@' in candidate and '://' not in candidate):
+            continue
+        if '://' in candidate:
+            if urlparse(candidate).hostname:
+                return True
+        elif '.' in candidate and re.search(r'[a-zA-Z]', candidate):
+            if urlparse('//' + candidate).hostname:
+                return True
+    return False
+
+
+def text_contains_hostname(text: str, hostname: str) -> bool:
+    normalized_text = text.casefold()
+    if hostname.casefold() in normalized_text:
+        return True
+
+    for token in _HOST_TOKEN_RE.findall(text):
+        candidate = token.strip('\'"[]{}()<>,;!?')
+        if not candidate or ('@' in candidate and '://' not in candidate):
+            continue
+
+        if '://' in candidate:
+            candidate_hostname = urlparse(candidate).hostname
+        else:
+            candidate_hostname = urlparse('//' + candidate).hostname
+
+        if normalize_hostname(candidate_hostname) == hostname:
+            return True
+
+    return False
 
 
 def ip_address(request):
