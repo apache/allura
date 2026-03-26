@@ -253,7 +253,7 @@ regex==2026.1.15 ; implementation_name != 'pypy'
     # via textile
 repoze-lru==0.7
     # via turbogears2
-requests==2.32.5
+requests==2.33.0
     # via
     #   -r requirements.in
     #   pysolr
