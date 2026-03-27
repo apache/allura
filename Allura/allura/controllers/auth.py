@@ -389,18 +389,14 @@ class AuthController(BaseController):
     @staticmethod
     def _verify_return_to(return_to):
         # protect against any "open redirect" attacks using an external URL
-        if not return_to or any(nr in return_to for nr in ('\n', '\r')):
+        if not return_to or '\n' in return_to:
             return_to = '/'
-        rt_host = urlparse(urljoin(config['base_url'], return_to))
-        base_host = urlparse(config['base_url'])
-        if rt_host.scheme != base_host.scheme or rt_host.netloc != base_host.netloc:
+        rt_host = urlparse(urljoin(config['base_url'], return_to)).netloc
+        base_host = urlparse(config['base_url']).netloc
+        if rt_host == base_host:
+            return return_to
+        else:
             return '/'
-        final_path = rt_host.path or '/'
-        if rt_host.query:
-            final_path += '?' + rt_host.query
-        if rt_host.fragment:
-            final_path += '#' + rt_host.fragment
-        return final_path
 
     @expose()
     @require_post()
