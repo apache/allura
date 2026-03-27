@@ -25,7 +25,7 @@ from tg import tmpl_context as c, app_globals as g
 from mock import patch, Mock
 import pytest
 from ming.odm.odmsession import ThreadLocalODMSession
-from ming.odm import Mapper
+from ming.odm import Mapper, state
 from bson import ObjectId
 from webob import Request
 
@@ -262,6 +262,22 @@ class TestArtifact:
                                'logged_ip': '1.2.3.4'})
         ThreadLocalODMSession.flush_all()
         assert len(M.Snapshot.from_username('johndoe')) == 1
+
+    def test_snapshot_author_stored_encrypted(self):
+        s = M.Snapshot(author={
+            'username': 'johndoe',
+            'display_name': 'John Doe',
+            'logged_ip': '1.2.3.4',
+        })
+
+        raw_author = state(s).document['author']
+
+        assert raw_author['username_encrypted'] == M.Snapshot.encr('johndoe')
+        assert raw_author['display_name_encrypted'] == M.Snapshot.encr('John Doe')
+        assert raw_author['logged_ip_encrypted'] == M.Snapshot.encr('1.2.3.4')
+        assert 'username' not in raw_author
+        assert 'display_name' not in raw_author
+        assert 'logged_ip' not in raw_author
 
     def test_feed_clear_user_data(self):
         f = M.Feed(author_name='John Doe',

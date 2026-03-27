@@ -25,6 +25,7 @@ import pymongo
 from tg import tmpl_context as c, app_globals as g
 from tg import request
 from ming import schema as S
+from ming.encryption import NestedEncryptedProperty
 from ming.odm import state, session
 from ming.odm import FieldProperty, ForeignIdProperty, RelationProperty
 from ming.odm.declarative import MappedClass
@@ -553,11 +554,11 @@ class Snapshot(Artifact):
     artifact_id = FieldProperty(S.ObjectId)
     artifact_class = FieldProperty(str)
     version = FieldProperty(S.Int, if_missing=0)
-    author = FieldProperty(dict(
+    author = NestedEncryptedProperty(dict(
         id=S.ObjectId,
-        username=str,
-        display_name=str,
-        logged_ip=str))
+        username_encrypted=S.Binary,
+        display_name_encrypted=S.Binary,
+        logged_ip_encrypted=S.Binary))
     timestamp = FieldProperty(datetime)
     data = FieldProperty(None)
 
@@ -598,7 +599,12 @@ class Snapshot(Artifact):
 
     @classmethod
     def from_username(cls, username):
-        return cls.query.find({'author.username': username}).all()
+        return cls.query.find({
+            '$or': [
+                {'author.username_encrypted': cls.encr(username)},
+                {'author.username': username},
+            ],
+        }).all()
 
     @property
     def attachments(self):
