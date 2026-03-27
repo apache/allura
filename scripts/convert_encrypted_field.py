@@ -28,28 +28,43 @@ from ming.odm.declarative import MappedClass
 from ming.odm.property import FieldProperty, DecryptedProperty
 
 
+def _encrypted_field_name(plain_field_name: str) -> str:
+    path = plain_field_name.split('.')
+    path[-1] = f'{path[-1]}_encrypted'
+    return '.'.join(path)
+
+
+def _get_field_value(record, field_name: str):
+    value = record
+    for part in field_name.split('.'):
+        value = value[part]
+    return value
+
+
 def main(class_name: str, plain_field_name: str,
          *, remove_unencrypted: bool = False, redo_all: bool = False):
     """
     :param class_name: full class name, e.g. allura.model.user.User
-    :param plain_field_name: name of the unencrypted field, e.g. display_name
+    :param plain_field_name: name of the unencrypted field, e.g. display_name or author.username
     :param remove_unencrypted: WARNING only run this after your codebase is already on the latest code
     :param redo_all: re-encrypt records that already have encrypted values (in case they changed since last run)
     """
-    encrypted_field_name = f'{plain_field_name}_encrypted'
+    encrypted_field_name = _encrypted_field_name(plain_field_name)
+    is_nested_field = '.' in plain_field_name
 
     module_name, class_basename = class_name.rsplit('.', 1)
     module = import_module(module_name)
     Model: type[MappedClass] = getattr(module, class_basename)
 
     # sanity checks that the fields are correct and ready
-    encr_prop = getattr(Model, encrypted_field_name)
-    assert isinstance(encr_prop, FieldProperty)
-    assert encr_prop.field.type == schema.Binary
-    if remove_unencrypted:
-        plain_prop = Model.__dict__[plain_field_name]  # getattr() better but needs Ming fix released
-        assert isinstance(plain_prop, DecryptedProperty)
-        assert plain_prop.encrypted_field == encrypted_field_name
+    if not is_nested_field:
+        encr_prop = getattr(Model, encrypted_field_name)
+        assert isinstance(encr_prop, FieldProperty)
+        assert encr_prop.field.type == schema.Binary
+        if remove_unencrypted:
+            plain_prop = Model.__dict__[plain_field_name]  # getattr() better but needs Ming fix released
+            assert isinstance(plain_prop, DecryptedProperty)
+            assert plain_prop.encrypted_field == encrypted_field_name
 
     # TODO: figure out how it works with inheritance
 
@@ -78,7 +93,7 @@ def main(class_name: str, plain_field_name: str,
     count = 0
     for chunk in chunked_find(Model, q):
         for rec in chunk:
-            val = rec[plain_field_name]
+            val = _get_field_value(rec, plain_field_name)
             encr_val = Model.encr(val)
             Model.query.update({'_id': rec['_id']}, {
                 '$set': {encrypted_field_name: encr_val},
