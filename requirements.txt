@@ -205,7 +205,7 @@ pyasyncore==1.0.5
     # via pyasynchat
 pycparser==3.0 ; implementation_name != 'PyPy'
     # via cffi
-pygments==2.19.2
+pygments==2.20.0
     # via
     #   -r requirements.in
     #   pytest
