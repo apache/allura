@@ -223,7 +223,7 @@ pypeline==0.7.0
     # via -r requirements.in
 pysolr==3.11.0
     # via -r requirements.in
-pytest==9.0.2
+pytest==9.0.3
     # via
     #   -r requirements.in
     #   pytest-sugar
