@@ -600,10 +600,7 @@ class Snapshot(Artifact):
     @classmethod
     def from_username(cls, username):
         return cls.query.find({
-            '$or': [
-                {'author.username_encrypted': cls.encr(username)},
-                {'author.username': username},
-            ],
+            'author.username_encrypted': cls.encr(username)
         }).all()
 
     @property
