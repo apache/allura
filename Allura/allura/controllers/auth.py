@@ -230,7 +230,7 @@ class AuthController(BaseController):
         user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')  # Clear password reset token
         user.set_tool_data('allura', pwd_reset_preserve_session=session.id)
         h.auditlog_user('Password changed (through recovery process)', user=user)
-        email_body = g.jinja2_env.get_template('allura:templates/mail/password_changed.md').render(dict(
+        email_body = g.jinja2_env.get_template('allura:templates/mail/password_changed.md.jinja2').render(dict(
             user=user,
             config=config
         ))
@@ -352,7 +352,7 @@ class AuthController(BaseController):
 
             if do_auth_check:
                 # don't send email when do_auth_check=False (e.g. admin panel move)
-                email_body = g.jinja2_env.get_template('allura:templates/mail/email_added.md').render(dict(
+                email_body = g.jinja2_env.get_template('allura:templates/mail/email_added.md.jinja2').render(dict(
                     user=user,
                     config=config,
                     addr=addr.email
@@ -713,7 +713,7 @@ class PreferencesController(BaseController):
                         user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
                 h.auditlog_user('Email address deleted: %s', user.email_addresses[i], user=user)
                 if not admin:
-                    email_body = g.jinja2_env.get_template('allura:templates/mail/email_removed.md').render(dict(
+                    email_body = g.jinja2_env.get_template('allura:templates/mail/email_removed.md.jinja2').render(dict(
                         user=user,
                         config=config,
                         addr=user.email_addresses[i]
@@ -774,7 +774,7 @@ class PreferencesController(BaseController):
                     primary_addr,
                     user=user)
                 if not admin:
-                    email_body = g.jinja2_env.get_template('allura:templates/mail/primary_email_changed.md').render(
+                    email_body = g.jinja2_env.get_template('allura:templates/mail/primary_email_changed.md.jinja2').render(
                         dict(user=user, config=config, addr=primary_addr))
                     # send to previous primary addr
                     send_system_mail_to_user(old_primary_addr, 'Primary Email Address Changed', email_body)
@@ -826,7 +826,7 @@ class PreferencesController(BaseController):
             redirect('.')
         flash('Password changed')
         h.auditlog_user('Password changed')
-        email_body = g.jinja2_env.get_template('allura:templates/mail/password_changed.md').render(dict(
+        email_body = g.jinja2_env.get_template('allura:templates/mail/password_changed.md.jinja2').render(dict(
             user=c.user,
             config=config,
         ))
@@ -929,7 +929,7 @@ class PreferencesController(BaseController):
             del session['totp_new_key']
             session.save()
             tg.flash('Two factor authentication has now been set up.')
-            email_body = g.jinja2_env.get_template('allura:templates/mail/twofactor_enabled.md').render(
+            email_body = g.jinja2_env.get_template('allura:templates/mail/twofactor_enabled.md.jinja2').render(
                 dict(user=c.user, config=config, ))
             send_system_mail_to_user(c.user, 'Two-Factor Authentication Enabled', email_body)
             redirect('/auth/preferences/multifactor_recovery')
@@ -949,7 +949,7 @@ class PreferencesController(BaseController):
         c.user.set_pref('multifactor', False)
         c.user.set_tool_data('allura', multifactor_date=None)
         tg.flash('Multifactor authentication has now been disabled.')
-        email_body = g.jinja2_env.get_template('allura:templates/mail/twofactor_disabled.md').render(dict(
+        email_body = g.jinja2_env.get_template('allura:templates/mail/twofactor_disabled.md.jinja2').render(dict(
             user=c.user,
             config=config,
         ))
@@ -962,7 +962,7 @@ class PreferencesController(BaseController):
         if not asbool(config.get('auth.multifactor.totp', False)):
             raise wexc.HTTPNotFound
 
-        email_body = g.jinja2_env.get_template('allura:templates/mail/twofactor_apps.md').render(dict(
+        email_body = g.jinja2_env.get_template('allura:templates/mail/twofactor_apps.md.jinja2').render(dict(
             user=c.user,
             config=config,
         ))
@@ -1001,7 +1001,7 @@ class PreferencesController(BaseController):
 
         recovery = RecoveryCodeService.get()
         recovery.regenerate_codes(c.user)
-        email_body = g.jinja2_env.get_template('allura:templates/mail/twofactor_recovery_regen.md').render(dict(
+        email_body = g.jinja2_env.get_template('allura:templates/mail/twofactor_recovery_regen.md.jinja2').render(dict(
             user=c.user,
             config=config,
         ))
