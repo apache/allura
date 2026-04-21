@@ -20,8 +20,9 @@ from __future__ import annotations
 import logging
 import typing
 
+import tg
 from markupsafe import Markup
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlencode
 from email import header
 from hashlib import sha256
 from collections import deque
@@ -470,14 +471,23 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         reset_url = h.absurl(f'/auth/forgotten_password/{hash}')
         return reset_url
 
-    def send_email_auth_code(self, subject_tmpl='{site_name} Authentication Code'):
+    def send_email_auth_code(self, return_to='/', subject_tmpl='{site_name} Authentication Code'):
+        from allura.controllers.auth import AuthController
+
         email_address = self.get_pref('email_address')
-        email_auth_code = EmailCodeAuthenticationService().generate_code(self)
+        token = EmailCodeAuthenticationService().generate_token(self)
+        return_to = AuthController._verify_return_to(return_to)
+        link_params = {
+            'token': token,
+        }
+        if return_to and return_to != '/':
+            link_params['return_to'] = return_to
+        verify_url = h.absurl(tg.url('/auth/login_email_verify', link_params))
         subject = subject_tmpl.format(site_name=config['site_name'])
         text = g.jinja2_env.get_template('allura:templates/mail/authentication_code.txt').render(dict(
             user=self,
             config=config,
-            email_auth_code=email_auth_code,
+            verify_url=verify_url,
         ))
         allura.tasks.mail_tasks.send_system_mail_to_user(email_address, subject, text)
 
