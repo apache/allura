@@ -70,13 +70,14 @@ repos:
         exclude: 'node_modules'
 
 -   repo: https://github.com/aristanetworks/j2lint
-    rev: f291b271118c524b9ecb0bb5df9f846345963469  # latest as of June 2024
+    rev: v1.2.0
     hooks:
     -   id: j2lint
-        types: [html]
+        types: [file]
+        files: \.(html|jinja2|j2)$
         args:
           - --extensions
-          - html
+          - html,jinja2,j2
           # only check jinja-syntax-error and jinja-statements-no-tabs
           - --ignore
           - single-space-decorator
