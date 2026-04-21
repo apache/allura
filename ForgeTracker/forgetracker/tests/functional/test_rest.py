@@ -111,7 +111,7 @@ class TestRestUpdateTicket(TestTrackerApiBase):
         args['private'] = str(args['private'])
         args['discussion_disabled'] = str(args['discussion_disabled'])
         ticket_view = self.api_post('/rest/p/test/bugs/1/save', params={'ticket_form': args})
-        assert ticket_view.status_int == 200, ticket_view.showbrowser()
+        assert ticket_view.status_int == 200
         json = ticket_view.json['ticket']
         assert int(json['ticket_num']) == 1
         assert json['summary'] == 'test update ticket', json

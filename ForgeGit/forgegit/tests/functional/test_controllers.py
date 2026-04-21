@@ -220,7 +220,7 @@ class TestRootController(_TestCase):
     def test_commit(self):
         ci = self._get_ci()
         resp = self.app.get(ci)
-        assert 'Rick' in resp, resp.showbrowser()
+        assert 'Rick' in resp
 
     def test_feed(self):
         for ext in ['', '.rss']:
@@ -254,17 +254,17 @@ class TestRootController(_TestCase):
     def test_tree(self):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/')
-        assert len(resp.html.find_all('tr')) == 2, resp.showbrowser()
+        assert len(resp.html.find_all('tr')) == 2
         resp = self.app.get(ci + 'tree/')
-        assert 'README' in resp, resp.showbrowser()
+        assert 'README' in resp
         links = [a.get('href') for a in resp.html.find_all('a')]
-        assert 'README' in links, resp.showbrowser()
-        assert 'README/' not in links, resp.showbrowser()
+        assert 'README' in links
+        assert 'README/' not in links
 
     def test_tree_extra_params(self):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/?format=raw')
-        assert 'README' in resp, resp.showbrowser()
+        assert 'README' in resp
 
     def test_tree_invalid(self):
         ci = self._get_ci()
@@ -325,8 +325,8 @@ class TestRootController(_TestCase):
     def test_diff(self):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/README?diff=df30427c488aeab84b2352bdf88a3b19223f9d7a')
-        assert 'readme' in resp, resp.showbrowser()
-        assert '+++' in resp, resp.showbrowser()
+        assert 'readme' in resp
+        assert '+++' in resp
 
     def test_diff_weirdchars(self):
         self._setup_weird_chars_repo()
@@ -458,7 +458,7 @@ class TestRootController(_TestCase):
     def test_timezone(self):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/')
-        assert "Thu Oct 07, 2010 06:44 PM UTC" in resp, resp.showbrowser()
+        assert "Thu Oct 07, 2010 06:44 PM UTC" in resp
 
     def test_checkout_input(self):
         ci = self._get_ci()

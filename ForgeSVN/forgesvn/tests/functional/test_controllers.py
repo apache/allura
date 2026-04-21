@@ -87,7 +87,7 @@ class TestRootController(SVNTestController):
     def test_index(self):
         resp = self.app.get('/src/').follow()
         assert 'svn checkout' in resp
-        assert '[r5]' in resp, resp.showbrowser()
+        assert '[r5]' in resp
 
     def test_index_empty(self):
         resp = self.app.get('/svn/')
@@ -138,7 +138,7 @@ class TestRootController(SVNTestController):
 
     def test_commit(self):
         resp = self.app.get('/src/3/tree/')
-        assert len(resp.html.find_all('tr')) == 3, resp.showbrowser()
+        assert len(resp.html.find_all('tr')) == 3
 
     def test_commit_unicode_and_special_chars(self):
         resp = self.app.get('/src/6/')
@@ -172,9 +172,9 @@ class TestRootController(SVNTestController):
 
     def test_tree(self):
         resp = self.app.get('/src/1/tree/')
-        assert len(resp.html.find_all('tr')) == 2, resp.showbrowser()
+        assert len(resp.html.find_all('tr')) == 2
         resp = self.app.get('/src/3/tree/a/')
-        assert len(resp.html.find_all('tr')) == 2, resp.showbrowser()
+        assert len(resp.html.find_all('tr')) == 2
 
     def test_file(self):
         resp = self.app.get('/src/1/tree/README')
@@ -189,8 +189,8 @@ class TestRootController(SVNTestController):
 
     def test_diff(self):
         resp = self.app.get('/src/3/tree/README?diff=2')
-        assert 'This is readme' in resp, resp.showbrowser()
-        assert '+++' in resp, resp.showbrowser()
+        assert 'This is readme' in resp
+        assert '+++' in resp
 
     def test_checkout_svn(self):
         self.app.post('/p/test/admin/src/set_checkout_url',
