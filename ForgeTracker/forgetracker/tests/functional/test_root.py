@@ -90,13 +90,13 @@ class TrackerTestController(TestController):
 class TestMilestones(TrackerTestController):
     def test_milestone_list(self):
         r = self.app.get('/bugs/milestones')
-        assert '1.0' in r, r.showbrowser()
+        assert '1.0' in r
 
     def test_milestone_list_progress(self):
         self.new_ticket(summary='foo', _milestone='1.0')
         self.new_ticket(summary='bar', _milestone='1.0', status='closed')
         r = self.app.get('/bugs/milestones')
-        assert '1 / 2' in r, r.showbrowser()
+        assert '1 / 2' in r
 
     def test_default_milestone_created_if_missing(self):
         p = M.Project.query.get(shortname='test')
@@ -252,7 +252,7 @@ class TestSubprojectTrackerController(TrackerTestController):
         ThreadLocalODMSession.flush_all()
         response = self.app.get('/p/test/sub1/tickets/search/?q=my',
                                 extra_environ=dict(username='*anonymous'))
-        assert 'my ticket' in response, response.showbrowser()
+        assert 'my ticket' in response
 
     @td.with_tool('test/sub1', 'Tickets', 'tickets')
     def test_deleted_ticket_visibility(self):
@@ -812,8 +812,8 @@ class TestFunctionalController(TrackerTestController):
             'description': '1\n3\n4\n',
         })
         r = self.app.get('/bugs/1/')
-        assert '<span class="gd">-2</span>' in r, r.showbrowser()
-        assert '<span class="gi">+4</span>' in r, r.showbrowser()
+        assert '<span class="gd">-2</span>' in r
+        assert '<span class="gi">+4</span>' in r
 
     def test_meta_comment(self):
         self.new_ticket(summary="foo")
@@ -888,7 +888,7 @@ class TestFunctionalController(TrackerTestController):
         ticket_editor = self.app.post('/bugs/1/update_ticket', {
             'summary': 'zzz'
         }, upload_files=[upload]).follow()
-        assert file_name in ticket_editor, ticket_editor.showbrowser()
+        assert file_name in ticket_editor
         req = self.app.get('/bugs/1/')
         form = self._find_update_ticket_form(req)
         file_link = BeautifulSoup(form.text, features="html5lib").find_all('a')[2]
@@ -1345,7 +1345,7 @@ class TestFunctionalController(TrackerTestController):
         form = self._find_update_ticket_form(error_form)
         form['ticket_form.summary'] = new_summary
         r = form.submit()
-        assert r.status_int == 302, r.showbrowser()
+        assert r.status_int == 302
         success = r.follow().html
         assert success.find_all('form', {'action': '/p/test/bugs/1/update_ticket_from_widget'}) is not None
         assert success.find('input', {'name': 'ticket_form.summary'})['value'] == new_summary
@@ -1441,12 +1441,12 @@ class TestFunctionalController(TrackerTestController):
         ThreadLocalODMSession.flush_all()
         response = self.app.get('/p/test/bugs/search/?q=reported_by_s:$USER',
                                 extra_environ={'username': 'test-user-0'})
-        assert '1 result' in response, response.showbrowser()
-        assert 'test first ticket' in response, response.showbrowser()
+        assert '1 result' in response
+        assert 'test first ticket' in response
         response = self.app.get('/p/test/bugs/search/?q=reported_by_s:$USER',
                                 extra_environ={'username': 'test-user-1'})
-        assert '1 result' in response, response.showbrowser()
-        assert 'test second ticket' in response, response.showbrowser()
+        assert '1 result' in response
+        assert 'test second ticket' in response
 
     def test_feed(self):
         self.new_ticket(

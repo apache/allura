@@ -791,13 +791,13 @@ class TestProjectAdmin(TestController):
             'username': 'test-user'})
         assert r.json['error'] == 'Test User (test-user) is already in the group Admin.'
         r = self.app.get('/admin/groups/')
-        assert 'test-user' in str(r), r.showbrowser()
+        assert 'test-user' in str(r)
         with audits('remove user test-user from Admin'):
             r = self.app.post('/admin/groups/remove_user', params={
                 'role_id': admin_id,
                 'username': 'test-user'})
         r = self.app.get('/admin/groups/')
-        assert 'test-user' not in str(r), r.showbrowser()
+        assert 'test-user' not in str(r)
 
     @td.with_wiki
     def test_new_group(self):

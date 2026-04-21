@@ -96,12 +96,12 @@ class TestAuth(TestController):
             r = self.app.post('/auth/do_login', antispam=True, extra_environ=dict(username='*anonymous'), params=dict(
                 username='test-user', password='food',
                 _csrf_token=self.app.cookies['_csrf_token']))
-            assert 'Invalid login' in str(r), r.showbrowser()
+            assert 'Invalid login' in str(r)
 
         r = self.app.post('/auth/do_login', antispam=True, extra_environ=dict(username='*anonymous'), params=dict(
             username='test-usera', password='foo',
             _csrf_token=self.app.cookies['_csrf_token']))
-        assert 'Invalid login' in str(r), r.showbrowser()
+        assert 'Invalid login' in str(r)
 
     def test_login_invalid_username(self):
         extra = {'username': '*anonymous'}
