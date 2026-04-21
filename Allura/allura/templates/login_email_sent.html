@@ -1,4 +1,4 @@
-{#
+{#-
        Licensed to the Apache Software Foundation (ASF) under one
        or more contributor license agreements.  See the NOTICE file
        distributed with this work for additional information
@@ -16,13 +16,20 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% set hide_left_bar = True %}
+{% extends g.theme.master %}
 
-An attempt to sign-in to your {{ config['site_name'] }} account was detected.
+{% block title %}{{ config['site_name'] }} Verify Your Sign-In{% endblock %}
 
-If this was you, click the link below to complete your sign-in:
+{% block header %}Verify Your Sign-In{% endblock %}
 
-{{ verify_url }}
-
-This link expires in 10 minutes.
-
-If you didn't request it, click <a href="/auth/forgotten_password">here</a> to reset your password immediately
+{% block content %}
+<h2>Check Your Email</h2>
+<p>A sign-in verification link has been sent to your email address.</p>
+<p>Click the link in the email to complete your sign-in. The link expires in 10 minutes.</p>
+<p>
+    <a href="/auth/logout?return_to=/auth/">
+        <input type="button" value="Log Out and Start Over">
+    </a>
+</p>
+{% endblock %}

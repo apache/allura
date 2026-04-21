@@ -14,7 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
+import hmac
 import os
 import logging
 import random
@@ -458,23 +458,21 @@ class GoogleAuthenticatorPamFilesystemRecoveryCodeService(GoogleAuthenticatorPam
         raise InvalidRecoveryCode
 
 
-class EmailCodeAuthenticationService(MongodbMultifactorCommon):
-    def generate_code(self, user):
-        code_length = 6
-        code_expiration_time = 300  # seconds
+class EmailCodeAuthenticationService:
+    def generate_token(self, user):
+        token_expiration_secs = 10 * 60
+        token = secrets.token_urlsafe(nbytes=8)
+        token_expiration_timestamp = int(time() + token_expiration_secs)
+        user.set_tool_data('AuthEmailCode', token=token, token_expiry=token_expiration_timestamp)
+        return token
 
-        code = ''.join(secrets.choice(string.digits) for i in range(code_length))
-        code_expiration_timestamp = int(time() + code_expiration_time)
-        user.set_tool_data('AuthEmailCode', code=code, code_expiry=code_expiration_timestamp)
-        return code
-
-    def validate_code(self, user, code):
-        user_code = user.get_tool_data('AuthEmailCode', 'code')
-        user_code_expiry = user.get_tool_data('AuthEmailCode', 'code_expiry')
-        if user_code:
-            self.enforce_rate_limit(user)
-            if user_code == code and int(time()) < user_code_expiry:
+    def validate_token(self, user, token):
+        user_token = user.get_tool_data('AuthEmailCode', 'token')
+        user_token_expiry = user.get_tool_data('AuthEmailCode', 'token_expiry')
+        if user_token:
+            # compare_digest more secure than == (against timing analysis attacks)
+            if hmac.compare_digest(user_token, token) and int(time()) < user_token_expiry:
                 # remove the AuthEmailCode tool data from the user
-                user.set_tool_data('AuthEmailCode', code="", code_expiry=0)
+                user.set_tool_data('AuthEmailCode', token='', token_expiry=0)
                 return True
         raise InvalidEmailAuthCode

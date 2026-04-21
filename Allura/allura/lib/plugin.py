@@ -96,6 +96,8 @@ class AuthenticationProvider:
     multifactor_allowed_urls = [
         '/auth/multifactor',
         '/auth/do_multifactor',
+        '/auth/login_email_sent',
+        '/auth/login_email_verify',
         '/auth/logout',
     ]
     cfg_prefix_pwds = 'auth.password.'
@@ -188,7 +190,7 @@ class AuthenticationProvider:
         '''
         raise NotImplementedError('register_user')
 
-    def _login(self):
+    def _login(self) -> M.User:
         '''
         Authorize a user, usually using ``self.request.params['username']`` and ``['password']``
 
@@ -212,6 +214,9 @@ class AuthenticationProvider:
                 h.auditlog_user('Failed login', user=M.User.by_username(self.request.params['username']))
                 raise
 
+        if user.is_anonymous():
+            raise ValueError('Cannot log in an anonymous user')
+
         if user.get_pref('multifactor') and not multifactor_success:
             self.session['multifactor-username'] = user.username
             h.auditlog_user('Multifactor login - password ok, code not entered yet', user=user)
@@ -232,7 +237,7 @@ class AuthenticationProvider:
             self.session['multifactor-username'] = user.username
             self.session['mode'] = 'email_code'
             self.session.save()
-            user.send_email_auth_code()
+            user.send_email_auth_code(return_to=self.request.params.get('return_to', '/'))
             return None
         else:
             # Validate if we used an auth code to skip the `after_login` which sends a foreign login email
@@ -651,7 +656,7 @@ class LocalAuthenticationProvider(AuthenticationProvider):
             u.reg_date = datetime.utcnow()
         return u
 
-    def _login(self):
+    def _login(self) -> M.User:
         user = self.by_username(self.request.params['username'])
         if not self.validate_password(user, self.request.params['password']):
             raise exc.HTTPUnauthorized()
@@ -907,7 +912,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         except ldap.INVALID_CREDENTIALS:
             raise exc.HTTPUnauthorized()
 
-    def _login(self):
+    def _login(self) -> M.User:
         if ldap is None:
             raise Exception('The python-ldap package needs to be installed.  '
                             'Run `pip install python-ldap` in your allura environment.')

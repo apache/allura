@@ -16,6 +16,7 @@
 #       under the License.
 from __future__ import annotations
 
+import hmac
 import logging
 import json
 import os
@@ -27,7 +28,7 @@ from urllib.parse import urlparse, urljoin, urlunparse
 import bson
 import formencode as fe
 import tg
-from tg import expose, flash, redirect, validate, config, session
+from tg import expose, flash, redirect, validate, config, session, override_template
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg import tmpl_context as c, app_globals as g
 from tg import request, response
@@ -404,8 +405,10 @@ class AuthController(BaseController):
     @utils.AntiSpam.validate('Spambot protection engaged')
     def do_login(self, return_to=None, **kw):
         location = '/'
-        if session.get('multifactor-username'):
-            location = tg.url('/auth/multifactor', dict(return_to=return_to))
+        if session.get('mode') == 'email_code':
+            location = tg.url('/auth/login_email_sent', dict(return_to=return_to) if return_to else {})
+        elif session.get('multifactor-username'):
+            location = tg.url('/auth/multifactor', dict(return_to=return_to) if return_to else {})
         elif session.get('expired-username'):
             if return_to and return_to not in plugin.AuthenticationProvider.pwd_expired_allowed_urls:
                 location = tg.url(plugin.AuthenticationProvider.pwd_expired_allowed_urls[0], dict(return_to=return_to))
@@ -418,15 +421,17 @@ class AuthController(BaseController):
 
     @expose('jinja:allura:templates/login_multifactor.html')
     def multifactor(self, return_to='', mode='totp', **kwargs):
-        if not asbool(config.get('auth.multifactor.totp', False)):
-            raise wexc.HTTPNotFound
-
         if not c.user.is_anonymous():
             # already logged in, no need to do this form
             redirect(self._verify_return_to(return_to))
-        # currently only email_code mode is set via session
-        if session.get('mode') == 'email_code':
-            mode = 'email_code'
+
+        # this URL is also used for email code verification, but there's a different template to use
+        if session.get('mode') == 'email_code' and asbool(config.get('auth.email_auth_code.enabled', False)):
+            override_template(self.multifactor, 'jinja:allura:templates/login_email_sent.html')
+            return dict()
+
+        if not asbool(config.get('auth.multifactor.totp', False)):
+            raise wexc.HTTPNotFound
 
         return dict(
             return_to=return_to,
@@ -445,7 +450,7 @@ class AuthController(BaseController):
 
         if 'multifactor-username' not in session:
             tg.flash('Your multifactor login was disrupted, please start over.', 'error')
-            plugin.AuthenticationProvider.get(request).logout()  # clears all cookies that might be interfering
+            plugin.AuthenticationProvider.get(request).logout()  # clears all cookies that might be interfering - also the flash message cookie :(
             redirect('/auth/', {'return_to': kwargs.get('return_to', '')})
 
         user = M.User.by_username(session['multifactor-username'])
@@ -458,10 +463,6 @@ class AuthController(BaseController):
                 recovery = RecoveryCodeService.get()
                 recovery.verify_and_remove_code(user, code)
                 h.auditlog_user('Logged in using a multifactor recovery code', user=user)
-            elif mode == 'email_code':
-                email_code_service = EmailCodeAuthenticationService()
-                email_code_service.validate_code(user, code)
-                h.auditlog_user('Logged in using email authentication code', user=user)
         except (InvalidToken, InvalidRecoveryCode):
             request.validation.errors['code'] = 'Invalid code, please try again.'
             h.auditlog_user('Multifactor login - invalid code', user=user)
@@ -470,14 +471,48 @@ class AuthController(BaseController):
             request.validation.errors['code'] = 'Multifactor rate limit exceeded, slow down and try again later.'
             h.auditlog_user('Multifactor login - rate limit', user=user)
             return self.multifactor(mode=mode, **kwargs)
-        except InvalidEmailAuthCode:
-            request.validation.errors['code'] = 'Invalid code, please try again.'
-            h.auditlog_user('Email code login - invalid code', user=user)
-            return self.multifactor(mode=mode, **kwargs)
         else:
             plugin.AuthenticationProvider.get(request).login(user=user, multifactor_success=True)
             return_to = self._verify_return_to(kwargs.get('return_to'))
             redirect(return_to)
+
+    @expose('jinja:allura:templates/login_email_sent.html')
+    def login_email_sent(self, return_to='/', **kwargs):
+        if not asbool(config.get('auth.email_auth_code.enabled', False)):
+            raise wexc.HTTPNotFound
+        if not c.user.is_anonymous():
+            redirect(self._verify_return_to(return_to))
+        if 'multifactor-username' not in session:
+            redirect('/auth/')
+        return dict()
+
+    @expose()
+    def login_email_verify(self, token, return_to='/', **kwargs):
+        if not asbool(config.get('auth.email_auth_code.enabled', False)):
+            raise wexc.HTTPNotFound
+        if not c.user.is_anonymous():
+            redirect(self._verify_return_to(return_to))
+
+        if not session.get('multifactor-username'):
+            tg.flash('Your login session was disrupted.  Be sure to use the same browser when logging in and opening the email verification link.', 'error')
+            redirect('/auth/', {'return_to': kwargs['return_to']} if kwargs.get('return_to') else {})
+
+        user = M.User.by_username(session['multifactor-username'])
+        if not user:
+            redirect('/auth/')
+
+        try:
+            EmailCodeAuthenticationService().validate_token(user, token)
+        except InvalidEmailAuthCode:
+            tg.flash('Invalid or expired login link.', 'error')
+            session.pop('multifactor-username', None)
+            session.pop('mode', None)
+            session.save()
+            redirect('/auth/')
+
+        h.auditlog_user('Logged in using email authentication link', user=user)
+        plugin.AuthenticationProvider.get(request).login(user=user, multifactor_success=True)
+        redirect(self._verify_return_to(return_to))
 
     @expose(content_type='text/plain')
     def refresh_repo(self, *repo_path):
