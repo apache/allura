@@ -260,7 +260,7 @@ def send_notifications(repo, commit_ids):
         else:
             commit = commit_msgs[0]
             subject = 'New commit {} by {}'.format(commit['shorthand_id'], commit['author'])
-        text = g.jinja2_env.get_template("allura:templates/mail/commits.md").render(
+        text = g.jinja2_env.get_template("allura:templates/mail/commits.md.jinja2").render(
             commit_msgs=commit_msgs,
             max_num_commits=asint(tg.config.get('scm.notify.max_commits', 100)),
         )

@@ -72,7 +72,7 @@ class BulkExport:
         if not send_email:
             return
 
-        tmpl = g.jinja2_env.get_template('allura:templates/mail/bulk_export.html')
+        tmpl = g.jinja2_env.get_template('allura:templates/mail/bulk_export.md.jinja2')
         instructions = tg.config.get('bulk_export_download_instructions', '')
         instructions = instructions.format(
             project=project.shortname,

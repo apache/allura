@@ -156,7 +156,7 @@ class EmailAddress(MappedClass):
 
         if confirmed_email:
             log.info('Sending claim attempt email to %s', self.email)
-            text = g.jinja2_env.get_template('allura:templates/mail/claimed_existing_email.txt').render(dict(
+            text = g.jinja2_env.get_template('allura:templates/mail/claimed_existing_email.md.jinja2').render(dict(
                 email=self,
                 user=confirmed_email[0].claimed_by_user(),
                 config=config
@@ -455,7 +455,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 
         log.info('Sending password recovery link to %s', utils.hide_email(email_address))
         subject = subject_tmpl.format(site_name=config['site_name'])
-        text = g.jinja2_env.get_template('allura:templates/mail/forgot_password.txt').render(dict(
+        text = g.jinja2_env.get_template('allura:templates/mail/forgot_password.md.jinja2').render(dict(
             user=self,
             config=config,
             reset_url=reset_url,
@@ -484,7 +484,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             link_params['return_to'] = return_to
         verify_url = h.absurl(tg.url('/auth/login_email_verify', link_params))
         subject = subject_tmpl.format(site_name=config['site_name'])
-        text = g.jinja2_env.get_template('allura:templates/mail/authentication_code.txt').render(dict(
+        text = g.jinja2_env.get_template('allura:templates/mail/authentication_code.md.jinja2').render(dict(
             user=self,
             config=config,
             verify_url=verify_url,
@@ -548,7 +548,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         """Send user mention notification to {self} user.
 
         """
-        tmpl = g.jinja2_env.get_template('allura:templates/mail/usermentions_email.md')
+        tmpl = g.jinja2_env.get_template('allura:templates/mail/usermentions_email.md.jinja2')
         subject = '[{}:{}] Your name was mentioned'.format(
             c.project.shortname, c.app.config.options.mount_point)
         item_url = artifact.url()

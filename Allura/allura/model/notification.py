@@ -227,8 +227,7 @@ class Notification(MappedClass):
             d['text'] = ''
         try:
             ''' Add addional text to the notification e-mail based on the artifact type '''
-            template = cls.view.get_template(
-                'mail/' + artifact.type_s + '.txt')
+            template = cls.view.get_template('mail/' + artifact.type_s + '.md.jinja2')
             d['text'] += template.render(dict(c=c, g=g,
                                          config=config, data=artifact, post=post, h=h))
         except jinja2.TemplateNotFound:
@@ -698,7 +697,7 @@ class MailFooter:
 
     @classmethod
     def standard(cls, notification, allow_email_posting=True, **kw):
-        return cls._render('mail/footer.txt',
+        return cls._render('mail/footer.md.jinja2',
                            domain=config['domain'],
                            notification=notification,
                            prefix=config['base_url'],
@@ -707,7 +706,7 @@ class MailFooter:
 
     @classmethod
     def monitored(cls, toaddr, app_url, setting_url):
-        return cls._render('mail/monitor_email_footer.txt',
+        return cls._render('mail/monitor_email_footer.md.jinja2',
                            domain=config['domain'],
                            email=toaddr,
                            app_url=app_url,
