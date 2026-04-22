@@ -3125,7 +3125,10 @@ class TestTwoFactor(TestController):
         assert tasks[0].kwargs['subject'] == 'Two-Factor Authentication Disabled'
         assert 'disabled two-factor authentication' in tasks[0].kwargs['text']
 
-    def test_login_totp(self):
+    @mock.patch.dict(config, {'auth.email_auth_code.enabled': True})
+    @patch('allura.tasks.mail_tasks.send_system_mail_to_user')
+    @patch('allura.lib.plugin.AuthenticationProvider.trusted_login_source', return_value='exact ip')
+    def test_login_totp(self, trusted_login_source, send_system_mail_to_user):
         self._init_totp()
 
         # so test-admin isn't automatically logged in for all requests
@@ -3143,6 +3146,8 @@ class TestTwoFactor(TestController):
         assert r.location.endswith('/auth/multifactor?return_to=%2Fp%2Ffoo'), r
         r = r.follow()
         assert not r.session.get('username')
+        assert r.session.get('multifactor-username') == 'test-admin'
+        assert send_system_mail_to_user.call_count == 0
 
         # try an invalid code
         r.form['code'] = 'invalid-code'
@@ -3158,13 +3163,60 @@ class TestTwoFactor(TestController):
         with audits('Successful login', user=True):
             r = r.form.submit()
 
-        # confirm login and final page
+        # confirm login and final page — trusted source, so no email link stage
         assert r.session['username'] == 'test-admin'
         assert r.location.endswith('/p/foo'), r
+        assert send_system_mail_to_user.call_count == 0
 
         # if you end up on multifactor page again somehow, redir
         r = self.app.get('/auth/multifactor?return_to=/p/foo', status=302)
         assert r.location == 'http://localhost/p/foo'
+
+    @mock.patch.dict(config, {'auth.email_auth_code.enabled': True})
+    @patch('allura.tasks.mail_tasks.send_system_mail_to_user')
+    @patch('allura.lib.plugin.AuthenticationProvider.trusted_login_source', return_value=False)
+    def test_login_totp_untrusted_source(self, trusted_login_source, send_system_mail_to_user):
+        """MFA users from untrusted locations go through a 3-stage flow: password → TOTP → email link."""
+        self._init_totp()
+
+        # so test-admin isn't automatically logged in for all requests
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
+
+        # regular login
+        r = self.app.get('/auth/?return_to=/p/foo')
+        f = r.forms[0]
+        encoded = self.app.antispam_field_names(f)
+        f[encoded['username']] = 'test-admin'
+        f[encoded['password']] = 'foo'
+        with audits('Multifactor login - password ok, code not entered yet', user=True):
+            r = r.form.submit()
+
+        # check results
+        assert r.location.endswith('/auth/multifactor?return_to=%2Fp%2Ffoo'), r
+        r = r.follow()
+        assert not r.session.get('username')
+        assert r.session.get('multifactor-username') == 'test-admin'
+        assert send_system_mail_to_user.call_count == 0
+
+        # use a valid code
+        totp = TotpService().Totp(self.sample_key)
+        code = totp.generate(time_time())
+        r.form['code'] = code
+        with audits('Attempted login from untrusted location, sending email verification link', user=True):
+            r = r.form.submit()
+        r = r.follow()
+
+        # have to verify by email now
+        assert r.request.path == '/auth/login_email_sent', self.webflash(r)
+        assert send_system_mail_to_user.call_count == 1
+        assert not r.session.get('username')
+        email_text = send_system_mail_to_user.call_args[0][2]
+        link = [line for line in email_text.splitlines() if '/auth/login_email_verify' in line][0]
+
+        # confirm login and final page
+        r = self.app.get(link, status=302)
+        assert r.location == 'http://localhost/p/foo'
+        assert r.session.get('username') == 'test-admin'
 
     def test_login_rate_limit(self):
         self._init_totp()
@@ -3355,24 +3407,6 @@ class TestTwoFactor(TestController):
 
 
 class TestEmailAuthCode(TestController):
-
-    @mock.patch.dict(config, {'auth.email_auth_code.enabled': True})
-    @patch('allura.tasks.mail_tasks.send_system_mail_to_user')
-    def test_mfa_no_email_auth(self, send_system_mail_to_user):
-        self.app.extra_environ = {'disable_auth_magic': 'True'}
-        user = M.User.by_username('test-user')
-        user.set_pref('multifactor', True)
-
-        with patch('allura.lib.plugin.AuthenticationProvider.trusted_login_source', return_value=True):
-            r = self.app.get('/auth/')
-
-            f = r.forms[0]
-            encoded = self.app.antispam_field_names(f)
-            f[encoded['username']] = 'test-user'
-            f[encoded['password']] = 'foo'
-            r = f.submit(status=302)
-            assert send_system_mail_to_user.call_count == 0
-            assert r.session.get('mode') is None
 
     @mock.patch.dict(config, {'auth.email_auth_code.enabled': True})
     @patch('allura.tasks.mail_tasks.send_system_mail_to_user')
