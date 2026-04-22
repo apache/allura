@@ -473,6 +473,8 @@ class AuthController(BaseController):
             return self.multifactor(mode=mode, **kwargs)
         else:
             plugin.AuthenticationProvider.get(request).login(user=user, multifactor_success=True)
+            if session.get('mode') == 'email_code':
+                redirect(tg.url('/auth/login_email_sent', dict(return_to=kwargs.get('return_to', '/'))))
             return_to = self._verify_return_to(kwargs.get('return_to'))
             redirect(return_to)
 
@@ -510,8 +512,7 @@ class AuthController(BaseController):
             session.save()
             redirect('/auth/')
 
-        h.auditlog_user('Logged in using email authentication link', user=user)
-        plugin.AuthenticationProvider.get(request).login(user=user, multifactor_success=True)
+        plugin.AuthenticationProvider.get(request).login(user=user, multifactor_success=True, email_verified=True)
         redirect(self._verify_return_to(return_to))
 
     @expose(content_type='text/plain')

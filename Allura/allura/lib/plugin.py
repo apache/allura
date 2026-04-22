@@ -205,7 +205,7 @@ class AuthenticationProvider:
         '''
         pass
 
-    def login(self, user: M.User = None, multifactor_success: bool = False) -> M.User | None:
+    def login(self, user: M.User = None, multifactor_success: bool = False, email_verified: bool = False) -> M.User | None:
         from allura import model as M
         if user is None:
             try:
@@ -217,37 +217,36 @@ class AuthenticationProvider:
         if user.is_anonymous():
             raise ValueError('Cannot log in an anonymous user')
 
+        login_details = self.get_login_detail(self.request, user)
+
+        # Stage: TOTP — MFA users who haven't completed TOTP yet
         if user.get_pref('multifactor') and not multifactor_success:
             self.session['multifactor-username'] = user.username
             h.auditlog_user('Multifactor login - password ok, code not entered yet', user=user)
             self.session.save()
             return None
-        else:
-            self.session.pop('multifactor-username', None)
 
-        login_details = self.get_login_detail(self.request, user)
-
-        # check if the user doesn't have mfa enabled but is logging in from an unknown location
-        # they'll get an authentication code via email
-        skip_after_login = False
-        if asbool(config.get('auth.email_auth_code.enabled', False)) and not user.get_pref('multifactor') and not self.trusted_login_source(user, login_details) and not multifactor_success:
-            h.auditlog_user('User without MFA attempted to login from untrusted location, '
-                            'sending code via email for them to enter',
-                            user=user)
+        # Stage: email link — any user logging in from an untrusted location (after TOTP if applicable)
+        if asbool(config.get('auth.email_auth_code.enabled', False)) and not self.trusted_login_source(user, login_details) and not email_verified:
+            h.auditlog_user('Attempted login from untrusted location, sending email verification link', user=user)
             self.session['multifactor-username'] = user.username
             self.session['mode'] = 'email_code'
             self.session.save()
             user.send_email_auth_code(return_to=self.request.params.get('return_to', '/'))
             return None
-        else:
-            # Validate if we used an auth code to skip the `after_login` which sends a foreign login email
-            skip_after_login = self.session.get('mode') == 'email_code'
-            self.session.pop('multifactor-username', None)
-            self.session.pop('mode', None)
+
+        # All stages complete — clean up and proceed to login
+        skip_after_login = self.session.get('mode') == 'email_code'  #  if we used an email link we'll skip `after_login` which sends a foreign login email
+        self.session.pop('multifactor-username', None)
+        self.session.pop('mode', None)
+
+        auditlog_msg = 'Successful login'
+        if email_verified:
+            auditlog_msg += ' using email verification'
 
         expire_reason = None
         if self.is_password_expired(user):
-            h.auditlog_user('Successful login; Password expired', user=user)
+            h.auditlog_user(f'{auditlog_msg}; Password expired', user=user)
             expire_reason = 'via expiration process'
         if not expire_reason:
             expire_reason = self.login_check_password_change_needed(user, self.request.params.get('password'),
@@ -258,7 +257,7 @@ class AuthenticationProvider:
             self.session['expired-reason'] = expire_reason
         else:
             self.session['username'] = user.username
-            h.auditlog_user('Successful login', user=user)
+            h.auditlog_user(auditlog_msg, user=user)
 
         if not skip_after_login:
             self.after_login(user, self.request)
