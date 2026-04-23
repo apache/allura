@@ -104,9 +104,6 @@ def apply():
     def encode(self, o):
         return original_tg_jsonify_JSONEncoder_encode(self, o).replace('<', r'\u003C')
 
-    # can remove if https://github.com/pygments/pygments/pull/2979 is merged and released
-    pygments.plugin.entry_points = functools.cache(pygments.plugin.entry_points)
-
 
 old_controller_call = tg.controllers.DecoratedController._call
 
