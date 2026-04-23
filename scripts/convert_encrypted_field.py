@@ -81,12 +81,13 @@ def _get_nested_value(rec: dict, field_name: str):
 
 
 def main(class_name: str, plain_field_name: str,
-         *, remove_unencrypted: bool = False, redo_all: bool = False):
+         *, remove_unencrypted: bool = False, redo_all: bool = False, limit: int | None = None):
     """
     :param class_name: full class name, e.g. allura.model.user.User
     :param plain_field_name: name of the unencrypted field, e.g. display_name
     :param remove_unencrypted: WARNING only run this after your codebase is already on the latest code
     :param redo_all: re-encrypt records that already have encrypted values (in case they changed since last run)
+    :param limit: convert this many records per update type (bulk, individual, removal) default All
     """
     encrypted_field_name = _default_encrypted_field_name(plain_field_name)
 
@@ -120,16 +121,22 @@ def main(class_name: str, plain_field_name: str,
     # encrypt all records that need it.  Even for --remove-unencrypted, to make sure everything's converted first
     bulk_update_values = ["", None]
     for bulk_val in bulk_update_values:
+        query = {
+            plain_field_name: {'$exists': True, '$eq': bulk_val},  # $exists to avoid converting missing fields
+        }
+        if not redo_all:
+            query[encrypted_field_name] = {'$exists': False}
+        if limit:
+            ids_to_remove = [rec._id for rec in Model.query.find(query).limit(limit)]
+            query |= {'_id': {'$in': ids_to_remove}}
         bulk_update_result = Model.query.update(
-            {
-                plain_field_name: {'$exists': True, '$eq': bulk_val},  # $exists to avoid converting missing fields
-            },
+            query,
             {
                 '$set': {encrypted_field_name: Model.encr(bulk_val)},
             },
             multi=True,
         )
-        print(f'Converted {bulk_update_result.modified_count} {class_name} records with {plain_field_name}={bulk_val!r}')
+        print(f'Converted {bulk_update_result.modified_count} (of {bulk_update_result.matched_count}) {class_name} records with {plain_field_name}={bulk_val!r}')
         # bulk_update_result.matched_count has # matches, already handled if run multiple times
 
     q = {
@@ -144,7 +151,7 @@ def main(class_name: str, plain_field_name: str,
     count = 0
     projection = {'_id': 1, plain_field_name: 1}
     last_id = None
-    while True:
+    while count < limit if limit else True:
         chunk_q = {'$and': [q, {'_id': {'$gt': last_id}}]} if last_id is not None else q
         docs = list(raw_collection.find(chunk_q, projection).sort('_id', 1).limit(CHUNK_SIZE))
         if not docs:
@@ -157,6 +164,8 @@ def main(class_name: str, plain_field_name: str,
                 '$set': {encrypted_field_name: encr_val},
             })
             count += 1
+            if limit and count >= limit:
+                break
 
         last_id = docs[-1]['_id']
         print(f'Converted {count} so far...')
@@ -166,8 +175,12 @@ def main(class_name: str, plain_field_name: str,
         print(f'Encrypted {count} {class_name} records with {plain_field_name} values')
 
     if remove_unencrypted:
+        query = {}
+        if limit:
+            ids_to_remove = [rec._id for rec in Model.query.find(query).limit(limit)]
+            query |= {'_id': {'$in': ids_to_remove}}
         remove_result = Model.query.update(
-            {},
+            query,
             {
                 "$unset": {plain_field_name: True}
             },
