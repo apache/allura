@@ -1850,10 +1850,9 @@ class LocalUserPreferencesProvider(UserPreferencesProvider):
         if pref_name in user.preferences:
             pref_value = user.preferences[pref_name]
         elif pref_name == 'display_name':
-            # get the value directly from ming's internals, bypassing
-            # FieldPropertyDisplayName which always calls back to this get_pref
-            # method (infinite recursion)
-            pref_value = user.__dict__['__ming__'].state.document.display_name
+            # bypass FieldPropertyDisplayName.__get__, which always calls
+            # back to this get_pref method (infinite recursion)
+            pref_value = type(user).display_name.get_decrypted(user)
         else:
             pref_value = getattr(user, pref_name)
 
