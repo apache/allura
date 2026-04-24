@@ -293,6 +293,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     # Additional top-level fields can/should be accessed with get/set_pref also
     # Not sure why we didn't put them within the 'preferences' dictionary :(
     display_name: str = FieldPropertyDisplayName(str)
+    display_name_encrypted = FieldProperty(S.Binary, if_missing=None)
     # Personal data
     sex = FieldProperty(
         S.OneOf('Male', 'Female', 'Other', 'Unknown',
