@@ -42,7 +42,6 @@ from allura.lib.decorators import require_post
 from allura.controllers.feed import FeedArgs, FeedController
 from allura.controllers.rest import nbhd_lookup_first_path
 from allura.lib.security import require_access
-from allura.lib.security import RoleCache
 from allura.lib.widgets import forms as ff
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import project_list as plw
@@ -447,27 +446,6 @@ class ProjectController(FeedController):
             else:
                 default_image_url = g.forge_static('images/user.png')
             redirect(default_image_url)
-
-    @expose('json:')
-    def user_search(self, term='', **kw):
-        if len(term) < 3:
-            raise exc.HTTPBadRequest('"term" param must be at least length 3')
-        named_roles = RoleCache(
-            g.credentials,
-            g.credentials.project_roles(project_id=c.project.root_project._id).named)
-        users = M.User.query.find({
-            '_id': {'$in': named_roles.userids_that_reach},
-            'display_name': re.compile(r'(?i)%s' % re.escape(term)),
-            'disabled': False,
-            'pending': False,
-        }).sort('username').limit(10).all()
-        return dict(
-            users=[
-                dict(
-                    label='{} ({})'.format(u.get_pref('display_name'), u.username),
-                    value=u.username,
-                    id=u.username)
-                for u in users])
 
     @expose('json:')
     def users(self, **kw):
