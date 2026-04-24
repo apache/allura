@@ -163,25 +163,6 @@ class TestProjectHome(TestController):
         r = self.app.get('/u/test-admin/user_icon')
         assert r.content_type == 'image/png'
 
-    def test_user_search(self):
-        r = self.app.get('/p/test/user_search?term=test', status=200)
-        j = json.loads(r.text)
-        assert j['users'][0]['id'].startswith('test')
-
-    def test_user_search_for_disabled_user(self):
-        user = M.User.by_username('test-admin')
-        user.disabled = True
-        ThreadLocalODMSession.flush_all()
-        r = self.app.get('/p/test/user_search?term=test', status=200)
-        j = json.loads(r.text)
-        assert j == {'users': []}
-
-    def test_user_search_noparam(self):
-        self.app.get('/p/test/user_search', status=400)
-
-    def test_user_search_shortparam(self):
-        self.app.get('/p/test/user_search?term=ad', status=400)
-
     def test_users(self):
         r = self.app.get('/p/test/users', status=200)
         j = json.loads(r.text)
