@@ -270,7 +270,7 @@ class TestSubprojectTrackerController(TrackerTestController):
 
 class TestFunctionalController(TrackerTestController):
     def test_bad_ticket_number(self):
-        self.app.get('/bugs/input.project_user_select', status=404)
+        self.app.get('/bugs/not-a-ticket', status=404)
 
     def test_invalid_ticket(self):
         self.app.get('/bugs/2/', status=404)
