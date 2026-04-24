@@ -102,45 +102,6 @@ class LabelEdit(ew.InputField):
         ''' % dict(url=c.app.url))
 
 
-class ProjectUserSelect(ew.InputField):
-    template = 'jinja:allura:templates/widgets/project_user_select.html'
-    defaults = dict(
-        ew.InputField.defaults,
-        name=None,
-        value=None,
-        show_label=True,
-        className=None)
-
-    def __init__(self, **kw):
-        super().__init__(**kw)
-        if not isinstance(self.value, list):
-            self.value = [self.value]
-
-    def from_python(self, value, state=None):
-        return value
-
-    def resources(self):
-        yield from super().resources()
-        yield ew.JSLink('allura/js/jquery-ui.min.js', location='body_top_js')
-        yield ew.CSSLink('css/autocomplete.css')  # customized in [6b78ed] so we can't just use jquery-ui.min.css
-        yield onready('''
-          $('input.project_user_select').autocomplete({
-            source: function (request, response) {
-              $.ajax({
-                url: "%suser_search",
-                dataType: "json",
-                data: {
-                  term: request.term
-                },
-                success: function (data) {
-                  response(data.users);
-                }
-              });
-            },
-            minLength: 2
-          });''' % c.project.url())
-
-
 class ProjectUserCombo(ew.SingleSelectField):
     template = 'jinja:allura:templates/widgets/project_user_combo.html'
 
