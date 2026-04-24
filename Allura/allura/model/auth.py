@@ -38,8 +38,8 @@ from tg import config
 from tg import tmpl_context as c, app_globals as g
 from tg import request
 from ming import schema as S
-from ming.odm import session, state
-from ming.odm import FieldProperty, RelationProperty, ForeignIdProperty, DecryptedProperty
+from ming.odm import session, state, MapperExtension
+from ming.odm import DecryptedProperty, FieldProperty, RelationProperty, ForeignIdProperty
 from ming.odm.declarative import MappedClass
 from ming.odm.odmsession import ThreadLocalODMSession
 from ming.utils import LazyProperty
@@ -243,8 +243,8 @@ class AuthGlobals(MappedClass):
         return g.next_uid
 
 
-class FieldPropertyDisplayName(FieldProperty):
-    # display_name is mongo field but only for preference storage
+class FieldPropertyDisplayName(DecryptedProperty):
+    # display_name is stored encrypted in mongo but only for preference storage
     # force all requests for this field to use the get_pref mechanism
     # Cache it per user, since it may be re-used several times in a request
     # and non-local preferences (ldap, database, etc) can be relatively expensive
@@ -261,7 +261,9 @@ class FieldPropertyDisplayName(FieldProperty):
     def __set__(self, instance, value):
         instance.__dict__.pop('_cache_display_name', None)
         super().__set__(instance, value)
-        instance.display_name_encrypted = type(instance).encr(state(instance).document[self.name])
+
+    def get_decrypted(self, instance):
+        return super().__get__(instance, type(instance))
 
 
 class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
@@ -307,7 +309,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     ))
     # Additional top-level fields can/should be accessed with get/set_pref also
     # Not sure why we didn't put them within the 'preferences' dictionary :(
-    display_name: str = FieldPropertyDisplayName(str)
+    display_name: str = FieldPropertyDisplayName(str, 'display_name_encrypted')
     display_name_encrypted = FieldProperty(S.Binary, if_missing=None)
     # Personal data
     sex = FieldProperty(
@@ -614,6 +616,8 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 
     def set_pref(self, pref_name, pref_value):
         ret = plugin.UserPreferencesProvider.get().set_pref(self, pref_name, pref_value)
+        if pref_name == 'display_name':
+            self.__dict__.pop('_cache_display_name', None)
         state(self).soil()  # to make sure it gets reindexed in solr (even if pref is not part on the User ming model)
         return ret
 
