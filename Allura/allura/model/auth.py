@@ -258,6 +258,11 @@ class FieldPropertyDisplayName(FieldProperty):
             display_name = instance._cache_display_name = instance.get_pref('display_name')
         return display_name
 
+    def __set__(self, instance, value):
+        instance.__dict__.pop('_cache_display_name', None)
+        super().__set__(instance, value)
+        instance.display_name_encrypted = type(instance).encr(state(instance).document[self.name])
+
 
 class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     SALT_LEN = 8
@@ -303,6 +308,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     # Additional top-level fields can/should be accessed with get/set_pref also
     # Not sure why we didn't put them within the 'preferences' dictionary :(
     display_name: str = FieldPropertyDisplayName(str)
+    display_name_encrypted = FieldProperty(S.Binary, if_missing=None)
     # Personal data
     sex = FieldProperty(
         S.OneOf('Male', 'Female', 'Other', 'Unknown',
