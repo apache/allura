@@ -771,7 +771,7 @@ def text_contains_any_url(text: str) -> bool:
         if '://' in candidate:
             if urlparse(candidate).hostname:
                 return True
-        elif '.' in candidate and re.search(r'[a-zA-Z]', candidate):
+        elif '.' in candidate and re.search(r'[a-zA-Z]{2,}\.[a-zA-Z]{2,}([/?]|$)', candidate):
             if urlparse('//' + candidate).hostname:
                 return True
     return False

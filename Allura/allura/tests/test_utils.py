@@ -341,6 +341,15 @@ class TestHTMLSanitizer:
         assert (self.sanitize_html('<a href="http://evil.com/">see http://example.com/some/page for details</a>') ==
                 '<a href="http://evil.com/">see http://example.com/some/page for details</a> (evil.com)')
 
+        # SUFFIX: handle nested links with mismatched domains (suffixes for both)
+        assert (self.sanitize_html(
+            '<a href="//evil.com/">to example.com <a href="//inner.com/">to inner.path</a></a>') ==
+            '<a href="//evil.com/">to example.com </a> (evil.com)<a href="//inner.com/">to inner.path</a> (inner.com)')
+
+        # OK: dot in the middle of text, but not a domain name
+        assert (self.sanitize_html('<a href="https://example.com/">Sack et al. Cell 2018</a>') ==
+                '<a href="https://example.com/">Sack et al. Cell 2018</a>')
+
     def test_misleading_links_idn(self):
         # аpple.com with Cyrillic а (U+0430) — homograph of apple.com
         cyrillic_a = '\u0430'
