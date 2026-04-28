@@ -329,6 +329,10 @@ class TestHTMLSanitizer:
         assert (self.sanitize_html('<a href="/p/local/wiki/">example.com</a>') ==
                 '<a href="/p/local/wiki/">example.com</a>')
 
+        # SUFFIX: sub domain
+        assert (self.sanitize_html('<a href="http://sub.evil.com/">visit example.com for more</a>') ==
+                '<a href="http://sub.evil.com/">visit example.com for more</a> (sub.evil.com)')
+
         # SUFFIX: mismatch domain embedded in a longer sentence
         assert (self.sanitize_html('<a href="http://evil.com/">visit example.com for more</a>') ==
                 '<a href="http://evil.com/">visit example.com for more</a> (evil.com)')
@@ -340,6 +344,15 @@ class TestHTMLSanitizer:
         # SUFFIX: mismatch full URL in longer sentence
         assert (self.sanitize_html('<a href="http://evil.com/">see http://example.com/some/page for details</a>') ==
                 '<a href="http://evil.com/">see http://example.com/some/page for details</a> (evil.com)')
+
+        # SUFFIX: handle nested links with mismatched domains (suffixes for both)
+        assert (self.sanitize_html(
+            '<a href="//evil.com/">to example.com <a href="//inner.com/">to inner.path</a></a>') ==
+            '<a href="//evil.com/">to example.com </a> (evil.com)<a href="//inner.com/">to inner.path</a> (inner.com)')
+
+        # OK: dot in the middle of text, but not a domain name
+        assert (self.sanitize_html('<a href="https://example.com/">Sack et al. Cell 2018</a>') ==
+                '<a href="https://example.com/">Sack et al. Cell 2018</a>')
 
     def test_misleading_links_idn(self):
         # аpple.com with Cyrillic а (U+0430) — homograph of apple.com
@@ -374,19 +387,36 @@ class TestHTMLSanitizer:
                 '<a href="http://中文.com/">中文.com</a>')
 
 
-def test_text_contains_any_url():
-    assert utils.text_contains_any_url('example.com') is True
-    assert utils.text_contains_any_url('foo a1-2-3.space bar') is True
-    assert utils.text_contains_any_url('click here') is False
+@pytest.mark.parametrize('text, expected', [
+    ('example.com', True),
+    ('foo a1-2-3.space bar', True),
+    ('click here', False),
+    ('https://example.com/', True),
+    ('word https://example.com/', True),
+    ('word https://example.com/?foo=bar', True),
+    ('word https://example.com?foo=bar', True),
+    ('word https://example.com/with/path', True),
+    ('wordhttps://example.com/with/path', True),
+    ('word //example.com/with/path', True),
+    ('word //example.com/with/path?foo', True),
+    ('word//example.com/with/path?foo', True),
+    ('word example.com/with/path?foo', True),
+    ('sub.sub.example.com/with/path?foo', True),
+    ('word sub.sub.example.com/with/path?foo', True),
     # false positives: file extensions and library names with dots parse as hostnames
-    assert utils.text_contains_any_url('README.md') is True   # .md suffix
-    assert utils.text_contains_any_url('Node.js') is True     # .js suffix
+    ('README.md', True),   # .md suffix
+    ('Node.js', True),     # .js suffix
+])
+def test_text_contains_any_url(text, expected):
+    assert utils.text_contains_any_url(text) is expected
 
 
 def test_text_contains_hostname():
     assert utils.text_contains_hostname('visit example.com for info', 'example.com') is True
     assert utils.text_contains_hostname('visit example.com for info', 'example.comevil.org') is False
     assert utils.text_contains_hostname('click here', 'example.com') is False
+    assert utils.text_contains_hostname('visit sub.example.com for info', 'sub.example.com') is True
+    assert utils.text_contains_hostname('visit example.com/path/ for info', 'example.com') is True
 
 
 def test_ip_address():
