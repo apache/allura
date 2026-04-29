@@ -768,10 +768,10 @@ def text_contains_any_url(text: str) -> bool:
         candidate = token.strip('\'"[]{}()<>,;!?')
         if not candidate or ('@' in candidate and '://' not in candidate):
             continue
-        if '://' in candidate:
+        if '://' in candidate or candidate.startswith('//'):
             if urlparse(candidate).hostname:
                 return True
-        elif '.' in candidate and re.search(r'[a-zA-Z]{2,}\.[a-zA-Z]{2,}([/?]|$)', candidate):
+        elif '.' in candidate and re.search(r'[a-zA-Z0-9-]{2,}\.[a-zA-Z]{2,}([/?]|$)', candidate):
             if urlparse('//' + candidate).hostname:
                 return True
     return False
