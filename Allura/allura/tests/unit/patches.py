@@ -16,8 +16,9 @@
 #       under the License.
 
 from mock import Mock, patch, MagicMock
-from tg import tmpl_context as c
+from tg import tmpl_context as c, config
 import tg
+from tg.support.converters import aslist
 
 from allura.tests.unit.factories import (
     create_project,
@@ -67,3 +68,14 @@ def fake_request_patch(test_case):
 
 def fake_form_request_patch(test_case):
     return patch('tg.request', MagicMock(referer='.'))
+
+
+# to be used with a pytest fixture
+def enable_entry_point(config_key: str, entry_point_name: str):
+    orig_config_value = config.get(config_key, '')
+    items = aslist(orig_config_value, sep=',')
+    if entry_point_name in items:
+        items.remove(entry_point_name)
+    config[config_key] = ','.join(items)
+    yield
+    config[config_key] = orig_config_value

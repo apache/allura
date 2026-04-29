@@ -14,15 +14,20 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
+import pytest
 from mock import patch
 from tg import config
 
 from allura.lib import helpers as h
 from allura.tests import TestController
+from allura.tests.unit.patches import enable_entry_point
 
 
 class TestTracImportController(TestController):
+
+    @pytest.fixture(autouse=True)
+    def enable_trac_entry_point(self):
+        yield from enable_entry_point('disable_entry_points.allura.project_importers', 'trac')
 
     def test_index(self):
         r = self.app.get('/p/import_project/trac/')

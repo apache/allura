@@ -22,6 +22,8 @@ from unittest import skipIf
 
 import pytest
 from mock import Mock, patch
+
+from allura.tests.unit.patches import enable_entry_point
 from ming.odm import ThreadLocalODMSession
 from tg import tmpl_context as c, config
 
@@ -114,6 +116,10 @@ class TestTracTicketImportController(TestController):
         super().setup_method(method)
         from forgetracker.tracker_main import TrackerAdminController
         self.importer = TrackerAdminController._importer = TracTicketImportController(TracTicketImporter())
+
+    @pytest.fixture(autouse=True)
+    def enable_trac_entry_point(self):
+        yield from enable_entry_point('disable_entry_points.allura.importers', 'trac-tickets')
 
     @with_tracker
     def test_index(self):
