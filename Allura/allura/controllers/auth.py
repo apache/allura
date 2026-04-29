@@ -488,7 +488,7 @@ class AuthController(BaseController):
             redirect('/auth/')
         return dict()
 
-    @expose()
+    @expose('jinja:allura:templates/login_email_verify_error.html')
     def login_email_verify(self, token, return_to='/', **kwargs):
         if not asbool(config.get('auth.email_auth_code.enabled', False)):
             raise wexc.HTTPNotFound
@@ -496,8 +496,7 @@ class AuthController(BaseController):
             redirect(self._verify_return_to(return_to))
 
         if not session.get('multifactor-username'):
-            tg.flash('Your login session was disrupted.  Be sure to use the same browser when logging in and opening the email verification link.', 'error')
-            redirect('/auth/', {'return_to': kwargs['return_to']} if kwargs.get('return_to') else {})
+            return dict(error='Your login session was disrupted.<br>Be sure to use the same browser when logging in and opening the email verification link.')
 
         user = M.User.by_username(session['multifactor-username'])
         if not user:
@@ -506,11 +505,10 @@ class AuthController(BaseController):
         try:
             EmailCodeAuthenticationService().validate_token(user, token)
         except InvalidEmailAuthCode:
-            tg.flash('Invalid or expired login link.', 'error')
             session.pop('multifactor-username', None)
             session.pop('mode', None)
             session.save()
-            redirect('/auth/')
+            return dict(error='Invalid or expired login link.')
 
         plugin.AuthenticationProvider.get(request).login(user=user, multifactor_success=True, email_verified=True)
         redirect(self._verify_return_to(return_to))
