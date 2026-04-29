@@ -41,7 +41,7 @@ class TracURLValidator(validators.NonPrivateUrl):
         value = value.rstrip('/') + '/'
 
         try:
-            resp = requests.head(value, allow_redirects=True, timeout=10)
+            resp = requests.head(value, timeout=10)
         except OSError:
             # fall through to 'raise' below
             pass
