@@ -3457,8 +3457,7 @@ class TestEmailAuthCode(TestController):
     @mock.patch.dict(config, {'auth.email_auth_code.enabled': True})
     def test_input_auth_token_no_session(self):
         self.app.extra_environ = {'disable_auth_magic': 'True'}
-        r = self.app.get('/auth/login_email_verify?token=badtoken', status=302)
-        r = r.follow()
+        r = self.app.get('/auth/login_email_verify?token=badtoken', status=200)
         assert 'Your login session was disrupted' in r.text
         assert not r.session.get('username')
 
@@ -3479,8 +3478,7 @@ class TestEmailAuthCode(TestController):
             r.mustcontain('Check Your Email')
 
             # Use an incorrect token
-            r = self.app.get('/auth/login_email_verify?token=badtoken', status=302)
-            r = r.follow()
+            r = self.app.get('/auth/login_email_verify?token=badtoken', status=200)
             assert 'Invalid or expired login link' in r.text
             assert not r.session.get('username')
 
@@ -3505,8 +3503,7 @@ class TestEmailAuthCode(TestController):
             user_token = user.get_tool_data('AuthEmailCode', 'token')
             user.set_tool_data('AuthEmailCode', token_expiry=int(time_time()) - 900)
 
-            r = self.app.get(f'/auth/login_email_verify?token={user_token}', status=302)
-            r = r.follow()
+            r = self.app.get(f'/auth/login_email_verify?token={user_token}', status=200)
             assert 'Invalid or expired login link' in r.text
             assert not r.session.get('username')
 
