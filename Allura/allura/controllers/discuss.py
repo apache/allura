@@ -103,6 +103,7 @@ class DiscussionController(BaseController, FeedController):
 
     @h.vardec
     @expose()
+    @require_post()
     @validate(pass_validator, error_handler=error_handler)
     def subscribe(self, **kw):
         threads = kw.pop('threads', [])
@@ -245,6 +246,7 @@ class ThreadController(BaseController, FeedController, metaclass=h.ProxiedAttrMe
         redirect(six.ensure_text(request.referer or '/'))
 
     @expose()
+    @require_post()
     def flag_as_spam(self, **kw):
         require_access(self.thread, 'moderate')
         self.thread.spam()

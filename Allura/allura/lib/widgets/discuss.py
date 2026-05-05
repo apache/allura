@@ -426,6 +426,13 @@ class Thread(HierWidget):
             if (thread_spam.length) {
                 if (allow_moderate.length) {
                     thread_spam[0].style.display='block';
+                    thread_spam.click(function (e) {
+                        e.preventDefault();
+                        var form = $('<form method="post" action="' + this.href + '"></form>');
+                        form.append('<input type="hidden" name="_csrf_token" value="' + $.cookie('_csrf_token') + '">');
+                        $('body').append(form);
+                        form.submit();
+                    });
                 }
             }
         });
