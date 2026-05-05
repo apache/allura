@@ -715,7 +715,7 @@ class RootController(BaseController, FeedController):
             },
             {'$project': {'labels': 1}},
             {'$unwind': '$labels'},
-            {'$match': {'labels': {'$regex': '^%s' % term, '$options': 'i'}}},
+            {'$match': {'labels': {'$regex': '^%s' % re.escape(term), '$options': 'i'}}},
             {'$group': {'_id': '$labels', 'count': {'$sum': 1}}},
             {'$sort': SON([('count', -1), ('_id', 1)])}
         ], cursor={})
