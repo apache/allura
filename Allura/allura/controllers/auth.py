@@ -23,6 +23,7 @@ import os
 from base64 import b32encode
 from datetime import datetime
 import re
+import ipaddress
 from urllib.parse import urlparse, urljoin, urlunparse
 
 import bson
@@ -564,6 +565,10 @@ class AuthController(BaseController):
 
         Returns JSON describing this user's permissions on that repo.
         """
+        ip = ipaddress.ip_address(utils.ip_address(request))
+        if not ip or not ip.is_private:
+            raise wexc.HTTPForbidden("Access to repo permissions is restricted to internal network connections")
+
         disallow = dict(allow_read=False, allow_write=False,
                         allow_create=False)
         # Find the user
