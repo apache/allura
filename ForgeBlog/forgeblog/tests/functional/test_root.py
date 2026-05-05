@@ -23,6 +23,7 @@ from mock import patch
 
 from allura.lib import helpers as h
 from alluratest.controller import TestController
+from forgeblog import model as BM
 
 
 class Test(TestController):
@@ -251,6 +252,34 @@ class Test(TestController):
         self._post()
         d = self._blog_date()
         self.app.get('/blog/%s/my-post/?limit=blah&page=2x' % d, status=200)
+
+    def test_save_ignores_non_form_fields(self):
+        """Mass assignment: extra POST params must not overwrite model fields outside the form"""
+        self._post()
+        d = self._blog_date()
+        post_url = '/blog/%s/my-post/save' % d
+
+        post = BM.BlogPost.query.find().first()
+        original_slug = post.slug
+        original_app_config_id = post.app_config_id
+
+        # Attempt to inject fields not defined in EditPostForm
+        self.app.post(post_url, params={
+            'title': 'My Post',
+            'text': 'Updated text',
+            'labels': '',
+            'state': 'published',
+            'slug': 'hacked-slug',
+            'deleted': 'True',
+            'app_config_id': 'deadbeefdeadbeefdeadbeef',
+        })
+
+        post = BM.BlogPost.query.find({'slug': original_slug}).first()
+        assert post is not None, "post should still be findable by its original slug"
+        assert post.text == 'Updated text'  # standard fields should be updated
+        assert post.slug == original_slug
+        assert post.deleted is False
+        assert post.app_config_id == original_app_config_id
 
     def test_rate_limit_submit(self):
         with h.push_config(tg.config, **{'forgeblog.rate_limits': '{"3600": 0}'}):
