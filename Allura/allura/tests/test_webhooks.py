@@ -302,6 +302,11 @@ class TestWebhookController(TestController):
         r = self.app.post(self.url + '/repo-push/create', {'url': url, 'secret': ''})
         self.find_error(r, 'url', 'Invalid URL')
 
+    @patch.dict(config, {'urlopen_allow_internal_hostnames': 'true'})
+    def test_create_private_url_allowed(self):
+        with td.audits(r'add webhook repo-push'):
+            self.app.post(self.url + '/repo-push/create', {'url': 'http://localhost/hook', 'secret': ''})
+
     @pytest.mark.parametrize('url', [
         'http://localhost/hook',
         'http://127.0.0.1/hook',

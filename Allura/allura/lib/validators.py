@@ -17,10 +17,14 @@
 
 import json
 import re
+
+import tg
 from bson import ObjectId
 import formencode as fe
 from formencode import validators as fev
 from tg import tmpl_context as c
+from tg.support.converters import asbool
+
 from . import helpers as h
 from datetime import datetime
 from urllib.parse import urlsplit
@@ -51,6 +55,10 @@ class NonPrivateUrl(URL):
     # prevents private IPs
     def _convert_to_python(self, value, state):
         value = super()._convert_to_python(value, state)
+
+        if asbool(tg.config.get('urlopen_allow_internal_hostnames', 'false')):
+            return value
+
         url_components = urlsplit(value)
         try:
             host_ip = socket.gethostbyname(url_components.hostname)
