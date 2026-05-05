@@ -71,7 +71,7 @@ class AlluraUserProperty(ForeignIdProperty):
     '''
 
     def __init__(self, **kwargs):
-        super().__init__('User', allow_none=True, **kwargs)
+        super().__init__(User, allow_none=True, **kwargs)
 
 
 class EmailAddress(MappedClass):

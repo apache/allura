@@ -17,11 +17,12 @@
 
 import typing
 import pymongo
+from bson import ObjectId
 from tg import config
 from tg import tmpl_context as c
-from ming.odm import FieldProperty, session
+from ming.odm import FieldProperty, session, RelationProperty
 from datetime import datetime
-from allura.model.auth import User
+from allura.model.auth import User, AlluraUserProperty
 from allura import model as M
 
 if typing.TYPE_CHECKING:
@@ -41,13 +42,10 @@ class ShortUrl(M.Artifact):
     short_name = FieldProperty(str)
     description = FieldProperty(str)
     private = FieldProperty(bool)
-    create_user = M.AlluraUserProperty()
+    create_user: ObjectId = AlluraUserProperty()
+    user = RelationProperty(User, via='create_user')
     created = FieldProperty(datetime, if_missing=datetime.utcnow)
     last_updated = FieldProperty(datetime, if_missing=datetime.utcnow)
-
-    @property
-    def user(self):
-        return User.query.get(_id=self.create_user)
 
     @classmethod
     def upsert(cls, shortname):
