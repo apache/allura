@@ -2870,7 +2870,7 @@ class TestPasswordExpire(TestController):
             assert 'Passwords must match' in r
             r = self.check_validation('bad', 'qwerty', 'qwerty')
             assert 'Incorrect password' in self.webflash(r)
-            assert r.location == 'http://localhost/auth/pwd_expired?return_to='
+            assert r.location == 'http://localhost/auth/pwd_expired?return_to=%2F'
 
             with h.push_config(config, **{'auth.min_password_len': 3}):
                 r = self.check_validation('foo', 'foo', 'foo')
