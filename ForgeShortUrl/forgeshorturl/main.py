@@ -23,6 +23,7 @@ from tg.decorators import without_trailing_slash
 from allura.app import Application, SitemapEntry, DefaultAdminController
 from allura import model as M
 from allura.lib.security import require_access, has_access
+from allura.lib.decorators import require_post
 from allura.lib import helpers as h
 from allura.lib import validators as v
 from allura.lib.search import search_app
@@ -207,6 +208,7 @@ class ShortURLAdminController(DefaultAdminController):
 
     @without_trailing_slash
     @expose('json:')
+    @require_post()
     def remove(self, shorturl, **kw):
         require_access(self.app, 'update')
         ShortUrl.query.remove({
