@@ -388,7 +388,7 @@ class AuthController(BaseController):
         redirect(config.get('auth.post_logout_url', '/'))
 
     @staticmethod
-    def _verify_return_to(return_to):
+    def _verify_return_to(return_to: str | None) -> str:
         # protect against any "open redirect" attacks using an external URL
         if not return_to or '\n' in return_to:
             return_to = '/'
@@ -614,7 +614,7 @@ class AuthController(BaseController):
     @validate(F.password_change_form, error_handler=pwd_expired)
     def pwd_expired_change(self, **kw):
         require_authenticated()
-        return_to = kw.get('return_to')
+        return_to = self._verify_return_to(kw.get('return_to'))
         ap = plugin.AuthenticationProvider.get(request)
         failure_redirect_url = tg.url('/auth/pwd_expired', dict(return_to=return_to))
 
