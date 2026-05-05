@@ -70,7 +70,7 @@ class WebhookValidator(fev.FancyValidator):
 
 
 class WebhookCreateForm(schema.Schema):
-    url = fev.URL(not_empty=True)
+    url = v.NonPrivateUrl(not_empty=True)
     secret = v.UnicodeString()
 
 
@@ -377,7 +377,12 @@ class SendWebhookHelper:
                 if ok:
                     return
 
-    def _send(self, url, data, headers):
+    def _send(self, url, data, headers) -> bool:
+        try:
+            v.NonPrivateUrl().to_python(url)
+        except Invalid as e:
+            log.error(self.log_msg(f'Webhook send error: resolved to private address: {e!r}'))
+            return False
         try:
             r = requests.post(
                 url,

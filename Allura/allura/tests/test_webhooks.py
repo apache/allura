@@ -291,10 +291,29 @@ class TestWebhookController(TestController):
         r = self.app.post(self.url + '/repo-push/create', data)
         self.find_error(r, 'url', 'Please enter a value')
 
-        data = {'url': 'qwer', 'secret': 'qwe'}
-        r = self.app.post(self.url + '/repo-push/create', data)
-        self.find_error(r, 'url',
-                        'You must provide a full domain name (like qwer.com)')
+    @pytest.mark.parametrize('url', [
+        'http://localhost/hook',
+        'http://127.0.0.1/hook',
+        'http://10.0.0.1/hook',
+        'http://192.168.1.1/hook',
+        'https://169.254.169.254/',
+    ])
+    def test_create_ssrf_private_url_rejected(self, url):
+        r = self.app.post(self.url + '/repo-push/create', {'url': url, 'secret': ''})
+        self.find_error(r, 'url', 'Invalid URL')
+
+    @pytest.mark.parametrize('url', [
+        'http://localhost/hook',
+        'http://127.0.0.1/hook',
+        'https://10.0.0.1/hook',
+    ])
+    def test_edit_ssrf_private_url_rejected(self, url):
+        data = {'url': 'http://httpbin.org/post', 'secret': 'secret'}
+        self.create_webhook(data).follow()
+        wh = M.Webhook.query.get(hook_url=data['url'], type='repo-push')
+        edit_data = {'url': url, 'secret': '', 'webhook': str(wh._id)}
+        r = self.app.post(self.url + '/repo-push/edit', edit_data)
+        self.find_error(r, 'url', 'Invalid URL', 'edit')
 
     def test_edit_validation(self):
         invalid = M.Webhook(
@@ -320,11 +339,6 @@ class TestWebhookController(TestController):
         data = {'url': '', 'secret': '', 'webhook': str(wh._id)}
         r = self.app.post(self.url + '/repo-push/edit', data)
         self.find_error(r, 'url', 'Please enter a value', 'edit')
-
-        data = {'url': 'qwe', 'secret': 'qwe', 'webhook': str(wh._id)}
-        r = self.app.post(self.url + '/repo-push/edit', data)
-        self.find_error(r, 'url',
-                        'You must provide a full domain name (like qwe.com)', 'edit')
 
     def test_delete(self):
         data = {'url': 'http://httpbin.org/post',
@@ -362,9 +376,9 @@ class TestWebhookController(TestController):
         url2 = str(git2.admin_url + 'webhooks')
         data1 = {'url': 'http://httpbin.org/post',
                  'secret': 'secret'}
-        data2 = {'url': 'http://another-host.org/',
+        data2 = {'url': 'http://example.com/',
                  'secret': 'secret2'}
-        data3 = {'url': 'http://another-app.org/',
+        data3 = {'url': 'http://1.2.3.4/',
                  'secret': 'secret3'}
         self.create_webhook(data1).follow()
         self.create_webhook(data2).follow()
@@ -514,6 +528,20 @@ class TestSendWebhookHelper(TestWebhookBase):
                     requests.post.return_value.status_code,
                     requests.post.return_value.text,
                     requests.post.return_value.headers))
+
+    @pytest.mark.parametrize('url', [
+        'http://localhost/hook',
+        'http://127.0.0.1/hook',
+        'http://10.0.0.1/hook',
+        'http://192.168.1.1/hook',
+    ])
+    @patch('allura.webhooks.requests', autospec=True)
+    @patch('allura.webhooks.log', autospec=True)
+    def test_send_ssrf_private_url_blocked(self, log, requests, url):
+        result = self.h._send(url, json.dumps(self.payload), {})
+        assert result is False
+        requests.post.assert_not_called()
+        log.error.assert_called_once()
 
 
 class TestRepoPushWebhookSender(TestWebhookBase):
@@ -745,16 +773,6 @@ class TestWebhookRestController(TestRestApiBase):
             'error': {'url': 'Please enter a value'},
         }
         assert r.json == expected
-
-        data = {'url': 'qwer', 'secret': 'qwe'}
-        r = self.api_post(self.url + '/repo-push', status=400, **data)
-        expected = {
-            'result': 'error',
-            'error': {
-                'url': 'You must provide a full domain name (like qwer.com)'
-            },
-        }
-        assert r.json == expected
         assert M.Webhook.query.find().count() == len(self.webhooks)
 
     def test_create(self):
@@ -806,12 +824,12 @@ class TestWebhookRestController(TestRestApiBase):
     def test_edit_validation(self):
         webhook = self.webhooks[0]
         url = f'{self.url}/repo-push/{webhook._id}'
-        data = {'url': 'qwe', 'secret': 'qwe'}
+        data = {'url': 'http://10.0.0.1/hook', 'secret': ''}
         r = self.api_post(url, status=400, **data)
         expected = {
             'result': 'error',
             'error': {
-                'url': 'You must provide a full domain name (like qwe.com)'
+                'url': 'Invalid URL.'
             },
         }
         assert r.json == expected
