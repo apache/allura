@@ -58,7 +58,7 @@ class TestHtmlSideBySideDiff:
   <td class="lineno"></td>
   <td><pre></pre></td>
   <td class="lineno">4</td>
-  <td class="diff-add"><pre>    new&lt;script&gt;&amp;&quot;</pre></td>
+  <td class="diff-add"><pre>    new&lt;script&gt;&amp;&#34;</pre></td>
 </tr>
 </table>
 '''.strip()
@@ -124,3 +124,17 @@ class TestHtmlSideBySideDiff:
         b = ['измененная строка']
         html = HtmlSideBySideDiff().make_table(a, b, 'file a', 'file b')
         assert 'строка' in html
+
+    def test_make_table_with_html_tags(self):
+        a = ['foo<b>bar</b>']
+        b = ['<em>as</em>df']
+        html = HtmlSideBySideDiff().make_table(a, b, 'file <a>', 'file <b>')
+        assert 'foo&lt;b&gt;bar&lt;/b&gt;' in html
+        assert 'foo<b>bar</b>' not in html
+        assert '&lt;em&gt;as&lt;/em&gt;df' in html
+        assert '<em>as</em>df' not in html
+        assert 'file &lt;a&gt;' in html
+        assert 'file <a>' not in html
+        assert 'file &lt;b&gt;' in html
+        assert 'file <b>' not in html
+

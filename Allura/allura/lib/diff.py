@@ -46,7 +46,7 @@ def is_single_chg(chg_parts: ElementsHolder) -> bool:
 class SxsOutputGenerator(sxsdiff.BaseGenerator):
     # based on sxsdiff.generators.github.GitHubStyledGenerator
 
-    table_tmpl_start = '''
+    table_tmpl_start = Markup('''
 <table class="side-by-side-diff">
   <thead>
     <th class="lineno"></th>
@@ -54,9 +54,9 @@ class SxsOutputGenerator(sxsdiff.BaseGenerator):
     <th class="lineno"></th>
     <th>%s</th>
   </thead>
-'''.strip()
+''').strip()
 
-    table_tmpl_end = '</table>'
+    table_tmpl_end = Markup('</table>')
 
     def __init__(self, adesc: str, bdesc: str):
         self.adesc = adesc
@@ -66,9 +66,9 @@ class SxsOutputGenerator(sxsdiff.BaseGenerator):
         self.out += content + '\n'
 
     def run(self, diff_result: Iterable[LineChange | None]):
-        self.out = ''
+        self.out = Markup('')
         super().run(diff_result)
-        return Markup(self.out)  # noqa: S704 "safe" because we use html.escape in a few key places below
+        return self.out
 
     def visit_row(self, line_change: LineChange | None):
         if line_change is None:
@@ -86,9 +86,9 @@ class SxsOutputGenerator(sxsdiff.BaseGenerator):
 
     @contextlib.contextmanager
     def wrap_row(self, line_change):
-        self._spit('<tr>')
+        self._spit(Markup('<tr>'))
         yield
-        self._spit('</tr>')
+        self._spit(Markup('</tr>'))
 
     @contextlib.contextmanager
     def wrap_result(self, sxs_result):
@@ -108,7 +108,7 @@ class SxsOutputGenerator(sxsdiff.BaseGenerator):
         context = {
             'mode': 'context',
             'lineno': lineno,
-            'code': html.escape(str(holder)),
+            'code': str(holder),
         }
         self._spit_side_from_context(context)
 
@@ -119,7 +119,7 @@ class SxsOutputGenerator(sxsdiff.BaseGenerator):
 
         bits = []
         for elem in holder.elements:
-            piece = html.escape(str(elem))
+            piece = str(elem)
             if elem.is_changed and not is_single_chg(holder):
                 if elem.flag == diff_match_patch.DIFF_INSERT:
                     clss = 'diff-add'
@@ -127,10 +127,10 @@ class SxsOutputGenerator(sxsdiff.BaseGenerator):
                     clss = 'diff-rem'
                 else:
                     clss = ''
-                bits.append(f'<span class="{clss}">{piece}</span>')
+                bits.append(Markup('<span class="{clss}">{piece}</span>').format(clss=clss, piece=piece))
             else:
                 bits.append(piece)
-        code = ''.join(bits)
+        code = Markup('').join(bits)
 
         context = {
             'mode': mode,
@@ -140,10 +140,10 @@ class SxsOutputGenerator(sxsdiff.BaseGenerator):
         self._spit_side_from_context(context)
 
     def _spit_side_from_context(self, context):
-        self._spit(f'  <td class="lineno">{context["lineno"]}</td>')
+        self._spit(Markup('  <td class="lineno">{lineno}</td>').format(lineno=context["lineno"]))
         mode = context['mode']
-        clss = (' class="%s"' % mode) if mode not in ['context', ''] else ''
-        self._spit(f'  <td{clss}><pre>{context["code"]}</pre></td>')
+        clss = Markup(' class="%s"') % mode if mode not in ['context', ''] else ''
+        self._spit(Markup('  <td{clss}><pre>{code}</pre></td>').format(clss=clss, code=context["code"]))
 
 
 def sxsdiff_cleanup_trailing(input_lines: Iterable[LineChange]) -> Iterable[LineChange]:
