@@ -61,13 +61,17 @@ class NonPrivateUrl(URL):
 
         url_components = urlsplit(value)
         try:
-            host_ip = socket.gethostbyname(url_components.hostname)
+            addr_info = socket.getaddrinfo(url_components.hostname, None)
         except socket.gaierror:
             raise fev.Invalid("Invalid URL.", value, state)
-        parse_ip = ip_address(host_ip)
-        if parse_ip and parse_ip.is_private:
-            raise fev.Invalid("Invalid URL.", value, state)
-        self.ip = parse_ip
+
+        for info in addr_info:
+            host_ip = info[4][0]
+            parse_ip = ip_address(host_ip)
+            if parse_ip and parse_ip.is_private:
+                raise fev.Invalid("Invalid URL.", value, state)
+
+        self.ip = ip_address(addr_info[0][4][0])
         return value
 
 
