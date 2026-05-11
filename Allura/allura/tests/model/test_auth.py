@@ -404,6 +404,37 @@ class TestAuth:
         # provided bby auth provider
         assert 'user_registration_date_dt' in idx
 
+    def test_display_name_encrypted_is_populated_on_creation(self):
+        user = M.User(
+            username='encrypted-display-name-test',
+            display_name='Encrypted Display Name')
+        ThreadLocalODMSession.flush_all()
+
+        assert user.display_name == 'Encrypted Display Name'
+        assert user.get_pref('display_name') == 'Encrypted Display Name'
+        assert user.display_name_encrypted
+        assert user.display_name_encrypted == M.User.encr('Encrypted Display Name')
+        assert M.User.decr(user.display_name_encrypted) == 'Encrypted Display Name'
+        assert user.__dict__['__ming__'].state.document.display_name == 'Encrypted Display Name'
+
+    def test_set_display_name_pref_updates_encrypted_field_and_cache(self):
+        user = M.User(
+            username='display-name-cache-test',
+            display_name='Original Display Name')
+        ThreadLocalODMSession.flush_all()
+        original_encrypted_display_name = user.display_name_encrypted
+
+        assert user.display_name == 'Original Display Name'
+        assert user._cache_display_name == 'Original Display Name'
+
+        user.set_pref('display_name', 'Updated Display Name')
+
+        assert not hasattr(user, '_cache_display_name')
+        assert user.display_name_encrypted != original_encrypted_display_name
+        assert user.display_name_encrypted == M.User.encr('Updated Display Name')
+        assert user.display_name == 'Updated Display Name'
+        assert user.get_pref('display_name') == 'Updated Display Name'
+
     def test_user_index_none_values(self):
         c.user.email_addresses = [None]
         c.user.set_pref('telnumbers', [None])

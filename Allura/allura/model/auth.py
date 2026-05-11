@@ -248,6 +248,11 @@ class FieldPropertyDisplayName(FieldProperty):
             display_name = instance._cache_display_name = instance.get_pref('display_name')
         return display_name
 
+    def __set__(self, instance, value):
+        instance.__dict__.pop('_cache_display_name', None)
+        super().__set__(instance, value)
+        instance.display_name_encrypted = type(instance).encr(state(instance).document[self.name])
+
 
 class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     SALT_LEN = 8
