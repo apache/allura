@@ -59,11 +59,19 @@ class TestRepoTasks:
 
     def test_clone(self):
         ns = M.Notification.query.find().count()
-        with mock.patch.object(c.app.repo, 'init_as_clone') as f:
-            repo_tasks.clone('foo', 'bar', 'baz')
+        with mock.patch.object(c.app.repo, 'init_as_clone', autospec=True) as f:
+            repo_tasks.clone('foo', 'bar', 'http://example.com/baz')
             M.main_orm_session.flush()
-            f.assert_called_with('foo', 'bar', 'baz')
+            f.assert_called_with('foo', 'bar', 'http://example.com/baz')
             assert ns + 1 == M.Notification.query.find().count()
+
+    def test_clone_internal(self):
+        ns = M.Notification.query.find().count()
+        with mock.patch.object(c.app.repo, 'init_as_clone', autospec=True) as f:
+            repo_tasks.clone('foo', 'bar', 'http://localhost/baz')
+            M.main_orm_session.flush()
+            f.assert_not_called()
+            assert M.MonQTask.query.get(task_name='allura.tasks.event_tasks.event', args='repo_clone_task_failed')
 
     def test_refresh(self):
         with mock.patch.object(c.app.repo, 'refresh') as f:

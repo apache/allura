@@ -24,6 +24,8 @@ from ming.odm import session
 
 from allura.lib.decorators import task
 from allura.lib.repository import RepositoryApp
+from allura.lib import validators as v
+
 import git
 from git import SymbolicReference
 
@@ -37,6 +39,8 @@ def init(**kwargs):
 def clone(cloned_from_path, cloned_from_name, cloned_from_url):
     from allura import model as M
     try:
+        v.NonPrivateUrl().to_python(cloned_from_url)
+
         c.app.repo.init_as_clone(
             cloned_from_path,
             cloned_from_name,
