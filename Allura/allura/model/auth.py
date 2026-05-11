@@ -612,6 +612,8 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             return None
 
     def get_pref(self, pref_name):
+        if self.is_anonymous() and pref_name == 'display_name':
+            return 'Anonymous'
         return plugin.UserPreferencesProvider.get().get_pref(self, pref_name)
 
     def set_pref(self, pref_name, pref_value):
@@ -901,8 +903,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     def anonymous_uncached(cls):
         anon = cls(
             _id=None,
-            username='*anonymous',
-            display_name='Anonymous')
+            username='*anonymous')
         session(anon).expunge(anon)  # don't save this transient Anon record
         return anon
 
