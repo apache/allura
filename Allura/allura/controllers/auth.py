@@ -464,6 +464,8 @@ class AuthController(BaseController):
                 recovery = RecoveryCodeService.get()
                 recovery.verify_and_remove_code(user, code)
                 h.auditlog_user('Logged in using a multifactor recovery code', user=user)
+            else:
+                raise InvalidToken('Invalid multifactor mode')
         except (InvalidToken, InvalidRecoveryCode):
             request.validation.errors['code'] = 'Invalid code, please try again.'
             h.auditlog_user('Multifactor login - invalid code', user=user)
