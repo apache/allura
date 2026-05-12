@@ -117,10 +117,10 @@
         $task.parent().siblings('.error').remove();
         $('pre.doc').empty();
         if (data.error) {
-          $task.parent().after('<span class="error">' + data.error + '</span>');
+          $task.parent().after('<span class="error">' + escape_html(data.error) + '</span>');
         }
         if (data.doc) {
-          $('pre.doc').html(data.doc);
+          $('pre.doc').text(data.doc);
         }
       });
     });
