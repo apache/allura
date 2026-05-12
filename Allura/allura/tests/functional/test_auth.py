@@ -3320,6 +3320,30 @@ class TestTwoFactor(TestController):
         # confirm code used up
         assert recovery_code not in RecoveryCodeService().get().get_codes(user)
 
+    def test_login_invalid_mode(self):
+        self._init_totp()
+
+        # so test-admin isn't automatically logged in for all requests
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
+
+        # regular login
+        r = self.app.get('/auth/?return_to=/p/foo')
+        encoded = self.app.antispam_field_names(r.form)
+        r.form[encoded['username']] = 'test-admin'
+        r.form[encoded['password']] = 'foo'
+        r = r.form.submit()
+
+        # check results
+        assert r.location.endswith('/auth/multifactor?return_to=%2Fp%2Ffoo'), r
+        r = r.follow()
+        assert not r.session.get('username')
+
+        # change login mode
+        r.form['mode'] = 'bogus'
+        r.form['code'] = 'invalid-code'
+        r = r.form.submit()
+        assert not r.session.get('username')
+
     @patch('allura.lib.plugin.AuthenticationProvider.hibp_password_check_enabled', Mock(return_value=True))
     def test_login_totp_with_hibp(self):
         # this is essentially the same as regular TOTP test, just making sure that HIBP doesn't get in the way
