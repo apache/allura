@@ -103,7 +103,7 @@
 
       current_block_list.find('ul').append(
         '<li><label><input type="checkbox" value="' + data.user_id + '"name="user_id">'
-        + data.username + (data.reason ? ' (' + data.reason + ')' : '') + '</label></li>'
+        + escape_html(data.username) + (data.reason ? ' (' + escape_html(data.reason) + ')' : '') + '</label></li>'
       );
       // show 'Block List' button
       current_block_list.parent('li').show();
