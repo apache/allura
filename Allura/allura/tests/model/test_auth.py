@@ -64,6 +64,14 @@ class TestAuth:
         c.user.claim_address('test@DOMAIN.NET')
         assert 'test@domain.net' in c.user.email_addresses
 
+    def test_email_address_stores_encrypted_email(self):
+        addr = M.EmailAddress.create('test@DOMAIN.NET')
+        direct_addr = M.EmailAddress(email='direct@example.net')
+        ThreadLocalODMSession.flush_all()
+
+        assert addr.email_encrypted == M.EmailAddress.encr('test@domain.net')
+        assert direct_addr.email_encrypted == M.EmailAddress.encr('direct@example.net')
+
     def selftest_email_address_lookup_helpers():
         addr = M.EmailAddress.create('TEST@DOMAIN.NET')
         nobody = M.EmailAddress.create('nobody@example.com')
