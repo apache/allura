@@ -38,7 +38,7 @@ from tg import config
 from tg import tmpl_context as c, app_globals as g
 from tg import request
 from ming import schema as S
-from ming.odm import session, state
+from ming.odm import session, state, MapperExtension
 from ming.odm import FieldProperty, RelationProperty, ForeignIdProperty
 from ming.odm.declarative import MappedClass
 from ming.odm.odmsession import ThreadLocalODMSession
@@ -74,6 +74,20 @@ class AlluraUserProperty(ForeignIdProperty):
         super().__init__('User', allow_none=True, **kwargs)
 
 
+class EmailAddressMapperExtension(MapperExtension):
+
+    def before_insert(self, instance, state, sess):
+        self._set_email_encrypted(instance, state)
+
+    def before_update(self, instance, state, sess):
+        self._set_email_encrypted(instance, state)
+
+    @staticmethod
+    def _set_email_encrypted(instance, state):
+        email = state.document.get('email')
+        state.document['email_encrypted'] = instance.encr(email)
+
+
 class EmailAddress(MappedClass):
     re_format = re.compile(r'^.*\s+<(.*)>\s*$')
 
@@ -82,11 +96,13 @@ class EmailAddress(MappedClass):
         session = main_orm_session
         indexes = ['nonce', ]
         unique_indexes = [('email', 'claimed_by_user_id'), ]
+        extensions = [EmailAddressMapperExtension]
 
     query: Query[EmailAddress]
 
     _id = FieldProperty(S.ObjectId)
     email = FieldProperty(str)
+    email_encrypted = FieldProperty(S.Binary)
     claimed_by_user_id = FieldProperty(S.ObjectId, if_missing=None)
     confirmed = FieldProperty(bool, if_missing=False)
     confirmed_date = FieldProperty(datetime)
