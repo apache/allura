@@ -348,12 +348,14 @@ class Test():
     def test_macro_embed(self, oembed_fetch):
         oembed_fetch.return_value = {
             "html": '<iframe width="480" height="270" src="http://www.youtube.com/embed/kOLpSPEA72U?feature=oembed" '
-                    'frameborder="0" allowfullscreen></iframe>)',
+                    'frameborder="0" allowfullscreen></iframe>'
+                    '<script>alert(1)</script>)',  # not realistic, but testing if the oembed endpoint got compromised
             "title": "Nature's 3D Printer: MIND BLOWING Cocoon in Rainforest - Smarter Every Day 94",
         }
         r = g.markdown_wiki.convert('[[embed url=http://www.youtube.com/watch?v=kOLpSPEA72U]]')
         assert ('<p><iframe height="270" '
-                'src="https://www.youtube-nocookie.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe></p>' in
+                'src="https://www.youtube-nocookie.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe>'
+                '&lt;script&gt;alert(1)&lt;/script&gt;</p>' in
                 r.replace('\n', ''))
 
     def test_macro_embed_video_gone(self):
