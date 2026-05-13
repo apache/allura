@@ -22,8 +22,9 @@ import hashlib
 import time
 import socket
 import ssl
+import urllib.request
+import urllib.error
 
-import requests
 from bson import ObjectId
 from tg import expose, validate, redirect, flash, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
@@ -354,11 +355,15 @@ class SendWebhookHelper:
             self.webhook.hook_url,
             self.webhook.app_config.url())
         if response is not None:
-            message = '{} {} {} {}'.format(
-                message,
-                response.status_code,
-                response.text,
-                response.headers)
+            try:
+                message = '{} {} {} {}'.format(
+                    message,
+                    response.status,
+                    response.read(200).decode('utf-8', 'ignore'),
+                    response.headers)
+            except Exception:
+                log.warning('could not get response details during webhook error logging', exc_info=True)
+                message = '{} {}'.format(message, response)
         return message
 
     def send(self):
@@ -379,27 +384,20 @@ class SendWebhookHelper:
 
     def _send(self, url, data, headers) -> bool:
         try:
-            v.NonPrivateUrl().to_python(url)
-        except Invalid as e:
-            log.error(self.log_msg(f'Webhook send error: resolved to private address: {e!r}'))
-            return False
-        try:
-            r = requests.post(
-                url,
-                data=data,
-                headers=headers,
-                timeout=self.timeout)
-        except (requests.exceptions.RequestException,
-                socket.timeout,
-                ssl.SSLError):
+            req = urllib.request.Request(url, data=data.encode('utf-8'), headers=headers)  # noqa: S310
+            r = urllib.request.urlopen(req, timeout=self.timeout)  # noqa: S310
+        except urllib.error.HTTPError as e:
+            r = e
+        except (OSError, Invalid):
             log.exception(self.log_msg('Webhook send error'))
             return False
-        if r.status_code >= 200 and r.status_code < 300:
+
+        if 200 <= r.status < 300:
             log.info(self.log_msg('Webhook successfully sent'))
             return True
-        else:
-            log.error(self.log_msg('Webhook send error', response=r))
-            return False
+
+        log.error(self.log_msg('Webhook send error', response=r))
+        return False
 
 
 @task()
