@@ -318,7 +318,9 @@ class TestEmailVerificationMessage(TestController):
 
     def teardown_method(self, method):
         u = M.User.query.get(username='test-admin')
-        email = M.EmailAddress.query.get(claimed_by_user_id=u._id, email='foobar@email.com')
+        email = M.EmailAddress.query.get(
+            claimed_by_user_id=u._id,
+            email_encrypted=M.EmailAddress.encrypted_email('foobar@email.com'))
         email.delete()
         ThreadLocalODMSession.flush_all()
 
@@ -329,7 +331,9 @@ class TestEmailVerificationMessage(TestController):
 
     def test_confirmed_message(self):
         u = M.User.query.get(username='test-admin')
-        email = M.EmailAddress.query.get(claimed_by_user_id=u._id, email=self.unconfirmed_email)
+        email = M.EmailAddress.query.get(
+            claimed_by_user_id=u._id,
+            email_encrypted=M.EmailAddress.encrypted_email(self.unconfirmed_email))
         email.confirmed = True
         ThreadLocalODMSession.flush_all()
         login(self.app, username='test-admin')

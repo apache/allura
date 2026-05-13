@@ -28,7 +28,7 @@ from webob import Request
 from mock import patch, Mock
 
 from ming.odm.odmsession import ThreadLocalODMSession
-from ming.odm import session
+from ming.odm import session, state
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -69,8 +69,11 @@ class TestAuth:
         direct_addr = M.EmailAddress(email='direct@example.net')
         ThreadLocalODMSession.flush_all()
 
+        assert addr.email == 'test@domain.net'
         assert addr.email_encrypted == M.EmailAddress.encr('test@domain.net')
         assert direct_addr.email_encrypted == M.EmailAddress.encr('direct@example.net')
+        assert 'email' not in state(addr).document
+        assert 'email' not in state(direct_addr).document
 
     def selftest_email_address_lookup_helpers():
         addr = M.EmailAddress.create('TEST@DOMAIN.NET')
