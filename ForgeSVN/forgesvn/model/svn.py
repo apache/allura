@@ -709,8 +709,9 @@ class SVNImplementation(M.RepositoryImplementation):
         path = os.path.join(self._url, path)
         try:
             # need to set system locale to handle all symbols in filename
-            import locale
-            locale.setlocale(locale.LC_ALL, 'C.UTF-8')
+            # NOTE: we will assume the system is configured with a utf8 capable locale
+            # import locale
+            # locale.setlocale(locale.LC_ALL, 'C.UTF-8')
             self._svn.export(path,
                              tmpdest,
                              revision=pysvn.Revision(
