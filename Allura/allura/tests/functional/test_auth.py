@@ -72,7 +72,8 @@ class TestAuth(TestController):
         ThreadLocalODMSession.flush_all()
         r = self.app.get('/auth/verify_addr', params=dict(a='foo'))
         assert json.loads(self.webflash(r))['status'] == 'error', self.webflash(r)
-        ea = M.EmailAddress.find({'email': email}).first()
+        ea = M.EmailAddress.find({
+            'email_encrypted': M.EmailAddress.encrypted_email(email)}).first()
         r = self.app.get('/auth/verify_addr', params=dict(a=ea.nonce))
         assert json.loads(self.webflash(r))['status'] == 'ok', self.webflash(r)
 
@@ -383,7 +384,9 @@ class TestAuth(TestController):
                       },
                       extra_environ=dict(username='test-admin'))
 
-        assert M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user._id)).count() == 1
+        assert M.EmailAddress.find(dict(
+            email_encrypted=M.EmailAddress.encrypted_email(email_address),
+            claimed_by_user_id=user._id)).count() == 1
         r = self.app.post('/auth/preferences/update_emails',
                           params={
                               'new_addr.addr': email_address,
@@ -396,7 +399,9 @@ class TestAuth(TestController):
                           extra_environ=dict(username='test-admin'))
 
         assert json.loads(self.webflash(r))['status'] == 'error', self.webflash(r)
-        assert M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user._id)).count() == 1
+        assert M.EmailAddress.find(dict(
+            email_encrypted=M.EmailAddress.encrypted_email(email_address),
+            claimed_by_user_id=user._id)).count() == 1
         assert len(M.User.query.get(username='test-admin').email_addresses) == addresses_number + 1
 
     @td.with_user_project('test-admin')
@@ -409,7 +414,8 @@ class TestAuth(TestController):
         # test-user claimed & confirmed email address
         user = M.User.query.get(username='test-user')
         user.claim_address(email_address)
-        email = M.EmailAddress.find(dict(email=email_address)).first()
+        email = M.EmailAddress.find(dict(
+            email_encrypted=M.EmailAddress.encrypted_email(email_address))).first()
         email.confirmed = True
         ThreadLocalODMSession.flush_all()
 
@@ -441,7 +447,8 @@ class TestAuth(TestController):
                "but it is already claimed by your %s account." % (email_address, user.username) in kwargs['text']
 
         assert len(M.User.query.get(username='test-admin').email_addresses) == addresses_number + 1
-        assert len(M.EmailAddress.find(dict(email=email_address)).all()) == 2
+        assert len(M.EmailAddress.find(dict(
+            email_encrypted=M.EmailAddress.encrypted_email(email_address))).all()) == 2
 
     @td.with_user_project('test-admin')
     @patch('allura.tasks.mail_tasks.sendsimplemail')
@@ -452,7 +459,8 @@ class TestAuth(TestController):
         # test-user claimed email address
         user = M.User.query.get(username='test-user')
         user.claim_address(email_address)
-        email = M.EmailAddress.find(dict(email=email_address)).first()
+        email = M.EmailAddress.find(dict(
+            email_encrypted=M.EmailAddress.encrypted_email(email_address))).first()
         email.confirmed = False
         ThreadLocalODMSession.flush_all()
         # Claiming the same email address by test-admin
@@ -477,7 +485,8 @@ class TestAuth(TestController):
                                                           'Please check your email and click to confirm.'
         assert sendsimplemail.post.called
         assert len(M.User.query.get(username='test-user-1').email_addresses) == addresses_number + 1
-        assert len(M.EmailAddress.find(dict(email=email_address)).all()) == 2
+        assert len(M.EmailAddress.find(dict(
+            email_encrypted=M.EmailAddress.encrypted_email(email_address))).all()) == 2
 
     @td.with_user_project('test-admin')
     @patch('allura.tasks.mail_tasks.sendsimplemail')
@@ -520,12 +529,16 @@ class TestAuth(TestController):
         # test-user claimed email address
         user = M.User.query.get(username='test-user')
         user.claim_address(email_address)
-        email = M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user._id)).first()
+        email = M.EmailAddress.find(dict(
+            email_encrypted=M.EmailAddress.encrypted_email(email_address),
+            claimed_by_user_id=user._id)).first()
         email.confirmed = True
 
         user1 = M.User.query.get(username='test-user-1')
         user1.claim_address(email_address)
-        email = M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user1._id)).first()
+        email = M.EmailAddress.find(dict(
+            email_encrypted=M.EmailAddress.encrypted_email(email_address),
+            claimed_by_user_id=user1._id)).first()
         email.confirmed = False
 
         ThreadLocalODMSession.flush_all()
@@ -551,7 +564,9 @@ class TestAuth(TestController):
         # test-user claimed email address
         user = M.User.query.get(username='test-user')
         user.claim_address(email_address)
-        email = M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user._id)).first()
+        email = M.EmailAddress.find(dict(
+            email_encrypted=M.EmailAddress.encrypted_email(email_address),
+            claimed_by_user_id=user._id)).first()
         email.confirmed = False
         ThreadLocalODMSession.flush_all()
 
@@ -562,7 +577,9 @@ class TestAuth(TestController):
 
         user1 = M.User.query.get(username='test-user-1')
         user1.claim_address(email_address)
-        email1 = M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user1._id)).first()
+        email1 = M.EmailAddress.find(dict(
+            email_encrypted=M.EmailAddress.encrypted_email(email_address),
+            claimed_by_user_id=user1._id)).first()
         email1.confirmed = True
         ThreadLocalODMSession.flush_all()
         # Verify first email with the verification link
@@ -570,7 +587,9 @@ class TestAuth(TestController):
                          extra_environ=dict(username='test-user'))
 
         assert json.loads(self.webflash(r))['status'] == 'error'
-        email = M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user._id)).first()
+        email = M.EmailAddress.find(dict(
+            email_encrypted=M.EmailAddress.encrypted_email(email_address),
+            claimed_by_user_id=user._id)).first()
         assert not email.confirmed
 
     @patch('allura.tasks.mail_tasks.sendsimplemail')
@@ -582,7 +601,9 @@ class TestAuth(TestController):
         # test-user claimed email address
         user = M.User.query.get(username='test-user')
         user.claim_address(email_address)
-        email = M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user._id)).first()
+        email = M.EmailAddress.find(dict(
+            email_encrypted=M.EmailAddress.encrypted_email(email_address),
+            claimed_by_user_id=user._id)).first()
         email.confirmed = False
         ThreadLocalODMSession.flush_all()
 
@@ -1081,11 +1102,13 @@ class TestAuth(TestController):
                 ))
             r = r.follow()
             user = M.User.query.get(username='aaa')
-            em = M.EmailAddress.get(email='test@example.com')
+            em = M.EmailAddress.get(
+                email_encrypted=M.EmailAddress.encrypted_email('test@example.com'))
             assert user._id == em.claimed_by_user_id
             r = self.app.get('/auth/verify_addr', params=dict(a=em.nonce))
             user = M.User.query.get(username='aaa')
-            em = M.EmailAddress.get(email='test@example.com')
+            em = M.EmailAddress.get(
+                email_encrypted=M.EmailAddress.encrypted_email('test@example.com'))
             assert not user.pending
             assert em.confirmed
             assert user.get_pref('email_address')
@@ -1722,7 +1745,8 @@ class TestPasswordReset(TestController):
         user.claim_address(self.test_primary_email)
         user.set_pref('email_address', self.test_primary_email)
 
-        email = M.EmailAddress.find({'email': self.test_primary_email}).first()
+        email = M.EmailAddress.find({
+            'email_encrypted': M.EmailAddress.encrypted_email(self.test_primary_email)}).first()
         email.confirmed = True
         ThreadLocalODMSession.flush_all()
 
@@ -1743,7 +1767,8 @@ class TestPasswordReset(TestController):
         email1 = M.EmailAddress.find({'claimed_by_user_id': user._id}).first()
         user.claim_address(self.test_primary_email)
         user.set_pref('email_address', self.test_primary_email)
-        email = M.EmailAddress.find({'email': self.test_primary_email}).first()
+        email = M.EmailAddress.find({
+            'email_encrypted': M.EmailAddress.encrypted_email(self.test_primary_email)}).first()
         email.confirmed = True
         ThreadLocalODMSession.flush_all()
         with h.push_config(config, **{'auth.allow_non_primary_email_password_reset': 'true'}):

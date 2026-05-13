@@ -28,7 +28,7 @@ from webob import Request
 from mock import patch, Mock
 
 from ming.odm.odmsession import ThreadLocalODMSession
-from ming.odm import session
+from ming.odm import session, state
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -69,8 +69,11 @@ class TestAuth:
         direct_addr = M.EmailAddress(email='direct@example.net')
         ThreadLocalODMSession.flush_all()
 
+        assert addr.email == 'test@domain.net'
         assert addr.email_encrypted == M.EmailAddress.encr('test@domain.net')
         assert direct_addr.email_encrypted == M.EmailAddress.encr('direct@example.net')
+        assert 'email' not in state(addr).document
+        assert 'email' not in state(direct_addr).document
 
     def selftest_email_address_lookup_helpers():
         addr = M.EmailAddress.create('TEST@DOMAIN.NET')
@@ -78,21 +81,22 @@ class TestAuth:
         ThreadLocalODMSession.flush_all()
         assert addr.email == 'TEST@domain.net'
 
-        assert M.EmailAddress.get(email='TEST@DOMAIN.NET') == addr
-        assert M.EmailAddress.get(email='TEST@domain.net') == addr
-        assert M.EmailAddress.get(email='test@domain.net') is None
-        assert M.EmailAddress.get(email=None) is None
-        assert M.EmailAddress.get(email='nobody@example.com') == nobody
+        assert M.EmailAddress.get(email_encrypted=M.EmailAddress.encrypted_email('TEST@DOMAIN.NET')) == addr
+        assert M.EmailAddress.get(email_encrypted=M.EmailAddress.encrypted_email('TEST@domain.net')) == addr
+        assert M.EmailAddress.get(email_encrypted=M.EmailAddress.encrypted_email('test@domain.net')) is None
+        assert M.EmailAddress.get(email_encrypted=M.EmailAddress.encrypted_email('nobody@example.com')) == nobody
         # invalid email returns None, but not nobody@example.com as before
-        assert M.EmailAddress.get(email='invalid') is None
+        assert M.EmailAddress.encrypted_email('invalid') is None
 
-        assert M.EmailAddress.find(dict(email='TEST@DOMAIN.NET')).all() == [addr]
-        assert M.EmailAddress.find(dict(email='TEST@domain.net')).all() == [addr]
-        assert M.EmailAddress.find(dict(email='test@domain.net')).all() == []
-        assert M.EmailAddress.find(dict(email=None)).all() == []
-        assert M.EmailAddress.find(dict(email='nobody@example.com')).all() == [nobody]
+        assert M.EmailAddress.find(dict(
+            email_encrypted=M.EmailAddress.encrypted_email('TEST@DOMAIN.NET'))).all() == [addr]
+        assert M.EmailAddress.find(dict(
+            email_encrypted=M.EmailAddress.encrypted_email('TEST@domain.net'))).all() == [addr]
+        assert M.EmailAddress.find(dict(email_encrypted=M.EmailAddress.encrypted_email('test@domain.net'))).all() == []
+        assert M.EmailAddress.find(dict(
+            email_encrypted=M.EmailAddress.encrypted_email('nobody@example.com'))).all() == [nobody]
         # invalid email returns empty query, but not nobody@example.com as before
-        assert M.EmailAddress.find(dict(email='invalid')).all() == []
+        assert M.EmailAddress.encrypted_email('invalid') is None
 
     def test_email_address_canonical(self):
         assert M.EmailAddress.canonical('nobody@EXAMPLE.COM') == \

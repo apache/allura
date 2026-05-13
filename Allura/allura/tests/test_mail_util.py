@@ -283,42 +283,42 @@ class TestIdentifySender:
 
     @mock.patch('allura.model.EmailAddress')
     def test_arg(self, EA):
-        EA.canonical = lambda e: e
+        EA.encrypted_email.side_effect = lambda e: e
         EA.get.side_effect = [
             mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda: 'user')]
         assert identify_sender(None, 'arg', None, None) == 'user'
-        EA.get.assert_called_once_with(email='arg', confirmed=True)
+        EA.get.assert_called_once_with(email_encrypted='arg', confirmed=True)
 
     @mock.patch('allura.model.EmailAddress')
     def test_header(self, EA):
-        EA.canonical = lambda e: e
+        EA.encrypted_email.side_effect = lambda e: e
         EA.get.side_effect = [
             None, mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda: 'user')]
         assert (
             identify_sender(None, 'arg', {'From': 'from'}, None) == 'user')
         assert (EA.get.call_args_list ==
-                [mock.call(email='arg', confirmed=True), mock.call(email='from')])
+                [mock.call(email_encrypted='arg', confirmed=True), mock.call(email_encrypted='from')])
 
     @mock.patch('allura.model.User')
     @mock.patch('allura.model.EmailAddress')
     def test_no_header(self, EA, User):
         anon = User.anonymous()
-        EA.canonical = lambda e: e
+        EA.encrypted_email.side_effect = lambda e: e
         EA.get.side_effect = [
             None, mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda: 'user')]
         assert identify_sender(None, 'arg', {}, None) == anon
-        assert EA.get.call_args_list == [mock.call(email='arg', confirmed=True)]
+        assert EA.get.call_args_list == [mock.call(email_encrypted='arg', confirmed=True)]
 
     @mock.patch('allura.model.User')
     @mock.patch('allura.model.EmailAddress')
     def test_no_match(self, EA, User):
         anon = User.anonymous()
-        EA.canonical = lambda e: e
+        EA.encrypted_email.side_effect = lambda e: e
         EA.get.side_effect = [None, None]
         assert (
             identify_sender(None, 'arg', {'From': 'from'}, None) == anon)
         assert (EA.get.call_args_list ==
-                [mock.call(email='arg', confirmed=True), mock.call(email='from')])
+                [mock.call(email_encrypted='arg', confirmed=True), mock.call(email_encrypted='from')])
 
 
 def test_parse_message_id():

@@ -370,7 +370,8 @@ class TestUserStats:
             self.user.set_password('testpassword')
         self.user.claim_address('rcopeland@geek.net')
 
-        addr = M.EmailAddress.get(email='rcopeland@geek.net')
+        addr = M.EmailAddress.get(
+            email_encrypted=M.EmailAddress.encrypted_email('rcopeland@geek.net'))
         addr.confirmed = True
 
         repo_dir = pkg_file('forgeuserstats', 'tests/data')

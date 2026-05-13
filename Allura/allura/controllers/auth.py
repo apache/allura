@@ -263,18 +263,24 @@ class AuthController(BaseController):
         if user_record and user_record.pending:
             message = 'If the given email address is on record, '\
                       'an email has been sent to the account\'s primary email address.'
-            email_record = M.EmailAddress.get(email=provider.get_primary_email_address(user_record=user_record),
-                                              confirmed=False)
+            primary_email_encrypted = M.EmailAddress.encrypted_email(
+                provider.get_primary_email_address(user_record=user_record))
+            email_record = M.EmailAddress.get(email_encrypted=primary_email_encrypted,
+                                              confirmed=False) if primary_email_encrypted else None
             provider.resend_verification_link(user_record, email_record)
 
         elif not allow_non_primary_email_reset:
             message = 'If the given email address is on record, '\
                       'a password reset email has been sent to the account\'s primary email address.'
-            email_record = M.EmailAddress.get(email=provider.get_primary_email_address(user_record=user_record),
-                                              confirmed=True)
+            primary_email_encrypted = M.EmailAddress.encrypted_email(
+                provider.get_primary_email_address(user_record=user_record))
+            email_record = M.EmailAddress.get(email_encrypted=primary_email_encrypted,
+                                              confirmed=True) if primary_email_encrypted else None
         else:
             message = 'A password reset email has been sent, if the given email address is on record in our system.'
-            email_record = M.EmailAddress.get(email=email, confirmed=True)
+            email_encrypted = M.EmailAddress.encrypted_email(email)
+            email_record = M.EmailAddress.get(email_encrypted=email_encrypted,
+                                              confirmed=True) if email_encrypted else None
 
         if user_record and email_record:
             if email_record.confirmed:
@@ -317,8 +323,11 @@ class AuthController(BaseController):
 
     @expose()
     def send_verification_link(self, a):
-        addr = M.EmailAddress.get(email=a, claimed_by_user_id=c.user._id)
-        confirmed_emails = M.EmailAddress.find(dict(email=a, confirmed=True)).all()
+        email_encrypted = M.EmailAddress.encrypted_email(a)
+        addr = M.EmailAddress.get(email_encrypted=email_encrypted,
+                                  claimed_by_user_id=c.user._id) if email_encrypted else None
+        confirmed_emails = M.EmailAddress.find(dict(email_encrypted=email_encrypted,
+                                                    confirmed=True)).all() if email_encrypted else []
         confirmed_emails = [item for item in confirmed_emails if item != addr]
 
         if addr:
@@ -332,7 +341,8 @@ class AuthController(BaseController):
         redirect(six.ensure_text(request.referer or '/'))
 
     def _verify_addr(self, addr, do_auth_check=True):
-        confirmed_by_other = M.EmailAddress.find(dict(email=addr.email, confirmed=True)).all() if addr else []
+        confirmed_by_other = M.EmailAddress.find(dict(email_encrypted=addr.email_encrypted,
+                                                      confirmed=True)).all() if addr else []
         confirmed_by_other = [item for item in confirmed_by_other if item != addr]
 
         if addr and not confirmed_by_other:
@@ -731,7 +741,8 @@ class PreferencesController(BaseController):
                 flash('You must provide your current password to claim new email', 'error')
                 return
 
-            claimed_emails = M.EmailAddress.find({'email': new_addr['addr']}).all()
+            email_encrypted = M.EmailAddress.encrypted_email(new_addr['addr'])
+            claimed_emails = M.EmailAddress.find({'email_encrypted': email_encrypted}).all() if email_encrypted else []
 
             if any(email.claimed_by_user_id == user._id for email in claimed_emails):
                 flash('Email address already claimed', 'error')

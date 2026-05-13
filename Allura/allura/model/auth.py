@@ -38,8 +38,8 @@ from tg import config
 from tg import tmpl_context as c, app_globals as g
 from tg import request
 from ming import schema as S
-from ming.odm import session, state, MapperExtension
-from ming.odm import FieldProperty, RelationProperty, ForeignIdProperty
+from ming.odm import session, state
+from ming.odm import FieldProperty, RelationProperty, ForeignIdProperty, DecryptedProperty
 from ming.odm.declarative import MappedClass
 from ming.odm.odmsession import ThreadLocalODMSession
 from ming.utils import LazyProperty
@@ -74,20 +74,6 @@ class AlluraUserProperty(ForeignIdProperty):
         super().__init__('User', allow_none=True, **kwargs)
 
 
-class EmailAddressMapperExtension(MapperExtension):
-
-    def before_insert(self, instance, state, sess):
-        self._set_email_encrypted(instance, state)
-
-    def before_update(self, instance, state, sess):
-        self._set_email_encrypted(instance, state)
-
-    @staticmethod
-    def _set_email_encrypted(instance, state):
-        email = state.document.get('email')
-        state.document['email_encrypted'] = instance.encr(email)
-
-
 class EmailAddress(MappedClass):
     re_format = re.compile(r'^.*\s+<(.*)>\s*$')
 
@@ -95,13 +81,12 @@ class EmailAddress(MappedClass):
         name = 'email_address'
         session = main_orm_session
         indexes = ['nonce', ]
-        unique_indexes = [('email', 'claimed_by_user_id'), ]
-        extensions = [EmailAddressMapperExtension]
+        unique_indexes = [('email_encrypted', 'claimed_by_user_id'), ]
 
     query: Query[EmailAddress]
 
     _id = FieldProperty(S.ObjectId)
-    email = FieldProperty(str)
+    email = DecryptedProperty(str, 'email_encrypted')
     email_encrypted = FieldProperty(S.Binary)
     claimed_by_user_id = FieldProperty(S.ObjectId, if_missing=None)
     confirmed = FieldProperty(bool, if_missing=False)
@@ -113,29 +98,37 @@ class EmailAddress(MappedClass):
 
     @classmethod
     def get(cls, **kw):
-        '''Equivalent to Ming's query.get but calls self.canonical on address
-        before lookup. You should always use this instead of query.get'''
-        if kw.get('email'):
-            email = cls.canonical(kw['email'])
-            if email is not None:
-                kw['email'] = email
-            else:
+        '''Equivalent to Ming's query.get but translates email lookups to
+        canonicalized email_encrypted queries. You should always use this
+        instead of query.get'''
+        if 'email' in kw:
+            email_encrypted = cls.encrypted_email(kw.pop('email'))
+            if email_encrypted is None:
                 return None
+            kw['email_encrypted'] = email_encrypted
         return cls.query.get(**kw)
 
     @classmethod
     def find(cls, q=None):
-        '''Equivalent to Ming's query.find but calls self.canonical on address
-        before lookup. You should always use this instead of query.find'''
+        '''Equivalent to Ming's query.find but translates email lookups to
+        canonicalized email_encrypted queries. You should always use this
+        instead of query.find'''
         if q:
-            if q.get('email'):
-                email = cls.canonical(q['email'])
-                if email is not None:
-                    q['email'] = email
-                else:
+            q = q.copy()
+            if 'email' in q:
+                email_encrypted = cls.encrypted_email(q.pop('email'))
+                if email_encrypted is None:
                     return utils.EmptyCursor()
+                q['email_encrypted'] = email_encrypted
             return cls.query.find(q)
         return cls.query.find()
+
+    @classmethod
+    def encrypted_email(cls, addr):
+        email = cls.canonical(addr) if isinstance(addr, str) and addr else None
+        if email is None:
+            return None
+        return cls.encr(email)
 
     def claimed_by_user(self, include_pending=False, include_disabled=False):
         q = {'_id': self.claimed_by_user_id,
@@ -168,7 +161,7 @@ class EmailAddress(MappedClass):
             return None
 
     def send_claim_attempt(self):
-        confirmed_email = self.find(dict(email=self.email, confirmed=True)).all()
+        confirmed_email = self.find(dict(email_encrypted=self.email_encrypted, confirmed=True)).all()
 
         if confirmed_email:
             log.info('Sending claim attempt email to %s', self.email)
@@ -751,7 +744,10 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 
     @classmethod
     def by_email_address(cls, addr, only_confirmed=True):
-        q = dict(email=addr)
+        email_encrypted = EmailAddress.encrypted_email(addr)
+        if email_encrypted is None:
+            return None
+        q = dict(email_encrypted=email_encrypted)
         if only_confirmed:
             q['confirmed'] = True
         addrs = EmailAddress.find(q)
@@ -780,7 +776,11 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         state(self).soil()
 
     def address_object(self, addr):
-        return EmailAddress.get(email=addr, claimed_by_user_id=self._id)
+        email_encrypted = EmailAddress.encrypted_email(addr)
+        if email_encrypted is None:
+            return None
+        return EmailAddress.get(email_encrypted=email_encrypted,
+                                claimed_by_user_id=self._id)
 
     def claim_address(self, email_address):
         addr = EmailAddress.canonical(email_address)

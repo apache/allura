@@ -659,7 +659,8 @@ class TestUserDetails(TestController):
                 extra_environ=dict(username='test-admin'))
         r = self.app.get('/nf/admin/user/test-user')
         assert 'test@example.com' in r
-        em = M.EmailAddress.get(email='test@example.com')
+        em = M.EmailAddress.get(
+            email_encrypted=M.EmailAddress.encrypted_email('test@example.com'))
         assert em.confirmed is True
         user = M.User.query.get(username='test-user')
         assert user.get_pref('email_address') == 'test@example.com'
@@ -674,7 +675,8 @@ class TestUserDetails(TestController):
                 extra_environ=dict(username='test-admin'))
         r = self.app.get('/nf/admin/user/test-user')
         assert 'test2@example.com' in r
-        em = M.EmailAddress.get(email='test2@example.com')
+        em = M.EmailAddress.get(
+            email_encrypted=M.EmailAddress.encrypted_email('test2@example.com'))
         assert em.confirmed is True
         user = M.User.query.get(username='test-user')
         assert user.get_pref('email_address') == 'test@example.com'

@@ -207,7 +207,8 @@ def bootstrap(command, conf, vars):
             u_admin.claim_address('test-admin@users.localhost')
             ThreadLocalODMSession.flush_all()
 
-            admin_email = M.EmailAddress.get(email='test-admin@users.localhost')
+            admin_email = M.EmailAddress.get(
+                email_encrypted=M.EmailAddress.encrypted_email('test-admin@users.localhost'))
             admin_email.confirmed = True
             admin_email.confirmed_date = datetime.utcnow()
         else:
@@ -328,7 +329,7 @@ def create_user(display_name, username=None, password='foo', make_project=False)
     email = username+"@allura.local"
     user.claim_address(email)
     from allura.model.auth import EmailAddress
-    kw = {"email": email}
+    kw = {"email_encrypted": EmailAddress.encrypted_email(email)}
     em = EmailAddress.get(**kw)
     em.confirmed = True
     em.confirmed_date = datetime.utcnow()
