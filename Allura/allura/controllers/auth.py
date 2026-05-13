@@ -498,7 +498,10 @@ class AuthController(BaseController):
         if not c.user.is_anonymous():
             redirect(self._verify_return_to(return_to))
 
-        if not session.get('multifactor-username'):
+        if not session.get('multifactor-username') or session.get('mode') != 'email_code':
+            session.pop('multifactor-username', None)
+            session.pop('mode', None)
+            session.save()
             return dict(error='Your login session was disrupted.<br>Be sure to use the same browser when logging in and opening the email verification link.')
 
         user = M.User.by_username(session['multifactor-username'])

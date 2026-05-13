@@ -44,7 +44,7 @@ from allura import model as M
 from allura.model.oauth import dummy_oauths
 from allura.lib import plugin
 from allura.lib import helpers as h
-from allura.lib.multifactor import TotpService, RecoveryCodeService
+from allura.lib.multifactor import TotpService, RecoveryCodeService, EmailCodeAuthenticationService
 
 
 def unentity(s):
@@ -3217,6 +3217,36 @@ class TestTwoFactor(TestController):
         r = self.app.get(link, status=302)
         assert r.location == 'http://localhost/p/foo'
         assert r.session.get('username') == 'test-admin'
+
+    @mock.patch.dict(config, {'auth.email_auth_code.enabled': True})
+    def test_login_email_verify_requires_email_code_stage(self):
+        # make sure an email link can't bypass MFA
+        # not sure how it could happen to have a valid email link before MFA, but make sure anyway.
+
+        self._init_totp()
+
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
+        user = M.User.by_username('test-admin')
+        token = EmailCodeAuthenticationService().generate_token(user)
+
+        r = self.app.get('/auth/?return_to=/p/foo')
+        f = r.forms[0]
+        encoded = self.app.antispam_field_names(f)
+        f[encoded['username']] = 'test-admin'
+        f[encoded['password']] = 'foo'
+        r = f.submit()
+
+        assert r.location.endswith('/auth/multifactor?return_to=%2Fp%2Ffoo'), r
+        r = r.follow()
+        assert r.session.get('multifactor-username') == 'test-admin'
+        assert r.session.get('mode') is None
+
+        r = self.app.get(f'/auth/login_email_verify?token={token}&return_to=/p/foo', status=200)
+
+        assert 'Your login session was disrupted' in r.text
+        assert not r.session.get('username')
+        assert not r.session.get('multifactor-username')
+        assert not r.session.get('mode')
 
     def test_login_rate_limit(self):
         self._init_totp()
