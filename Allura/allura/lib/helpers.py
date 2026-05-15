@@ -30,7 +30,7 @@ import unicodedata
 import json
 import logging
 import string
-import random
+import secrets
 from collections.abc import Iterable
 from hashlib import sha1
 from datetime import datetime, timedelta
@@ -489,7 +489,7 @@ def cryptographic_nonce(length=40):
 
 
 def random_password(length=20, chars=string.ascii_uppercase + string.digits):
-    return ''.join(random.choice(chars) for x in range(length))
+    return ''.join(secrets.choice(chars) for x in range(length))
 
 
 def ago(start_time, show_date_after=7):
