@@ -109,6 +109,8 @@ class DiscussionController(BaseController, FeedController):
         threads = kw.pop('threads', [])
         for t in threads:
             thread = self.M.Thread.query.get(_id=t['_id'])
+            if thread is None or not has_access(thread, 'read'):
+                continue
             if t.get('subscription'):
                 thread.subscribe()
             else:

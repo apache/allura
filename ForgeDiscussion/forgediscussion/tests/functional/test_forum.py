@@ -682,6 +682,35 @@ class TestForum(TestController):
         assert 'zzz' in r.html.find('div', {'class': 'display_post'}).text
         assert 'Last edit: Test Admin ' in r.html.find('div', {'class': 'display_post'}).text
 
+    @mock.patch('allura.controllers.discuss.has_access')
+    def test_forum_subscribe_requires_read_access(self, has_access_mock):
+        # Posting to <forum>/subscribe with a thread the user can't read must be a no-op.
+        has_access_mock.side_effect = lambda obj, *a, **kw: not isinstance(obj, FM.ForumThread)
+        # Create a thread in testforum so there's something to subscribe to.
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
+        params = dict()
+        for field in f.find_all('input'):
+            if field.has_attr('name'):
+                params[field['name']] = field.get('value') or ''
+        params[f.find('textarea')['name']] = 'body'
+        params[f.find('select')['name']] = 'testforum'
+        params[f.find('input', {'style': 'width: 90%'})['name']] = 'Locked Topic'
+        self.app.post('/discussion/save_new_topic', params=params).follow()
+
+        h.set_context('test', 'discussion', neighborhood='Projects')
+        thread = FM.ForumThread.query.get(subject='Locked Topic')
+        assert thread is not None
+        user = M.User.by_username('test-admin')
+        M.Mailbox.query.remove(dict(user_id=user._id, app_config_id=thread.app_config_id))
+
+        self.app.post('/discussion/testforum/subscribe',
+                      params={'threads-0._id': thread._id,
+                              'threads-0.subscription': 'on'})
+        subscribed = M.Mailbox.query.get(
+            user_id=user._id, artifact_index_id=thread.index_id())
+        assert subscribed is None
+
     def test_subscription_controls(self):
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})

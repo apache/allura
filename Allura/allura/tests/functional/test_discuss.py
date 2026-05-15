@@ -82,6 +82,22 @@ class TestDiscuss(TestDiscussBase):
         r = self.app.post('/wiki/_discuss/subscribe', params=params)
         assert not self._is_subscribed(user, thread)
 
+    @patch('allura.controllers.discuss.has_access')
+    def test_subscribe_requires_read_access(self, has_access_mock):
+        # Without read access to the thread, subscribe must be a no-op.
+        has_access_mock.side_effect = lambda obj, *a, **kw: not isinstance(obj, M.Thread)
+        user = M.User.by_username('test-admin')
+        thread_id = self._thread_id()
+        thread = M.Thread.query.get(_id=thread_id)
+        M.Mailbox.query.remove(dict(user_id=user._id, app_config_id=thread.app_config_id))
+
+        assert not self._is_subscribed(user, thread)
+        params = {
+            'threads-0._id': thread_id,
+            'threads-0.subscription': 'on'}
+        self.app.post('/wiki/_discuss/subscribe', params=params)
+        assert not self._is_subscribed(user, thread)
+
     @patch('allura.controllers.discuss.g.spam_checker.check')
     @patch('allura.controllers.discuss.g.spam_checker.submit_spam')
     def test_post(self, submit_spam, check_spam):
