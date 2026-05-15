@@ -984,6 +984,35 @@ class TestAuth(TestController):
         s = M.Mailbox.query.get(_id=s_id)
         assert not s, "User still has subscription with Mailbox._id %s" % s_id
 
+    @td.with_user_project('test-admin')
+    def test_update_subscriptions_rejects_foreign_mailbox(self):
+        # Create a Mailbox owned by test-user-1 (the victim).
+        victim = M.User.by_username('test-user-1')
+        project = M.Project.query.get(shortname='test')
+        app_config = project.app_configs[0]
+        victim_mailbox = M.Mailbox(
+            user_id=victim._id,
+            project_id=project._id,
+            app_config_id=app_config._id)
+        ThreadLocalODMSession.flush_all()
+        victim_mailbox_id = victim_mailbox._id
+
+        # Attacker (test-admin) loads their own subscriptions form, then swaps in
+        # the victim's Mailbox _id and submits with subscribed unchecked.
+        resp = self.app.get('/auth/subscriptions/',
+                            extra_environ=dict(username='test-admin'))
+        form = self._find_subscriptions_form(resp)
+        field_name = self._find_subscriptions_field(form, subscribed=True)
+        form.fields[field_name + '.subscription_id'][0].value = str(victim_mailbox_id)
+        form.fields[field_name + '.subscribed'][0].value = None
+        form.submit(extra_environ=dict(username='test-admin'))
+
+        # Victim's mailbox must still exist.
+        still_there = M.Mailbox.query.get(_id=victim_mailbox_id)
+        assert still_there is not None, \
+            "victim's Mailbox was deleted via cross-user update_subscriptions"
+        assert still_there.user_id == victim._id
+
     def test_format_email(self):
         self.app.get('/').follow()  # establish session
         self.app.post('/auth/subscriptions/update_subscriptions',
