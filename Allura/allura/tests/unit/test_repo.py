@@ -16,10 +16,12 @@
 #       under the License.
 
 import datetime
+import zipfile
 
 import pytest
 from mock import patch, Mock, MagicMock, call
 
+import tg
 from tg import tmpl_context as c
 
 from allura import model as M
@@ -279,6 +281,34 @@ class TestZipDir:
             "returned non-zero exit code 1" in emsg
         assert "STDOUT: 1" in emsg
         assert "STDERR: 2" in emsg
+
+    def test_symlink_target_content_not_embedded(self, tmp_path):
+        # ensure the `-y` flag stores symlinks as symlinks rather than dereferencing them
+
+        secret = tmp_path / 'secret.txt'
+        secret.write_text('SECRET-CONTENT-MUST-NOT-LEAK')
+
+        src = tmp_path / 'src'
+        src.mkdir()
+        (src / 'regular.txt').write_text('hello')
+        (src / 'leak').symlink_to(secret)
+
+        out = tmp_path / 'out.zip'
+        try:
+            zipdir(str(src), str(out))
+        except FileNotFoundError as not_found_e:
+            if tg.config.get('scm.repos.tarball.zip_binary') in str(not_found_e):
+                pytest.skip('zip binary is missing')
+
+        assert out.exists()
+        with zipfile.ZipFile(str(out), 'r') as z:
+            names = z.namelist()
+            assert 'src/regular.txt' in names
+            assert 'src/leak' in names
+            for name in names:
+                data = z.read(name)
+                assert b'SECRET-CONTENT-MUST-NOT-LEAK' not in data, \
+                    f'symlink target content leaked into {name!r}: {data!r}'
 
 
 class TestPrefixPathsUnion:
