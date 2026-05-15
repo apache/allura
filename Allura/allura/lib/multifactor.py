@@ -360,7 +360,7 @@ class RecoveryCodeService:
     def generate_one_code(self):
         # for compatibility with Google PAM file, we only do digits
         length = asint(config.get('auth.multifactor.recovery_code.length', 8))
-        return ''.join([random.choice(string.digits) for i in range(length)])
+        return ''.join([secrets.choice(string.digits) for i in range(length)])
 
     def regenerate_codes(self, user):
         '''

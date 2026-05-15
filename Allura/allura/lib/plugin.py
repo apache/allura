@@ -28,7 +28,7 @@ import warnings
 from contextlib import contextmanager
 from urllib.parse import urlparse
 from io import BytesIO
-from random import randint
+import secrets
 from hashlib import sha256
 from base64 import b64encode
 from datetime import datetime, timedelta
@@ -601,7 +601,7 @@ class AuthenticationProvider:
         from allura import model as M
 
         if salt is None:
-            salt = ''.join(chr(randint(1, 0x7f))
+            salt = ''.join(secrets.choice(string.printable[:94])
                            for i in range(M.User.SALT_LEN))
         hashpass = sha256((salt + password).encode('utf-8')).digest()
         return 'sha256' + salt + six.ensure_text(b64encode(hashpass))
