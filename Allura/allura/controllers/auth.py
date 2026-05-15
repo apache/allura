@@ -1378,8 +1378,9 @@ class SubscriptionsController(BaseController):
                         project_id=bson.ObjectId(s['project_id']),
                         app_config_id=bson.ObjectId(s['tool_id']))
             else:
-                if s['subscription_id'] is not None:
-                    s['subscription_id'].delete()
+                mbox = s['subscription_id']
+                if mbox is not None and mbox.user_id == c.user._id:
+                    mbox.delete()
         if email_format:
             c.user.set_pref('email_format', email_format)
 
