@@ -985,6 +985,38 @@ class TestAuth(TestController):
         assert not s, "User still has subscription with Mailbox._id %s" % s_id
 
     @td.with_user_project('test-admin')
+    @patch('allura.controllers.auth.has_access')
+    def test_update_subscriptions_subscribe_requires_read_access(self, has_access_mock):
+        # Subscribe must be rejected when the user lacks read access to the tool.
+        has_access_mock.side_effect = lambda obj, *a, **kw: not isinstance(obj, M.AppConfig)
+        project = M.Project.query.get(shortname='test')
+        app_config = project.app_configs[0]
+        attacker = M.User.by_username('test-admin')
+        M.Mailbox.query.remove(dict(
+            user_id=attacker._id,
+            app_config_id=app_config._id,
+            artifact_index_id=None))
+        ThreadLocalODMSession.flush_all()
+
+        self.app.get('/').follow()
+        self.app.post('/auth/subscriptions/update_subscriptions',
+                      params={
+                          'subscriptions-0.subscribed': 'on',
+                          'subscriptions-0.tool_id': str(app_config._id),
+                          'subscriptions-0.project_id': str(project._id),
+                          'subscriptions-0.subscription_id': '',
+                          'subscriptions-0.topic': '',
+                          'subscriptions-0.artifact_index_id': '',
+                          '_csrf_token': self.app.cookies['_csrf_token'],
+                      })
+
+        mbox = M.Mailbox.query.get(
+            user_id=attacker._id,
+            app_config_id=app_config._id,
+            artifact_index_id=None)
+        assert mbox is None
+
+    @td.with_user_project('test-admin')
     def test_update_subscriptions_rejects_foreign_mailbox(self):
         # Create a Mailbox owned by test-user-1 (the victim).
         victim = M.User.by_username('test-user-1')
