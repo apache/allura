@@ -923,6 +923,22 @@ class TestProjectAdmin(TestController):
         assert {'text': 'Does not have permission create',
                 'has': 'no', 'name': 'create'} in r.json[anon_id]
 
+    def test_add_user_rejects_foreign_role(self):
+        # role_id from a different project must not be usable to grant membership in this project
+        h.set_context('test2', neighborhood='Projects')
+        foreign_role_id = M.ProjectRole.by_name('Admin')._id
+        h.set_context('test', neighborhood='Projects')
+
+        self.app.post('/admin/groups/add_user', params={
+            'role_id': str(foreign_role_id),
+            'username': 'test-user-1'})
+
+        h.set_context('test', neighborhood='Projects')
+        user = M.User.by_username('test-user-1')
+        user_role = M.ProjectRole.by_user(user)
+        assert user_role is None or foreign_role_id not in user_role.roles, \
+            'foreign role_id was added to user.roles'
+
     def test_admin_extension_sidebar(self):
 
         class FooSettingsController:

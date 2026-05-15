@@ -1062,7 +1062,7 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
                     del_group_ids.append(str(acl['role_id']))
 
             def get_role(_id):
-                return model.ProjectRole.query.get(_id=ObjectId(_id))
+                return model.ProjectRole.query.get(_id=ObjectId(_id), project_id=c.project.root_project._id)
             groups = list(map(get_role, group_ids))
             new_groups = list(map(get_role, new_group_ids))
             del_groups = list(map(get_role, del_group_ids))
@@ -1077,7 +1077,7 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
                     group_names(groups + new_groups),
                     self.app.config.options['mount_point']))
 
-            role_ids = list(map(ObjectId, group_ids + new_group_ids))
+            role_ids = [g._id for g in groups + new_groups if g is not None]
             self.app.config.acl += [
                 model.ACE.allow(r, perm) for r in role_ids]
 

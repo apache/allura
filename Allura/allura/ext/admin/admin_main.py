@@ -31,6 +31,7 @@ from tg import expose, redirect, flash, validate, config, jsonify
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
 from bson import ObjectId
+from bson.errors import InvalidId
 from ming.odm.odmsession import ThreadLocalODMSession
 from ming.odm import session
 
@@ -1059,14 +1060,18 @@ class PermissionsController(BaseController):
             role_ids = list(map(ObjectId, group_ids + new_group_ids))
             permissions[perm] = role_ids
         c.project.acl = []
+
+        def role_names(roles):
+            return ','.join(sorted(pr.name for pr in roles))
+
         for perm, role_ids in permissions.items():
-            def role_names(ids): return ','.join(sorted(
-                pr.name for pr in M.ProjectRole.query.find(dict(_id={'$in': ids}))))
             old_role_ids = old_permissions.get(perm, [])
+            roles = M.ProjectRole.query.find(dict(_id={'$in': role_ids}, project_id=c.project.root_project._id)).all()
             if old_role_ids != role_ids:
+                old_roles = M.ProjectRole.query.find(dict(_id={'$in': old_role_ids})).all()  # no project_id check needed for old
                 M.AuditLog.log('updated "%s" permissions: "%s" => "%s"',
-                               perm, role_names(old_role_ids), role_names(role_ids))
-            c.project.acl += [M.ACE.allow(rid, perm) for rid in role_ids]
+                               perm, role_names(old_roles), role_names(roles))
+            c.project.acl += [M.ACE.allow(role._id, perm) for role in roles]
         g.post_event('project_updated')
         redirect('.')
 
@@ -1160,22 +1165,32 @@ class GroupsController(BaseController):
         return dict(roles=roles, permissions_by_role=permissions_by_role,
                     auth_role=auth_role, anon_role=anon_role)
 
+    def _role_for_current_project(self, role_id):
+        try:
+            role_oid = ObjectId(role_id)
+        except (InvalidId, TypeError):
+            return None
+        return M.ProjectRole.query.get(
+            _id=role_oid,
+            project_id=c.project.root_project._id)
+
     @without_trailing_slash
     @expose('json:')
     @require_post()
     @h.vardec
     def change_perm(self, role_id, permission, allow="true", **kw):
+        role = self._role_for_current_project(role_id)
+        if not role:
+            return dict(error='Could not find group with id %s' % role_id)
         if allow == "true":
-            M.AuditLog.log('granted permission %s to group %s', permission,
-                           M.ProjectRole.query.get(_id=ObjectId(role_id)).name)
-            c.project.acl.append(M.ACE.allow(ObjectId(role_id), permission))
+            M.AuditLog.log('granted permission %s to group %s', permission, role.name)
+            c.project.acl.append(M.ACE.allow(role._id, permission))
         else:
             admin_group_id = str(M.ProjectRole.by_name('Admin')._id)
             if admin_group_id == role_id and permission == 'admin':
                 return dict(error='You cannot remove the admin permission from the admin group.')
-            M.AuditLog.log('revoked permission %s from group %s', permission,
-                           M.ProjectRole.query.get(_id=ObjectId(role_id)).name)
-            c.project.acl.remove(M.ACE.allow(ObjectId(role_id), permission))
+            M.AuditLog.log('revoked permission %s from group %s', permission, role.name)
+            c.project.acl.remove(M.ACE.allow(role._id, permission))
         g.post_event('project_updated')
         return self._map_group_permissions()
 
@@ -1186,7 +1201,7 @@ class GroupsController(BaseController):
     def add_user(self, role_id, username, **kw):
         if not username or username == '*anonymous':
             return dict(error='You must choose a user to add.')
-        group = M.ProjectRole.query.get(_id=ObjectId(role_id))
+        group = self._role_for_current_project(role_id)
         user = M.User.query.get(username=username.strip(), pending=False)
 
         if not group:
@@ -1209,12 +1224,12 @@ class GroupsController(BaseController):
     @require_post()
     @h.vardec
     def remove_user(self, role_id, username, **kw):
-        group = M.ProjectRole.query.get(_id=ObjectId(role_id))
+        group = self._role_for_current_project(role_id)
+        if not group:
+            return dict(error='Could not find group with id %s' % role_id)
         user = M.User.by_username(username.strip())
         if group.name == 'Admin' and len(group.users_with_role()) == 1:
             return dict(error='You must have at least one user with the Admin role.')
-        if not group:
-            return dict(error='Could not find group with id %s' % role_id)
         if not user:
             return dict(error='User %s not found' % username)
         user_role = M.ProjectRole.by_user(user)
