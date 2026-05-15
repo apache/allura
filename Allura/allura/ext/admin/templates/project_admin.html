@@ -62,7 +62,7 @@
         },
         {
             "title": "Start coding",
-            "content": "Commit your code to your repo.  Or, if you have code somewhere else, <a href='ext/import/'>import it</a> or add link to it (add an 'External Link' tool).",
+            "content": "Commit your code to your repo.  Or, if you have code somewhere else, <a href='ext/import/'>import it</a> or add link to it (add an 'External Link' tool)."|safe,
             "target": ".tool-git-32,.tool-hg-32,.tool-svn-32",
             "placement": "bottom",
             "xOffset": -17,
@@ -88,7 +88,7 @@
     {% for step in tour.steps %}
     <div class="tour-step-info show-for-large">
         <h2>{{ step.title }}</h2>
-        <p>{{ step.content|safe }}
+        <p>{{ step.content }}
         </p>
         <div class="hopscotch-bubble not-really-hopscotch-bubble">
             <button class="tour-show hopscotch-nav-button next" data-tour-id="{{ loop.index0 }}">Show Me</button>
@@ -121,6 +121,12 @@
 {% block extra_js %}
 <script>
 $(function() {
+    {# need to escape HTML fields that hopscotch will interpret.  This makes our |safe usage above be correct, and non-safe will get escaped.
+      End result is the hopscotch tooltips match the main content output (either escaped or allowed html) #}
+    {% for s in tour.steps %}
+      {% do s.update({'title': s.title|escape}) %}
+      {% do s.update({'content': s.content|escape}) %}
+    {% endfor %}
     var tour = {{ tour|tojson }};
     tour.onError = function() {
         var step = hopscotch.getCurrStepNum();
