@@ -18,9 +18,12 @@
 import logging
 
 import re
+from ming.odm import ThreadLocalODMSession
+from tg import tmpl_context as c
 from alluratest.controller import TestController
 from allura.lib import helpers as h
 from allura import model as M
+from allura.tests import decorators as td
 
 from forgediscussion import model as FM
 
@@ -320,3 +323,36 @@ class TestForumAdmin(TestController):
                    0].kwargs['text'], email_tasks[0].kwargs['text']
         assert 'a project admin can change settings at http://localhost/p/test/admin/discussion/forums' in email_tasks[
             0].kwargs['text']
+
+    @td.with_tool('test2', 'Discussion', 'discussion')
+    def test_update_forums_rejects_foreign_forum(self):
+        # Create a forum in the test2 project's Discussion app (the victim).
+        h.set_context('test2', 'discussion', neighborhood='Projects')
+        victim_app_config_id = c.app.config._id
+        victim = FM.Forum(
+            app_config_id=victim_app_config_id,
+            shortname='victim',
+            name='Victim Forum',
+            description='original',
+        )
+        ThreadLocalODMSession.flush_all()
+        victim_id = victim._id
+
+        # Attacker is admin of project 'test' and posts to its update_forums with the victim's _id.
+        self.app.post('/admin/discussion/update_forums',
+                      params={'forum-0.delete': 'on',
+                              'forum-0.id': str(victim_id),
+                              'forum-0.name': 'Pwned',
+                              'forum-0.shortname': 'pwned',
+                              'forum-0.description': 'pwned',
+                              'forum-0.monitoring_email': ''})
+
+        # Victim forum in test2 must be untouched.
+        ThreadLocalODMSession.close_all()
+        h.set_context('test2', 'discussion', neighborhood='Projects')
+        reloaded = FM.Forum.query.get(_id=victim_id)
+        assert reloaded is not None
+        assert reloaded.deleted is False, 'foreign forum was deleted via cross-project update_forums'
+        assert reloaded.name == 'Victim Forum', 'foreign forum was renamed via cross-project update_forums'
+        assert reloaded.description == 'original'
+        assert reloaded.app_config_id == victim_app_config_id

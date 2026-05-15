@@ -322,7 +322,10 @@ class ForumAdminController(DefaultAdminController):
             setattr(forum, name, val)
 
         for f in forum:
-            forum = DM.Forum.query.get(_id=ObjectId(str(f['id'])))
+            forum = DM.Forum.query.get(_id=ObjectId(str(f['id'])),
+                                       app_config_id=self.app.config._id)
+            if forum is None:
+                continue
             if f.get('delete'):
                 forum.deleted = True
                 M.AuditLog.log('deleted forum "{}" from {}'.format(
