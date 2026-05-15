@@ -18,8 +18,8 @@
 # see https://s.apache.org/asfyaml for more information
 
 notifications:
-  commits:      commits@allura.apache.org
-  issues:       dev@allura.apache.org
+  commits: commits@allura.apache.org
+  issues: dev@allura.apache.org
   pullrequests: dev@allura.apache.org
 github:
   description: "Apache Allura - a software forge to manage source code repositories, bug reports, discussions, wiki pages, blogs, and more"
@@ -39,5 +39,18 @@ github:
     wiki: false
     issues: false
     projects: false
-  dependabot_alerts:  true
+  dependabot_alerts: true
   dependabot_updates: false
+  rulesets:
+    - name: "Default Branch Protection"
+      type: branch
+      branches:
+        includes:
+          - "~DEFAULT_BRANCH"
+          - "release/*"
+          - "rel/*"
+        excludes: []
+      bypass_teams:
+        - root
+      restrict_deletion: true
+      restrict_force_push: true
