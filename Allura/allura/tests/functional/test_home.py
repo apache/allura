@@ -191,6 +191,15 @@ class TestProjectHome(TestController):
         }]
         assert j['options'] == expected
 
+    def test_users_json_endpoint_escaped(self):
+        # escaping also tested by test_json_encoding_directly but that is more low-level this is more functional
+
+        M.User.by_username('test-admin').display_name = 'Test Admin <b>foo</b>'
+        ThreadLocalODMSession.flush_all()
+        r = self.app.get('/p/test/users')
+        assert r.json['options'][0]['label'] == 'Test Admin <b>foo</b> (test-admin)'  # JSON interpreted ok
+        assert 'Test Admin \\u003Cb>foo\\u003C/b> (test-admin)' in r.text  # raw value is escaped
+
     def test_members(self):
         nbhd = M.Neighborhood.query.get(name='Projects')
         self.app.post('/admin/groups/create', params={'name': 'B_role'})
