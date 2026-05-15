@@ -140,7 +140,7 @@
       input.autocomplete('instance')._renderItem = function(ul, item) {
         return $('<li>')
           .data('item.autocomplete', item)
-          .append('<a>' + item.label + '</a>')
+          .append('<a>' + item.label + '</a>')  // escape_html not needed, its already used above
           .appendTo(ul);
       };
 

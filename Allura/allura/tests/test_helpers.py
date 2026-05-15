@@ -271,6 +271,27 @@ def test_render_any_markup_plain():
             'readme.txt', '<b>blah</b>\n<script>alert(1)</script>\nfoo') ==
         '<pre>&lt;b&gt;blah&lt;/b&gt;\n&lt;script&gt;alert(1)&lt;/script&gt;\nfoo</pre>')
 
+def test_render_any_markup_plain_code_mode_inline():
+    assert (
+        h.render_any_markup(
+            'readme.txt', '<b>blah</b>\n<script>alert(1)</script>\nfoo',
+            code_mode=True, linenumbers_style=h.INLINE) ==
+        '<div class="codehilite"><pre><span id="l1" class="code_block"><span class="lineno">1</span> '
+        '&lt;b&gt;blah&lt;/b&gt;</span><span id="l2" class="code_block"><span class="lineno">2</span> '
+        '&lt;script&gt;alert(1)&lt;/script&gt;</span><span id="l3" class="code_block"><span class="lineno">3</span> '
+        'foo</span></pre></div>')
+
+def test_render_any_markup_plain_code_mode_table():
+    assert (
+        h.render_any_markup(
+            'readme.txt', '<b>blah</b>\n<script>alert(1)</script>\nfoo',
+            code_mode=True, linenumbers_style=h.TABLE) ==
+        '<table class="codehilitetable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre>1\n'
+        '2\n'
+        '3</pre></div></td><td class="code"><div class="codehilite"><pre><span id="l1" class="code_block">&lt;b&gt;blah&lt;/b&gt;\n'
+        '</span><span id="l2" class="code_block">&lt;script&gt;alert(1)&lt;/script&gt;\n'
+        '</span><span id="l3" class="code_block">foo</span></pre></div></td></tr></tbody></table>'
+    )
 
 def test_render_any_markup_formatting():
     assert (str(h.render_any_markup('README.md', '### foo\n'
@@ -279,6 +300,16 @@ def test_render_any_markup_formatting():
             '<div class="codehilite"><pre><span></span><code><span class="nt">'
             '&lt;script&gt;</span>alert(1)<span class="nt">'
             '&lt;/script&gt;</span>bar\n</code></pre></div>\n</div>')
+
+def test_render_any_markup_rst():
+    assert (str(h.render_any_markup('README.rst', 'foo\n===\n\nbar\n<script>alert(1)</script>')) ==
+            '<div class="document">\n'
+            '<div class="section" id="foo">\n'
+            '<h1>foo</h1>\n'
+            '<p>bar\n'
+            '&lt;script&gt;alert(1)&lt;/script&gt;</p>\n'
+            '</div>\n'
+            '</div>\n')
 
 
 def test_render_any_markdown_encoding():
