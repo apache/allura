@@ -1373,10 +1373,12 @@ class SubscriptionsController(BaseController):
     def update_subscriptions(self, subscriptions=None, email_format=None, **kw):
         for s in subscriptions:
             if s['subscribed']:
-                if s['tool_id'] and s['project_id']:
-                    M.Mailbox.subscribe(
-                        project_id=bson.ObjectId(s['project_id']),
-                        app_config_id=bson.ObjectId(s['tool_id']))
+                if s['tool_id']:
+                    app_config = M.AppConfig.query.get(_id=bson.ObjectId(s['tool_id']))
+                    if app_config and has_access(app_config, 'read'):
+                        M.Mailbox.subscribe(
+                            project_id=app_config.project_id,
+                            app_config_id=app_config._id)
             else:
                 mbox = s['subscription_id']
                 if mbox is not None and mbox.user_id == c.user._id:
