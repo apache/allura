@@ -21,6 +21,7 @@ Allura plugins for authentication and project registration
 from __future__ import annotations
 import re
 import os
+import hmac
 import logging
 import subprocess
 import string
@@ -698,7 +699,7 @@ class LocalAuthenticationProvider(AuthenticationProvider):
             # legacy.  'allura_sha256' is a custom name for our old logic
             salt = str(user.password[6:6 + user.SALT_LEN])
             check = self._encode_password_legacy_sha256(password, salt)
-            return check == user.password
+            return hmac.compare_digest(check, user.password)
         else:
             # https://passlib.readthedocs.io/en/stable/narr/context-tutorial.html#deprecation-hash-migration
             crypt = CryptContext(
