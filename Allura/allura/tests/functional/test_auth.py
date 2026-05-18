@@ -2586,6 +2586,39 @@ class TestOAuth2(TestController):
         ac = M.OAuth2AuthorizationCode.query.find(dict(client_id=c.client_id)).all()
         assert len(ac) == 1
 
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_generate_bearer_token_ownership_check(self):
+        user = M.User.by_username('test-admin')
+        M.OAuth2ClientApp(
+            client_id='client_12345',
+            client_secret='98765',
+            user_id=user._id,
+            name='testoauth2',
+            description='test client',
+            response_type='code',
+            redirect_uris=['https://localhost/']
+        )
+        ThreadLocalODMSession.flush_all()
+
+        self.app.get('/').follow()
+
+        # As test-user (not the owner), should be rejected
+        r = self.app.get('/auth/oauth/')
+        form = [f for f in r.forms.values() if f.action == 'generate_bearer_token'][0]
+        r = form.submit(extra_environ={'username': 'test-user'})
+        assert 'Invalid client ID' in self.webflash(r)
+        assert M.OAuth2AccessToken.query.get(client_id='client_12345') is None
+
+        # As test-admin (the owner), should succeed
+        r = self.app.get('/auth/oauth/')
+        form = [f for f in r.forms.values() if f.action == 'generate_bearer_token'][0]
+        r = form.submit()
+        assert '' == self.webflash(r)
+        token = M.OAuth2AccessToken.query.get(client_id='client_12345')
+        assert token is not None
+        assert token.is_bearer is True
+        assert token.user_id == user._id
+
 
 class TestOAuthRequestToken(TestController):
 
