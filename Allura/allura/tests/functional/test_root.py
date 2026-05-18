@@ -91,11 +91,12 @@ class TestRootController(TestController):
         assert cat_links[0].find('a').get('href') == '/browse/clustering'
         assert cat_links[0].find('a').find('span').string == 'Clustering'
 
+    @td.with_wiki
     def test_validation(self):
         # this is not configured ON currently, so adding an individual test to get coverage of the validator itself
         with mock.patch.dict(os.environ, ALLURA_VALIDATION='all'):
             self.app.get('/neighborhood')
-            self.app.get('/nf/markdown_to_html?markdown=aaa&project=test&app=bugs&neighborhood=%s'
+            self.app.get('/nf/markdown_to_html?markdown=aaa&project=test&app=wiki&neighborhood=%s'
                          % M.Neighborhood.query.get(name='Projects')._id,
                          validate_chunk=True)
 

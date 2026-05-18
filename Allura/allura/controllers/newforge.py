@@ -23,9 +23,11 @@ from tg.decorators import without_trailing_slash
 from webob import exc
 
 from tg import app_globals as g
+from tg import tmpl_context as c
 from allura.lib import helpers as h
 from allura.lib import utils
 from allura.lib.exceptions import ForgeError
+from allura.lib.security import require_access
 
 
 class NewForgeController:
@@ -35,16 +37,22 @@ class NewForgeController:
 
     @expose()
     @without_trailing_slash
-    def markdown_to_html(self, markdown, neighborhood=None, project=None, app=None):
+    def markdown_to_html(self, markdown, neighborhood, project, app):
         """Convert markdown to html."""
         if neighborhood is None or project is None:
             raise exc.HTTPBadRequest()
         try:
             h.set_context(project, app, neighborhood=neighborhood)
-        except ForgeError:
+        except ForgeError:  # no project or nbhd found
             raise exc.HTTPBadRequest()
 
-        if app == 'wiki':
+        if c.app is None:
+            raise exc.HTTPBadRequest()
+
+        require_access(c.project, 'read')
+        require_access(c.app, 'read')
+
+        if c.app.tool_label.lower() == 'wiki':
             html = g.markdown_wiki.convert(markdown)
         else:
             html = g.markdown.convert(markdown)
