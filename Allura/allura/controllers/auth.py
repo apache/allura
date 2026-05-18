@@ -1577,6 +1577,11 @@ class OAuthController(BaseController):
         """
         Manually generates an OAuth2 access token without needing to go through the OAuth2 flow.
         """
+        client = M.OAuth2ClientApp.query.get(client_id=client_id)
+        if client is None or client.user_id != c.user._id:
+            flash('Invalid client ID', 'error')
+            redirect('.')
+
         M.OAuth2AccessToken(
             client_id=client_id,
             user_id=c.user._id,
