@@ -17,6 +17,7 @@
 import logging
 from urllib.parse import quote
 
+from ming.odm import ThreadLocalODMSession
 from testfixtures import LogCapture
 
 from allura.tests import TestController
@@ -30,18 +31,45 @@ class TestNewForgeController(TestController):
     def test_markdown_to_html(self):
         n = M.Neighborhood.query.get(name='Projects')
         r = self.app.get(
-            '/nf/markdown_to_html?markdown=*aaa*bb[wiki:Home]&project=test&app=bugs&neighborhood=%s' % n._id, validate_chunk=True)
+            '/nf/markdown_to_html?markdown=*aaa*bb[wiki:Home]&project=test&app=wiki&neighborhood=%s' % n._id, validate_chunk=True)
         assert '<p><em>aaa</em>bb<a class="alink" href="/p/test/wiki/Home/">[wiki:Home]</a></p>' in r, r
 
         # this happens to trigger an error
         bad_markdown = '<foo {bar}>'
-        r = self.app.get('/nf/markdown_to_html?markdown=%s&project=test&app=bugs&neighborhood=%s' %
+        r = self.app.get('/nf/markdown_to_html?markdown=%s&project=test&app=wiki&neighborhood=%s' %
                          (quote(bad_markdown), n._id))
         r.mustcontain('The markdown supplied could not be parsed correctly.')
         r.mustcontain('<pre>&lt;foo {bar}&gt;</pre>')
 
-        r = self.app.get('/nf/markdown_to_html?markdown=*aaa*bb[wiki:Home]&project=test&app=bugs&neighborhood=bogus',
+        r = self.app.get('/nf/markdown_to_html?markdown=*aaa*bb[wiki:Home]&project=test&app=wiki&neighborhood=bogus',
                          status=400)
+
+    @td.with_wiki
+    def test_markdown_to_html_private_project(self):
+        # Make the test project private by removing anonymous read access
+        p = M.Project.query.get(shortname='test')
+        p.acl = [ace for ace in p.acl
+                 if not (ace.access == M.ACE.ALLOW
+                         and ace.permission == 'read'
+                         and ace.role_id == M.ProjectRole.anonymous(p)._id)]
+        ThreadLocalODMSession.flush_all()
+
+        n = M.Neighborhood.query.get(name='Projects')
+        # Authenticated user with access should still work
+        r = self.app.get(
+            '/nf/markdown_to_html?markdown=*hello*&project=test&app=wiki&neighborhood=%s' % n._id,
+            extra_environ=dict(username='test-admin'))
+        assert '<p><em>hello</em></p>' in r, r
+
+        # test-user and *anonymous get different errors, but that's ok, neither work:
+        self.app.get(
+            '/nf/markdown_to_html?markdown=*hello*&project=test&app=wiki&neighborhood=%s' % n._id,
+            extra_environ=dict(username='test-user'),
+            status=403)
+        self.app.get(
+            '/nf/markdown_to_html?markdown=*hello*&project=test&app=wiki&neighborhood=%s' % n._id,
+            extra_environ=dict(username='*anonymous'),
+            status=302)
 
     def test_markdown_syntax(self):
         with LogCapture(level=logging.INFO) as logs:
