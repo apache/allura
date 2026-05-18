@@ -49,6 +49,13 @@ def test_with_trailing_slash_qs():
         tg.decorators.with_trailing_slash(empty_func)()
     assert raised.value.location == 'http://localhost/foo/bar/?foo=bar&baz=bam'
 
+@patch.object(patches, 'request', webob.Request.blank('/foo/bar', method='HEAD'))
+def test_with_trailing_head():
+    patches.apply()
+    with pytest.raises(webob.exc.HTTPMovedPermanently) as raised:
+        tg.decorators.with_trailing_slash(empty_func)()
+    assert raised.value.location == 'http://localhost/foo/bar/'
+
 
 @patch.object(patches, 'request', webob.Request.blank('/foo/bar/'))
 def test_without_trailing_slash():
@@ -71,3 +78,10 @@ def test_without_trailing_slash_qs():
     with pytest.raises(webob.exc.HTTPMovedPermanently) as raised:
         tg.decorators.without_trailing_slash(empty_func)()
     assert raised.value.location == 'http://localhost/foo/bar?foo=bar&baz=bam'
+
+@patch.object(patches, 'request', webob.Request.blank('/foo/bar/', method='HEAD'))
+def test_without_trailing_slash_head():
+    patches.apply()
+    with pytest.raises(webob.exc.HTTPMovedPermanently) as raised:
+        tg.decorators.without_trailing_slash(empty_func)()
+    assert raised.value.location == 'http://localhost/foo/bar'
