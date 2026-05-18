@@ -98,7 +98,7 @@ class ForgeGitApp(RepositoryApp):
             allura.tasks.repo_tasks.clone.post(
                 cloned_from_path=cloned_from.full_fs_path,
                 cloned_from_name=cloned_from.app.config.script_name(),
-                cloned_from_url=cloned_from.full_fs_path)
+                cloned_from_url=cloned_from.clone_url_first(anon=True))
         elif init_from_url or init_from_path:
             allura.tasks.repo_tasks.clone.post(
                 cloned_from_path=init_from_path,

@@ -17,6 +17,7 @@
 
 import json
 import re
+from collections.abc import Collection
 
 import tg
 from bson import ObjectId
@@ -37,7 +38,7 @@ class URL(fev.URL):
     require_tld = False
 
     url_re = re.compile(r'''
-        ^(http|https)://
+        ^([a-z+]+)://
         (?:[%:\w]*@)?                              # authenticator
         (?:                                        # ip or domain
         (?P<ip>(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))|
@@ -52,6 +53,11 @@ class URL(fev.URL):
 
 
 class NonPrivateUrl(URL):
+
+    def __init__(self, enforce_schemes: Collection[str] | None = ('http', 'https'), *args, **kw):
+        super().__init__(*args, **kw)
+        self.enforce_schemes = enforce_schemes
+
     # prevents private IPs
     def _convert_to_python(self, value, state):
         value = super()._convert_to_python(value, state)
@@ -60,6 +66,9 @@ class NonPrivateUrl(URL):
             return value
 
         url_components = urlsplit(value)
+        if self.enforce_schemes and url_components.scheme not in self.enforce_schemes:
+            raise fev.Invalid("Invalid URL scheme.", value, state)
+
         try:
             addr_info = socket.getaddrinfo(url_components.hostname, None)
         except socket.gaierror:

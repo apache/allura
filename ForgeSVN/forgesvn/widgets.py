@@ -26,19 +26,8 @@ from allura.lib.widgets.forms import ForgeForm
 
 
 class ValidateSvnUrl(validators.NonPrivateUrl):
-    url_re = re.compile(r'''
-        ^(http|https|svn)://
-        (?:[%:\w]*@)?                              # authenticator
-        (?:                                        # ip or domain
-        (?P<ip>(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))|
-        (?P<domain>[a-z0-9][a-z0-9\-]{,62}\.)*     # subdomain
-        (?P<tld>[a-z]{2,63}|xn--[a-z0-9\-]{2,59})  # top level domain
-        )
-        (?::[0-9]{1,5})?                           # port
-        # files/delims/etc
-        (?P<path>/[a-z0-9\-\._~:/\?#\[\]@!%\$&\'\(\)\*\+,;=]*)?
-        $
-    ''', re.I | re.VERBOSE)
+    def __init__(self, *args, **kw):
+        super().__init__(*args, enforce_schemes=['svn', 'http', 'https'], **kw)
 
     def _convert_to_python(self, value, state):
         value = super()._convert_to_python(value, state)
