@@ -45,8 +45,9 @@ from alluratest.controller import setup_basic_test
 
 # httpbin.org should work, but lately has been unreliable
 # httpbin.io does not allow /redirect-to to localhost
+# httpbun.com does not allow /redirect-to to external hosts
 # httpbin.dev works often, but also unreliable sometimes
-httpbin_domain = 'httpbun.com'
+httpbin_domain = 'httpbin.org'
 
 
 def setup_module():
