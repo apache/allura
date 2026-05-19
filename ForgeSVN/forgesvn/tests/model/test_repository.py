@@ -740,11 +740,11 @@ class TestRepo(_TestWithRepo):
 
     @mock.patch('allura.model.repository.g.post_event')
     def test_init_as_clone(self, post_event):
-        self.repo.init_as_clone('srcpath', 'srcname', 'srcurl')
+        self.repo.init_as_clone(tg.config['scm.repos.root'] + '/svn/srcpath', 'srcname', 'srcurl')
         assert self.repo.upstream_repo.name == 'srcname'
         assert self.repo.upstream_repo.url == 'srcurl'
-        self.repo._impl.clone_from.assert_called_with('srcpath')
-        post_event.assert_called_once_with('repo_cloned', 'srcurl', 'srcpath')
+        self.repo._impl.clone_from.assert_called_with('/tmp/svn/srcpath')
+        post_event.assert_called_once_with('repo_cloned', 'srcurl', '/tmp/svn/srcpath')
 
     def test_latest(self):
         ci = mock.Mock()
@@ -830,7 +830,7 @@ class TestRepo(_TestWithRepo):
         self.repo.refresh()
 
     def test_push_upstream_context(self):
-        self.repo.init_as_clone('srcpath', '/p/test/svn/', '/p/test/svn/')
+        self.repo.init_as_clone(tg.config['scm.repos.root'] + '/svn/srcpath', '/p/test/svn/', '/p/test/svn/')
         old_app_instance = M.Project.app_instance
         try:
             M.Project.app_instance = mock.Mock(return_value=ming.base.Object(
@@ -841,7 +841,7 @@ class TestRepo(_TestWithRepo):
             M.Project.app_instance = old_app_instance
 
     def test_pending_upstream_merges(self):
-        self.repo.init_as_clone('srcpath', '/p/test/svn/', '/p/test/svn/')
+        self.repo.init_as_clone(tg.config['scm.repos.root'] + '/svn/srcpath', '/p/test/svn/', '/p/test/svn/')
         old_app_instance = M.Project.app_instance
         try:
             M.Project.app_instance = mock.Mock(return_value=ming.base.Object(

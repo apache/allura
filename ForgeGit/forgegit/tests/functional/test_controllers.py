@@ -635,7 +635,9 @@ class TestFork(_TestCase):
             c.app.repo.init_as_clone(
                 cloned_from.full_fs_path,
                 cloned_from.app.config.script_name(),
-                cloned_from.full_fs_path)
+                cloned_from.full_fs_path,
+                bypass_path_check_for_tests=True,
+            )
             # Add commit to a forked repo, thus merge requests will not be empty
             # clone repo to tmp location first (can't add commit to bare repos
             # directly)

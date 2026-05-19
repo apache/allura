@@ -18,6 +18,7 @@ from __future__ import annotations
 import json
 import os
 import stat
+import sys
 from operator import itemgetter
 import mimetypes
 import logging
@@ -53,13 +54,14 @@ from ming.base import Object
 
 from allura.lib import helpers as h
 from allura.lib import utils
+from allura.lib import validators as v
 from allura.lib.security import has_access
 
 from .artifact import Artifact, VersionedArtifact
 from .auth import User
 from .timeline import ActivityObject
 from .monq_model import MonQTask
-from .project import AppConfig
+from .project import AppConfig, Project
 from .session import main_doc_session
 from .session import repository_orm_session
 
@@ -388,11 +390,11 @@ class Repository(Artifact, ActivityObject):
         return 'repo %s' % self.name
 
     @classmethod
-    def default_fs_path(cls, project, tool):
+    def default_fs_path(cls, project: Project | None, tool: str):
         repos_root = tg.config.get('scm.repos.root', '/')
         # if a user-project, the repository path on disk needs to use the actual shortname
         # the nice url might have invalid chars
-        return os.path.join(repos_root, tool, project.url(use_userproject_shortname=True)[1:])
+        return os.path.join(repos_root, tool, project.url(use_userproject_shortname=True)[1:] if project else '')
 
     @classmethod
     def default_url_path(cls, project, tool):
@@ -538,11 +540,22 @@ class Repository(Artifact, ActivityObject):
     def paged_diffs(self, commit_id, start=0, end=None, onlyChangedFiles=False):
         return self._impl.paged_diffs(commit_id, start, end, onlyChangedFiles)
 
-    def init_as_clone(self, source_path, source_name, source_url):
+    def init_as_clone(self, source_path, source_name, source_url, bypass_path_check_for_tests=False):
         self.upstream_repo.name = source_name
         self.upstream_repo.url = source_url
         session(self).flush(self)
-        source = source_path if source_path else source_url
+        if source_path:
+            repos_root = self.default_fs_path(project=None, tool=self.tool)
+            if not source_path.startswith(repos_root) and not bypass_path_check_for_tests:
+                err = 'Invalid source path'
+                if asbool(tg.config['debug']) or 'pytest' in sys.modules:
+                        err += f': {source_path} must start with {repos_root}'
+                raise ValueError(err)
+            source = source_path
+        else:
+            # could be git:// svn+ssh:// many things for scheme, so enforce_schemes=None
+            v.NonPrivateUrl(enforce_schemes=None).to_python(source_url)
+            source = source_url
         self._impl.clone_from(source)
         log.info('... %r cloned', self)
         g.post_event('repo_cloned', source_url, source_path)
@@ -1111,8 +1124,8 @@ class Commit(MappedClass, RepoObject, ActivityObject):
     repo = None
 
     def __init__(self, **kw):
-        for k, v in kw.items():
-            setattr(self, k, v)
+        for k, val in kw.items():
+            setattr(self, k, val)
 
     @property
     def activity_name(self):

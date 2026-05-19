@@ -39,9 +39,6 @@ def init(**kwargs):
 def clone(cloned_from_path, cloned_from_name, cloned_from_url):
     from allura import model as M
     try:
-        # could be git:// svn+ssh:// many things for scheme
-        v.NonPrivateUrl(enforce_schemes=None).to_python(cloned_from_url)
-
         c.app.repo.init_as_clone(
             cloned_from_path,
             cloned_from_name,

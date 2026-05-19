@@ -66,8 +66,7 @@ class TestRepoTasks:
             assert ns + 1 == M.Notification.query.find().count()
 
     def test_clone_internal(self):
-        ns = M.Notification.query.find().count()
-        with mock.patch.object(c.app.repo, 'init_as_clone', autospec=True) as f:
+        with mock.patch.object(c.app.repo._impl, 'clone_from', autospec=True) as f:
             repo_tasks.clone('foo', 'bar', 'http://localhost/baz')
             M.main_orm_session.flush()
             f.assert_not_called()
