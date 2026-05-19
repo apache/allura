@@ -20,7 +20,6 @@
 import ast
 import importlib
 import mimetypes
-import pickle
 import re
 import warnings
 
@@ -28,7 +27,6 @@ from tg import config
 from paste.deploy.converters import asbool, aslist, asint
 from tg.support.registry import RegistryManager
 from beaker.middleware import SessionMiddleware
-from beaker.util import PickleSerializer
 from paste.exceptions.errormiddleware import ErrorMiddleware
 from werkzeug.debug import DebuggedApplication
 
@@ -84,12 +82,6 @@ def make_app(global_conf: dict, **app_conf):
     return _make_core_app(root, global_conf, **app_conf)
 
 
-class BeakerPickleSerializerWithLatin1(PickleSerializer):
-    def loads(self, data_string):
-        # need latin1 to decode py2 timestamps in py  https://docs.python.org/3/library/pickle.html#pickle.Unpickler
-        return pickle.loads(data_string, encoding='latin1')  # noqa: S301
-
-
 def _make_core_app(root, global_conf: dict, **app_conf):
     """
     Set allura up with the settings found in the PasteDeploy configuration
@@ -142,7 +134,6 @@ def _make_core_app(root, global_conf: dict, **app_conf):
                                 re.escape('Session options should start with session. instead of session_.'),
                                 DeprecationWarning)
         app = SessionMiddleware(app, config,
-                                original_format_data_serializer=BeakerPickleSerializerWithLatin1(),
                                 session_class=JWTCookieSession)
     # Handle "Remember me" functionality
     app = RememberLoginMiddleware(app, config)
