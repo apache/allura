@@ -272,6 +272,16 @@ def really_unicode(s):
     return _attempt_encodings(s, encodings())
 
 
+def safe_filename(filename, fallback='unnamed'):
+    # strip slashes and backslashes and null bytes for good measure
+    # (os.path.basename on Linux treats backslashes as regular characters)
+    filename = really_unicode(filename).replace('\\', '/').replace('\x00', '')
+    filename = os.path.basename(filename)
+    if filename in ('', '.', '..'):
+        filename = fallback
+    return filename
+
+
 def find_user(email):
     from allura import model as M
     return M.User.by_email_address(email)

@@ -808,7 +808,7 @@ class Application(ActivityObject):
         for attachment in attachments:
             attachment_path = os.path.join(
                 path,
-                os.path.basename(attachment.filename)
+                h.safe_filename(attachment.filename)
             )
             with open(attachment_path.encode('utf8', 'replace'), 'wb') as fl:
                 fl.write(attachment.rfile().read())

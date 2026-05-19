@@ -204,7 +204,7 @@ class Thread(Artifact, ActivityObject):
                          str(self.artifact._id),
                          self._id,
                          page.slug,
-                         os.path.basename(attach.filename))
+                         h.safe_filename(attach.filename))
                      ) for attach in page.attachments]
 
     def attachments_for_json(self, page):

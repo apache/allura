@@ -213,7 +213,7 @@ class UploadFiles(File):
 
     @classmethod
     def save_attachment(cls, filename, fp, content_type=None, **kwargs):
-        filename = h.really_unicode(filename)
+        filename = h.safe_filename(filename)
         original_meta = dict(type="project_file", app_config_id=c.app.config._id, project_id=c.project._id)
         original_meta.update(kwargs)
         fp.seek(0)

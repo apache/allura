@@ -214,6 +214,29 @@ class TestFile:
         assert not isinstance(attachment, tuple)   # tuple is for (img, thumb) pairs
         assert attachment.filename == 'Strukturpr\xfcfung.dvi'
 
+    def test_attachment_filename_path_traversal_sanitization(self):
+        c.app.config._id = None
+        attachment = M.BaseAttachment.save_attachment(
+            '../../../etc/passwd', BytesIO(b'evil data'),
+            save_original=True)
+        assert attachment.filename == 'passwd'
+
+    def test_attachment_filename_windows_path_sanitization(self):
+        # backslashes are not separators on Linux but are on Windows, so a zip
+        # entry like '..\\..\\evil.exe' would zip-slip on Windows extraction
+        c.app.config._id = None
+        attachment = M.BaseAttachment.save_attachment(
+            '..\\..\\..\\Windows\\evil.exe', BytesIO(b'evil data'),
+            save_original=True)
+        assert attachment.filename == 'evil.exe'
+
+    def test_attachment_filename_dot_sanitization(self):
+        c.app.config._id = None
+        for bad in ('..', '.', '', 'foo/', 'bar\\'):
+            attachment = M.BaseAttachment.save_attachment(
+                bad, BytesIO(b'data'), save_original=True)
+            assert attachment.filename == 'unnamed'
+
     def _assert_content(self, f, content):
         result = f.rfile().read()
         assert result == content, result

@@ -506,7 +506,7 @@ def serve_file(fp, filename, content_type, last_modified=None,
     if etag:
         etag_cache(etag)
     tg.response.headers['Content-Type'] = ''
-    tg.response.content_type = str(content_type)
+    tg.response.content_type = content_type.split('\n', 1)[0].split('\r', 1)[0]  # enforce single line, no header splitting
     tg.response.cache_expires = cache_expires or asint(
         tg.config.get('files_expires_header_secs', 60 * 60))
     tg.response.last_modified = last_modified

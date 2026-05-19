@@ -1187,7 +1187,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                      path=os.path.join(
                          self.app_config.options.mount_point,
                          str(self._id),
-                         os.path.basename(attach.filename))) for attach in self.attachments]
+                         h.safe_filename(attach.filename))) for attach in self.attachments]
 
     def attachments_for_json(self):
         return [dict(bytes=attach.length,
