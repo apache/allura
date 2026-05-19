@@ -566,6 +566,9 @@ class SetHeadersMiddleware:
             resp.headers.add('Cross-Origin-Embedder-Policy', self.config['cross_origin_embedder_policy'])
         if self.config.get('cross_origin_resource_policy'):
             resp.headers.add('Cross-Origin-Resource-Policy', self.config['cross_origin_resource_policy'])
+
+        resp.headers.add('X-Content-Type-Options', 'nosniff')
+
         return resp(environ, start_response)
 
 
