@@ -212,7 +212,7 @@ class TestRootController(TestController):
                                  'csp.script_src_enforce': True})
     def test_headers(self):
         resp = self.app.get('/p')
-        expected_headers = "form-action 'self'; frame-src 'self' www.youtube-nocookie.com; object-src 'none';"
+        expected_headers = f"form-action {tg.config['base_url']}; frame-src 'self' www.youtube-nocookie.com; object-src 'none';"
         expected_headers += "frame-ancestors 'self'; report-uri https://example.com/r/d/csp/enforce; script-src 'self;"
         csp_headers = resp.headers.getall('Content-Security-Policy')[0]
         assert all([h.strip() in csp_headers for h in expected_headers.split(';')])
@@ -228,7 +228,7 @@ class TestRootController(TestController):
         resp = self.app.get('/p/wiki/Home/')
         expected_headers = "report-uri https://example.com/r/d/csp/reportOnly;"
         expected_headers += "frame-src 'self' www.youtube-nocookie.com; script-src 'self' ;"
-        expected_headers += "form-action 'self'"
+        expected_headers += f"form-action {tg.config['base_url']}"
 
         csp_headers = resp.headers.getall('Content-Security-Policy-Report-Only')[0]
         assert all([h.strip() in csp_headers for h in expected_headers.split(';')])
@@ -240,7 +240,7 @@ class TestRootController(TestController):
         expected_headers = "report-uri https://example.com/r/d/csp/enforce;"
         expected_headers += "frame-src 'self' www.youtube-nocookie.com;"
         expected_headers += "object-src 'none'"
-        expected_report_headers = "script-src 'self' ;  form-action 'self'"
+        expected_report_headers = f"script-src 'self' ;  form-action {tg.config['base_url']}"
         csp_headers = resp.headers.getall('Content-Security-Policy')[0]
         csp_report_headers = resp.headers.getall('Content-Security-Policy-Report-Only')[0]
         assert all([h.strip() in csp_headers for h in expected_headers.split(';')])
