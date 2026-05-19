@@ -21,6 +21,8 @@ from ming.base import Object
 import pytest
 from formencode import validators as fev
 from textwrap import dedent
+import tempfile
+import os.path
 
 from alluratest.controller import setup_unit_test
 from allura import app
@@ -171,3 +173,33 @@ class TestApp:
         for p in [p for p in msg['parts'] if p['payload'] is not None]:
             # filter here mimics logic in `route_email`
             a.handle_artifact_message(ticket, p)
+
+    def test_save_attachments_path_traversal_protection(self):
+        a = app.Application(c.project, c.app.config)
+        export_dir = tempfile.mkdtemp()
+
+        class FakeAttachment:
+            def __init__(self, filename, data):
+                self.filename = filename
+                self._data = data
+
+            def rfile(self):
+                from io import BytesIO
+                return BytesIO(self._data)
+
+        # Test with a malicious filename containing path traversal
+        malicious_name = '../../../etc/passwd'
+        attachments = [FakeAttachment(malicious_name, b'evil data')]
+        a.save_attachments(export_dir, attachments)
+
+        # The file should be written as a basename, not traverse directories
+        expected_file = os.path.join(export_dir, 'passwd')
+        assert os.path.exists(expected_file)
+
+        # Verify the traversal path was NOT created
+        traversal_path = os.path.join(export_dir, '..', '..', '..', 'etc')
+        assert not os.path.exists(traversal_path)
+
+        # Verify file contents
+        with open(expected_file, 'rb') as f:
+            assert f.read() == b'evil data'
