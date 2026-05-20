@@ -16,7 +16,6 @@
 #       under the License.
 
 import logging
-from pickle import dumps
 
 import bson
 import tg
@@ -30,7 +29,7 @@ from ming.odm.base import ObjectState, state
 from allura.lib import utils
 from allura.lib.search import find_shortlinks
 from allura.model.repository import Commit, CommitDoc
-from allura.model.index import ArtifactReference, Shortlink
+from allura.model.index import ArtifactReference, Shortlink, _dump_cls
 from allura.model.auth import User
 from allura.model.timeline import TransientActor
 
@@ -143,7 +142,7 @@ def refresh_commit_repos(all_commit_ids, repo):
             ref = ArtifactReference(
                 _id=index_id,
                 artifact_reference=dict(
-                    cls=bson.Binary(dumps(Commit, protocol=2)),
+                    cls=bson.Binary(_dump_cls(Commit)),
                     project_id=repo.app.config.project_id,
                     app_config_id=repo.app.config._id,
                     artifact_id=oid),

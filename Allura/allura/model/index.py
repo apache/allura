@@ -16,12 +16,12 @@
 #       under the License.
 
 import re
+import importlib
 import logging
 from itertools import groupby
 import typing
 
 from ming.odm.property import FieldProperty
-from pickle import dumps, loads
 from collections import defaultdict
 from urllib.parse import unquote
 
@@ -45,6 +45,33 @@ if typing.TYPE_CHECKING:
 
 
 log = logging.getLogger(__name__)
+
+
+def _dump_cls(cls: type) -> bytes:
+    # byte-for-byte equivalent of pickle.dumps(cls, protocol=2) for a top-level class:
+    # \x80\x02 protocol header, GLOBAL(c) <module>\n<qualname>\n, BINPUT(q) \x00, STOP(.)
+    return b'\x80\x02c' + cls.__module__.encode('utf-8') + b'\n' + cls.__qualname__.encode('utf-8') + b'\nq\x00.'
+
+
+def _load_cls(data) -> type:
+    # parses what pickle wrote for a class reference, without using pickle.
+    # handles protocol 0 (c<module>\n<class>\np<n>\n.) and protocol 2 (\x80\x02 ... q\x00.)
+    b = bytes(data)
+    if b[:2] == b'\x80\x02':
+        b = b[2:]
+    if b[:1] != b'c':
+        raise ValueError(f'unrecognized class reference encoding: {bytes(data)!r}')
+    rest = b[1:]
+    module_name, sep, rest = rest.partition(b'\n')
+    if not sep:
+        raise ValueError(f'malformed class reference: {bytes(data)!r}')
+    class_name, sep, _ = rest.partition(b'\n')
+    if not sep:
+        raise ValueError(f'malformed class reference: {bytes(data)!r}')
+    obj = importlib.import_module(module_name.decode('utf-8'))
+    for part in class_name.decode('utf-8').split('.'):
+        obj = getattr(obj, part)
+    return obj
 
 
 class ArtifactReference(MappedClass):
@@ -77,7 +104,7 @@ class ArtifactReference(MappedClass):
             obj = cls(
                 _id=artifact.index_id(),
                 artifact_reference=dict(
-                    cls=bson.Binary(dumps(artifact.__class__, protocol=2)),
+                    cls=bson.Binary(_dump_cls(artifact.__class__)),
                     project_id=artifact.app_config.project_id,
                     app_config_id=artifact.app_config._id,
                     artifact_id=artifact._id))
@@ -92,7 +119,7 @@ class ArtifactReference(MappedClass):
         '''Look up the artifact referenced'''
         aref = self.artifact_reference
         try:
-            cls = loads(bytes(aref.cls))  # noqa: S301
+            cls = _load_cls(aref.cls)
             with h.push_context(aref.project_id):
                 return cls.query.get(_id=aref.artifact_id)
         except Exception:
