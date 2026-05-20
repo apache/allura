@@ -18,7 +18,7 @@
 default_stages: [pre-commit]
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
     hooks:
     # general checks
     -   id: check-xml
@@ -37,7 +37,7 @@ repos:
 
 
 -   repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.10.0
+    rev: 3a6eb0fadf60b3cccfd80bad9dbb6fae7e47b316  # frozen: v1.10.0
     hooks:
     -   id: rst-backticks
         exclude:
@@ -70,7 +70,7 @@ repos:
         exclude: 'node_modules'
 
 -   repo: https://github.com/aristanetworks/j2lint
-    rev: v1.2.0
+    rev: ba3ae401e723b8e359ea675274d6733340f96582  # frozen: v1.2.0
     hooks:
     -   id: j2lint
         types: [file]
@@ -91,15 +91,18 @@ repos:
           - --
 
 - repo:  https://github.com/milin/giticket
-  rev: v1.5
+  rev: 27efa262fb98f045887ee4ddaa008a7b4f8f84c9  # frozen: v1.91
   hooks:
   - id:  giticket
-    args: ['--mode=regex_match', '--format=[#{ticket}] {commit_msg}', '--regex=[0-9]{4,}', '--format=[#{ticket}] {commit_msg}']
+    args:
+        - --mode=regex_match
+        - --format=[#{ticket}] {commit_msg}
+        - --regex=[0-9]{4,}
 
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
   # Ruff version.
-  rev: v0.15.0
+  rev: 5e2fb545eba1ea9dc051f6f962d52fe8f76a9794  # frozen: v0.15.13
   hooks:
     - id: ruff
       types: [python]
