@@ -257,6 +257,11 @@ class ForgeActivityController(BaseController):
         activity = Activity.query.get(_id=ObjectId(activity_id))
         if not activity:
             raise exc.HTTPGone
+        # At least one party of the activity must live under the current neighborhood
+        nbhd_prefix = c.project.neighborhood.url_prefix
+        if not any((p.get('activity_url') or '').startswith(nbhd_prefix)
+                   for p in (activity.actor, activity.obj, activity.target) if p):
+            raise exc.HTTPForbidden
         # find other copies of this activity on other user/projects timelines
         # but only within a small time window, so we can do efficient searching
         activity_ts = activity._id.generation_time
