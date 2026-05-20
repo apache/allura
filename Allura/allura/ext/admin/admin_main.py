@@ -613,6 +613,7 @@ class ProjectAdminController(BaseController):
         new_app = None
         for sp in subproject:
             p = M.Project.query.get(shortname=sp['shortname'],
+                                    parent_id=c.project._id,
                                     neighborhood_id=c.project.neighborhood_id)
             if sp.get('delete'):
                 require_access(c.project, 'admin')
