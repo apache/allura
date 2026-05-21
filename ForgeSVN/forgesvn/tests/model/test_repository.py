@@ -492,6 +492,14 @@ class TestSVNRepo(RepoImplTestBase):
                       ignore_errors=True)
         shutil.rmtree(tarball_path, ignore_errors=True)
 
+    def test_tarball_path_clean_strips_traversal(self):
+        clean = self.repo._impl._tarball_path_clean
+        assert clean('trunk/../../other-repo') == 'trunk/other-repo'
+        assert clean('/../etc/passwd/') == 'etc/passwd'
+        assert clean('..') == ''
+        assert clean('trunk//sub') == 'trunk/sub'
+        assert clean('trunk/sub') == 'trunk/sub'
+
     def test_is_empty(self):
         assert not self.repo.is_empty()
         with TempDirectory() as d:

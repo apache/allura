@@ -681,7 +681,8 @@ class SVNImplementation(M.RepositoryImplementation):
 
     def _tarball_path_clean(self, path, rev=None):
         if path:
-            return path.strip('/')
+            parts = [p for p in path.strip('/').split('/') if p and p != '..']
+            return '/'.join(parts)
         else:
             trunk_exists = svn_path_exists('file://{}{}/{}'.format(self._repo.fs_path, self._repo.name, 'trunk'), rev)
             if trunk_exists:
