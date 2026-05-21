@@ -307,7 +307,9 @@ def debug_obj(obj) -> str:
 def has_access(obj, permission: str, user: M.User | None = None, project: M.Project | None = None, roles=None) -> bool:
     '''Return whether the given user has the permission name on the given object.
 
-    - First, all the roles for a user in the given project context are computed.
+    - For individual artifacts, check for project 'read' permission
+
+    - Then all the roles for a user in the given project context are computed.
 
     - If the given object's ACL contains a DENY for this permission on this
       user's project role, return False and deny access.  TODO: make ACL order
@@ -367,6 +369,15 @@ def has_access(obj, permission: str, user: M.User | None = None, project: M.Proj
             else:
                 project = getattr(obj, 'project', None) or c.project
                 project = project.root_project
+
+        # check for project 'read' so that calls outside normal HTTP /p/foo/ dispatch
+        # (e.g. REST, email, notifications etc) will get the same checks as ProjectController._check_security.
+        # (note AppConfig.parent_security_context() returns None so the ACL chaining stops at the app)
+        # Skip for Project/Neighborhood else we'd recurse on this very call.
+        if (not isinstance(obj, (M.Project, M.Neighborhood))
+                and not has_access(project, 'read', user=user)):
+            return False
+
         roles: RoleCache = cred.user_roles(user_id=user._id, project_id=project._id).reaching_roles
 
     # TODO: move deny logic into loop below; see ticket [#6715]

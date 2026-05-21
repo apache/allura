@@ -544,6 +544,36 @@ class TestMailTasks:
                 message)
             assert hm.call_count == 0
 
+    @td.with_tool('test', 'Tickets', 'bugs')
+    def test_receive_email_denied_without_project_read(self):
+        # A non-member sending email to a private project's tracker must be rejected,
+        # even though the tracker's own ACL grants *authenticated 'post'.
+        import forgetracker
+        from forgetracker import model as TM
+        # Ensure ticket #1 exists so the per-ticket has_access check would otherwise pass.
+        with h.push_config(c, user=M.User.by_username('test-admin')):
+            TM.Ticket.new(form_fields=dict(summary='public-ish'))
+        ThreadLocalODMSession.flush_all()
+
+        project = M.Project.query.get(shortname='test')
+        was_private = project.private
+        project.private = True
+        ThreadLocalODMSession.flush_all()
+        try:
+            sender = M.User.by_username('test-user-2')
+            assert sender, 'test-user-2 fixture missing'
+            with mock.patch.object(forgetracker.tracker_main.ForgeTrackerApp, 'handle_message') as hm:
+                mail_tasks.route_email(
+                    '0.0.0.0',
+                    sender.email_addresses[0] if sender.email_addresses else 'test-user-2@example.com',
+                    ['1@bugs.test.p.in.localhost'],
+                    'Hello, world!')
+                assert hm.call_count == 0, \
+                    'route_email called handle_message despite sender lacking project read'
+        finally:
+            project.private = was_private
+            ThreadLocalODMSession.flush_all()
+
 
 class TestUserNotificationTasks(TestController):
     def setup_method(self, method):

@@ -67,6 +67,26 @@ class TestApp:
         assert post is None
 
     @td.with_tracker
+    def test_has_access_checks_per_ticket_acl(self):
+        # private ticket gets DENY_ALL for everyone except Developer + reporter
+        ticket = TM.Ticket.new()
+        ticket.summary = 'private ticket'
+        ticket.private = True
+        ThreadLocalODMSession.flush_all()
+
+        admin = M.User.by_username('test-admin')   # Admin/Developer
+        non_dev = M.User.by_username('test-user')  # *authenticated, not Developer
+
+        assert c.app.has_access(admin, str(ticket.ticket_num))
+        assert not c.app.has_access(non_dev, str(ticket.ticket_num))
+
+    @td.with_tracker
+    def test_has_access_rejects_unknown_ticket(self):
+        non_dev = M.User.by_username('test-user')
+        assert not c.app.has_access(non_dev, '99999')
+        assert not c.app.has_access(non_dev, 'not-a-number')
+
+    @td.with_tracker
     def test_uninstall(self):
         t = TM.Ticket.new()
         t.summary = 'new ticket'
