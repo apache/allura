@@ -272,20 +272,25 @@ class ForgeTrackerApp(Application):
     def globals(self):
         return TM.Globals.query.get(app_config_id=self.config._id)
 
+    def _ticket_for_email_topic(self, topic):
+        try:
+            return TM.Ticket.query.get(
+                app_config_id=self.config._id,
+                ticket_num=int(topic))
+        except (ValueError, TypeError):
+            return None
+
     def has_access(self, user, topic):
-        return has_access(c.app, 'post', user)
+        ticket = self._ticket_for_email_topic(topic)
+        if ticket is None:
+            return False
+        return has_access(ticket, 'post', user)
 
     def handle_message(self, topic, message):
         log.info('Message from %s (%s)',
                  topic, self.config.options.mount_point)
         log.info('Headers are: %s', message['headers'])
-        try:
-            ticket = TM.Ticket.query.get(
-                app_config_id=self.config._id,
-                ticket_num=int(topic))
-        except Exception:
-            log.exception('Error getting ticket %s', topic)
-            return
+        ticket = self._ticket_for_email_topic(topic)
         if not ticket:
             log.info('No such ticket num: %s', topic)
         elif ticket.discussion_disabled:

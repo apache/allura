@@ -26,6 +26,7 @@ from allura import model as M
 from alluratest.controller import TestRestApiBase
 
 from forgetracker import model as TM
+from ming.odm import ThreadLocalODMSession
 
 
 class TestTrackerApiBase(TestRestApiBase):
@@ -151,6 +152,12 @@ class TestRestIndex(TestTrackerApiBase):
             project_id=c.project._id, tool_name='tickets')
         assert (ticket_config.options.get('TicketMonitoringEmail') ==
                 'test@localhost')
+
+    def test_ticket_index_private_project_denied(self):
+        project = M.Project.query.get(shortname='test')
+        project.private = True
+        ThreadLocalODMSession.flush_all()
+        self.api_get('/rest/p/test/bugs/', user='*anonymous', status=[401, 403])
 
     @td.with_tool('test', 'Tickets', 'dummy')
     def test_move_ticket_redirect(self):
