@@ -806,6 +806,11 @@ class PreferencesController(BaseController):
             if not preferences.get('display_name'):
                 flash("Display Name cannot be empty.", 'error')
                 redirect('.')
+            try:
+                preferences['display_name'] = V.DisplayName(not_empty=True).to_python(preferences['display_name'])
+            except fe.Invalid as e:
+                flash(str(e), 'error')
+                redirect('.')
             old = c.user.get_pref('display_name')
             c.user.set_pref('display_name', preferences['display_name'])
             if old != preferences['display_name']:
