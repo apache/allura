@@ -752,7 +752,7 @@ class RegistrationForm(ForgeForm):
             ew.TextField(
                 name='display_name',
                 label='Displayed Name',
-                validator=V.UnicodeString(not_empty=True)),
+                validator=V.DisplayName(not_empty=True)),
             username,
         ]
         if asbool(config.get('auth.require_email_addr', False)):

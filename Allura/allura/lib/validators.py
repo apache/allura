@@ -133,6 +133,15 @@ class UnicodeString(fev.UnicodeString):
 String = UnicodeString if str is str else fev.ByteString
 
 
+class DisplayName(UnicodeString):
+    def _convert_to_python(self, value, state):
+        # prevent < and line breaks just to be sure HTML and email outputs are safe
+        value = super()._convert_to_python(value, state)
+        if value and re.search(r'[<\r\n]', value):
+            raise fev.Invalid('Display Name cannot contain < or line breaks', value, state)
+        return value
+
+
 class Ming(fev.FancyValidator):
 
     def __init__(self, cls, **kw):

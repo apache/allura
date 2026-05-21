@@ -807,6 +807,19 @@ class TestAuth(TestController):
                               extra_environ=dict(username='test-admin'))
 
     @td.with_user_project('test-admin')
+    def test_prefs_display_name_rejects_unsafe_chars(self):
+        self.app.get('/').follow()
+        for bad in ['Admin <script>', 'Admin\nBcc: evil@x.com', 'Admin\r\nfoo']:
+            r = self.app.post('/auth/preferences/update',
+                              params={'preferences.display_name': bad,
+                                      '_csrf_token': self.app.cookies['_csrf_token'],
+                                      },
+                              extra_environ=dict(username='test-admin'))
+            assert 'cannot contain' in self.webflash(r)
+        user = M.User.query.get(username='test-admin')
+        assert user.get_pref('display_name') == 'Test Admin'
+
+    @td.with_user_project('test-admin')
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
     def test_email_prefs_change_requires_password(self, gen_message_id, sendsimplemail):
@@ -1095,6 +1108,15 @@ class TestAuth(TestController):
             params=dict(username='aaa', password='12345678',
                         _csrf_token=self.app.cookies['_csrf_token']), antispam=True,
             status=302)
+
+    def test_create_account_display_name_rejects_unsafe_chars(self):
+        self.app.get('/').follow()
+        r = self.app.post('/auth/save_new',
+                          params=dict(username='aaa', pw='12345678', pw2='12345678',
+                                      display_name='Bob <evil@x.com>',
+                                      _csrf_token=self.app.cookies['_csrf_token']))
+        assert 'cannot contain' in r
+        assert M.User.query.get(username='aaa') is None
 
     def test_create_account_require_email(self):
         self.app.get('/').follow()  # establish session
