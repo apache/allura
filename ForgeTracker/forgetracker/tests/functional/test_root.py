@@ -1378,6 +1378,7 @@ class TestFunctionalController(TrackerTestController):
 
         # 'filter' is special kwarg, don't let it cause problems
         r = self.app.get('/p/test/bugs/search/?q=test&filter=blah')
+        r = self.app.get('/p/test/bugs/search/?q=test&defType=asdf')
 
     def test_search_canonical(self):
         self.new_ticket(summary='test first ticket')

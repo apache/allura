@@ -1223,7 +1223,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                     custom_fields=dict(self.custom_fields))
 
     @classmethod
-    def paged_query(cls, app_config, user, query, limit=None, page=0, sort=None, deleted=False, **kw):
+    def paged_query(cls, app_config, user, query, limit=None, page=0, sort=None, deleted=False):
         """
         Query tickets, filtering for 'read' permission, sorting and paginating the result.
 
@@ -1253,21 +1253,18 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
 
         return dict(
             tickets=tickets,
-            count=count, q=json.dumps(query), limit=limit, page=page, sort=sort,
-            **kw)
+            count=count, q=json.dumps(query), limit=limit, page=page, sort=sort)
 
     @classmethod
     def paged_search(cls, app_config, user, q, limit=None, page=0, sort=None, show_deleted=False,
-                     filter=None, **kw):
+                     filter=None):
         """Query tickets from Solr, filtering for 'read' permission, sorting and paginating the result.
 
         See also paged_query which does a mongo search.
 
         We do the sorting and skipping right in SOLR, before we ever ask
-        Mongo for the actual tickets.  Other keywords for
-        search_artifact (e.g., history) or for SOLR are accepted through
-        kw.  The output is intended to be used directly in templates,
-        e.g., exposed controller methods can just:
+        Mongo for the actual tickets.  The output is intended to be used
+        directly in templates, e.g., exposed controller methods can just:
 
             return paged_query(q, ...)
 
@@ -1290,8 +1287,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         try:
             if q:
                 # also query for choices for filter options right away
-                params = kw.copy()
-                params.update(tsearch.FACET_PARAMS)
+                params = dict(tsearch.FACET_PARAMS)
                 if not show_deleted:
                     params['fq'] = ['deleted_b:False']
 
@@ -1331,15 +1327,17 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                     count=count, q=q, limit=limit, page=page, sort=sort,
                     filter=filter,
                     filter_choices=tsearch.get_facets(matches),
-                    solr_error=solr_error, **kw)
+                    solr_error=solr_error)
 
     @classmethod
     def paged_query_or_search(cls, app_config, user, query, search_query, filter,
-                              limit=None, page=0, sort=None, **kw):
+                              limit=None, page=0, sort=None, deleted=False, show_deleted=False):
         """Switch between paged_query and paged_search based on filter.
 
-        query - query in mongo syntax
-        search_query - query in solr syntax
+        query - query in mongo syntax (used by paged_query path)
+        search_query - query in solr syntax (used by paged_search path)
+        deleted - value for mongo 'deleted' field (used by paged_query path)
+        show_deleted - whether deleted records should be included (used by paged_search path)
         """
         solr_sort = None
         if sort and ' ' in sort:
@@ -1348,15 +1346,17 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             solr_col = _mongo_col_to_solr_col(sort_split[0])
             solr_sort = f'{solr_col} {sort_split[1]}'
         if not filter:
-            result = cls.paged_query(app_config, user, query, sort=sort, limit=limit, page=page, **kw)
+            result = cls.paged_query(app_config, user, query, sort=sort, limit=limit, page=page,
+                                     deleted=deleted)
             t = cls.query.find().first()
             if t:
                 search_query = cls.translate_query(search_query, t.index())
             result['filter_choices'] = tsearch.query_filter_choices(
-                search_query, fq=[] if kw.get('show_deleted', False) else ['deleted_b:False'])
+                search_query, fq=[] if show_deleted else ['deleted_b:False'])
         else:
             result = cls.paged_search(app_config, user, search_query, filter=filter,
-                                      sort=solr_sort, limit=limit, page=page, **kw)
+                                      sort=solr_sort, limit=limit, page=page,
+                                      show_deleted=show_deleted)
 
         result['sort'] = sort
         result['url_sort'] = solr_sort if solr_sort else ''
