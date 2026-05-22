@@ -45,6 +45,7 @@ from allura.lib import helpers as h
 from allura.lib import widgets as w
 from allura.lib.decorators import require_post, memorable_forget
 from allura.lib.diff import HtmlSideBySideDiff
+from allura.lib.exceptions import ForgeError
 from allura.lib.security import require_access, require_authenticated, has_access
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.repo import SCMLogWidget, SCMRevisionWidget, SCMTreeWidget
@@ -150,8 +151,12 @@ class RepoRootController(BaseController, FeedController):
                     redirect(to_project.url() + mount_point + '/')
                 except exc.HTTPRedirection:
                     raise
-                except Exception as ex:
+                except ForgeError as ex:
                     flash(str(ex), 'error')
+                    redirect(six.ensure_text(request.referer or '/'))
+                except Exception as ex:
+                    log.exception('Error forking repo')
+                    flash('Error forking repo', 'error')
                     redirect(six.ensure_text(request.referer or '/'))
 
     @property
