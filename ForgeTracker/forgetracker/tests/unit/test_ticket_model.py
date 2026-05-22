@@ -374,18 +374,24 @@ class TestTicketModel(TrackerTestWithModel):
         app_cfg, user = mock.Mock(), mock.Mock()
         mongo_query = 'mongo query'
         solr_query = 'solr query'
-        kw = {'kw1': 'test1', 'kw2': 'test2'}
+        deleted_val = {'$in': [False]}
         filter = None
-        Ticket.paged_query_or_search(app_cfg, user, mongo_query, solr_query, filter, **kw)
-        query.assert_called_once_with(app_cfg, user, mongo_query, sort=None, limit=None, page=0, **kw)
+        Ticket.paged_query_or_search(app_cfg, user, mongo_query, solr_query, filter,
+                                     deleted=deleted_val, show_deleted=False)
+        # mongo path: 'deleted' is forwarded, 'show_deleted' is not
+        query.assert_called_once_with(app_cfg, user, mongo_query, sort=None, limit=None, page=0,
+                                      deleted=deleted_val)
         assert tsearch.query_filter_choices.call_count == 1
         assert tsearch.query_filter_choices.call_args[0][0] == 'solr query'
         assert search.call_count == 0
         query.reset_mock(), search.reset_mock(), tsearch.reset_mock()
 
         filter = {'status': 'unread'}
-        Ticket.paged_query_or_search(app_cfg, user, mongo_query, solr_query, filter, **kw)
-        search.assert_called_once_with(app_cfg, user, solr_query, filter=filter, sort=None, limit=None, page=0, **kw)
+        Ticket.paged_query_or_search(app_cfg, user, mongo_query, solr_query, filter,
+                                     deleted=deleted_val, show_deleted=False)
+        # solr path: 'show_deleted' is forwarded, 'deleted' (mongo-only) is not
+        search.assert_called_once_with(app_cfg, user, solr_query, filter=filter,
+                                       sort=None, limit=None, page=0, show_deleted=False)
         assert query.call_count == 0
         assert tsearch.query_filter_choices.call_count == 0
 

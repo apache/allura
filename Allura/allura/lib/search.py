@@ -161,11 +161,20 @@ def search(q, short_timeout=False, ignore_errors=True, **kw):
                               (match.group(1) if match else e))
 
 
-def search_artifact(atype, q, history=False, rows=10, short_timeout=False, filter=None, **kw):
+def search_artifact(atype, q, history=False, rows=10, short_timeout=False, filter=None,
+                    sort: str | None = None, start: int | None = None, fl: str | None = None,
+                    **kw):
     """Performs SOLR search.
 
     Raises SearchError if SOLR returns an error.
+
+    :param kwargs: `fq` or various `facet.*` params can be passed through
     """
+
+    for k in kw:
+        if k not in ['fq', 'facet', 'facet.field', 'facet.limit', 'facet.sort', 'facet.mincount']:
+            raise ValueError(f'Unexpected kwarg {k} passed to search_artifact')
+
     # first, grab an artifact and get the fields that it indexes
     a = atype.query.find().first()
     if a is None:
@@ -199,7 +208,8 @@ def search_artifact(atype, q, history=False, rows=10, short_timeout=False, filte
             fq.append(' OR '.join(parts))
     if not history:
         fq.append('is_history_b:False')
-    return search(q, fq=fq, rows=rows, short_timeout=short_timeout, ignore_errors=False, **kw)
+    return search(q, fq=fq, rows=rows, short_timeout=short_timeout, ignore_errors=False, sort=sort, start=start,
+                  fl=fl, **kw)
 
 
 def site_admin_search(model, q, field, **kw):
