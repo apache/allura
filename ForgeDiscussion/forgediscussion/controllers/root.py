@@ -319,15 +319,10 @@ class RootRestController(BaseController, AppRestControllerMixin):
         require_access(c.project, 'admin')
         if username_mapping is None:
             username_mapping = {}
-        try:
-            doc = json.loads(doc)
-            warnings, doc = import_support.validate_import(
-                doc, username_mapping)
-            return dict(warnings=warnings, errors=[])
-        except Exception as e:
-            raise
-            log.exception(e)
-            return dict(status=False, errors=[repr(e)])
+        doc = json.loads(doc)
+        warnings, doc = import_support.validate_import(
+            doc, username_mapping)
+        return dict(warnings=warnings, errors=[])
 
     @expose('json:')
     def perform_import(
@@ -339,16 +334,11 @@ class RootRestController(BaseController, AppRestControllerMixin):
         if not c.api_token.can_import_forum():
             log.error('Import capability is not enabled for %s', c.project.shortname)
             raise exc.HTTPForbidden(detail='Import is not allowed')
-        try:
-            doc = json.loads(doc)
-            username_mapping = json.loads(username_mapping)
-            warnings = import_support.perform_import(
-                doc, username_mapping, default_username, create_users)
-            return dict(warnings=warnings, errors=[])
-        except Exception as e:
-            raise
-            log.exception(e)
-            return dict(status=False, errors=[str(e)])
+        doc = json.loads(doc)
+        username_mapping = json.loads(username_mapping)
+        warnings = import_support.perform_import(
+            doc, username_mapping, default_username, create_users)
+        return dict(warnings=warnings, errors=[])
 
 
 class ForumRestController(BaseController):
