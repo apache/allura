@@ -215,10 +215,17 @@ def parse_args():
     parser.add_argument(
         '-p', help='List of packages to run tests on. Default: all',
         dest='packages', choices=get_packages(), default=get_packages(),
+        type=lambda s: s.rstrip('/'),
         nargs='+')
     return parser.parse_known_args()
 
 
 if __name__ == "__main__":
     ret_codes = run_tests_in_parallel(*parse_args())
-    sys.exit(any(ret_codes))
+    num_failed = sum(1 for code in ret_codes if code)
+    print()
+    if num_failed:
+        print(f'FAILURE(s) in {num_failed} suite(s) above')
+        sys.exit(1)
+    else:
+        print('ALL PASSED')
