@@ -415,7 +415,7 @@ def include(ref=None, repo=None, **kw):
         return '[[include %s (not found)]]' % ref
     artifact = link.ref.artifact
     if artifact is None:
-        return '[[include (artifact not found)]]' % ref
+        return '[[include (artifact not found %s)]]' % ref
     if not h.has_access(artifact, 'read'):
         return "[[include: you don't have a read permission for %s]]" % ref
     included = request.environ.setdefault('allura.macro.included', set())
