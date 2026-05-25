@@ -232,7 +232,7 @@ class AuthenticationProvider:
             self.session['multifactor-username'] = user.username
             self.session['mode'] = 'email_code'
             self.session.save()
-            user.send_email_auth_code(return_to=self.request.params.get('return_to', '/'))
+            user.send_email_auth_code(return_to=self.request.params.get('return_to', '/'), login_details=login_details)
             return None
 
         # All stages complete — clean up and proceed to login

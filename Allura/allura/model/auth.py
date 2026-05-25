@@ -471,7 +471,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         reset_url = h.absurl(f'/auth/forgotten_password/{hash}')
         return reset_url
 
-    def send_email_auth_code(self, return_to='/', subject_tmpl='{site_name} Authentication Code'):
+    def send_email_auth_code(self, return_to='/', subject_tmpl='{site_name} Authentication Link', login_details=None):
         from allura.controllers.auth import AuthController
 
         email_address = self.get_pref('email_address')
@@ -484,10 +484,13 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             link_params['return_to'] = return_to
         verify_url = h.absurl(tg.url('/auth/login_email_verify', link_params))
         subject = subject_tmpl.format(site_name=config['site_name'])
+        geo = login_details.extra.get('geo') if getattr(login_details, 'extra', None) else None
         text = g.jinja2_env.get_template('allura:templates/mail/authentication_code.md.jinja2').render(dict(
             user=self,
             config=config,
             verify_url=verify_url,
+            login_details=login_details,
+            geo=geo
         ))
         allura.tasks.mail_tasks.send_system_mail_to_user(email_address, subject, text)
 
