@@ -173,20 +173,30 @@ def strip_local_params(q):
     return q
 
 
-def search(q, short_timeout=False, ignore_errors=True, **kw):
+def search(q, short_timeout=False, ignore_errors=True, search_fn=None, **kw):
     q = inject_user(q)
     q = strip_local_params(q)
-    try:
+    if not search_fn:
         if short_timeout:
-            return g.solr_short_timeout.search(q, **kw)
+            search_fn = g.solr_short_timeout.search
         else:
-            return g.solr.search(q, **kw)
-    except (SolrError, OSError) as e:
+            search_fn = g.solr.search
+    try:
+        # try once with opportunity to retry
+        try:
+            return search_fn(q, **kw)
+        except SolrError:
+            escaped_q = escape_solr_arg(q)
+            if q != escaped_q:
+                # retry if escaping could make a difference
+                return search_fn(escaped_q, **kw)
+            else:
+                raise
+    except (SolrError, OSError):
+        # fatal error
         log.exception('Error in solr search')
         if not ignore_errors:
-            match = re.search(r'<pre>(.*)</pre>', str(e))
-            raise SearchError('Error running search query: %s' %
-                              (match.group(1) if match else e))
+            raise SearchError('Error running search')
 
 
 def search_artifact(atype, q, history=False, rows=10, short_timeout=False, filter=None,

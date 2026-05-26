@@ -189,6 +189,21 @@ class TestStripLocalParams:
         # pysolr.search must receive the query without the local-params prefix
         g.solr.search.assert_called_once_with('*:*')
 
+    @mock.patch('allura.lib.search.g')
+    @mock.patch('allura.lib.search.c')
+    def test_search_retries_with_escaped_query_on_solr_error(self, c, g):
+        # a query like 'git --log' is invalid Solr syntax; on the first
+        # SolrError, search() should retry with the escaped form
+        c.user.username = 'tester'
+        g.solr.search.side_effect = [SolrError('bad syntax'), 'ok result']
+
+        result = search('git --log')
+
+        assert result == 'ok result'
+        assert g.solr.search.call_count == 2
+        assert g.solr.search.call_args_list[0] == mock.call('git --log')
+        assert g.solr.search.call_args_list[1] == mock.call(r'git \-\-log')
+
 
 class TestSearch_app:
 
