@@ -177,10 +177,10 @@ class TestSearch_app:
         req.path = '/test/search'
         url_fn.side_effect = ['the-score-url', 'the-date-url']
         with h.push_context('test', 'wiki', neighborhood='Projects'):
-            resp = search_app(q='foo bar')
+            resp = search_app(q='foo bar', allowed_types=['WikiPage', 'WikiPage Snapshot'])
         assert resp == dict(
             q='foo bar',
-            history=None,
+            history=False,
             results=[],
             count=0,
             limit=25,
@@ -216,11 +216,11 @@ class TestSearch_app:
         results.__len__ = lambda self: len(results.docs)
         solr_search.return_value = results
         with h.push_context('test', 'wiki', neighborhood='Projects'):
-            resp = search_app(q='foo bar')
+            resp = search_app(q='foo bar', allowed_types=['WikiPage', 'WikiPage Snapshot'])
 
         assert resp == dict(
             q='foo bar',
-            history=None,
+            history=False,
             count=2,
             limit=25,
             page=0,

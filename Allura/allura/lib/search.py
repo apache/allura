@@ -239,7 +239,9 @@ def site_admin_search(model, q, field, **kw):
     return search(q, fq=fq, ignore_errors=False, **kw)
 
 
-def search_app(q='', fq=None, app=True, **kw):
+def search_app(q='', fq=None, app: bool = True, history: bool = False, project: bool = False,
+               search_comments: bool = False, limit=None, page=0, default=25,
+               allowed_types: list | None = None, parser=None, sort='score desc'):
     """Helper for app/project search.
 
     Uses dismax query parser. Matches on `title` and `text`. Handles paging, sorting, etc
@@ -247,19 +249,15 @@ def search_app(q='', fq=None, app=True, **kw):
     from allura.model import ArtifactReference
     from allura.lib.security import has_access
 
-    history = kw.pop('history', None)
-    if app and kw.pop('project', False):
+    if app and project:
         # Used from app's search controller. If `project` is True, redirect to
         # 'entire project search' page
         redirect(c.project.url() + 'search/?' +
                  urlencode(dict(q=q, history=history)))
-    search_comments = kw.pop('search_comments', None)
-    limit = kw.pop('limit', None)
-    page = kw.pop('page', 0)
-    default = kw.pop('default', 25)
-    allowed_types = kw.pop('allowed_types', [])
-    parser = kw.pop('parser', None)
-    sort = kw.pop('sort', 'score desc')
+    if allowed_types is None:
+        allowed_types = []
+    if app and not allowed_types:
+        raise ValueError('app search requires allowed_types')
     fq = fq if fq else []
     search_error = None
     results = []
