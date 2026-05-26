@@ -438,21 +438,22 @@ class RootController(BaseController, DispatchIndex, FeedController):
                    history=validators.StringBool(if_empty=False),
                    search_comments=validators.StringBool(if_empty=False),
                    project=validators.StringBool(if_empty=False)))
-    def search(self, q=None, history=None, search_comments=None, project=None, limit=None, page=0, **kw):
+    def search(self, q=None, history=None, search_comments=None, project=None,
+               limit=None, page=0, sort='score desc', parser=None):
         'local wiki search'
         c.search_results = W.search_results
         c.help_modal = W.help_modal
-        search_params = kw
-        search_params.update({
-            'q': q or '',
-            'history': history,
-            'search_comments': search_comments,
-            'project': project,
-            'limit': limit,
-            'page': page,
-            'allowed_types': ['WikiPage', 'WikiPage Snapshot'],
-        })
-        return search_app(**search_params)
+        return search_app(
+            q=q or '',
+            history=history,
+            search_comments=search_comments,
+            project=project,
+            limit=limit,
+            page=page,
+            sort=sort,
+            parser=parser,
+            allowed_types=['WikiPage', 'WikiPage Snapshot'],
+        )
 
     @with_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/browse.html')

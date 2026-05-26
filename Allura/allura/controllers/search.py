@@ -41,15 +41,16 @@ class SearchController(BaseController):
     @validate(dict(q=V.UnicodeString(),
                    history=V.StringBool(if_empty=False)))
     @with_trailing_slash
-    def index(self, q=None, history=False, **kw):
+    def index(self, q=None, history=False, limit=None, page=0, sort='score desc'):
         c.search_results = W.search_results
-        search_params = kw
-        search_params.update({
-            'q': q,
-            'history': history,
-            'app': False,
-        })
-        d = search_app(**search_params)
+        d = search_app(
+            q=q,
+            history=history,
+            app=False,
+            limit=limit,
+            page=page,
+            sort=sort,
+        )
         d['search_comments_disable'] = True
         d['hide_app_project_switcher'] = True
         return d

@@ -151,21 +151,20 @@ class RootController(BaseController):
     @expose('jinja:forgechat:templates/chat/search.html')
     @validate(dict(q=v.UnicodeString(if_empty=None),
                    project=validators.StringBool(if_empty=False)))
-    def search(self, q=None, project=None, limit=None, page=0, **kw):
+    def search(self, q=None, project=None, limit=None, page=0, sort='score desc'):
         c.search_results = SearchResults()
         c.help_modal = SearchHelp(comments=False, history=False,
                                   fields={'sender_t': 'username',
                                           'text': '"Message text"',
                                           })
-        search_params = kw
-        search_params.update({
-            'q': q or '',
-            'project': project,
-            'limit': limit,
-            'page': page,
-            'allowed_types': ['Chat Message'],
-        })
-        d = search_app(**search_params)
+        d = search_app(
+            q=q or '',
+            project=project,
+            limit=limit,
+            page=page,
+            sort=sort,
+            allowed_types=['Chat Message'],
+        )
         d['search_comments_disable'] = True
         d['search_history_disable'] = True
         return d

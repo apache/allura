@@ -163,19 +163,18 @@ class RootController(BaseController, DispatchIndex, FeedController):
                    project=validators.StringBool(if_empty=False),
                    limit=validators.Int(if_empty=None, if_invalid=None),
                    page=validators.Int(if_empty=0, if_invalid=0)))
-    def search(self, q=None, history=None, project=None, limit=None, page=0, **kw):
+    def search(self, q=None, history=None, project=None, limit=None, page=0, sort='score desc'):
         c.search_results = self.W.search_results
         c.help_modal = self.W.search_help
-        search_params = kw
-        search_params.update({
-            'q': q or '',
-            'history': history,
-            'project': project,
-            'limit': limit,
-            'page': page,
-            'allowed_types': ['Post', 'Post Snapshot', 'Discussion', 'Thread'],
-        })
-        d = search_app(**search_params)
+        d = search_app(
+            q=q or '',
+            history=history,
+            project=project,
+            limit=limit,
+            page=page,
+            sort=sort,
+            allowed_types=['Post', 'Post Snapshot', 'Discussion', 'Thread'],
+        )
         d['search_comments_disable'] = True
         return d
 
