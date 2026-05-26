@@ -146,8 +146,36 @@ def inject_user(q, user=None):
     return q.replace('$USER', '"%s"' % user.username) if q else q
 
 
+_LOCAL_PARAMS_RE = re.compile(r'\{![^}]*\}')
+
+
+def strip_local_params(q):
+    '''Neutralize Solr local-params
+
+    Solr 7.2+ mitigates https://solr.apache.org/guide/solr/latest/upgrade-notes/major-changes-in-solr-8.html#solr-7-2
+    But clean them all out just in case
+
+    Loops until idempotent: a single regex pass can leave a *new* `{!...}` in
+    the residue when the original had nested braces, e.g.
+    `{{!lucene}!type=dismax v='*:*'}` strips to `{!type=dismax v='*:*'}`
+    '''
+    if not q:
+        return q
+    orig = q
+    total = 0
+    while True:
+        q, n = _LOCAL_PARAMS_RE.subn('', q)
+        if not n:
+            break
+        total += n
+    if total:
+        log.warning(f'Stripped Solr local-params block(s) from query: {orig[:200]!r}')
+    return q
+
+
 def search(q, short_timeout=False, ignore_errors=True, **kw):
     q = inject_user(q)
+    q = strip_local_params(q)
     try:
         if short_timeout:
             return g.solr_short_timeout.search(q, **kw)
@@ -231,7 +259,6 @@ def site_admin_search(model, q, field, **kw):
         # use parens to group all the parts of the query with the field
         # escaping spaces with '\ ' isn't sufficient for display_name_t since its stored as text_general (why??)
         # and wouldn't handle foo@bar.com split on @ either
-        # This should work, but doesn't for unknown reasons: q = u'{!term f=%s}%s' % (field, q)
         q = q.replace(':', r'\:')  # Must escape the colon for IPv6 addresses
         q = obj.translate_query(f'{field}:({q})', fields)
         kw['q.op'] = 'AND'  # so that all terms within the () are required
