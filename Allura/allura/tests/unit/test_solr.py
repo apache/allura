@@ -26,7 +26,7 @@ from allura.lib import helpers as h
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test
 from allura.lib.solr import Solr, escape_solr_arg
-from allura.lib.search import search_app, SearchIndexable
+from allura.lib.search import search, search_app, SearchIndexable, strip_local_params
 
 
 class TestSolr:
@@ -161,6 +161,33 @@ class TestSearchIndexable:
         assert self.obj.solarize() == dict(text='<script>a(1)</script>')
         self.obj.index = lambda: dict(text='&lt;script&gt;a(1)&lt;/script&gt;')
         assert self.obj.solarize() == dict(text='<script>a(1)</script>')
+
+
+class TestStripLocalParams:
+
+    @pytest.mark.parametrize('q,expected', [
+        ('foo bar', 'foo bar'),
+        ('', ''),
+        (None, None),
+        ('{!type=lucene}foo', 'foo'),
+        ('{!type=lucene q.op=OR}*:*', '*:*'),
+        ('  {!type=lucene}foo', '  foo'),
+        ('{!}rest', 'rest'),
+        ('text:{!type=lucene}foo', 'text:foo'),  # later in query
+        ('{!a}foo{!b}bar', 'foobar'),  # multiple
+        ("{{!lucene}!type=dismax v='*:*'}", ''),  # nested
+        ('{{{!a}!b}!c}rest', 'rest'),  # really nested
+    ])
+    def test_strip(self, q, expected):
+        assert strip_local_params(q) == expected
+
+    @mock.patch('allura.lib.search.g')
+    @mock.patch('allura.lib.search.c')
+    def test_search_strips_local_params_before_pysolr(self, c, g):
+        c.user.username = 'tester'
+        search('{!type=lucene q.op=OR}*:*')
+        # pysolr.search must receive the query without the local-params prefix
+        g.solr.search.assert_called_once_with('*:*')
 
 
 class TestSearch_app:
