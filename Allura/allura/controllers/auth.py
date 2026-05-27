@@ -381,12 +381,20 @@ class AuthController(BaseController):
         self._verify_addr(addr)
         redirect('/auth/preferences/')
 
-    @expose()
+    @expose('jinja:allura:templates/logout.html')
     def logout(self, return_to=None):
-        plugin.AuthenticationProvider.get(request).logout()
-        if return_to:
-            redirect(self._verify_return_to(return_to))
-        redirect(config.get('auth.post_logout_url', '/'))
+        if request.method == 'POST':
+            plugin.AuthenticationProvider.get(request).logout()
+            if return_to:
+                redirect(self._verify_return_to(return_to))
+            redirect(config.get('auth.post_logout_url', '/'))
+        if request.method == 'GET':
+            if c.user.is_anonymous():
+                redirect(config.get('auth.post_logout_url', '/'))
+            return {
+                'return_to': self._verify_return_to(return_to) if return_to else None,
+            }
+        raise wexc.HTTPMethodNotAllowed(headers={'Allow': 'GET, POST'})
 
     @staticmethod
     def _verify_return_to(return_to: str | None) -> str:

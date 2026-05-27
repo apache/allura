@@ -1,0 +1,51 @@
+{#-
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+-#}
+{% set hide_left_bar = True %}
+{% extends g.theme.master %}
+
+{% block title %}{{ config['site_name'] }} Sign Out{% endblock %}
+
+{% block header_classes %} logout-confirm-hidden-header{% endblock %}
+{% block header %}{% endblock %}
+{% block page_body_classes %} logout-confirm-page-body{% endblock %}
+
+{% block content %}
+{% set signed_in_username = c.user.username if c.user and not c.user.is_anonymous() else 'Not signed in' %}
+<div class="logout-confirm-page">
+  <div class="logout-confirm-panel">
+    <h2 class="logout-confirm-title">Are you sure you want to sign out?</h2>
+    <form class="logout-account-card" method="post" action="/auth/logout">
+      <div class="logout-avatar">
+        {% if c.user and not c.user.is_anonymous() %}
+          {{ lib.gravatar(c.user, size=40) }}
+        {% endif %}
+      </div>
+      <div class="logout-account-copy">
+        <div class="logout-account-label">Signed in as</div>
+        <div class="logout-account-name">{{ signed_in_username }}</div>
+      </div>
+      {% if return_to %}
+        <input type="hidden" name="return_to" value="{{ return_to }}">
+      {% endif %}
+      {{ lib.csrf_token() }}
+      <button class="logout-signout-button" type="submit">Sign out</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

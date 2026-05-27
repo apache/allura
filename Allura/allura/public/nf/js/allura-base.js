@@ -18,6 +18,43 @@
 */
 
 (function($) {
+    if (!window.SF) {
+        window.SF = {};
+    }
+    if (window.SF.logoutLinkHandlerInstalled) {
+        return;
+    }
+    window.SF.logoutLinkHandlerInstalled = true;
+
+    function getCookie(name) {
+        var match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+        return match ? decodeURIComponent(match[1]) : '';
+    }
+
+    $(document).on('click', 'a[href]', function(e) {
+        if (e.isDefaultPrevented() || e.which && e.which !== 1 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+            return;
+        }
+        var url;
+        try {
+            url = new URL(this.href, window.location.href);
+        } catch (err) {
+            return;
+        }
+        if (url.origin !== window.location.origin || url.pathname.replace(/\/$/, '') !== '/auth/logout') {
+            return;
+        }
+        e.preventDefault();
+
+        var form = $('<form>', {method: 'post', action: '/auth/logout' + url.search});
+        form.append($('<input type="hidden" name="_csrf_token">').val($.cookie ? $.cookie('_csrf_token') : getCookie('_csrf_token')));
+        $('body').append(form);
+        form[0].submit();
+        form.remove();
+    });
+})(jQuery);
+
+(function($) {
     // Setup editable widgets
     $('div.editable, span.editable, h1.editable')
         .find('.viewer')

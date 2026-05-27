@@ -61,6 +61,15 @@ def login(app, username='test-user', pwd='foo', query_string=''):
     return f.submit(extra_environ={'username': '*anonymous'})
 
 
+def logout(app, extra_environ=None, return_to=None, status=302):
+    if '_csrf_token' not in app.cookies:
+        app.get('/', extra_environ=extra_environ or {}).maybe_follow()
+    params = {'_csrf_token': app.cookies['_csrf_token']}
+    if return_to is not None:
+        params['return_to'] = return_to
+    return app.post('/auth/logout', params=params, extra_environ=extra_environ, status=status)
+
+
 class TestAuth(TestController):
     def test_login(self):
         self.app.get('/auth/preferences/')  # establish _csrf_token cookie
@@ -177,7 +186,7 @@ class TestAuth(TestController):
         f[encoded['password']] = 'foo'
         with audits('Successful login', user=True):
             f.submit(status=302)
-        self.app.get('/auth/logout')
+        logout(self.app)
 
         # this login will get caught by HIBP check, but trusted due to IP address being same
         with patch('allura.lib.plugin.AuthenticationProvider.hibp_password_check_enabled', Mock(return_value=True)):
@@ -296,6 +305,9 @@ class TestAuth(TestController):
         nav_pattern = ('nav', {'class': 'nav-main'})
         r = self.app.get('/auth/')
 
+        r = self.app.get('/auth/logout', status=302)
+        assert r.location == 'http://localhost/'
+
         r = self.app.post('/auth/do_login', params=dict(
             username='test-user', password='foo',
             _csrf_token=self.app.cookies['_csrf_token']),
@@ -307,6 +319,31 @@ class TestAuth(TestController):
         assert links[-1].string == "Log Out"
 
         r = self.app.get('/auth/logout')
+        assert 'Clear-Site-Data' not in r.headers
+        assert r.session['_id'] == logged_in_session
+        assert 'Are you sure you want to sign out?' in r
+        assert 'Signed in as' in r
+        assert 'test-user' in r
+        assert r.forms[0].action.endswith('/auth/logout')
+        assert r.forms[0].method.upper() == 'POST'
+        assert r.forms[0]['_csrf_token'].value
+
+        r = self.app.get('/auth/logout', params={'return_to': '/foo'})
+        assert r.forms[0]['return_to'].value == '/foo'
+        r = self.app.get('/auth/logout', params={'return_to': 'http://example.com/foo'})
+        assert r.forms[0]['return_to'].value == '/'
+
+        self.app.put('/auth/logout', status=405)
+        self.app.post('/auth/logout', params={}, status=403)
+        self.app.post('/auth/logout', params={'_csrf_token': 'bogus'}, status=403)
+
+        r = logout(self.app, return_to='/foo')
+        assert r.location == 'http://localhost/foo'
+
+        r = login(self.app).follow().follow()
+        logged_in_session = r.session['_id']
+
+        r = logout(self.app)
         assert 'Clear-Site-Data' in r.headers
 
         r = r.follow().follow()
@@ -1102,7 +1139,7 @@ class TestAuth(TestController):
                 _csrf_token=self.app.cookies['_csrf_token'],
             ))
         assert 'That username is already taken. Please choose another.' in r
-        r = self.app.get('/auth/logout')
+        r = logout(self.app)
         r = self.app.post(
             '/auth/do_login',
             params=dict(username='aaa', password='12345678',
@@ -1245,7 +1282,7 @@ class TestAuth(TestController):
         assert r.location == 'http://localhost/auth/?return_to=%2Fp%2Ftest%2Fadmin%2F'
 
     def test_no_open_return_to(self):
-        r = self.app.get('/auth/logout').follow().follow()
+        r = logout(self.app).follow().follow()
         r = self.app.post('/auth/do_login', params=dict(
             username='test-user', password='foo',
             return_to='/foo',
@@ -1254,21 +1291,21 @@ class TestAuth(TestController):
         )
         assert r.location == 'http://localhost/foo'
 
-        r = self.app.get('/auth/logout')
+        r = logout(self.app)
         r = self.app.post('/auth/do_login', antispam=True, params=dict(
             username='test-user', password='foo',
             return_to='http://localhost/foo',
             _csrf_token=self.app.cookies['_csrf_token']))
         assert r.location == 'http://localhost/foo'
 
-        r = self.app.get('/auth/logout')
+        r = logout(self.app)
         r = self.app.post('/auth/do_login', antispam=True, params=dict(
             username='test-user', password='foo',
             return_to='http://example.com/foo',
             _csrf_token=self.app.cookies['_csrf_token'])).follow()
         assert r.location == 'http://localhost/dashboard'
 
-        r = self.app.get('/auth/logout')
+        r = logout(self.app)
         r = self.app.post('/auth/do_login', antispam=True, params=dict(
             username='test-user', password='foo',
             return_to='//example.com/foo',
@@ -1276,7 +1313,7 @@ class TestAuth(TestController):
         assert r.location == 'http://localhost/dashboard'
 
     def test_no_injected_headers_in_return_to(self):
-        r = self.app.get('/auth/logout').follow().follow()
+        r = logout(self.app).follow().follow()
         r = self.app.post('/auth/do_login', params=dict(
             username='test-user', password='foo',
             return_to='/foo\nContent-Length: 777',
@@ -2886,7 +2923,7 @@ class TestPasswordExpire(TestController):
             r = login(self.app)
             assert self.expired(r)
             self.assert_redirects()
-            r = self.app.get('/auth/logout', extra_environ={'username': 'test-user'})
+            r = logout(self.app, extra_environ={'username': 'test-user'})
             assert not self.expired(r)
             self.assert_not_redirects()
 
@@ -3612,7 +3649,7 @@ class TestEmailAuthCode(TestController):
             # Validate the email with the verification link was sent
             args, kwargs = send_system_mail_to_user.call_args
             assert r.session.get('mode') == 'email_code'
-            assert args[1] == f"{config['site_name']} Authentication Link"
+            assert args[1] == f"{config['site_name']} Authentication Code"
             assert send_system_mail_to_user.call_count == 1
             email_text = send_system_mail_to_user.call_args[0][2]
 
@@ -3694,7 +3731,7 @@ class TestTrackUserSessions(TestController):
         session_ids = user.get_tool_data('web_session', 'ids')
         assert len(session_ids) == 1
 
-        r = self.app.get('/auth/logout', extra_environ={'username': 'test-user'})
+        r = logout(self.app, extra_environ={'username': 'test-user'})
         user = M.User.by_username('test-user')
         session_ids = user.get_tool_data('web_session', 'ids')
         assert len(session_ids) == 0
