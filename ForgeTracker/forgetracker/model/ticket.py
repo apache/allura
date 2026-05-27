@@ -647,6 +647,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             'ticket_num',
             ('app_config_id', 'custom_fields._milestone'),
             'import_id',
+            # for stats endpoint:
+            ('app_config_id', 'deleted', 'status'),
         ]
         unique_indexes = [
             ('app_config_id', 'ticket_num'),

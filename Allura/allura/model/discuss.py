@@ -163,7 +163,7 @@ class Thread(Artifact, ActivityObject):
             (('app_config_id', pymongo.ASCENDING),
              ('last_post_date', pymongo.DESCENDING),
              ('mod_date', pymongo.DESCENDING)),
-            ('discussion_id',),
+            ('discussion_id', 'num_replies'),
         ]
 
     query: Query[Thread]
@@ -533,8 +533,8 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
             ('discussion_id', 'deleted', 'status'),
             # for update_stats() and thread_id in general
             ('thread_id', 'status', 'deleted'),
-            # for find_posts/query_posts, including full_slug sort which is useful on super big threads
-            ('deleted', 'discussion_id', 'thread_id', 'full_slug'),
+            # for post_count and find_posts/query_posts, including full_slug sort which is useful on super big threads
+            ('deleted', 'discussion_id', 'thread_id', 'status', 'full_slug'),
         ]
 
     query: Query[Post]
