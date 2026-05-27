@@ -188,16 +188,16 @@ class TestApp:
                 return BytesIO(self._data)
 
         # Test with a malicious filename containing path traversal
-        malicious_name = '../../../etc/passwd'
+        malicious_name = '../../allura-test-case/foobar'
         attachments = [FakeAttachment(malicious_name, b'evil data')]
         a.save_attachments(export_dir, attachments)
 
         # The file should be written as a basename, not traverse directories
-        expected_file = os.path.join(export_dir, 'passwd')
+        expected_file = os.path.join(export_dir, 'foobar')
         assert os.path.exists(expected_file)
 
         # Verify the traversal path was NOT created
-        traversal_path = os.path.join(export_dir, '..', '..', '..', 'etc')
+        traversal_path = os.path.join(export_dir, '..', '..', 'allura-test-case', 'foobar')
         assert not os.path.exists(traversal_path)
 
         # Verify file contents
