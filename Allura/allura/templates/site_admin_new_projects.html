@@ -170,7 +170,7 @@
                     flash(response.message, 'success');
                     form.remove();
                     var td = el.closest('tr').find('td:first');
-                    td.html('<p><strong>Notes:</strong>' + html_escape(textarea.val()) + '</p>');
+                    td.html('<p><strong>Notes:</strong>' + escape_html(textarea.val()) + '</p>');
                     el.remove();
                 }).fail(function (response){
                     flash(response.message, 'error');
