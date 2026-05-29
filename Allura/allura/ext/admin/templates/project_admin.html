@@ -121,6 +121,12 @@
 {% block extra_js %}
 <script>
 $(function() {
+    {# need to escape HTML fields that hopscotch will interpret.  This makes our |safe usage above be correct, and non-safe will get escaped.
+      End result is the hopscotch tooltips match the main content output (either escaped or allowed html) #}
+    {% for s in tour.steps %}
+      {% do s.update({'title': s.title|escape}) %}
+      {% do s.update({'content': s.content|escape}) %}
+    {% endfor %}
     var tour = {{ tour|tojson }};
     tour.onError = function() {
         var step = hopscotch.getCurrStepNum();
