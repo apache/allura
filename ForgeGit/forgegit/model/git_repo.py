@@ -118,6 +118,7 @@ class Repository(M.Repository):
         """
         Given merge request `mr` determine if it can be merged w/o conflicts.
         """
+        M.validate_scm_refs([mr.source_branch, mr.target_branch, mr.downstream.commit_id])
         g = self._impl._git.git
         # http://stackoverflow.com/a/6283843
         # fetch source branch
@@ -130,6 +131,7 @@ class Repository(M.Repository):
         return '+<<<<<<<' not in merge_tree
 
     def merge(self, mr):
+        M.validate_scm_refs([mr.source_branch, mr.target_branch, mr.downstream.commit_id])
         g = self._impl._git.git
         # can't merge in bare repo, so need to clone
         tmp_path = tempfile.mkdtemp()
@@ -373,7 +375,8 @@ class GitImplementation(M.RepositoryImplementation):
         path = path.strip('/') if path else None
         if exclude is not None:
             revs.extend(['^%s' % e for e in exclude])
-        args = ['--follow', '--name-status', revs, '--', path or '.']
+        # --end-of-options stops git parsing a dash-prefixed rev as an option (arg injection).
+        args = ['--follow', '--name-status', '--end-of-options', revs, '--', path or '.']
         kwargs = {}
         if limit:
             kwargs['n'] = limit
@@ -451,6 +454,7 @@ class GitImplementation(M.RepositoryImplementation):
             D\t<some path> # other cases
             etc
         """
+        assert '--end-of-options' in args
         proc = self._git.git.log(*args,
                                  format='%H%x00%d', as_process=True, **kwargs)
         stream = proc.stdout
@@ -652,7 +656,7 @@ class GitImplementation(M.RepositoryImplementation):
         skip = 0
         while commit_id and not files:
             output = self._git.git.log(
-                commit_id, '--', *[p for p in paths],
+                '--end-of-options', commit_id, '--', *[p for p in paths],
                 pretty='format:%H',
                 name_only=True,
                 max_count=1,
@@ -670,7 +674,7 @@ class GitImplementation(M.RepositoryImplementation):
 
     def get_changes(self, commit_id):
         return self._git.git.log(
-            commit_id,
+            '--end-of-options', commit_id,
             name_only=True,
             pretty='format:%H',
             max_count=1).splitlines()[1:]
@@ -690,7 +694,7 @@ class GitImplementation(M.RepositoryImplementation):
         if asbool(tg.config.get('scm.commit.git.detect_copies', True)):
             cmd_args += ['-M', '-C']
 
-        cmd_output = self._git.git.diff_tree(commit_id, *cmd_args).split('\x00')[:-1]  # don't escape filenames and use \x00 as fields delimiter
+        cmd_output = self._git.git.diff_tree(*cmd_args, '--end-of-options', commit_id).split('\x00')[:-1]  # don't escape filenames and use \x00 as fields delimiter
 
         ''' cmd_output will be like:
         [
@@ -755,6 +759,7 @@ class GitImplementation(M.RepositoryImplementation):
             shutil.rmtree(tmp_path, ignore_errors=True)
 
     def merge_base(self, mr):
+        M.validate_scm_refs([mr.target_branch, mr.downstream.commit_id])
         g = self._git.git
         g.fetch(mr.app.repo.full_fs_path, mr.target_branch)
         return g.merge_base(mr.downstream.commit_id, 'FETCH_HEAD')

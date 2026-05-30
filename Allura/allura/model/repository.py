@@ -349,6 +349,19 @@ class RepositoryImplementation:
         raise NotImplementedError('merge_request_commits')
 
 
+def validate_scm_refs(values: Iterable[str]):
+    # Reject any value the scm layer would parse as a CLI option (argument injection,
+    # e.g. `git log --output=...`); no legal revision/ref begins with a dash
+
+    if isinstance(values, str):
+        # avoid accidentally iterating over chars in a str
+        raise ValueError(f'Expected an iterable of revisions or refs, got a string: {values!r}')
+
+    for value in values:
+        if not isinstance(value, (str, int)) or str(value).lstrip().startswith('-'):
+            raise ValueError(f'Invalid revision or ref: {value!r}')
+
+
 class Repository(Artifact, ActivityObject):
     BATCH_SIZE = 100
 
@@ -585,6 +598,10 @@ class Repository(Artifact, ActivityObject):
             revs = [revs]
         if exclude is not None and not isinstance(exclude, (list, tuple)):
             exclude = [exclude]
+        if revs:
+            validate_scm_refs(revs)
+        if exclude:
+            validate_scm_refs(exclude)
         log_iter = self._impl.log(revs, path, exclude=exclude, id_only=id_only, limit=limit, **kw)
         return islice(log_iter, limit)
 

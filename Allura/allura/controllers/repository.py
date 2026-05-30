@@ -253,7 +253,10 @@ class RepoRootController(BaseController, FeedController):
         log.debug('Got %s heads', len(head_ids))
 
         # recent commits from any head
-        heads_log = list(c.app.repo.log(head_ids, id_only=True, limit=int(limit)))
+        try:
+            heads_log = list(c.app.repo.log(head_ids, id_only=True, limit=int(limit)))
+        except ValueError:
+            raise exc.HTTPNotFound
         log.debug('Did log lookup')
         commit_ids = [c.app.repo.rev_to_commit_id(r) for r in heads_log]
 
@@ -341,7 +344,10 @@ class RepoRestController(RepoRootController, AppRestControllerMixin):
         Return 120 latest commits  : /rest/p/code/logs/?limit=120
         '''
 
-        revisions = c.app.repo.log(rev, id_only=False, limit=int(limit))
+        try:
+            revisions = c.app.repo.log(rev, id_only=False, limit=int(limit))
+        except ValueError:
+            raise exc.HTTPNotFound
 
         return {
             'commits': [

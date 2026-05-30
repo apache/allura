@@ -28,7 +28,7 @@ from .auth import AuthGlobals, User, ProjectRole, EmailAddress
 from .auth import AuditLog, AlluraUserProperty, UserLoginDetails
 from .filesystem import File
 from .notification import Notification, Mailbox, SiteNotification
-from .repository import Repository, RepositoryImplementation, CommitStatus
+from .repository import Repository, RepositoryImplementation, CommitStatus, validate_scm_refs
 from .repository import MergeRequest, GitLikeTree
 from .stats import Stats
 from .oauth import OAuthToken, OAuthConsumerToken, OAuthRequestToken, OAuthAccessToken, OAuth2ClientApp, OAuth2AuthorizationCode, OAuth2AccessToken

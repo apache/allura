@@ -161,6 +161,28 @@ class TestRootController(_TestCase):
              'parents': ['6a45885ae7347f1cac5103b0050cc1be6a1496c8'],
              'message': 'Add README', 'row': 2})
 
+    def test_commit_browser_data_arg_injection(self, tmp_path):
+        # End-to-end: `git log --output=<path>` argument injection via the `start`
+        # rev is rejected and writes no attacker-controlled file.
+        target = tmp_path / 'pwned'
+        sha = '1e146e67985dcd71c74de79613719bef7bddca4a'
+        self.app.get('/src-git/commit_browser_data',
+                     params={'start': f'--output={target},{sha}'},
+                     status=404)
+        assert not target.exists()
+
+    def test_rest_commits_arg_injection(self, tmp_path):
+        sha = '1e146e67985dcd71c74de79613719bef7bddca4a'
+        # baseline: the endpoint is reachable and returns commits
+        ok = self.app.get('/rest/p/test/src-git/commits/', params={'rev': sha})
+        assert ok.json['commits']
+        # an option-like rev is rejected (404) and writes no file
+        target = tmp_path / 'pwned'
+        self.app.get('/rest/p/test/src-git/commits/',
+                     params={'rev': f'--output={target}'},
+                     status=404)
+        assert not target.exists()
+
     def test_commit_browser_basic_view(self):
         resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/basic')
         resp.mustcontain('Rick')
