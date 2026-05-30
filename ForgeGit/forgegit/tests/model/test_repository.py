@@ -22,6 +22,7 @@ import datetime
 import email.iterators
 import pytest
 import mock
+import git
 from tg import tmpl_context as c, app_globals as g
 import tg
 
@@ -312,6 +313,68 @@ class TestGitRepo(RepoImplTestBase):
     def test_log_unicode(self):
         entries = list(self.repo.log(path='völundr', id_only=False))
         assert entries == []
+
+    def test_log_rejects_optionlike_revs(self):
+        # option-like revs are rejected before reaching git
+        sha = '1e146e67985dcd71c74de79613719bef7bddca4a'
+        with pytest.raises(ValueError):
+            self.repo.log('--output=/tmp/pwned')
+        with pytest.raises(ValueError):
+            self.repo.log(' -f-o-o')
+        with pytest.raises(ValueError):
+            self.repo.log([sha, '--upload-pack=x'])
+        with pytest.raises(ValueError):
+            self.repo.log('HEAD', exclude='--output=/tmp/pwned')
+        with pytest.raises(ValueError):
+            self.repo.log('HEAD', exclude=['--output=/tmp/pwned'])
+
+        self.repo.log(['HEAD'], exclude=['HEAD'])  # ok normal usage
+
+        # non-str / nested values must not slip past the check (the scm layer str()s them)
+        class _OptionLike:
+            def __str__(self):
+                return '--output=/tmp/pwned'
+        with pytest.raises(ValueError):
+            self.repo.log(_OptionLike())
+        with pytest.raises(ValueError):
+            self.repo.log([['--output=/tmp/pwned']])
+
+    def test_log_arg_injection_neutralized_in_git_impl(self, tmp_path):
+        # calling into the GitImplementation directly bypasses the model-layer check,
+        # but --end-of-options still stops git honoring an injected option
+        target = tmp_path / 'pwned'
+        list(self.repo._impl.log(
+            [f'--output={target}', '1e146e67985dcd71c74de79613719bef7bddca4a'],
+            id_only=True))
+        assert not target.exists()
+
+    def test_git_impl_sinks_neutralize_arg_injection(self, tmp_path):
+        # get_changes / paged_diffs / _get_last_commit feed commit_id into git argv;
+        # --end-of-options stops an option-like value from being honored as an option.
+        impl = self.repo._impl
+        for fname, call in (
+            ('a', lambda t: impl.get_changes(f'--output={t}')),
+            ('b', lambda t: impl.paged_diffs(f'--output={t}')),
+            ('c', lambda t: impl._get_last_commit(f'--output={t}', ['README'])),
+        ):
+            target = tmp_path / fname
+            with pytest.raises(git.GitCommandError, match=r'(bad revision|must come before non-option arguments)'):
+                call(target)
+            assert not target.exists()
+
+    def test_merge_methods_reject_option_like_refs(self):
+        # can_merge / merge / merge_base build git fetch/checkout/merge argv from the MR's
+        # branch and commit refs; option-like values are rejected before any git runs.
+        mr = mock.Mock()
+        mr.source_branch = 'master'
+        mr.target_branch = '--upload-pack=touch /tmp/pwned'
+        mr.downstream.commit_id = '1e146e67985dcd71c74de79613719bef7bddca4a'
+        with pytest.raises(ValueError, match=r"Invalid revision or ref: '--upload-pack"):
+            self.repo.can_merge(mr)
+        with pytest.raises(ValueError, match=r"Invalid revision or ref: '--upload-pack"):
+            self.repo.merge(mr)
+        with pytest.raises(ValueError, match=r"Invalid revision or ref: '--upload-pack"):
+            self.repo._impl.merge_base(mr)
 
     def test_log_file(self):
         entries = list(self.repo.log(path='README', id_only=False))
@@ -787,7 +850,10 @@ By Dave Brondsema''' in text_body
         self.repo._impl._git.git = mock.Mock()
         git.Repo.clone_from.side_effect = ConnectionError
         with pytest.raises(ConnectionError):
-            self.repo.merge(mock.Mock())
+            self.repo.merge(mock.Mock(source_branch='test-src-branch',
+                                      target_branch='test-target-branch',
+                                      downstream=mock.Mock(commit_id='test-commit-id')
+                                      ))
         assert shutil.rmtree.called
 
     @mock.patch.dict('allura.lib.app_globals.config',  {'scm.commit.git.detect_copies': 'false'})
