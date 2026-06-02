@@ -708,6 +708,9 @@ class NeighborhoodRestController:
 
 class ProjectRestController:
 
+    def _check_security(self):
+        security.require_access(c.project, 'read')
+
     @expose()
     def _lookup(self, name, *remainder):
         if not name:

@@ -26,6 +26,7 @@ import pytest
 import webtest
 from ming.odm import ThreadLocalODMSession
 from tg import config
+from tg import tmpl_context as c
 
 from allura.tests import decorators as td
 from alluratest.controller import TestRestApiBase
@@ -221,6 +222,21 @@ class TestRestHome(TestRestApiBase):
         tool_mounts = [t['mount_point'] for t in r.json['tools']]
         assert 'bugs' in tool_mounts
         assert 'private-bugs' not in tool_mounts
+
+    def test_project_metadata_private_denied_to_anon(self):
+        # public project: anonymous can read project metadata + DOAP via REST
+        assert self.app.get('/rest/p/test/', extra_environ={'username': '*anonymous'}, status=200)
+        # make the project itself private
+        with h.push_context('test', neighborhood='Projects'):
+            role = M.ProjectRole.by_name('*anonymous')._id
+            read_permission = M.ACE.allow(role, 'read')
+            c.project.acl.remove(read_permission)
+        ThreadLocalODMSession.flush_all()
+        # anonymous is now denied the project metadata and member roster (index + doap)
+        self.app.get('/rest/p/test/', extra_environ={'username': '*anonymous'}, status=401)
+        self.app.get('/rest/p/test/?doap', extra_environ={'username': '*anonymous'}, status=401)
+        # an authorized admin can still read it
+        r = self.api_get('/rest/p/test/', status=200)
 
     def test_neighborhood_has_access_no_params(self):
         r = self.api_get('/rest/p/has_access', status=404)
