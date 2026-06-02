@@ -142,6 +142,9 @@ class AdminController(DefaultAdminController):
 
 class RootController(BaseController):
 
+    def _check_security(self):
+        require_access(c.app, 'read')
+
     @expose()
     def index(self, **kw):
         now = datetime.utcnow()
@@ -183,6 +186,7 @@ class DayController(RootController):
     @expose('jinja:forgechat:templates/chat/day.html')
     def index(self, **kw):
         q = dict(
+            app_config_id=c.app.config._id,
             timestamp={
                 '$gte': datetime.combine(self.day, time.min),
                 '$lte': datetime.combine(self.day, time.max)})
