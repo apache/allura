@@ -3649,7 +3649,7 @@ class TestEmailAuthCode(TestController):
             # Validate the email with the verification link was sent
             args, kwargs = send_system_mail_to_user.call_args
             assert r.session.get('mode') == 'email_code'
-            assert args[1] == f"{config['site_name']} Authentication Code"
+            assert args[1] == f"{config['site_name']} Authentication Link"
             assert send_system_mail_to_user.call_count == 1
             email_text = send_system_mail_to_user.call_args[0][2]
 
