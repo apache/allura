@@ -471,7 +471,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         reset_url = h.absurl(f'/auth/forgotten_password/{hash}')
         return reset_url
 
-    def send_email_auth_code(self, return_to='/', subject_tmpl='{site_name} Authentication Code', login_details=None):
+    def send_email_auth_code(self, return_to='/', subject_tmpl='{site_name} Authentication Link', login_details=None):
         from allura.controllers.auth import AuthController
 
         email_address = self.get_pref('email_address')
