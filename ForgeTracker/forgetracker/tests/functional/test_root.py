@@ -298,6 +298,7 @@ class TestFunctionalController(TrackerTestController):
     def test_ticket_get_markdown(self):
         self.new_ticket(summary='my ticket', description='my description')
         response = self.app.get('/bugs/1/get_markdown')
+        assert response.content_type == 'text/plain'
         assert 'my description' in response
 
     def test_ticket_update_markdown(self):

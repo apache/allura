@@ -473,9 +473,10 @@ class PostController(BaseController, FeedController):
                 'status': 'no_permission'
             }
 
-    @expose()
+    @expose(content_type='text/plain')
     @without_trailing_slash
     def get_markdown(self):
+        require_access(self.post, 'edit')
         return self.post.text
 
     @without_trailing_slash

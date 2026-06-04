@@ -209,6 +209,7 @@ class TestDiscuss(TestDiscussBase):
         post_id = str(
             r.html.find('div', {'class': 'discussion-post'})['id'])
         response = self.app.get(self._thread_link() + post_id + '/get_markdown')
+        assert response.content_type == 'text/plain'
         assert 'This is a post' in response
 
     def test_comment_update_markdown(self):

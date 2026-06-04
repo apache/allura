@@ -818,8 +818,9 @@ class PageController(BaseController, FeedController):
             }
 
     @without_trailing_slash
-    @expose()
+    @expose(content_type='text/plain')
     def get_markdown(self):
+        require_access(self.page, 'edit')
         return self.page.text
 
     @without_trailing_slash

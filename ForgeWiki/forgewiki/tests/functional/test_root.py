@@ -432,6 +432,7 @@ class TestRootController(TestController):
                 'labels': '',
             })
         response = self.app.get(h.urlquote('/wiki/tést/get_markdown'))
+        assert response.content_type == 'text/plain'
         assert '- [ ] checkbox' in response
 
     def test_page_update_markdown(self):

@@ -551,9 +551,10 @@ class MergeRequestController:
                 'status': 'no_permission'
             }
 
-    @expose()
+    @expose(content_type='text/plain')
     @without_trailing_slash
     def get_markdown(self):
+        require_access(self.req, 'write')
         return self.req.description
 
     @expose()

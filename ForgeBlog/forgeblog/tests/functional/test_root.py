@@ -165,6 +165,7 @@ class Test(TestController):
         self._post()
         d = self._blog_date()
         response = self.app.get('/blog/%s/my-post/get_markdown' % d)
+        assert response.content_type == 'text/plain'
         assert 'Nothing' in response
 
     def test_post_update_markdown(self):

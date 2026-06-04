@@ -962,6 +962,7 @@ class TestFork(_TestCase):
                           'description': 'description',
                       })
         response = self.app.get('/p/test/src-git/merge-requests/1/get_markdown')
+        assert response.content_type == 'text/plain'
         assert 'description' in response
 
     def test_merge_request_update_markdown(self):
