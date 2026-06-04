@@ -237,7 +237,7 @@ class AuthenticationProvider:
             return None
 
         # All stages complete — clean up and proceed to login
-        skip_after_login = self.session.get('mode') == 'email_code'  #  if we used an email link we'll skip `after_login` which sends a foreign login email
+        skip_after_login = self.session.get('mode') == 'email_code'  # if we used an email link we'll skip `after_login` which sends a foreign login email
         self.session.pop('multifactor-username', None)
         self.session.pop('mode', None)
 

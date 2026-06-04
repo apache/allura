@@ -271,6 +271,7 @@ def test_render_any_markup_plain():
             'readme.txt', '<b>blah</b>\n<script>alert(1)</script>\nfoo') ==
         '<pre>&lt;b&gt;blah&lt;/b&gt;\n&lt;script&gt;alert(1)&lt;/script&gt;\nfoo</pre>')
 
+
 def test_render_any_markup_plain_code_mode_inline():
     assert (
         h.render_any_markup(
@@ -280,6 +281,7 @@ def test_render_any_markup_plain_code_mode_inline():
         '&lt;b&gt;blah&lt;/b&gt;</span><span id="l2" class="code_block"><span class="lineno">2</span> '
         '&lt;script&gt;alert(1)&lt;/script&gt;</span><span id="l3" class="code_block"><span class="lineno">3</span> '
         'foo</span></pre></div>')
+
 
 def test_render_any_markup_plain_code_mode_table():
     assert (
@@ -293,6 +295,7 @@ def test_render_any_markup_plain_code_mode_table():
         '</span><span id="l3" class="code_block">foo</span></pre></div></td></tr></tbody></table>'
     )
 
+
 def test_render_any_markup_formatting():
     assert (str(h.render_any_markup('README.md', '### foo\n'
                                     '    <script>alert(1)</script>bar')) ==
@@ -300,6 +303,7 @@ def test_render_any_markup_formatting():
             '<div class="codehilite"><pre><span></span><code><span class="nt">'
             '&lt;script&gt;</span>alert(1)<span class="nt">'
             '&lt;/script&gt;</span>bar\n</code></pre></div>\n</div>')
+
 
 def test_render_any_markup_rst():
     assert (str(h.render_any_markup('README.rst', 'foo\n===\n\nbar\n<script>alert(1)</script>')) ==

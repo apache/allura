@@ -377,6 +377,7 @@ class AddWebsiteForm(ForgeForm):
         self.fields['newwebsite'].attrs['value'] = initial_value
         return super(ForgeForm, self).display(**kw)
 
+
 class RemoveTextValueForm(ForgeForm):
     defaults = dict(ForgeForm.defaults, submit_text=None, show_errors=False)
 

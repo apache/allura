@@ -279,8 +279,8 @@ class TestAuth(TestController):
 
     def test_evil_payloads(self):
         payloads = ["https://evil.com", "//evil.com", r"\\evil.com",  # backslash variant (sometimes normalized oddly)
-            "/\\evil.com", "///evil.com", "////evil.com", "https:evil.com",  # weird scheme parsing in some libs
-            "http://evil.com", ]
+                    "/\\evil.com", "///evil.com", "////evil.com", "https:evil.com",  # weird scheme parsing in some libs
+                    "http://evil.com", ]
         base = "http://localhost"
         base_split = urlparse(base)
         for p in payloads:

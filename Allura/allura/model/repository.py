@@ -562,7 +562,7 @@ class Repository(Artifact, ActivityObject):
             if not source_path.startswith(repos_root) and not bypass_path_check_for_tests:
                 err = 'Invalid source path'
                 if asbool(tg.config['debug']) or 'pytest' in sys.modules:
-                        err += f': {source_path} must start with {repos_root}'
+                    err += f': {source_path} must start with {repos_root}'
                 raise ValueError(err)
             source = source_path
         else:

@@ -128,6 +128,7 @@ class MetaDefOpt(type):
                 pass
         return stderr.getvalue()
 
+
 class DefOptScriptTask(metaclass=MetaDefOpt):
     """Base class for a command-line script that is also executable as a task."""
 

@@ -289,7 +289,7 @@ class TestPostNotifications:
                              [('![img](https://static.vecteezy.com/system/resources/thumbnails/012/042/301/small_2x/warning-sign-icon-transparent-background-free-png.png)',
                                'src="https://static.vecteezy.com/system/'),
                                  ('[link text](https://example.com)', 'href="https://example.com"'),
-                             ])
+                              ])
     def test_email_markdown_not_parsed(self, markdown, result):
         """
         strings like `![img](url)` in Wiki notification body should be converted to HTML
@@ -345,7 +345,7 @@ class TestTicketNotifications():
             ThreadLocalODMSession.flush_all()
 
     @pytest.mark.parametrize('markdown, rendered_snippet',
-        [('![img](https://static.vecteezy.com/system/resources/thumbnails/012/042/301/small_2x/warning-sign-icon-transparent-background-free-png.png)', '<img',), ('[link text](https://example.com)', '<a',), ])
+                             [('![img](https://static.vecteezy.com/system/resources/thumbnails/012/042/301/small_2x/warning-sign-icon-transparent-background-free-png.png)', '<img',), ('[link text](https://example.com)', '<a',), ])
     def test_ticket_email_markdown_not_parsed(self, markdown, rendered_snippet):
         self._subscribe()
         body_link = '[main link](https://wesbite.com)'
@@ -380,7 +380,6 @@ class TestTicketNotifications():
 
     def _post_notification(self, **kwargs):
         return M.Notification.post(self.pg, 'metadata', **kwargs)
-
 
 
 class TestSubscriptionTypes:

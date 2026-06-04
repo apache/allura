@@ -137,4 +137,3 @@ class TestHtmlSideBySideDiff:
         assert 'file <a>' not in html
         assert 'file &lt;b&gt;' in html
         assert 'file <b>' not in html
-

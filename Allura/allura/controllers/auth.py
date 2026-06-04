@@ -1227,6 +1227,7 @@ class UserContactsController(BaseController):
         flash('Your personal contacts were successfully updated!')
         redirect('.')
 
+
 class UserAvailabilityController(BaseController):
 
     def _check_security(self):
