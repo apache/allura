@@ -193,6 +193,7 @@ class RepoRootController(BaseController, FeedController):
     @expose('jinja:allura:templates/repo/request_merge.html')  # needed when we "return self.request_merge(...)"
     @require_post()
     def do_request_merge(self, **kw):
+        require_access(c.app.repo, 'admin')
         try:
             kw = self.mr_widget.to_python(kw)
         except formencode.Invalid:

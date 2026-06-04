@@ -746,6 +746,17 @@ class TestFork(_TestCase):
             '/p/test2/code/request_merge',
             status=403, extra_environ=dict(username='test-user'))
 
+    def test_do_request_merge_unavailable_to_non_admin(self):
+        self.app.post(
+            '/p/test2/code/do_request_merge',
+            params={
+                'source_branch': 'zz',
+                'target_branch': 'master',
+                'summary': 'summary',
+                'description': 'description',
+            },
+            status=403, extra_environ=dict(username='test-user'))
+
     def test_merge_request_detail_view(self):
         r, mr_num = self._request_merge()
         assert 'wants to merge' in r
