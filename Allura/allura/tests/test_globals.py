@@ -42,6 +42,7 @@ from alluratest.controller import (
 from allura import model as M
 from allura.lib import helpers as h
 from allura.lib.app_globals import ForgeMarkdown
+from allura.lib.search import find_shortlinks
 from allura.tests import decorators as td
 
 from forgewiki import model as WM
@@ -445,6 +446,11 @@ class Test():
         assert g.markdown.convert(text) == '<pre>%s</pre>' % text
         assert g.markdown_wiki.convert(text) == '<pre>%s</pre>' % text
         assert g.markdown.convert('<b>' + text) == '<pre>&lt;b&gt;%s</pre>' % text
+        assert g.markdown_commit.convert(text) == '<pre>%s</pre>' % text
+
+    def test_find_shortlinks_big_text(self):
+        text = '[a123]  ' + 'a' * 40001
+        assert find_shortlinks(text) == []
 
     def test_markdown_basics(self):
         with h.push_context('test', 'wiki', neighborhood='Projects'):
@@ -921,6 +927,18 @@ class TestCachedMarkdown:
         assert self.post.text_cache.md5 is None
         assert self.post.text_cache.html is None
         assert self.post.text_cache.render_time is None
+
+    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='99999')
+    def test_big_text(self):
+        # between the base limit and the higher .cached limit (2x by default), still renders
+        self.post.text = 'a' * 50000
+        html = self.md.cached_convert(self.post, 'text')
+        assert not html.startswith('<pre>')
+        # beyond the .cached limit, falls back to plain text
+        self.post.text = 'a' * 80001
+        del self.post.text_cache
+        html = self.md.cached_convert(self.post, 'text')
+        assert html == '<pre>%s</pre>' % self.post.text
 
     @patch.dict('allura.lib.app_globals.config', {})
     def test_all_expected_keys_exist_in_cache(self):

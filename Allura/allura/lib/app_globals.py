@@ -100,8 +100,14 @@ class ForgeMarkdown:
                         'mdx_breakless_lists',],
             output_format='html')
 
-    def convert(self, source, render_limit=True) -> Markup:
-        if render_limit and len(source) > asint(config.get('markdown_render_max_length', 80000)):
+    @staticmethod
+    def base_render_limit() -> int:
+        return asint(config.get('markdown_render_max_length', 80000))
+
+    def convert(self, source, max_length=None) -> Markup:
+        if max_length is None:
+            max_length = self.base_render_limit()
+        if len(source) > max_length:
             # if text is too big, markdown can take a long time to process it,
             # so we return it as a plain text
             log.info('Text is too big. Skipping markdown processing')
@@ -145,7 +151,8 @@ class ForgeMarkdown:
 
         # Convert the markdown and time the result.
         start = time.time()
-        html = self.convert(source_text, render_limit=False)
+        cached_max_length = asint(config.get('markdown_render_max_length.cached', self.base_render_limit() * 2))
+        html = self.convert(source_text, max_length=cached_max_length)
         render_time = time.time() - start
 
         threshold = config.get('markdown_cache_threshold')
@@ -187,6 +194,19 @@ class ForgeMarkdown:
                         utils.skip_last_updated(artifact.__class__):
                     sess.flush(artifact)
         return html
+
+
+class ForgeMarkdownCommit(ForgeMarkdown):
+
+    def __init__(self, app):
+        super().__init__()
+        self.app = app
+
+    def make_markdown_instance(self, **forge_ext_kwargs):
+        return markdown.Markdown(
+            extensions=[CommitMessageExtension(self.app), EmojiExtension(), 'markdown.extensions.nl2br'],
+            output_format='html',
+        )
 
 
 class Globals:
@@ -520,10 +540,7 @@ class Globals:
 
         """
         app = getattr(c, 'app', None)
-        return markdown.Markdown(
-            extensions=[CommitMessageExtension(app), EmojiExtension(), 'markdown.extensions.nl2br'],
-            output_format='html',
-        )
+        return ForgeMarkdownCommit(app)
 
     @property
     def production_mode(self):

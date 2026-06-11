@@ -415,7 +415,11 @@ def search_app(q='', fq=None, app: bool = True, history: bool = False, project: 
 
 def find_shortlinks(text):
     from .markdown_extensions import ForgeExtension
+    from .app_globals import ForgeMarkdown
 
+    if len(text) > ForgeMarkdown.base_render_limit():
+        log.info('Text is too big. Skipping shortlink search')
+        return []
     md = markdown.Markdown(
         extensions=['markdown.extensions.codehilite', ForgeExtension(), 'markdown.extensions.tables'],
         output_format='html')
