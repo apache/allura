@@ -48,6 +48,15 @@ class TestLinkApi(TestRestApiBase):
         r = self.api_get('/rest/p/test/link')
         assert r.json['url'] == 'http://yahoo.com'
 
+    def test_rest_link_invalid_url(self):
+        self.api_post('/rest/p/test/link',
+                      url='javascript:alert(1)', status=400)
+        r = self.api_get('/rest/p/test/link')
+        assert r.json['url'] is None
+
+        r = self.api_post('/rest/p/test/link', url='google.com')
+        assert r.json['url'] == 'http://google.com'
+
     def test_rest_link_get_permissions(self):
         self.app.get('/rest/p/test/link',
                      extra_environ={'username': '*anonymous'}, status=200)

@@ -25,6 +25,8 @@ from tg import tmpl_context as c
 from tg import app_globals as g
 from tg import request
 from formencode import validators as fev
+import formencode
+from webob import exc
 
 # Pyforge-specific imports
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
@@ -39,6 +41,8 @@ from allura.controllers.rest import AppRestControllerMixin
 from forgelink import version
 
 log = logging.getLogger(__name__)
+
+url_validator = fev.URL(not_empty=True, add_http=True)
 
 
 class ForgeLinkApp(Application):
@@ -58,7 +62,7 @@ class ForgeLinkApp(Application):
             'url', str, None,
             label='External Url',
             help_text='URL to which you wish to link',
-            validator=fev.URL(not_empty=True, add_http=True),
+            validator=url_validator,
             extra_attrs={'type': 'url', 'required': '', 'placeholder': 'https://example.com'}),
     ]
     config_on_install = ['url']
@@ -152,6 +156,10 @@ class RootRestController(BaseController, AppRestControllerMixin):
     def index(self, url='', **kw):
         if (request.method == 'POST') and (url != ''):
             require_access(self.app, 'configure')
+            try:
+                url = url_validator.to_python(url)
+            except formencode.Invalid as e:
+                raise exc.HTTPBadRequest(str(e))
             self.app.config.options.url = url
         return self.link_json()
 
