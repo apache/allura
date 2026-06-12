@@ -164,6 +164,7 @@ class NeighborhoodController:
         return {}
 
     @expose('json:')
+    @require_post()
     def verify_phone(self, number, **kw):
         require_access(self.neighborhood, 'register')
         p = plugin.ProjectRegistrationProvider.get()
@@ -180,6 +181,7 @@ class NeighborhoodController:
         return result
 
     @expose('json:')
+    @require_post()
     def check_phone_verification(self, pin, **kw):
         require_access(self.neighborhood, 'register')
         p = plugin.ProjectRegistrationProvider.get()
