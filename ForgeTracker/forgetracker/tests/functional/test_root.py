@@ -1989,6 +1989,27 @@ class TestFunctionalController(TrackerTestController):
         assert filtered_changes[users[1]._id] == set(ticket_ids[:-1])
         assert filtered_changes[admin._id] == set(ticket_ids[:-1])
 
+    def test_filtered_by_subscription_respects_private_read_access(self):
+        self.new_ticket(summary='public ticket', status='open')
+        self.new_ticket(summary='private ticket', status='open')
+        public = tm.Ticket.query.get(summary='public ticket')
+        private = tm.Ticket.query.get(summary='private ticket')
+        private.private = True
+        user = M.User.by_username('test-user-0')
+        admin = M.User.by_username('test-admin')
+        # tool-wide subscription: would otherwise receive every ticket change
+        M.Mailbox.subscribe(user_id=user._id, artifact=None)
+        ThreadLocalODMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalODMSession.flush_all()
+
+        changes = {public._id: public, private._id: private}
+        filtered = c.app.globals.filtered_by_subscription(changes)
+        # user can't read the private ticket, so it's excluded from their fanout
+        assert filtered[user._id] == {public._id}
+        # admin (developer/creator) can read both
+        assert filtered[admin._id] == {public._id, private._id}
+
     def test_vote(self):
         r = self.new_ticket(summary='test vote').follow()
         assert r.html.find('div', {'id': 'vote'})

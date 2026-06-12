@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import annotations
 import logging
 import six.moves.urllib.request
 import six.moves.urllib.parse
@@ -519,7 +520,11 @@ class Globals(MappedClass):
             count, 's' if count != 1 else '', app)
         Notification.post_user(c.user, None, 'flash', text=text)
 
-    def filtered_by_subscription(self, tickets, project_id=None, app_config_id=None):
+    def filtered_by_subscription(
+            self, tickets: dict[ObjectId, Ticket],
+            project_id: ObjectId | None = None,
+            app_config_id: ObjectId | None = None,
+    ) -> dict[ObjectId, set[ObjectId]]:  # user_id -> set of ticket_ids
         p_id = project_id if project_id else c.project._id
         ac_id = app_config_id if app_config_id else self.app_config_id
         ticket_ids = list(tickets.keys())
@@ -537,6 +542,16 @@ class Globals(MappedClass):
             elif subscription.artifact_index_id in list(tickets_index_id.keys()):
                 user = filtered.setdefault(subscription.user_id, set())
                 user.add(tickets_index_id[subscription.artifact_index_id])
+        # Check for subscribers who can't read them (e.g. private tickets reached via a tool-wide subscription)
+        users_by_id = {u._id: u for u in User.query.find({'_id': {'$in': list(filtered.keys())}})}
+        for user_id, t_ids in list(filtered.items()):
+            user = users_by_id.get(user_id)
+            readable = {t_id for t_id in t_ids
+                        if user and security.has_access(tickets[t_id], 'read', user)}
+            if readable:
+                filtered[user_id] = readable
+            else:
+                del filtered[user_id]
         return filtered
 
     def append_new_labels(self, old_labels, new_labels):
