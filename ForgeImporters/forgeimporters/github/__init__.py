@@ -32,6 +32,7 @@ from requests_oauthlib import OAuth2Session
 from formencode import validators as fev
 
 from allura.lib.security import is_site_admin
+from allura.lib.utils import hostname_from_url
 from forgeimporters import base
 from urllib.parse import urlparse
 
@@ -90,7 +91,7 @@ class GitHubProjectExtractor(base.ProjectExtractor):
 
     def add_token(self, url):
         headers = {}
-        if self.token:
+        if self.token and hostname_from_url(url) == 'api.github.com':  # never an outside domain
             headers['Authorization'] = f'Bearer {self.token}'
         return url, headers
 
