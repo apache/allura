@@ -975,17 +975,25 @@ class TestNeighborhood(TestController):
 
 
 class TestPhoneVerificationOnProjectRegistration(TestController):
+    def setup_method(self, method):
+        super().setup_method(method)
+        self.app.get('/p/phone_verification_fragment')  # establish _csrf_token cookie
+
     def test_phone_verification_fragment_renders(self):
         self.app.get('/p/phone_verification_fragment', status=200)
         self.app.get('/adobe/phone_verification_fragment', status=200)
 
     def test_verify_phone_no_params(self):
         with h.push_config(config, **{'project.verify_phone': 'true'}):
-            self.app.get('/p/verify_phone', status=404)
+            self.app.post('/p/verify_phone',
+                          params={'_csrf_token': self.app.cookies['_csrf_token']},
+                          status=404)
 
     def test_verify_phone_error(self):
         with h.push_config(config, **{'project.verify_phone': 'true'}):
-            r = self.app.get('/p/verify_phone', {'number': '1234567890'})
+            r = self.app.post('/p/verify_phone',
+                              params={'number': '1234567890',
+                                      '_csrf_token': self.app.cookies['_csrf_token']})
             expected = {'status': 'error',
                         'error': 'Phone service is not configured'}
             assert r.json == expected
@@ -999,7 +1007,9 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
         with h.push_config(config, **{'project.verify_phone': 'true'}):
             phone_service.verify.return_value = {
                 'request_id': 'request-id', 'status': 'ok'}
-            r = self.app.get('/p/verify_phone', {'number': '1-555-444-3333'})
+            r = self.app.post('/p/verify_phone',
+                              params={'number': '1-555-444-3333',
+                                      '_csrf_token': self.app.cookies['_csrf_token']})
             phone_service.verify.assert_called_once_with('15554443333')
             assert r.json == {'status': 'ok'}
             rid = r.session.get('phone_verification.request_id')
@@ -1014,7 +1024,9 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
             'error': '<script>alert("hacked");</script>',
         }
         with h.push_config(config, **{'project.verify_phone': 'true'}):
-            r = self.app.get('/p/verify_phone', {'number': '555-444-3333'})
+            r = self.app.post('/p/verify_phone',
+                              params={'number': '555-444-3333',
+                                      '_csrf_token': self.app.cookies['_csrf_token']})
         expected = {
             'status': 'error',
             'error': '&lt;script&gt;alert(&#34;hacked&#34;);&lt;/script&gt;',
@@ -1028,7 +1040,9 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
             u.set_tool_data('phone_verification', number_hash=utils.phone_number_hash('1-555-444-9999'))
             session(u).flush(u)
             phone_service.verify.return_value = {'request_id': 'request-id', 'status': 'ok'}
-            r = self.app.get('/p/verify_phone', {'number': '1-555-444-9999'})
+            r = self.app.post('/p/verify_phone',
+                              params={'number': '1-555-444-9999',
+                                      '_csrf_token': self.app.cookies['_csrf_token']})
             assert r.json == {
                 'status': 'error',
                 'error': 'That phone number has already been used.'
@@ -1036,7 +1050,9 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
 
     def test_check_phone_verification_no_params(self):
         with h.push_config(config, **{'project.verify_phone': 'true'}):
-            self.app.get('/p/check_phone_verification', status=404)
+            self.app.post('/p/check_phone_verification',
+                          params={'_csrf_token': self.app.cookies['_csrf_token']},
+                          status=404)
 
     @patch.object(g, 'phone_service', autospec=True)
     def test_check_phone_verification_error(self, phone_service):
@@ -1047,9 +1063,13 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
             # make request to verify first to initialize session
             phone_service.verify.return_value = {
                 'request_id': req_id, 'status': 'ok'}
-            r = self.app.get('/p/verify_phone', {'number': '1234567890'})
+            r = self.app.post('/p/verify_phone',
+                              params={'number': '1234567890',
+                                      '_csrf_token': self.app.cookies['_csrf_token']})
 
-            r = self.app.get('/p/check_phone_verification', {'pin': '1234'})
+            r = self.app.post('/p/check_phone_verification',
+                              params={'pin': '1234',
+                                      '_csrf_token': self.app.cookies['_csrf_token']})
             assert r.json == {'status': 'error'}
             phone_service.check.assert_called_once_with(req_id, '1234')
 
@@ -1066,9 +1086,13 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
             # make request to verify first to initialize session
             phone_service.verify.return_value = {
                 'request_id': req_id, 'status': 'ok'}
-            r = self.app.get('/p/verify_phone', {'number': '11234567890'})
+            r = self.app.post('/p/verify_phone',
+                              params={'number': '11234567890',
+                                      '_csrf_token': self.app.cookies['_csrf_token']})
 
-            r = self.app.get('/p/check_phone_verification', {'pin': '1234'})
+            r = self.app.post('/p/check_phone_verification',
+                              params={'pin': '1234',
+                                      '_csrf_token': self.app.cookies['_csrf_token']})
             assert r.json == {'status': 'ok'}
             phone_service.check.assert_called_once_with(req_id, '1234')
 
@@ -1083,7 +1107,9 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
             'error': '<script>alert("hacked");</script>',
         }
         with h.push_config(config, **{'project.verify_phone': 'true'}):
-            r = self.app.get('/p/check_phone_verification', {'pin': '1234'})
+            r = self.app.post('/p/check_phone_verification',
+                              params={'pin': '1234',
+                                      '_csrf_token': self.app.cookies['_csrf_token']})
         expected = {
             'status': 'error',
             'error': '&lt;script&gt;alert(&#34;hacked&#34;);&lt;/script&gt;',
