@@ -373,9 +373,12 @@ class RepoRestController(RepoRootController, AppRestControllerMixin):
             ]}
 
     @expose('json:')
+    @require_post()
     def commit_status(self, rev=None, **kwargs):
+        require_access(c.app.repo, 'admin')
         if not g.commit_statuses_enabled:
             return {'status': 'disabled', 'message': 'check your config file'}
+        # TODO: if/when this experimental feature is implemented, scope context or app_config field to current repo
         params = {x: kwargs.get(x, '').strip() for x in
                   ['state', 'target_url', 'description', 'context']}
         params['commit_id'] = rev
