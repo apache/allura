@@ -2052,6 +2052,9 @@ a.sidebar-disabled:focus {
     margin-left: -0.5em;
     margin-top: 0.5em;
 }
+.markdown_content img {
+  max-width: 100%;
+}
 
 .media a {
   float: left;

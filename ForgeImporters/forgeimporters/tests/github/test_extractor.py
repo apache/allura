@@ -130,7 +130,7 @@ class TestGitHubProjectExtractor:
     @patch('forgeimporters.base.h.urlopen')
     def test_urlopen(self, urlopen):
         e = github.GitHubProjectExtractor('test_project')
-        url = 'https://github.com/u/p/'
+        url = 'https://api.github.com/repos/u/p/'
         e.urlopen(url)
         request = urlopen.call_args[0][0]
         assert request.get_full_url() == url
@@ -143,6 +143,14 @@ class TestGitHubProjectExtractor:
         assert request.get_full_url() == url
         assert request.headers['User-agent']
         assert request.headers['Authorization'] == 'Bearer abc'
+
+        # token goes only to the API, never to content hosts
+        for content_url in ('https://user-images.githubusercontent.com/x.png',
+                            'https://evil.example.com/x.png'):
+            e.urlopen(content_url)
+            request = urlopen.call_args[0][0]
+            assert 'Authorization' not in request.headers
+            assert 'Authorization' not in request.unredirected_hdrs
 
     @patch('forgeimporters.base.h.urlopen')
     @patch('forgeimporters.github.time.sleep')
