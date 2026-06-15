@@ -823,10 +823,11 @@ class PreferencesController(BaseController):
             c.user.set_pref('display_name', preferences['display_name'])
             if old != preferences['display_name']:
                 h.auditlog_user('Display Name changed %s => %s', old, preferences['display_name'])
+
             for k, v in preferences.items():
                 if k == 'results_per_page':
                     v = int(v)
-                c.user.set_pref(k, v)
+                    c.user.set_pref(k, v)
         redirect('.')
 
     @expose()
