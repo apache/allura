@@ -428,6 +428,41 @@ class TestAuth:
         assert M.User.decr(user.display_name_encrypted) == 'Encrypted Display Name'
         assert user.__dict__['__ming__'].state.document.display_name == 'Encrypted Display Name'
 
+    def test_email_addresses_encrypted_is_populated_on_creation(self):
+        user = M.User(
+            username='email-addresses-encrypted-create-test',
+            email_addresses=['primary@example.com', None, 'secondary@example.com'])
+        ThreadLocalODMSession.flush_all()
+
+        expected_encrypted = [
+            M.User.encr('primary@example.com'),
+            None,
+            M.User.encr('secondary@example.com'),
+        ]
+        assert user.email_addresses == ['primary@example.com', None, 'secondary@example.com']
+        assert user.email_addresses_encrypted == expected_encrypted
+        assert state(user).document['email_addresses'] == ['primary@example.com', None, 'secondary@example.com']
+        assert state(user).document['email_addresses_encrypted'] == expected_encrypted
+
+    def test_email_addresses_encrypted_is_synced_on_update(self):
+        user = M.User(
+            username='email-addresses-encrypted-update-test',
+            email_addresses=['keep@example.com', 'remove@example.com'])
+        ThreadLocalODMSession.flush_all()
+
+        user.email_addresses.append('add@example.com')
+        user.email_addresses.remove('remove@example.com')
+        ThreadLocalODMSession.flush_all()
+
+        expected_encrypted = [
+            M.User.encr('keep@example.com'),
+            M.User.encr('add@example.com'),
+        ]
+        assert user.email_addresses == ['keep@example.com', 'add@example.com']
+        assert user.email_addresses_encrypted == expected_encrypted
+        assert state(user).document['email_addresses'] == ['keep@example.com', 'add@example.com']
+        assert state(user).document['email_addresses_encrypted'] == expected_encrypted
+
     def test_set_display_name_pref_updates_encrypted_field_and_cache(self):
         user = M.User(
             username='display-name-cache-test',
