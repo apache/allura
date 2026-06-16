@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import base64
 import importlib
+import sys
 from collections.abc import Iterable, Mapping, MutableMapping
 from contextlib import contextmanager
 import time
@@ -81,8 +82,24 @@ def clean_ming_config(config):
     return config
 
 
+def check_ming_config(config: dict):
+    if 'pytest' in sys.modules:
+        return
+    for ming_group in ['main', 'project', 'task']:
+        key = config.get(f'ming.{ming_group}.encryption.kms_providers.local.key')
+        if not key:
+            raise ValueError('MongoDB encryption needs a key.  Set ming.*.encryption.* in your .ini file!')
+        if key.startswith('REPLACE/ME'):
+            msg = 'insecure default key used for MongoDB encryption.  Update ming.*.key in your .ini file!'
+            if asbool(config['debug']):
+                log.warning(msg)
+            else:
+                raise ValueError(msg)
+
+
 def configure_ming(conf):
     conf = clean_ming_config(conf)
+    check_ming_config(conf)
     ming.configure(**conf)
 
 
