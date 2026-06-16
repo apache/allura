@@ -1,5 +1,31 @@
 NEXT RELEASE
 
+Upgrade Instructions
+
+  Stop any running Allura services while upgrading.
+
+  Install updated dependencies by running:
+    pip install -r requirements.txt --no-deps --upgrade --upgrade-strategy=only-if-needed
+
+  In your .ini file, set csp.form_action_urls to your base URL.
+
+  In your .ini file, enable or disable importers like Trac importer as you see fit (see disable_entry_points lines in development.ini)
+
+  Field-level mongo encryption setup:
+    Copy the new `ming.*encryption*` lines from development.ini to your own .ini file.
+    Generate a secret key with: python -c 'import base64, secrets; print(base64.b64encode(secrets.token_bytes(96)).decode())'
+    Put that secret key in your .ini file in 3 spots:
+      ming.main.encryption.kms_providers.local.key = ...
+      ming.project.encryption.kms_providers.local.key = ...
+      ming.task.encryption.kms_providers.local.key = ...
+
+  Run scripts/migrations/035-field-encryption.sh  If using docker, this is the full command (replace your .ini file path): docker compose run -e INI=docker-dev.ini --rm taskd ../scripts/migrations/035-field-encryption.sh
+
+  Run: `paster ensure_index development.ini --clean` in Allura dir.  Replace your .ini file path
+
+  After new version of Allura is up and running, delete the plaintext versions of the encrypted fields by running scripts/migrations/036-field-encryption-cleanup.sh
+
+
  * [#8583] Add support for Python 3.13
  * [#8598] Upgrade Underscore Library
 

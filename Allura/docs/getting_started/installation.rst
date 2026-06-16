@@ -258,6 +258,20 @@ You can use the following command to generate a good key:
 
     ~$ python -c 'import secrets; print(secrets.token_hex());'
 
+Set a secret key used for MongoDB field-level encryption.
+
+.. code-block:: ini
+
+    ming.main.encryption.kms_providers.local.key = <secret-key>
+    ming.project.encryption.kms_providers.local.key = <secret-key>
+    ming.task.encryption.kms_providers.local.key = <secret-key>
+
+Use the same key for all 3 (but different than the beaker key).  You can use the following command to generate a good key:
+
+.. code-block:: bash
+
+    ~$ python -c 'import base64, secrets; print(base64.b64encode(secrets.token_bytes(96)).decode())'
+
 Production-quality web server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
