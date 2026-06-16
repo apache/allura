@@ -20,7 +20,7 @@ beautifulsoup4==4.14.3
     # via
     #   -r requirements.in
     #   webtest
-bleach==6.3.0
+bleach==6.4.0
     # via pypeline
 boto3==1.42.89
     # via pymongo-auth-aws
