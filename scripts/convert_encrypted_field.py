@@ -80,6 +80,19 @@ def _get_nested_value(rec: dict, field_name: str):
     return value
 
 
+def _is_encrypted_list_schema(field_schema) -> bool:
+    return (
+        isinstance(field_schema, schema.Array)
+        and isinstance(field_schema.field_type, schema.Binary)
+    )
+
+
+def _encrypt_field_value(Model: type[MappedClass], value, field_schema):
+    if _is_encrypted_list_schema(field_schema):
+        return [Model.encr(v) if v is not None else None for v in value or []]
+    return Model.encr(value)
+
+
 def main(class_name: str, plain_field_name: str,
          *, remove_unencrypted: bool = False, redo_all: bool = False, limit: int | None = None):
     """
@@ -103,7 +116,7 @@ def main(class_name: str, plain_field_name: str,
         # model schema, but we can still create it with raw MongoDB updates
         encr_schema = None
     if encr_schema is not None:
-        assert isinstance(encr_schema, schema.Binary)
+        assert isinstance(encr_schema, schema.Binary) or _is_encrypted_list_schema(encr_schema)
     elif remove_unencrypted:
         raise AssertionError(
             f'Cannot use --remove-unencrypted because {encrypted_field_name!r} '
@@ -111,7 +124,10 @@ def main(class_name: str, plain_field_name: str,
     if remove_unencrypted:
         if '.' not in plain_field_name:
             plain_prop = Model.__dict__[plain_field_name]  # getattr() better but needs Ming fix released
-            assert isinstance(plain_prop, DecryptedProperty)
+            if _is_encrypted_list_schema(encr_schema):
+                assert hasattr(plain_prop, 'encrypted_field')
+            else:
+                assert isinstance(plain_prop, DecryptedProperty)
             assert plain_prop.encrypted_field == encrypted_field_name
 
     # TODO: figure out how it works with inheritance
@@ -132,7 +148,7 @@ def main(class_name: str, plain_field_name: str,
         bulk_update_result = Model.query.update(
             query,
             {
-                '$set': {encrypted_field_name: Model.encr(bulk_val)},
+                '$set': {encrypted_field_name: _encrypt_field_value(Model, bulk_val, encr_schema)},
             },
             multi=True,
         )
@@ -159,7 +175,7 @@ def main(class_name: str, plain_field_name: str,
 
         for rec_doc in docs:
             val = _get_nested_value(rec_doc, plain_field_name)
-            encr_val = Model.encr(val)
+            encr_val = _encrypt_field_value(Model, val, encr_schema)
             raw_collection.update_one({'_id': rec_doc['_id']}, {
                 '$set': {encrypted_field_name: encr_val},
             })
