@@ -196,7 +196,12 @@ function get_cm($elem) {
 }
 
 function escape_html(str) {
-    return $('<i></i>').text(str).html();
+    return String(str)
+        .replace(/&/g, '&amp;')   // must be first
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 $(function(){
