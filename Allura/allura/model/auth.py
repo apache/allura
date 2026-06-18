@@ -38,8 +38,8 @@ from tg import config
 from tg import tmpl_context as c, app_globals as g
 from tg import request
 from ming import schema as S
-from ming.odm import session, state, MapperExtension
-from ming.odm import DecryptedProperty, FieldProperty, RelationProperty, ForeignIdProperty
+from ming.odm import session, state
+from ming.odm import FieldProperty, RelationProperty, ForeignIdProperty, DecryptedProperty, DecryptedListProperty
 from ming.odm.declarative import MappedClass
 from ming.odm.odmsession import ThreadLocalODMSession
 from ming.utils import LazyProperty
@@ -266,15 +266,6 @@ class FieldPropertyDisplayName(DecryptedProperty):
         return super().__get__(instance, type(instance))
 
 
-class UserEmailAddressesMapperExtension(MapperExtension):
-
-    def before_insert(self, obj, state, sess):
-        obj.sync_email_addresses_encrypted()
-
-    def before_update(self, obj, state, sess):
-        obj.sync_email_addresses_encrypted()
-
-
 class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     SALT_LEN = 8
 
@@ -283,7 +274,6 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         session = main_orm_session
         indexes = ['tool_data.AuthPasswordReset.hash']
         unique_indexes = ['username']
-        extensions = [UserEmailAddressesMapperExtension]
         custom_indexes = [
             dict(fields=('tool_data.phone_verification.number_hash',), sparse=True),
         ]
@@ -295,7 +285,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     _id = FieldProperty(S.ObjectId)
     sfx_userid = FieldProperty(S.Deprecated)
     username = FieldProperty(str)
-    email_addresses = FieldProperty([str])
+    email_addresses = DecryptedListProperty('email_addresses_encrypted')
     email_addresses_encrypted = FieldProperty([S.Binary], if_missing=[])
     password = FieldProperty(str)  # hashed
     last_password_updated = FieldProperty(datetime)  # to access, use AuthProvider's get_last_password_updated
@@ -797,13 +787,6 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         d = self.tool_data.setdefault(tool, {})
         d.update(kw)
         state(self).soil()
-
-    @classmethod
-    def encrypt_email_addresses(cls, email_addresses):
-        return [cls.encr(addr) if addr is not None else None for addr in email_addresses or []]
-
-    def sync_email_addresses_encrypted(self):
-        self.email_addresses_encrypted = type(self).encrypt_email_addresses(self.email_addresses)
 
     def address_object(self, addr):
         return EmailAddress.get(email=addr, claimed_by_user_id=self._id)

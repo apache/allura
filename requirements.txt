@@ -158,7 +158,7 @@ markupsafe==3.0.3
     #   werkzeug
 mdx-breakless-lists==1.0.1
     # via -r requirements.in
-ming==0.17.0
+ming==0.17.1
     # via -r requirements.in
 mock==5.2.0
     # via -r requirements.in

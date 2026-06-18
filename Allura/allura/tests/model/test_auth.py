@@ -445,7 +445,7 @@ class TestAuth:
         ]
         assert user.email_addresses == ['primary@example.com', None, 'secondary@example.com']
         assert user.email_addresses_encrypted == expected_encrypted
-        assert state(user).document['email_addresses'] == ['primary@example.com', None, 'secondary@example.com']
+        assert 'email_addresses' not in state(user).document
         assert state(user).document['email_addresses_encrypted'] == expected_encrypted
 
     def test_email_addresses_encrypted_is_synced_on_update(self):
@@ -464,7 +464,7 @@ class TestAuth:
         ]
         assert user.email_addresses == ['keep@example.com', 'add@example.com']
         assert user.email_addresses_encrypted == expected_encrypted
-        assert state(user).document['email_addresses'] == ['keep@example.com', 'add@example.com']
+        assert 'email_addresses' not in state(user).document
         assert state(user).document['email_addresses_encrypted'] == expected_encrypted
 
     def test_set_display_name_pref_updates_encrypted_field_and_cache(self):
