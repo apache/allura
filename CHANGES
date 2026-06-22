@@ -1,4 +1,4 @@
-NEXT RELEASE
+Version 1.19.0  (June 2026)
 
 Upgrade Instructions
 
@@ -23,11 +23,93 @@ Upgrade Instructions
 
   Run: `paster ensure_index development.ini --clean` in Allura dir.  Replace your .ini file path
 
-  After new version of Allura is up and running, delete the plaintext versions of the encrypted fields by running scripts/migrations/036-field-encryption-cleanup.sh
+  After the new version of Allura is up and running, delete the plaintext versions of the encrypted fields by running scripts/migrations/036-field-encryption-cleanup.sh
 
+Breaking Changes
+ * Python 3.9 and 3.10 are no longer supported (3.11 through 3.14 are supported)
 
- * [#8583] Add support for Python 3.13
+Security Improvements
+ * Various fixes and hardening across many areas
+ * Package upgrades
  * [#8598] Upgrade Underscore Library
+ * Disable trac importers by default
+ * [#8582] Markdown strip class and id attributes
+ * [#8595] Redact emails in logs
+ * [#8599] show domain on external links, if misleading
+ * [#8601] email auth verification by link
+ * [#8596] Escape specific values in notification emails
+ * [#8604] Implement field level encryption for the User's display name
+ * [#8606] Implement field level encryption for the email field from the EmailAddress model
+ * encrypt snapshot author nested fields
+ * encrypt Forum.monitoring_email
+ * [#8609] Authentication code tweaks
+ * better escape_html that does quotes too
+ * form-action change from self to base_url to avoid proxied sites
+
+Major Changes
+ * [#8583] Add Python 3.13 Support
+ * [#8589] Support python 3.14
+
+Admin & Accounts
+ * [#8585] Display message to users with unverified email addresses
+ * only update User.last_access for browser access, so scripts/api/etc don't get in there; make extra sure user reindexing still happens for other changes
+ * Remove Skype field, form and references, update twitter to X
+ * on app admin menus, remove search box and add a link to project-level admin pages
+ * improve some user audit logs
+ * after pwd reset, store a UserLoginDetails record
+ * track the date an email address was confirmed
+ * need "moderate" perm to mark thread as spam
+
+General
+ * [#8593] Markdown extension to improve html list parsing
+ * [#8597] improve bad markdown performance
+ * enforce text limits for all markdown rendering paths
+ * make with_trailing_slash and without_trailing_slash apply to HEAD requests too
+ * updated Markdown syntax guide with a new example to make use of text rendering and updated the example for lists
+ * Fix for subproject redirect
+ * fix relative links in markdown files
+
+Code Repositories
+ * if MR is calculating commits, avoid saying "0 commits"
+
+Solr indexing
+ * better ticket 'text' indexing into solr (was missing \n after first item, had lots of fields irrelevant to searching)
+ * [#8592] prepend __task_ for special task params; use priority in reindex tasks
+ * make reindex options for project & nbhd work well together
+ * split and retry user & project reindex if doc is too big for solr (like regular artifacts have done for a long time)
+ * lower priority reindex tasks for users & projects, like already done for normal artifacts
+
+Performance
+ * speed up g.highlight via caching pygment's entry points
+ * precompile a few regexes
+ * add & update some mongo indexes
+ * add a pagination flag to prevent hitting the github api rate limit on imports with lots of commits
+
+For Developers
+ * [#8520] migrate from pkg_resources to importlib DROP PYTHON 3.9
+ * [#8588] improve regexes and remove regex-as-re-globally pkg DROPS python 3.10
+ * [#8605] Remove locale en_US.UTF-8 dependency
+ * [#8608] Pin pre-commit dependencies
+ * [#8611] Documentation and migration for encrypted fields
+ * Update copyright year
+ * Remove dead ProjectUserSelect code
+ * update httpbin testing domain again
+ * Set up default protection ruleset for default and release branches
+ * update config notes and pytest.ini for new forgehg version
+ * specify setuptools version since v82 does not work with allura currently
+ * Add placeholder to clarify sn input
+ * add anchored tools to all configs
+ * User.__repr__ fix in case display_name is not available
+ * Add a 5 second delay to project_updated events to avoid potential race condition
+ * drop support for python 3.10 because [#8588] started using a 're' feature added in 3.11
+ * restrict optional bcrypt dep since passlib isn't updated for it
+ * script to convert encrypted fields
+ * remove unmaintained scrub-allura-data.py
+ * rely on defopt package
+ * claimed_by_user support include_disabled param
+ * remove pysvn dep from ForgeSVN since the one on pypi is the wrong one.  Update checks and docs
+ * invalidate all posts' markdown cache
+ * update PGP link for release vote mail
 
 
 Version 1.18.0  (August 2025)
