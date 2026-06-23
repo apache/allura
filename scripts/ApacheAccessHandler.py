@@ -111,7 +111,7 @@ def check_authentication(req):
 
     # work through our own Antispam protection
     auth_form_url = auth_url.replace('/do_login', '/')
-    auth_form_page = requests.get(auth_form_url, allow_redirects=False).text
+    auth_form_page = requests.get(auth_form_url, allow_redirects=False, timeout=30).text
     auth_inputs = re.findall(r'(<input.*?>)', auth_form_page, re.I)
     re_name = re.compile(r''' name=["']?(.*?)["' />]''')
     re_value = re.compile(r''' value=["']?(.*?)["' />]''')
@@ -126,7 +126,7 @@ def check_authentication(req):
         if 'timestamp' in input:
             timestamp_value = re_value.search(input).group(1)
 
-    r = requests.post(auth_url, allow_redirects=False, data={
+    r = requests.post(auth_url, allow_redirects=False, timeout=30, data={
         username_field: username,
         password_field: password,
         'timestamp': timestamp_value,
@@ -179,7 +179,7 @@ def check_permissions(req):
     req_path = str(req.parsed_uri[apache.URI_PATH])
     req_query = str(req.parsed_uri[apache.URI_QUERY])
     perm_url = req.get_options().get('ALLURA_PERM_URL', 'https://127.0.0.1/auth/repo_permissions')
-    r = requests.get(perm_url, params={'username': req.user, 'repo_path': mangle(req_path)})
+    r = requests.get(perm_url, params={'username': req.user, 'repo_path': mangle(req_path)}, timeout=30)
     if r.status_code != 200:
         log(req, "repo_permissions return error (%d)" % r.status_code)
         return False
