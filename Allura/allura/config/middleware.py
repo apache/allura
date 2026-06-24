@@ -103,7 +103,7 @@ def _make_core_app(root, global_conf: dict, **app_conf):
     mimetypes.init([pkg_file('allura', 'etc/mime.types')] + mimetypes.knownfiles)
 
     # Configure MongoDB
-    configure_ming(app_conf)
+    configure_ming(global_conf | app_conf)
 
     # Configure ActivityStream
     if asbool(app_conf.get('activitystream.recording.enabled', False)):
