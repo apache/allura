@@ -181,6 +181,10 @@ def search(q, short_timeout=False, ignore_errors=True, search_fn=None, **kw):
             search_fn = g.solr_short_timeout.search
         else:
             search_fn = g.solr.search
+
+    # don't pass through sort=None etc
+    kw = {k: v for k, v in kw.items() if v is not None}
+
     try:
         # try once with opportunity to retry
         try:
@@ -194,7 +198,7 @@ def search(q, short_timeout=False, ignore_errors=True, search_fn=None, **kw):
                 raise
     except (SolrError, OSError):
         # fatal error
-        log.exception('Error in solr search')
+        log.exception(f'Error in solr search: {q=} {kw=}')
         if not ignore_errors:
             raise SearchError('Error running search')
 

@@ -176,6 +176,9 @@ class MockSOLR:
         pass
 
     def search(self, q, fq=None, **kw):
+        for k, v in kw.items():
+            if v is None:
+                raise ValueError(f'{k}={v} passed to solr search')
         if q is None:
             q = ''  # shlex will hang on None
         # Parse query
