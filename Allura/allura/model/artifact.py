@@ -825,7 +825,7 @@ class Award(Artifact):
     def index(self):
         result = Artifact.index(self)
         result.update(
-            _id_s=self._id,
+            _id_s=str(self._id),
             short_s=self.short,
             timestamp_dt=self.timestamp,
             full_s=self.full)
@@ -875,7 +875,7 @@ class AwardGrant(Artifact):
     def index(self):
         result = Artifact.index(self)
         result.update(
-            _id_s=self._id,
+            _id_s=str(self._id),
             short_s=self.short,
             timestamp_dt=self.timestamp,
             full_s=self.full)
