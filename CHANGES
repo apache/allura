@@ -1,4 +1,4 @@
-Version 1.19.0  (June 2026)
+Version 1.19.1  (June 2026)
 
 Upgrade Instructions
 
@@ -110,6 +110,10 @@ For Developers
  * remove pysvn dep from ForgeSVN since the one on pypi is the wrong one.  Update checks and docs
  * invalidate all posts' markdown cache
  * update PGP link for release vote mail
+ * add timeouts to ApacheAccessHandler.py network requests
+
+
+Version 1.19.0  (Unreleased)
 
 
 Version 1.18.0  (August 2025)
