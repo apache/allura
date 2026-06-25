@@ -63,7 +63,7 @@ echo
 echo "============================================================================="
 echo "Starting up docker containers"
 echo "============================================================================="
-docker compose up -d web
+docker compose up -d web --wait || { docker compose logs -n 80 web; exit 1; }
 
 echo
 echo "============================================================================="

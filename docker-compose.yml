@@ -42,6 +42,8 @@ services:
       - mongo
       - solr
       - outmail
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "taskd"]
 
   solr:
     image: solr:6-alpine  # alpine is a very small distro base
@@ -50,6 +52,10 @@ services:
     volumes:
       - ./solr_config/allura:/opt/solr/server/solr/allura
       - ${LOCAL_SHARED_DATA_ROOT:-./allura-data}/solr:/opt/solr/server/solr/allura/data
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8983/solr/allura/admin/ping"]
+      start_interval: 1s
+      start_period: 30s
 
   mongo:
     image: mongo:4.2
@@ -58,6 +64,10 @@ services:
     volumes:
       - ${LOCAL_SHARED_DATA_ROOT:-./allura-data}/mongo:/data/db
     command: mongod --storageEngine wiredTiger
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      start_interval: 1s
+      start_period: 30s
 
   outmail:
     image: allura-web
@@ -67,6 +77,8 @@ services:
     command: python -u -m aiosmtpd -n -c alluratest.smtp_debug.BetterDebuggingServer -l 0.0.0.0:8826
     expose:
       - "8826"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8826), 5).close()"]
 
   inmail:
     image: allura-web
@@ -78,6 +90,8 @@ services:
       - "8825:8825"
     links:
       - mongo
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8825), 5).close()"]
 
   http:
     build: scm_config/git-http/

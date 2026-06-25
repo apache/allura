@@ -95,7 +95,7 @@ Start containers in the background:
 
 .. code-block:: bash
 
-    docker compose up -d
+    docker compose up -d --wait
 
 You're up and running!  Visit localhost:8080 (or whatever IP address you're running Docker on).  Then
 see our :ref:`post-setup-instructions` and read more below about the Docker environment for Allura.
@@ -159,7 +159,7 @@ Restarting all containers:
 
 .. code-block:: bash
 
-    docker compose up -d
+    docker compose up -d --wait
 
 View logs from all services:
 

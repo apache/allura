@@ -58,3 +58,6 @@ RUN adduser www-data sudo
 RUN echo '%sudo  ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/sudo_group_passwordless
 
 CMD ["/usr/sbin/apache2", "-D", "FOREGROUND"]
+
+HEALTHCHECK --start-interval=1s --start-period=30s --timeout=5s \
+  CMD curl -f http://localhost/ || exit 1

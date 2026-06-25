@@ -76,3 +76,6 @@ ENV USER root
 WORKDIR /allura
 ENV PYTHONUNBUFFERED 1
 CMD gunicorn --paste Allura/docker-dev.ini -b :8088 --reload
+
+HEALTHCHECK --start-interval=1s --start-period=30s --timeout=5s \
+  CMD curl -f http://localhost:8088/ || exit 1

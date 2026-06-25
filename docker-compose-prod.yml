@@ -35,7 +35,6 @@
 #  * git-http container serves git and also proxies back to the "web" container
 ##
 
-version: "2.1"
 services:
   web:
     build: .
@@ -60,6 +59,8 @@ services:
     working_dir: /allura/Allura
     environment: *env
     command: paster taskd /allura-data/production.ini
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "taskd"]
     volumes: *volumes
     links:
       - mongo
@@ -84,6 +85,10 @@ services:
     volumes:
       - ./solr_config/allura:/opt/solr/server/solr/allura
       - ${LOCAL_SHARED_DATA_ROOT:-./allura-data}/solr:/opt/solr/server/solr/allura/data
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8983/solr/allura/admin/ping"]
+      start_interval: 1s
+      start_period: 30s
     restart: always
 
   mongo:
@@ -93,6 +98,10 @@ services:
     volumes:
       - ${LOCAL_SHARED_DATA_ROOT:-./allura-data}/mongo:/data/db
     command: mongod --storageEngine wiredTiger
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      start_interval: 1s
+      start_period: 30s
     restart: always
 
   inmail:
@@ -101,6 +110,8 @@ services:
     environment: *env
     volumes: *volumes
     command: paster smtp_server /allura-data/production.ini
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8825), 5).close()"]
     ports:
       - "127.0.0.1:8825:8825"
     links:
