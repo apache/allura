@@ -15,13 +15,14 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import functools
+import sys
+import traceback
 
 import webob
 import tg.decorators
 from decorator import decorator
 from tg import request
-import pygments.plugin
+import paste.exceptions
 
 from allura.lib import helpers as h
 
@@ -93,6 +94,24 @@ def apply():
                 location += '?' + request.query_string
             raise webob.exc.HTTPMovedPermanently(location=location)
         return func(*args, **kwargs)
+
+    orig_Supplement_extraData = paste.exceptions.errormiddleware.Supplement.extraData
+
+    # add py3 chained exceptions into paste ErrorMiddleware output
+    @h.monkeypatch(paste.exceptions.errormiddleware.Supplement)
+    def extraData(*a, **kw):
+        data = orig_Supplement_extraData(*a, **kw)
+
+        curr_exc: BaseException = sys.exc_info()[1]
+        prev_exc: BaseException = getattr(curr_exc, '__context__', None)
+        # TODO this chains use "raise .. from None"  How to detect that?  __suppress_context__ isn't an indicator
+        if prev_exc:
+            # ErrorMiddleware formatters will take this 'extra' stuff and put it into the output
+            data[('extra', '\nChained Exception')] = '\n' + ''.join(
+                traceback.format_exception(type(prev_exc), prev_exc, prev_exc.__traceback__)
+            )
+
+        return data
 
     # http://blog.watchfire.com/wfblog/2011/10/json-based-xss-exploitation.html
     # change < to its unicode escape when rendering JSON out of turbogears
