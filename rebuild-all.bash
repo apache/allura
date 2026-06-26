@@ -27,7 +27,7 @@ APPS_WITH_DASH_E="${APPS[@]/#/-e ./}"
 
 # don't install ForgeSVN in a main command, since it often is not installable, and its optional
 APPS_DASHE_NO_SVN="${APPS_WITH_DASH_E//-e .\/ForgeSVN/}"  # string replacement
-$PIP install $APPS_DASHE_NO_SVN
+$PIP install --config-settings editable_mode=compat $APPS_DASHE_NO_SVN
 main_ret=$?
 
 python -c 'import pysvn; pysvn.Revision'
