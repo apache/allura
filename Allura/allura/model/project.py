@@ -345,7 +345,11 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         return troves
 
     def get_tool_data(self, tool, key, default=None):
-        return self.tool_data.get(tool, {}).get(key, default)
+        result = self.tool_data.get(tool, {}).get(key, default)
+        if hasattr(result, '_deinstrument'):
+            return result._deinstrument()
+        else:
+            return result
 
     def set_tool_data(self, tool, **kw):
         d = self.tool_data.setdefault(tool, {})
@@ -1433,7 +1437,11 @@ class AppConfig(MappedClass, ActivityObject):
         return self.options.mount_label
 
     def get_tool_data(self, tool, key, default=None):
-        return self.tool_data.get(tool, {}).get(key, default)
+        result = self.tool_data.get(tool, {}).get(key, default)
+        if hasattr(result, '_deinstrument'):
+            return result._deinstrument()
+        else:
+            return result
 
     def set_tool_data(self, tool, **kw):
         d = self.tool_data.setdefault(tool, {})
