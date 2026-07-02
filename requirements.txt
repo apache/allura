@@ -183,12 +183,7 @@ paste==3.10.1
     # via
     #   -r requirements.in
     #   easywidgets
-    #   pastescript
 pastedeploy==3.1.0
-    # via
-    #   -r requirements.in
-    #   pastescript
-pastescript==3.7.0
     # via -r requirements.in
 pillow==12.2.0
     # via -r requirements.in
@@ -278,7 +273,6 @@ setuptools==81.0.0
     #   -r requirements.in
     #   colander
     #   paste
-    #   pastescript
     #   pysolr
 sgmllib3k==1.0.0
     # via feedparser

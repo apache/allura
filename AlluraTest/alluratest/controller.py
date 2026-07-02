@@ -29,7 +29,6 @@ import mock
 from formencode import variabledecode
 from paste.deploy import loadapp
 from paste.deploy.converters import asbool
-from paste.script.appinstall import SetupCommand
 from tg import tmpl_context as c
 import tg
 from tg.wsgiapp import RequestLocals
@@ -43,6 +42,7 @@ import requests_oauthlib
 
 from allura import model as M
 from allura.command import CreateTroveCategoriesCommand
+from allura.command.setup_app import SetupAppCommand
 import allura.lib.security
 from allura.lib.app_globals import Globals
 from allura.lib import helpers as h
@@ -91,17 +91,8 @@ def setup_basic_test(config=None, app_name=DFL_APP_NAME):
     except AttributeError:
         conf_dir = os.getcwd()
     test_file = os.path.join(conf_dir, get_config_file(config))
-    """
-    # setup our app, from TG quickstart example:
-    from tg.util import Bunch
-    from gearbox.commands.setup_app import SetupAppCommand
-    cmd = SetupAppCommand(Bunch(options=Bunch(verbose_level=1)), Bunch())
-    cmd.run(Bunch(config_file='config:{}'.format(test_file), section_name=None))
-    """
-    # setup our app without depending on gearbox (we still depend on Paste anyway)
-    # uses [paste.app_install] entry point which call our setup_app()
-    cmd = SetupCommand('setup-app')
-    cmd.run([test_file, '--quiet'])
+    cmd = SetupAppCommand('setup-app')
+    cmd.run([test_file])
 
     ew.TemplateEngine.initialize({})
 

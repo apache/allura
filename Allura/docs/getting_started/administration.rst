@@ -87,38 +87,38 @@ Overview
 Allura has many commands and scripts that can be run from the server commandline to
 administrate Allura.  There are also tasks that can be run through the :code:`taskd` system
 in the background.  These tasks can be submitted via the web at
-http://MYSITE/nf/admin/task_manager  Some paster scripts have been set up
+http://MYSITE/nf/admin/task_manager  Some commands have been set up
 so that they are runnable as tasks too, giving you the convenience of starting
 them through the web and letting :code:`taskd` execute them, rather than from a server
 shell.
 
-Commands can be discovered and run via the :code:`paster` command when you are in the
-'Allura' directory that has your .ini file.  For example::
+Commands can be discovered and run via the :code:`allura` command.  For example,
+in the 'Allura' directory that has your .ini file::
 
-     paster help
+     allura help
     ... all commands listed here ...
 
-     paster create-neighborhood --help
+     allura create-neighborhood --help
     ... specific command help ...
 
-     paster create-neighborhood development.ini myneighborhood myuser ...
+     allura create-neighborhood development.ini myneighborhood myuser ...
 
 
-Scripts are in the :file:`scripts/` directory and run slightly differently, via :code:`paster script`.  An extra
-:kbd:`--` is required to separate script arguments from paster arguments.  Example::
+Scripts are in the :file:`scripts/` directory and run slightly differently, via :code:`allura script`.  An extra
+:kbd:`--` is required to separate script arguments from allura arguments.  Example::
 
-     paster script development.ini ../scripts/add_user_to_group.py -- --help
+     allura script development.ini ../scripts/add_user_to_group.py -- --help
     ... help output ...
 
-     paster script development.ini ../scripts/add_user_to_group.py -- --nbhd /u/ johndoe Admin
+     allura script development.ini ../scripts/add_user_to_group.py -- --nbhd /u/ johndoe Admin
 
 To run these when using docker, prefix with :code:`docker compose run taskd` and use :file:`docker-dev.ini` like::
 
-    docker compose run --rm taskd paster create-neighborhood docker-dev.ini myneighborhood myuser ...
+    docker compose run --rm taskd allura create-neighborhood docker-dev.ini myneighborhood myuser ...
 
 Or with the docker *production* setup::
 
-    docker compose run --rm oneoff paster create-neighborhood /allura-data/production.ini myneighborhood myuser ...
+    docker compose run --rm oneoff allura create-neighborhood /allura-data/production.ini myneighborhood myuser ...
 
 
 Tasks can be run via the web interface at http://MYSITE/nf/admin/task_manager  You must know
@@ -142,59 +142,59 @@ Available scripts and commands are:
 create-neighborhood
 -------------------
 
-.. program-output:: paster create-neighborhood development.ini --help | fmt -s -w 95
+.. program-output:: allura create-neighborhood development.ini --help | fmt -s -w 95
    :shell:
 
 
 ensure_index
 ------------
 
-.. program-output:: paster ensure_index development.ini --help
+.. program-output:: allura ensure_index development.ini --help
 
 
 ircbot
 ------
 
-.. program-output:: paster ircbot development.ini --help
+.. program-output:: allura ircbot development.ini --help
 
 
 reindex
 -------
 
-.. program-output:: paster reindex development.ini --help
+.. program-output:: allura reindex development.ini --help
 
 
 set-neighborhood-features
 -------------------------
 
-.. program-output:: paster set-neighborhood-features development.ini --help | fmt -s -w 95
+.. program-output:: allura set-neighborhood-features development.ini --help | fmt -s -w 95
    :shell:
 
 
 set-tool-access
 ---------------
 
-.. program-output:: paster set-tool-access development.ini --help | fmt -s -w 95
+.. program-output:: allura set-tool-access development.ini --help | fmt -s -w 95
    :shell:
 
 
 taskd
 -----
 
-.. program-output:: paster taskd development.ini --help
+.. program-output:: allura taskd development.ini --help
 
 
 task
 -----
 
-.. program-output:: paster task development.ini --help | fmt -s -w 95
+.. program-output:: allura task development.ini --help | fmt -s -w 95
    :shell:
 
 
 taskd_cleanup
 -------------
 
-.. program-output:: paster taskd_cleanup development.ini --help | fmt -s -w 95
+.. program-output:: allura taskd_cleanup development.ini --help | fmt -s -w 95
    :shell:
 
 
@@ -209,7 +209,7 @@ Requires `html2text`, a GPL library.
 ::
 
     cd ../ForgeBlog
-    paster pull-rss-feeds development.ini --help
+    allura pull-rss-feeds development.ini --help
 
 
 disable_users.py
@@ -220,7 +220,7 @@ disable_users.py
 .. argparse::
     :module: allura.scripts.disable_users
     :func: get_parser
-    :prog: paster script development.ini allura/scripts/disable_users.py --
+    :prog: allura script development.ini allura/scripts/disable_users.py --
 
 
 .. _delete-projects-py:
@@ -235,7 +235,7 @@ More convenient way to delete project is :ref:`this site admin page <delete-proj
 .. argparse::
     :module: allura.scripts.delete_projects
     :func: get_parser
-    :prog: paster script development.ini allura/scripts/delete_projects.py --
+    :prog: allura script development.ini allura/scripts/delete_projects.py --
 
 
 refreshrepo.py
@@ -246,7 +246,7 @@ refreshrepo.py
 .. argparse::
     :module: allura.scripts.refreshrepo
     :func: get_parser
-    :prog: paster script development.ini allura/scripts/refreshrepo.py --
+    :prog: allura script development.ini allura/scripts/refreshrepo.py --
 
 
 reindex_projects.py
@@ -257,7 +257,7 @@ reindex_projects.py
 .. argparse::
     :module: allura.scripts.reindex_projects
     :func: get_parser
-    :prog: paster script development.ini allura/scripts/reindex_projects.py --
+    :prog: allura script development.ini allura/scripts/reindex_projects.py --
 
 
 reindex_users.py
@@ -268,7 +268,7 @@ reindex_users.py
 .. argparse::
     :module: allura.scripts.reindex_users
     :func: get_parser
-    :prog: paster script development.ini allura/scripts/reindex_users.py --
+    :prog: allura script development.ini allura/scripts/reindex_users.py --
 
 
 create_sitemap_files.py
@@ -279,7 +279,7 @@ create_sitemap_files.py
 .. argparse::
     :module: allura.scripts.create_sitemap_files
     :func: get_parser
-    :prog: paster script development.ini allura/scripts/create_sitemap_files.py --
+    :prog: allura script development.ini allura/scripts/create_sitemap_files.py --
 
 
 clear_old_notifications.py
@@ -290,7 +290,7 @@ clear_old_notifications.py
 .. argparse::
     :module: allura.scripts.clear_old_notifications
     :func: get_parser
-    :prog: paster script development.ini allura/scripts/clear_old_notifications.py --
+    :prog: allura script development.ini allura/scripts/clear_old_notifications.py --
 
 publicize-neighborhood.py
 -------------------------
@@ -300,7 +300,7 @@ publicize-neighborhood.py
 .. argparse::
     :filename: ../../scripts/publicize-neighborhood.py
     :func: parser
-    :prog: paster script development.ini ../scripts/publicize-neighborhood.py --
+    :prog: allura script development.ini ../scripts/publicize-neighborhood.py --
 
 
 .. _site-notifications:

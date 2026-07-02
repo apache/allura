@@ -34,7 +34,7 @@ class FixDiscussion(base.Command):
 
     Usage:
 
-    paster fix-discussion ../Allura/development.ini [project_name_or_id]
+    allura fix-discussion ../Allura/development.ini [project_name_or_id]
 
     If used with optional parameter will fix trackers for specified project,
     else will fix all trackers in all projects.

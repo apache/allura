@@ -58,7 +58,7 @@ services:
     image: allura-web
     working_dir: /allura/Allura
     environment: *env
-    command: paster taskd /allura-data/production.ini
+    command: allura taskd /allura-data/production.ini
     healthcheck:
       test: ["CMD", "pgrep", "-f", "taskd"]
     volumes: *volumes
@@ -68,7 +68,7 @@ services:
     restart: always
 
   # This is a single-purpose container that does not auto-restart, good for running commands like:
-  # docker-compose run --rm oneoff paster ensure_index /allura-data/production.ini
+  # docker-compose run --rm oneoff allura ensure_index /allura-data/production.ini
   oneoff:
     image: allura-web
     working_dir: /allura/Allura
@@ -109,7 +109,7 @@ services:
     working_dir: /allura/Allura
     environment: *env
     volumes: *volumes
-    command: paster smtp_server /allura-data/production.ini
+    command: allura smtp_server /allura-data/production.ini
     healthcheck:
       test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8825), 5).close()"]
     ports:

@@ -122,7 +122,7 @@ class TestEventTasks:
         assert M.MonQTask.query.get(task_name='allura.tasks.event_tasks.event', args=['my_event2'])
 
     def test_post_event_from_script(self):
-        # simulate post_event being called from a paster script command:
+        # simulate post_event being called from an 'allura script' command:
         with mock.patch.dict(tg.request.environ, PATH_INFO='--script--'):
             g.post_event('my_event3')
             # event task is flushed to db right away:

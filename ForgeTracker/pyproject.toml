@@ -50,5 +50,5 @@ tickets_24hr = "forgetracker.site_stats:tickets_stats_24hr"
 [project.entry-points."easy_widgets.resources"]
 ew_resources = "forgetracker.config.resources:register_ew_resources"
 
-[project.entry-points."paste.paster_command"]
+[project.entry-points."allura.commands"]
 fix-discussion = "forgetracker.command.fix_discussion:FixDiscussion"

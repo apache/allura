@@ -27,7 +27,6 @@ from urllib.parse import urljoin
 from datetime import datetime, timedelta
 
 import tg
-from paste.script import command
 from paste.deploy.converters import asint
 
 from ming.odm import ThreadLocalODMSession
@@ -46,7 +45,7 @@ class IRCBotCommand(allura.command.Command):
     max_args = 1
     usage = '<ini file>'
     summary = 'For the ForgeChat tool.  Connect to all configured IRC servers and relay messages'
-    parser = command.Command.standard_parser(verbose=True)
+    parser = allura.command.Command.standard_parser(verbose=True)
     parser.add_option('-c', '--context', dest='context',
                       help=('The context of the message (path to the project'
                             ' and/or tool'))

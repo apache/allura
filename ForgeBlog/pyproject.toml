@@ -44,5 +44,5 @@ dependencies = [
 [project.entry-points.allura]
 blog = "forgeblog.main:ForgeBlogApp"
 
-[project.entry-points."paste.paster_command"]
+[project.entry-points."allura.commands"]
 pull-rss-feeds = "forgeblog.command.rssfeeds:RssFeedsCommand"

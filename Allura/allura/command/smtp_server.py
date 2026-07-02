@@ -17,7 +17,6 @@
 
 import faulthandler
 import tg
-from paste.script import command
 
 import allura.tasks
 from allura.command import base
@@ -34,7 +33,7 @@ class SMTPServerCommand(base.Command):
     max_args = 1
     usage = '<ini file>'
     summary = 'Handle incoming emails, routing them to taskd'
-    parser = command.Command.standard_parser(verbose=True)
+    parser = Command.standard_parser(verbose=True)
     parser.add_option('-c', '--context', dest='context',
                       help=('The context of the message (path to the project'
                             ' and/or tool'))

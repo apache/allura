@@ -1,3 +1,33 @@
+Version 1.20.0  (unreleased)
+
+Upgrade Instructions
+
+  Install updated dependencies by running:
+    pip install -r requirements.txt --no-deps --upgrade --upgrade-strategy=only-if-needed
+  And re-install the Allura packages (e.g. re-run rebuild-all.bash, or `pip install -e` each package dir) so the
+  new `allura` command-line script and its commands are registered.
+
+  The `paster` command is gone (the unmaintained PasteScript package is no longer used).  All commands are now run
+  with a new `allura` script instead.  It takes the same arguments, e.g.:
+    paster taskd development.ini            ->  allura taskd development.ini
+    paster setup-app development.ini        ->  allura setup-app development.ini
+    paster script development.ini foo.py -- --opts  ->  allura script development.ini foo.py -- --opts
+    paster help                             ->  allura help
+  Update anything that runs these commands: init/systemd scripts, cron jobs (e.g. pull-rss-feeds), monitoring, etc.
+  Docker compose services in this repo are already updated: pull the latest docker-compose files if you use them.
+
+  `paster serve` is also gone.  Run the web app with gunicorn (already the case in the Docker and standard setups):
+    gunicorn --paste development.ini -b :8080 --reload
+  The now-unused [server:main] section can be removed from your .ini file.
+
+  If you maintain a custom Allura tool package that registered commands under the "paste.paster_command" or
+  "paste.global_paster_command" entry point groups, register them under the "allura.commands" group instead.
+  Command classes should subclass allura.command.Command as before; code importing paste.script must be updated.
+
+Breaking Changes
+ * The `paster` command is replaced by the `allura` command (PasteScript dependency removed)
+
+
 Version 1.19.1  (June 2026)
 
 Upgrade Instructions

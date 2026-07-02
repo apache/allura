@@ -15,11 +15,13 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import optparse
 import os
-import logging
+import logging.config
+import sys
+import textwrap
 
 import tg
-from paste.script import command
 from paste.deploy import appconfig
 from paste.deploy.converters import asbool
 from tg.support.registry import Registry
@@ -37,7 +39,7 @@ log = None
 
 @task
 def run_command(command, args):
-    """Run paster command asynchronously"""
+    """Run an allura Command asynchronously"""
     mod, cls = command.rsplit('.', 1)
     mod = __import__(mod, fromlist=[str(cls)])
     command = getattr(mod, cls)
@@ -60,11 +62,56 @@ class MetaParserDocstring(type):
         return cls.parser.format_help()
 
 
-class Command(command.Command, metaclass=MetaParserDocstring):
+class BadCommand(Exception):
+    def __init__(self, message: str, exit_code: int = 2):
+        self.message = message
+        self.exit_code = exit_code
+        super().__init__(message)
+
+
+class Command(metaclass=MetaParserDocstring):
+    # replacement for the old paste.script.command.Command, same API for the parts we use
     min_args = 1
     max_args = 1
     usage = '[<ini file>]'
+    summary = ''
+    description = None
     group_name = 'Allura'
+    return_code = 0
+
+    def __init__(self, name: str):
+        self.command_name = name
+
+    @classmethod
+    def standard_parser(cls, verbose: bool = True) -> optparse.OptionParser:
+        parser = optparse.OptionParser()
+        if verbose:
+            parser.add_option('-v', '--verbose', action='count', dest='verbose', default=0)
+        return parser
+
+    def run(self, args: list) -> int:
+        self.parse_args(args)
+        if self.min_args is not None and len(self.args) < self.min_args:
+            raise BadCommand(f'You must provide at least {self.min_args} arguments')
+        if self.max_args is not None and len(self.args) > self.max_args:
+            raise BadCommand(f'You must provide no more than {self.max_args} arguments')
+        self.verbose = getattr(self.options, 'verbose', 0)
+        result = self.command()
+        if result is None:
+            return self.return_code
+        else:
+            return result
+
+    def parse_args(self, args: list) -> None:
+        usage = f' {self.usage}' if self.usage else ''
+        self.parser.usage = f'%prog [options]{usage}\n{self.summary}'
+        self.parser.prog = self._prog_name()
+        if self.description:
+            self.parser.description = textwrap.dedent(self.description)
+        self.options, self.args = self.parser.parse_args(args)
+
+    def _prog_name(self) -> str:
+        return f'{os.path.basename(sys.argv[0])} {self.command_name}'
 
     @classmethod
     def post(cls, *args, **kw):

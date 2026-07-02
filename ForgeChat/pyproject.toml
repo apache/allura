@@ -44,5 +44,5 @@ dependencies = [
 [project.entry-points.allura]
 Chat = "forgechat.main:ForgeChatApp"
 
-[project.entry-points."paste.global_paster_command"]
+[project.entry-points."allura.commands"]
 ircbot = "forgechat.command:IRCBotCommand"

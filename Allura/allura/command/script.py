@@ -33,7 +33,7 @@ class ScriptCommand(base.Command):
     min_args = 2
     max_args = None
     usage = '<ini file> <script> ...'
-    summary = 'Run a script as if it were being run at the paster shell prompt'
+    summary = 'Run a script with the Allura environment set up'
     parser = base.Command.standard_parser(verbose=True)
     parser.add_option('--profile', action='store_true', dest='profile',
                       help='Dump profiling data to <script>.profile')

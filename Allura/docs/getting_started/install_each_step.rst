@@ -189,7 +189,7 @@ Allura uses a background task service called "taskd" to do async tasks like send
 .. code-block:: bash
 
     (env-allura)~$ cd ~/src/allura/Allura
-    (env-allura)~/src/allura/Allura$ nohup paster taskd development.ini > /var/log/allura/taskd.log 2>&1 &
+    (env-allura)~/src/allura/Allura$ nohup allura taskd development.ini > /var/log/allura/taskd.log 2>&1 &
 
 
 A few more steps, if using git
@@ -214,13 +214,13 @@ For development setup:
 
 .. code-block:: bash
 
-    (env-allura)~/src/allura/Allura$ paster setup-app development.ini
+    (env-allura)~/src/allura/Allura$ allura setup-app development.ini
 
 For production setup:
 
 .. code-block:: bash
 
-    (env-allura)~/src/allura/Allura$ ALLURA_TEST_DATA=False paster setup-app development.ini
+    (env-allura)~/src/allura/Allura$ ALLURA_TEST_DATA=False allura setup-app development.ini
 
 This shouldn't take too long, but it will start the taskd server doing tons of stuff in the background.  Once this is done, you can start the application server:
 

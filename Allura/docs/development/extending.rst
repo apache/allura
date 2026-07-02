@@ -61,8 +61,8 @@ For example if you have ForgeImporter set up, but want to disable the GitHub imp
     disable_entry_points.allura.project_importers = github
     disable_entry_points.allura.importers = github-tracker, github-wiki, github-repo
 
-Other entry points are used to provide ``paster`` commands and ``easy_widget`` configuration,
-which are not part of Allura but are used by Allura.
+Other entry points are used to provide ``allura`` commands (the ``allura.commands`` group)
+and ``easy_widget`` configuration, which are not part of Allura but are used by Allura.
 
 
 Event Handlers

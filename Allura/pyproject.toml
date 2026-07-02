@@ -46,14 +46,11 @@ dependencies = []
 ]
 
 
-[tool.paster]
-paster-plugins = ['PasteScript', 'TurboGears2', 'Ming']
+[project.scripts]
+allura = "allura.command.cli:main"
 
 [project.entry-points."paste.app_factory"]
 main = "allura.config.middleware:make_app"
-
-[project.entry-points."paste.app_install"]
-main = "paste.script.appinstall:Installer"
 
 [project.entry-points.allura]
 profile = "allura.ext.user_profile:UserProfileApp"
@@ -114,7 +111,8 @@ filesystem-googleauth = "allura.lib.multifactor:GoogleAuthenticatorPamFilesystem
 mongodb = "allura.lib.multifactor:MongodbRecoveryCodeService"
 filesystem-googleauth = "allura.lib.multifactor:GoogleAuthenticatorPamFilesystemRecoveryCodeService"
 
-[project.entry-points."paste.paster_command"]
+[project.entry-points."allura.commands"]
+setup-app = "allura.command.setup_app:SetupAppCommand"
 taskd = "allura.command.taskd:TaskdCommand"
 taskd_cleanup = "allura.command.taskd_cleanup:TaskdCleanupCommand"
 task = "allura.command.taskd:TaskCommand"

@@ -93,7 +93,7 @@ parameter passed to the event handler.
 Running the Task Daemon
 -----------------------
 
-In order to actually run the asynchronous tasks, we have written a paster command
+In order to actually run the asynchronous tasks, we have written an allura command
 `taskd`.  This creates a configurable number of worker processes that watch for
 changes to the `MonQTask` collection and execute requested tasks.  `taskd` can be
 run on any server, but should have similar access to the MongoDB databases and

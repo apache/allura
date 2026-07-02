@@ -25,7 +25,7 @@ from allura.lib import exceptions
 from ming.odm import session
 
 # Example usage:
-# paster set-neighborhood-features development.ini
+# allura set-neighborhood-features development.ini
 # 4f50c898610b270c92000286 max_projects 50
 
 

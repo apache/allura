@@ -31,7 +31,6 @@ paginate
 passlib
 Paste
 PasteDeploy
-PasteScript
 Pillow
 # profanity filter for feedback
 profanityfilter
@@ -71,5 +70,5 @@ docutils
 gunicorn
 pre-commit
 
-# while we still use PasteScript we need older setuptools to provide 'pkg_resources'
+# some dependencies (e.g. colander) still need setuptools to provide 'pkg_resources'
 setuptools<82

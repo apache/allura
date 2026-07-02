@@ -85,11 +85,11 @@ Initialize database with test data:
 
 .. code-block:: bash
 
-    docker compose run --rm taskd paster setup-app docker-dev.ini
+    docker compose run --rm taskd allura setup-app docker-dev.ini
 
 .. note::
 
-   If you want to skip test data creation you can instead run: :code:`docker compose run --rm -e ALLURA_TEST_DATA=False taskd paster setup-app docker-dev.ini`
+   If you want to skip test data creation you can instead run: :code:`docker compose run --rm -e ALLURA_TEST_DATA=False taskd allura setup-app docker-dev.ini`
 
 Start containers in the background:
 
@@ -299,11 +299,12 @@ For any other wsgi server (e.g. mod_wsgi with Apache, or waitress) you will need
 
 .. code-block:: python
 
+    from logging.config import fileConfig
+
     from paste.deploy import loadapp
-    from paste.script.util.logging_config import fileConfig
 
     config_file = '/PATH/TO/Allura/development.ini'
-    fileConfig(config_file)
+    fileConfig(config_file, disable_existing_loggers=False)
     application = loadapp('config:%s' % config_file)
 
 
@@ -326,7 +327,7 @@ If you are not running docker, run:
 
 .. code-block:: bash
 
-    nohup paster smtp_server development.ini > /var/log/allura/smtp.log &
+    nohup allura smtp_server development.ini > /var/log/allura/smtp.log &
 
 By default this uses port 8825.  Depending on your mail routing, you may need to change that port number.
 And if the port is in use, this command will fail.  You can check the log file for any errors.

@@ -60,7 +60,7 @@ class UpdateNeighborhoodCommand(base.Command):
         '\t<value> - boolean value to install/uninstall Home tool\r\n' \
         '\t    must be True or False\r\n\r\n' \
         '\tExample:\r\n' \
-        '\tpaster update-neighborhood-home-tool development.ini Projects True'
+        '\tallura update-neighborhood-home-tool development.ini Projects True'
     parser = base.Command.standard_parser(verbose=True)
 
     def command(self):

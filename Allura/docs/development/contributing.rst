@@ -183,7 +183,7 @@ foreground::
     # web
     pkill -f gunicorn; gunicorn --reload --paste development.ini -b :8080
     # taskd
-    pkill "^taskd"; paster taskd development.ini --nocapture
+    pkill "^taskd"; allura taskd development.ini --nocapture
 
 Then make a request to the web app, and when your line of code is hit, a debug
 session will start on the console where the process is running.
@@ -200,7 +200,7 @@ as ``pudb`` are also available.
        docker compose run --rm web pip install ipdb
        docker compose stop web taskd
        docker compose run --rm --service-ports web gunicorn --reload --paste Allura/docker-dev.ini -b :8088
-       docker compose run --rm taskd paster taskd docker-dev.ini --nocapture
+       docker compose run --rm taskd allura taskd docker-dev.ini --nocapture
 
 
 Testing
