@@ -32,7 +32,7 @@ from . import base
 class ScriptCommand(base.Command):
     min_args = 2
     max_args = None
-    usage = '<ini file> <script> ...'
+    usage = '<ini file> <script> [script args...]'
     summary = 'Run a script with the Allura environment set up'
     parser = base.Command.standard_parser(verbose=True)
     parser.add_option('--profile', action='store_true', dest='profile',
@@ -41,6 +41,17 @@ class ScriptCommand(base.Command):
                       help='full path to store profiling results')
     parser.add_option('--pdb', action='store_true', dest='pdb',
                       help='Drop to a debugger on error')
+    # stop option parsing at the first positional arg, so options after the script name go to the script itself
+    # (options for this command, like --pdb, must come before the ini file)
+    parser.disable_interspersed_args()
+
+    def parse_args(self, args: list) -> None:
+        super().parse_args(args)
+        # drop the bare '--' separator that used to be required before script args
+        for i in (1, 2):
+            if len(self.args) > i and self.args[i] == '--':
+                del self.args[i]
+                break
 
     def command(self):
         self.basic_setup()

@@ -11,9 +11,13 @@ Upgrade Instructions
   with a new `allura` script instead.  It takes the same arguments, e.g.:
     paster taskd development.ini            ->  allura taskd development.ini
     paster setup-app development.ini        ->  allura setup-app development.ini
-    paster script development.ini foo.py -- --opts  ->  allura script development.ini foo.py -- --opts
+    paster script development.ini foo.py -- --opts  ->  allura script development.ini foo.py --opts
     paster help                             ->  allura help
   Update anything that runs these commands: init/systemd scripts, cron jobs (e.g. pull-rss-feeds), monitoring, etc.
+
+  The `allura script` command no longer needs a bare `--` before the script's own arguments; everything after the
+  script filename is passed to the script.  A `--` in the old position still works.  Options for the script command
+  itself (--pdb, --profile) now must come before the .ini file, e.g. `allura script --pdb development.ini foo.py`.
   Docker compose services in this repo are already updated: pull the latest docker-compose files if you use them.
 
   `paster serve` is also gone.  Run the web app with gunicorn (already the case in the Docker and standard setups):

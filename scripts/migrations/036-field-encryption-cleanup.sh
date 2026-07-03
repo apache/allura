@@ -32,7 +32,7 @@ fi
 
 export PYTHONWARNINGS="${PYTHONWARNINGS:-ignore:pkg_resources is deprecated as an API:UserWarning}"
 
-CMD="allura script $INI ../scripts/convert_encrypted_field.py -- --remove-unencrypted"
+CMD="allura script $INI ../scripts/convert_encrypted_field.py --remove-unencrypted"
 
 $CMD forgediscussion.model.forum.Forum monitoring_email && \
 $CMD forgeblog.model.blog.BlogPostSnapshot author.username && \

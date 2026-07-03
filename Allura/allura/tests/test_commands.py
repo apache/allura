@@ -57,6 +57,30 @@ def test_script():
         cmd.run([test_config, pkg_file('allura', 'tests/tscript_error.py')])
 
 
+def test_script_args_passed_along():
+    cmd = script.ScriptCommand('script')
+    tscript_args = pkg_file('allura', 'tests/tscript_args.py')
+
+    # option-like args go to the script, not this command
+    with OutputCapture() as output:
+        cmd.run([test_config, tscript_args, '--foo', 'bar'])
+    assert 'script args: --foo bar' in output.captured
+
+    # old-style bare '--' separator still accepted, in either legacy position
+    with OutputCapture() as output:
+        cmd.run([test_config, tscript_args, '--', '--foo', 'bar'])
+    assert 'script args: --foo bar' in output.captured
+
+    with OutputCapture() as output:
+        cmd.run([test_config, '--', tscript_args, '--foo', 'bar'])
+    assert 'script args: --foo bar' in output.captured
+
+    # a later bare '--' is preserved for the script
+    with OutputCapture() as output:
+        cmd.run([test_config, tscript_args, '--foo', '--', 'bar'])
+    assert 'script args: --foo -- bar' in output.captured
+
+
 def test_set_neighborhood_max_projects():
     neighborhood = M.Neighborhood.query.find().first()
     n_id = neighborhood._id

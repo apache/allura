@@ -23,19 +23,19 @@ production dataset.
 
 Example:
     # Add admin1 to Admin group for the entire /p/ neighborhood:
-    $ allura script production.ini ../scripts/add_user_to_group.py -- admin1 Admin
+    $ allura script production.ini ../scripts/add_user_to_group.py admin1 Admin
 
     # Add admin1 to Member group on project /p/allura:
-    $ allura script production.ini ../scripts/add_user_to_group.py -- admin1 Member allura
+    $ allura script production.ini ../scripts/add_user_to_group.py admin1 Member allura
 
     # Add admin1 to Developer group on project /berlios/codeblocks:
-    $ allura script production.ini ../scripts/add_user_to_group.py -- admin1 Developer codeblocks --nbhd=/berlios/
+    $ allura script production.ini ../scripts/add_user_to_group.py admin1 Developer codeblocks --nbhd=/berlios/
 
     # Add admin1 to Admin group for entire berlios neighborhood:
-    $ allura script production.ini ../scripts/add_user_to_group.py -- admin1 Admin --nbhd=/berlios/
+    $ allura script production.ini ../scripts/add_user_to_group.py admin1 Admin --nbhd=/berlios/
 
     # Replace admin1 with admin2 in all individual projects in berlios neighborhood:
-    $ allura script production.ini ../scripts/add_user_to_group.py -- admin2 Admin ALLPROJECTS --nbhd=/berlios/ --replace-users admin1
+    $ allura script production.ini ../scripts/add_user_to_group.py admin2 Admin ALLPROJECTS --nbhd=/berlios/ --replace-users admin1
 
 """
 

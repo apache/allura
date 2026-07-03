@@ -104,13 +104,13 @@ in the 'Allura' directory that has your .ini file::
      allura create-neighborhood development.ini myneighborhood myuser ...
 
 
-Scripts are in the :file:`scripts/` directory and run slightly differently, via :code:`allura script`.  An extra
-:kbd:`--` is required to separate script arguments from allura arguments.  Example::
+Scripts are in the :file:`scripts/` directory and run slightly differently, via :code:`allura script`.  Everything
+after the script filename is passed to the script itself.  Example::
 
-     allura script development.ini ../scripts/add_user_to_group.py -- --help
+     allura script development.ini ../scripts/add_user_to_group.py --help
     ... help output ...
 
-     allura script development.ini ../scripts/add_user_to_group.py -- --nbhd /u/ johndoe Admin
+     allura script development.ini ../scripts/add_user_to_group.py --nbhd /u/ johndoe Admin
 
 To run these when using docker, prefix with :code:`docker compose run taskd` and use :file:`docker-dev.ini` like::
 
@@ -220,7 +220,7 @@ disable_users.py
 .. argparse::
     :module: allura.scripts.disable_users
     :func: get_parser
-    :prog: allura script development.ini allura/scripts/disable_users.py --
+    :prog: allura script development.ini allura/scripts/disable_users.py
 
 
 .. _delete-projects-py:
@@ -235,7 +235,7 @@ More convenient way to delete project is :ref:`this site admin page <delete-proj
 .. argparse::
     :module: allura.scripts.delete_projects
     :func: get_parser
-    :prog: allura script development.ini allura/scripts/delete_projects.py --
+    :prog: allura script development.ini allura/scripts/delete_projects.py
 
 
 refreshrepo.py
@@ -246,7 +246,7 @@ refreshrepo.py
 .. argparse::
     :module: allura.scripts.refreshrepo
     :func: get_parser
-    :prog: allura script development.ini allura/scripts/refreshrepo.py --
+    :prog: allura script development.ini allura/scripts/refreshrepo.py
 
 
 reindex_projects.py
@@ -257,7 +257,7 @@ reindex_projects.py
 .. argparse::
     :module: allura.scripts.reindex_projects
     :func: get_parser
-    :prog: allura script development.ini allura/scripts/reindex_projects.py --
+    :prog: allura script development.ini allura/scripts/reindex_projects.py
 
 
 reindex_users.py
@@ -268,7 +268,7 @@ reindex_users.py
 .. argparse::
     :module: allura.scripts.reindex_users
     :func: get_parser
-    :prog: allura script development.ini allura/scripts/reindex_users.py --
+    :prog: allura script development.ini allura/scripts/reindex_users.py
 
 
 create_sitemap_files.py
@@ -279,7 +279,7 @@ create_sitemap_files.py
 .. argparse::
     :module: allura.scripts.create_sitemap_files
     :func: get_parser
-    :prog: allura script development.ini allura/scripts/create_sitemap_files.py --
+    :prog: allura script development.ini allura/scripts/create_sitemap_files.py
 
 
 clear_old_notifications.py
@@ -290,7 +290,7 @@ clear_old_notifications.py
 .. argparse::
     :module: allura.scripts.clear_old_notifications
     :func: get_parser
-    :prog: allura script development.ini allura/scripts/clear_old_notifications.py --
+    :prog: allura script development.ini allura/scripts/clear_old_notifications.py
 
 publicize-neighborhood.py
 -------------------------
@@ -300,7 +300,7 @@ publicize-neighborhood.py
 .. argparse::
     :filename: ../../scripts/publicize-neighborhood.py
     :func: parser
-    :prog: allura script development.ini ../scripts/publicize-neighborhood.py --
+    :prog: allura script development.ini ../scripts/publicize-neighborhood.py
 
 
 .. _site-notifications:
