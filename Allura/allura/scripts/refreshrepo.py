@@ -20,7 +20,7 @@ import logging
 import faulthandler
 from datetime import datetime
 
-from paste.util.converters import asbool
+from paste.deploy.converters import asbool
 from tg import tmpl_context as c
 from ming.odm import ThreadLocalODMSession
 

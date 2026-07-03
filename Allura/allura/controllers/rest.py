@@ -25,7 +25,7 @@ from urllib.parse import unquote, parse_qs
 import oauthlib.oauth1
 import oauthlib.oauth2
 import oauthlib.common
-from paste.util.converters import asbool
+from paste.deploy.converters import asbool
 from webob import exc
 import tg
 from tg import expose, flash, redirect, config

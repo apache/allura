@@ -20,11 +20,11 @@ import re
 import logging
 
 import tg
-from paste import fileapp
 from paste.deploy.converters import aslist, asbool
 from tg import tmpl_context as c
 from timermiddleware import Timer, TimerMiddleware
 from webob import exc, Request, Response
+from webob.static import FileApp
 import pysolr
 import six
 from ming.odm import session
@@ -61,10 +61,14 @@ class StaticFilesMiddleware:
         environ['static.script_name'] = self.script_name
         if not environ['PATH_INFO'].startswith(self.script_name):
             return self.app(environ, start_response)
+
+        def start_response_with_headers(status, headers, exc_info=None):
+            headers.append(('Access-Control-Allow-Origin', '*'))
+            return start_response(status, headers, exc_info)
+
         try:
             app = self.get_app(environ)
-            app.cache_control(public=True, max_age=self.CACHE_MAX_AGE)
-            return app(environ, start_response)
+            return app(environ, start_response_with_headers)
         except OSError:
             return exc.HTTPNotFound()(environ, start_response)
 
@@ -79,10 +83,13 @@ class StaticFilesMiddleware:
                 if resource_cls:
                     package = resource_cls.__module__.split(".")[0]
                     file_path = pkg_file(package, resource_path)
-                    return fileapp.FileApp(file_path, [('Access-Control-Allow-Origin', '*')])
+                    return self.file_app(file_path)
         filename = environ['PATH_INFO'][len(self.script_name):]
         file_path = pkg_file('allura', 'public/nf', filename)
-        return fileapp.FileApp(file_path, [('Access-Control-Allow-Origin', '*')])
+        return self.file_app(file_path)
+
+    def file_app(self, file_path: str) -> FileApp:
+        return FileApp(file_path, cache_control=f'public, max-age={self.CACHE_MAX_AGE}')
 
 
 class CORSMiddleware:

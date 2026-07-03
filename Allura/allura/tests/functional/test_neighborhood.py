@@ -26,7 +26,7 @@ import PIL
 from mock import patch
 from tg import config
 from ming.odm.odmsession import ThreadLocalODMSession, session
-from paste.httpexceptions import HTTPFound, HTTPMovedPermanently
+from webob.exc import HTTPFound, HTTPMovedPermanently
 from tg import app_globals as g, tmpl_context as c
 
 import allura

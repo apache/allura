@@ -29,6 +29,7 @@ Ming
 oauthlib
 paginate
 passlib
+# Paste is only used for paste.exceptions.errormiddleware now (also a dependency of EasyWidgets)
 Paste
 PasteDeploy
 Pillow
