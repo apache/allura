@@ -779,6 +779,6 @@ def test_querystring():
 
 
 def test_clean_html():
-    assert h.clean_html('<script>alert(1)</script>') == '&lt;script&gt;alert(1)&lt;/script&gt;'
+    assert h.clean_html('<script>alert(1)</script>') == ''
     assert h.clean_html('<b style="color: red; right: 0">ok</b>') == '<b style="color: red;">ok</b>'
     assert isinstance(h.clean_html('foo'), Markup)

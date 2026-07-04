@@ -27,9 +27,6 @@ from urllib.parse import urljoin
 from tg import config
 from tg import tmpl_context as c
 from bs4 import BeautifulSoup, MarkupResemblesLocatorWarning
-import html5lib
-import html5lib.serializer
-import html5lib.filters.alphabeticalattributes
 import markdown
 import markdown.inlinepatterns
 import markdown.util
@@ -39,7 +36,7 @@ from markupsafe import Markup
 from . import macro
 from . import helpers as h
 from allura import model as M
-from allura.lib.utils import ForgeHTMLSanitizerFilter, is_nofollow_url
+from allura.lib.utils import ForgeHTMLSanitizer, is_nofollow_url
 
 log = logging.getLogger(__name__)
 
@@ -478,8 +475,9 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
             # sometimes short snippets of code (especially escaped html) can trigger this
             warnings.filterwarnings('ignore', category=MarkupResemblesLocatorWarning)
 
-            soup = BeautifulSoup(text,
-                                 'html5lib')  # 'html.parser' parser gives weird </li> behaviour with test_macro_members
+            # input has already been through the sanitizer (which normalizes and closes all tags),
+            # so the simple html.parser handles it fine
+            soup = BeautifulSoup(text, 'html.parser')
         if self._make_absolute:
             rewrite = self._rewrite_abs
         else:
@@ -489,8 +487,7 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
         for link in soup.find_all('img'):
             rewrite(link, 'src')
 
-        # html5lib parser adds html/head/body tags, so output <body> without its own tags
-        return str(soup.body)[len('<body>'):-len('</body>')]
+        return str(soup)
 
     def _rewrite(self, tag, attr):
         val = tag.get(attr)
@@ -531,18 +528,7 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
 class HTMLSanitizer(markdown.postprocessors.Postprocessor):
 
     def run(self, text):
-        parsed = html5lib.parseFragment(text)
-
-        # if we didn't have to customize our sanitization, could just do:
-        # return html5lib.serialize(parsed, sanitize=True)
-
-        # instead we do the same steps as that function,
-        # but add our ForgeHTMLSanitizerFilter instead of sanitize=True which would use the standard one
-        TreeWalker = html5lib.treewalkers.getTreeWalker("etree")
-        walker = TreeWalker(parsed)
-        walker = ForgeHTMLSanitizerFilter(walker)  # this is our custom step
-        s = html5lib.serializer.HTMLSerializer()
-        return s.render(walker)
+        return ForgeHTMLSanitizer().sanitize(text)
 
 
 class AutolinkPattern(markdown.inlinepatterns.InlineProcessor):

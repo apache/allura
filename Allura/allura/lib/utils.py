@@ -58,7 +58,7 @@ from markupsafe import Markup
 from webob import exc
 from pygments.formatters import HtmlFormatter
 from setproctitle import getproctitle
-import html5lib.filters.sanitizer
+import nh3
 from ew import jinja2_ew as ew
 from ming.utils import LazyProperty
 from ming.odm.odmsession import ODMCursor
@@ -546,37 +546,93 @@ def serve_file(fp, filename, content_type, last_modified=None,
         return iter(lambda: fp.read(block_size), b'')
 
 
-class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
+ALLOWED_CSS_PROPERTIES = frozenset([
+    # from html5lib's sanitizer
+    'azimuth', 'background-color', 'border-bottom-color', 'border-collapse', 'border-color', 'border-left-color',
+    'border-right-color', 'border-top-color', 'clear', 'color', 'cursor', 'direction', 'display', 'elevation',
+    'float', 'font', 'font-family', 'font-size', 'font-style', 'font-variant', 'font-weight', 'height',
+    'letter-spacing', 'line-height', 'overflow', 'pause', 'pause-after', 'pause-before', 'pitch', 'pitch-range',
+    'richness', 'speak', 'speak-header', 'speak-numeral', 'speak-punctuation', 'speech-rate', 'stress',
+    'text-align', 'text-decoration', 'text-indent', 'unicode-bidi', 'vertical-align', 'voice-family', 'volume',
+    'white-space', 'width',
+])
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+ALLOWED_CSS_KEYWORDS = frozenset([
+    'auto', 'aqua', 'black', 'block', 'blue', 'bold', 'both', 'bottom', 'brown', 'center', 'collapse', 'dashed',
+    'dotted', 'fuchsia', 'gray', 'green', '!important', 'italic', 'left', 'lime', 'maroon', 'medium', 'none',
+    'navy', 'normal', 'nowrap', 'olive', 'pointer', 'purple', 'red', 'right', 'solid', 'silver', 'teal', 'top',
+    'transparent', 'underline', 'white', 'yellow',
+])
+
+
+def sanitize_css(style: str) -> str:
+    # ported from html5lib's sanitizer (MIT licensed)
+    # disallow urls
+    style = re.compile(r'url\s*\(\s*[^\s)]+?\s*\)\s*').sub(' ', style)
+
+    # gauntlet
+    if not re.match(r"""^([:,;#%.\sa-zA-Z0-9!]|\w-\w|'[\s\w]+'|"[\s\w]+"|\([\d,\s]+\))*$""", style):
+        return ''
+    if not re.match(r"^\s*([-\w]+\s*:[^:;]*(;\s*|$))*$", style):
+        return ''
+
+    clean = []
+    for prop, value in re.findall(r"([-\w]+)\s*:\s*([^:;]*)", style):
+        if not value:
+            continue
+        if prop.lower() in ALLOWED_CSS_PROPERTIES:
+            clean.append(prop + ': ' + value + ';')
+        elif prop.split('-')[0].lower() in ['background', 'border', 'margin', 'padding']:
+            for keyword in value.split():
+                if keyword not in ALLOWED_CSS_KEYWORDS and \
+                        not re.match(r"^(#[0-9a-fA-F]+|rgb\(\d+%?,\d*%?,?\d*%?\)?|\d{0,2}\.?\d{0,2}(cm|em|ex|in|mm|pc|pt|px|%|,|\))?)$", keyword):
+                    break
+            else:
+                clean.append(prop + ': ' + value + ';')
+
+    return ' '.join(clean)
+
+
+class ForgeHTMLSanitizer:
+    """
+    Sanitize HTML with nh3, plus additional Allura-specific rules enforced in
+    :meth:`_attribute_filter` and :meth:`_postprocess`
+    """
+
+    def __init__(self):
         # remove some elements from the sanitizer whitelist
         # <form> and <input> could be used for a social engineering attack to construct a form
         # others are just unexpected and confusing, and have no need to be used in markdown
-        ns_html = html5lib.constants.namespaces['html']
-        _form_elements = {(ns_html, 'button'),
-                          (ns_html, 'datalist'),
-                          (ns_html, 'fieldset'),
-                          (ns_html, 'form'),
-                          (ns_html, 'input'),
-                          (ns_html, 'label'),
-                          (ns_html, 'legend'),
-                          (ns_html, 'meter'),
-                          (ns_html, 'optgroup'),
-                          (ns_html, 'option'),
-                          (ns_html, 'output'),
-                          (ns_html, 'progress'),
-                          (ns_html, 'select'),
-                          (ns_html, 'textarea'),
-                          }
+        _form_elements = {'button', 'datalist', 'fieldset', 'form', 'input', 'label', 'legend', 'meter',
+                          'optgroup', 'option', 'output', 'progress', 'select', 'textarea'}
         _extra_allowed_elements = {
-            (ns_html, 'summary'),
+            # elements our previous html5lib-based sanitizer allowed, but aren't in nh3's defaults:
+            'address', 'audio', 'big', 'canvas', 'dialog', 'dir', 'font', 'menu', 'section', 'source', 'video',
         }
-        self.allowed_elements = (set(html5lib.filters.sanitizer.allowed_elements) | _extra_allowed_elements) - _form_elements
+        # 'iframe' and 'input' are conditionally allowed; nh3 keeps them and _postprocess() enforces the conditions
+        _conditional_elements = {'iframe', 'input'}
+        self.allowed_elements = (set(nh3.ALLOWED_TAGS) | _extra_allowed_elements) - _form_elements | _conditional_elements
 
+        # generic attributes allowed on any element, similar to our previous html5lib-based whitelist.
         # srcset is used in our own project_list/project_summary widgets
         # which are used as macros so go through markdown
-        self.allowed_attributes = (html5lib.filters.sanitizer.allowed_attributes | {(None, 'srcset')})
+        self.allowed_attributes = {'*': {
+            'abbr', 'accesskey', 'align', 'alt', 'axis', 'bgcolor', 'border', 'cellpadding', 'cellspacing',
+            'char', 'charoff', 'charset', 'checked', 'cite', 'class', 'clear', 'color', 'cols', 'colspan',
+            'compact', 'controls', 'coords', 'datetime', 'dir', 'disabled', 'face', 'frame', 'headers',
+            'height', 'high', 'href', 'hreflang', 'hspace', 'id', 'ismap', 'label', 'lang', 'longdesc',
+            'loop', 'low', 'max', 'media', 'min', 'multiple', 'name', 'nohref', 'noshade', 'nowrap', 'open',
+            'optimum', 'poster', 'preload', 'prompt', 'rel', 'rev', 'rows', 'rowspan', 'rules', 'scope',
+            'shape', 'size', 'span', 'src', 'srcset', 'start', 'style', 'summary', 'tabindex', 'target',
+            'title', 'type', 'usemap', 'valign', 'value', 'vspace', 'width', 'wrap',
+        }}
+
+        # nh3 defaults, plus extra schemes our previous html5lib-based sanitizer allowed
+        # 'data' URIs are restricted to a few image types in _attribute_filter
+        self.allowed_url_schemes = set(nh3.ALLOWED_URL_SCHEMES) | {
+            'afs', 'aim', 'callto', 'data', 'ed2k', 'feed', 'ftp', 'gopher', 'rsync', 'rtsp', 'sftp',
+            'tag', 'telnet', 'urn',
+        }
 
         self.valid_iframe_srcs = ('https://www.youtube.com/embed/',
                                   'https://www.youtube-nocookie.com/embed/',
@@ -606,103 +662,68 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
             'h-',  # see toc_slugify_with_prefix
             'fn:', 'fnref:',  # from footnotes extension
         } | set(aslist(tg.config.get('safe_html.id_prefixes', [])))
-        self._prev_token_was_ok_iframe = False
-        self._current_link = None
-        self._pending_link_suffix = None
 
-    def __iter__(self):
-        # override to inject link suffixes in the output
-        for token in super().__iter__():
-            yield token
-            if self._pending_link_suffix is not None:
-                yield self._pending_link_suffix
-                self._pending_link_suffix = None
+    def sanitize(self, html: str) -> str:
+        cleaned = nh3.clean(
+            html,
+            tags=self.allowed_elements,
+            # form controls whose contents aren't meaningful on their own (script & style are nh3's defaults)
+            clean_content_tags={'script', 'style', 'textarea', 'select', 'datalist'},
+            attributes=self.allowed_attributes,
+            attribute_filter=self._attribute_filter,
+            url_schemes=self.allowed_url_schemes,
+            link_rel=None,
+        )
+        return self._postprocess(cleaned)
 
-    def sanitize_token(self, token):
+    def _attribute_filter(self, tag: str, attr: str, value: str) -> str | None:
+        if attr in ('href', 'src', 'cite', 'longdesc', 'poster') and value.lower().startswith('data:'):
+            # only allow data URIs for a few image types (and text/plain), like our previous sanitizer did
+            if not re.match(r'data:(image/(png|jpeg|gif|webp|bmp)|text/plain)[;,]', value, re.IGNORECASE):
+                return None
+        if attr == 'class':
+            classes = value.split()
+            cleaned_classes = [c for c in classes
+                               if c in self.valid_class_values or c.startswith(self.valid_partial_class_prefixes)]
+            if cleaned_classes != classes:
+                log.info(f'Removed invalid classes: {classes} => {cleaned_classes}')
+            return ' '.join(cleaned_classes)
+        if attr == 'id':
+            if not any(value.startswith(prefix) for prefix in self.valid_id_prefixes):
+                return 'user-content-' + value
+        if attr == 'style':
+            return sanitize_css(value)
+        return value
+
+    def _postprocess(self, html: str) -> str:
         """
-        Allow iframe tags if the src attribute matches our list of valid sources.
-        Allow input tags if the type attribute matches "checkbox"
-        Otherwise use default sanitization.
+        Rules that need more context than nh3's per-attribute hooks allow:
+        allow iframe tags only if the src attribute matches our list of valid sources.
+        allow input tags only if the type attribute matches "checkbox"
+        append a "(hostname)" suffix after links with misleading visible text
         """
+        soup = BeautifulSoup(html, 'html.parser')
+        for iframe in soup.find_all('iframe'):
+            if not (iframe.get('src') or '').startswith(self.valid_iframe_srcs):
+                iframe.decompose()
+        for input_el in soup.find_all('input'):
+            if input_el.get('type') != 'checkbox':
+                input_el.decompose()
+        for link in soup.find_all('a'):
+            suffix = self._link_suffix(link)
+            if suffix:
+                link.insert_after(suffix)
+        return str(soup)
 
-        iframe_el = (html5lib.constants.namespaces['html'], 'iframe')
-        self.allowed_elements.discard(iframe_el)
-        ok_opening_iframe = False
-
-        input_el = (html5lib.constants.namespaces['html'], 'input')
-        self.allowed_elements.discard(input_el)
-
-        if token.get('name') == 'iframe':
-            attrs = token.get('data') or {}
-            if attrs.get((None, 'src'), '').startswith(self.valid_iframe_srcs):
-                self.allowed_elements.add(iframe_el)
-                ok_opening_iframe = True
-            elif token.get('type') == "EndTag" and self._prev_token_was_ok_iframe:
-                self.allowed_elements.add(iframe_el)
-
-        # sanitize classes and ids
-        if token.get('type') == 'StartTag':
-            classes = token.get('data', {}).get((None, 'class'), '')
-            if classes:
-                classes = classes.split()
-                cleaned_classes = [c for c in classes if c in self.valid_class_values or c.startswith(self.valid_partial_class_prefixes)]
-                if cleaned_classes != classes:
-                    log.info(f'Removed invalid classes: {classes} => {cleaned_classes}')
-                token['data'][(None, 'class')] = ' '.join(cleaned_classes)
-
-            id = token.get('data', {}).get((None, 'id'), '')
-            if id:
-                if not any(id.startswith(prefix) for prefix in self.valid_id_prefixes):
-                    token['data'][(None, 'id')] = 'user-content-' + id
-
-        self._prev_token_was_ok_iframe = ok_opening_iframe
-
-        if token.get('name') == 'input':
-            attrs = token.get('data') or {}
-            if attrs.get((None, 'type'), '') == "checkbox":
-                self.allowed_elements.add(input_el)
-
-        sanitized = super().sanitize_token(token)
-        self._track_link_target(sanitized)
-        return sanitized
-
-    def _track_link_target(self, token):
-        if token is None:
-            return
-
-        tag_type = token.get('type')
-        tag_name = token.get('name')
-
-        if tag_type == 'StartTag' and tag_name == 'a':
-            href = token.get('data', {}).get((None, 'href'))
-            hostname = hostname_from_url(href)
-            self._current_link = {
-                'href': href,
-                'hostname': hostname,
-                'text_parts': [],
-            }
-            return
-
-        if self._current_link is None:
-            return
-
-        if tag_type in ('Characters', 'SpaceCharacters'):
-            self._current_link['text_parts'].append(token.get('data', ''))
-            return
-
-        if tag_type == 'EndTag' and tag_name == 'a':
-            self._finalize_link_target()
-            self._current_link = None
-
-    def _finalize_link_target(self):
-        href = self._current_link['href']
-        hostname = self._current_link['hostname']
+    def _link_suffix(self, link) -> str | None:
+        href = link.get('href')
+        hostname = hostname_from_url(href)
         if not href or not hostname:
-            return
+            return None
 
-        visible_text = ''.join(self._current_link['text_parts']).strip()
+        visible_text = link.get_text().strip()
         if not visible_text:
-            return
+            return None
 
         idn_lookalike = 'xn--' in hostname and idn_uses_lookalike_chars(hostname)
         if not idn_lookalike:
@@ -710,14 +731,11 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
             # gets the suffix so the deception is visible; all other links only get it
             # when the visible text looks like a URL pointing somewhere different.
             if not text_contains_any_url(visible_text):
-                return
+                return None
             if text_contains_hostname(visible_text, hostname):
-                return
+                return None
 
-        self._pending_link_suffix = {
-            'type': 'Characters',
-            'data': f' ({hostname})',
-        }
+        return f' ({hostname})'
 
 
 # Scripts whose characters are visually distinct from ASCII and unlikely to be used

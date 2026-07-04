@@ -30,9 +30,6 @@ from pygments import highlight
 from pygments.lexers import get_lexer_for_filename
 import pytest
 from tg import config
-import html5lib
-import html5lib.treewalkers
-import html5lib.serializer
 
 from alluratest.controller import setup_unit_test
 
@@ -246,53 +243,38 @@ class TestHTMLSanitizer:
     def setup_method(self, method):
         setup_unit_test()
 
-    def walker_from_text(self, text):
-        parsed = html5lib.parseFragment(text)
-        TreeWalker = html5lib.treewalkers.getTreeWalker("etree")
-        walker = TreeWalker(parsed)
-        return walker
-
     def sanitize_html(self, html):
         with h.push_config(config, domain='mysite.com'):
-            filt = utils.ForgeHTMLSanitizerFilter(self.walker_from_text(html))
-            return html5lib.serializer.HTMLSerializer().render(filt)
-
-    def simple_tag_list(self, sanitizer):
-        # no attrs, no close tag flag check, just real simple
-        return [
-            t['name'] for t in sanitizer if t.get('name')
-        ]
+            return utils.ForgeHTMLSanitizer().sanitize(html)
 
     def test_html_sanitizer_iframe(self):
-        walker = self.walker_from_text('<div><iframe></iframe></div>')
-        p = utils.ForgeHTMLSanitizerFilter(walker)
-        assert self.simple_tag_list(p) == ['div', 'div']
+        assert self.sanitize_html('<div><iframe></iframe></div>') == '<div></div>'
 
     def test_html_sanitizer_youtube_iframe(self):
-        walker = self.walker_from_text(
+        assert (self.sanitize_html(
+            '<div><iframe src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>') ==
             '<div><iframe src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
-        p = utils.ForgeHTMLSanitizerFilter(walker)
-        assert self.simple_tag_list(p) == ['div', 'iframe', 'iframe', 'div']
 
-        walker = self.walker_from_text(
+        assert (self.sanitize_html(
+            '<div><iframe src="https://www.youtube-nocookie.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>') ==
             '<div><iframe src="https://www.youtube-nocookie.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
-        p = utils.ForgeHTMLSanitizerFilter(walker)
-        assert self.simple_tag_list(p) == ['div', 'iframe', 'iframe', 'div']
+
+        assert (self.sanitize_html('<div><iframe src="https://evil.com/embed/x"></iframe></div>') ==
+                '<div></div>')
 
     def test_html_sanitizer_form_elements(self):
-        walker = self.walker_from_text('<p>test</p><form method="post" action="http://localhost/foo.php"><input type=file><input type=text><textarea>asdf</textarea></form>')
-        p = utils.ForgeHTMLSanitizerFilter(walker)
-        assert self.simple_tag_list(p) == ['p', 'p']
+        assert (self.sanitize_html('<p>test</p><form method="post" action="http://localhost/foo.php">'
+                                   '<input type=file><input type=text><textarea>asdf</textarea></form>') ==
+                '<p>test</p>')
 
     def test_html_sanitizer_checkbox(self):
-        walker = self.walker_from_text('<p><input type="checkbox" disabled/><input type="text" disabled/><input type="checkbox" disabled checked/></p>')
-        p = utils.ForgeHTMLSanitizerFilter(walker)
-        assert self.simple_tag_list(p) == ['p', 'input', 'input', 'p']
+        assert (self.sanitize_html('<p><input type="checkbox" disabled/><input type="text" disabled/>'
+                                   '<input type="checkbox" disabled checked/></p>') ==
+                '<p><input disabled="" type="checkbox"/><input checked="" disabled="" type="checkbox"/></p>')
 
     def test_html_sanitizer_summary(self):
-        walker = self.walker_from_text('<details open="open"><summary>An Summary</summary><ul><li>Bullet Item</li></ul></details>')
-        p = utils.ForgeHTMLSanitizerFilter(walker)
-        assert self.simple_tag_list(p) == ['details', 'summary', 'summary', 'ul', 'li', 'li', 'ul', 'details']
+        assert (self.sanitize_html('<details open="open"><summary>An Summary</summary><ul><li>Bullet Item</li></ul></details>') ==
+                '<details open="open"><summary>An Summary</summary><ul><li>Bullet Item</li></ul></details>')
 
     def test_misleading_links(self):
         # OK: generic text

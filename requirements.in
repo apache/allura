@@ -14,7 +14,6 @@ feedgenerator
 feedparser
 FormEncode
 GitPython
-html5lib
 idna
 Jinja2
 # Webob uses legacy-cgi and so our tests need it too for cgi.FieldStorage, maybe webob 2 will remove it?  https://github.com/Pylons/webob/pull/466
@@ -26,6 +25,7 @@ markdown-checklist
 mdx_breakless_lists
 MarkupSafe
 Ming
+nh3
 oauthlib
 paginate
 passlib

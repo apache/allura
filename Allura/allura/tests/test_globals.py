@@ -270,7 +270,7 @@ class Test():
         assert (r.replace('\n', '') ==
                 '<div class="markdown_content"><h6>Project Admins:</h6>'
                 '<ul class="md-users-list">'
-                '    <li><a href="/u/test-admin/">Test \xc5dmin &lt;script&gt;</a></li>'
+                '<li><a href="/u/test-admin/">Test \xc5dmin &lt;script&gt;</a></li>'
                 '</ul></div>')
 
     def test_macro_project_admins_one_br(self):
@@ -355,9 +355,10 @@ class Test():
         }
         r = g.markdown_wiki.convert('[[embed url=http://www.youtube.com/watch?v=kOLpSPEA72U]]')
         assert ('<p><iframe height="270" '
-                'src="https://www.youtube-nocookie.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe>'
-                '&lt;script&gt;alert(1)&lt;/script&gt;</p>' in
+                'src="https://www.youtube-nocookie.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe></p>' in
                 r.replace('\n', ''))
+        assert 'script' not in r
+        assert 'alert' not in r
 
     def test_macro_embed_video_gone(self):
         # this does a real fetch
@@ -472,9 +473,9 @@ class Test():
             '<div class="markdown_content"><p>Multi</p>\n'
             '<p>Line</p></div>')
 
-        # should not raise an exception:
+        # should not raise an exception; unknown tag is removed:
         assert g.markdown.convert("<class 'foo'>") == \
-            '''<div class="markdown_content"><p>&lt;class 'foo'=""&gt;&lt;/class&gt;</p></div>'''
+            '<div class="markdown_content"><p></p></div>'
 
         assert g.markdown.convert(dedent('''\
             # Header
@@ -601,7 +602,7 @@ class Test():
 
     def test_markdown_invalid_script(self):
         r = g.markdown.convert('<script>alert(document.cookies)</script>')
-        assert '<div class="markdown_content">&lt;script&gt;alert(document.cookies)&lt;/script&gt;\n</div>' == r
+        assert '<div class="markdown_content">\n</div>' == r
 
     def test_markdown_invalid_onerror(self):
         r = g.markdown.convert('<img src=x onerror=alert(document.cookie)>')
@@ -612,16 +613,13 @@ class Test():
         assert 'onerror' not in r
 
     def test_markdown_invalid_script_in_link(self):
+        # the malformed href is removed entirely
         r = g.markdown.convert('[xss](http://"><a onmouseover=prompt(document.domain)>xss</a>)')
-        assert ('<div class="markdown_content"><p><a '
-                '''href='http://"&gt;&lt;a%20onmouseover=prompt(document.domain)&gt;xss&lt;/a' '''
-                'rel="nofollow">xss</a>)</p></div>' == r)
+        assert '<div class="markdown_content"><p><a>xss</a>)</p></div>' == r
 
     def test_markdown_invalid_script_in_link2(self):
         r = g.markdown.convert('[xss](http://"><img src=x onerror=alert(document.cookie)>)')
-        assert ('<div class="markdown_content"><p><a '
-                '''href='http://"&gt;&lt;img%20src=x%20onerror=alert(document.cookie)' '''
-                'rel="nofollow">xss</a>)</p></div>' == r)
+        assert '<div class="markdown_content"><p><a>xss</a>)</p></div>' == r
 
     def test_markdown_invalid_classes_ids(self):
         r = g.markdown.convert("# Test message")
