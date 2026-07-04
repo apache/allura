@@ -248,7 +248,8 @@ class TestHTMLSanitizer:
             return utils.ForgeHTMLSanitizer().sanitize(html)
 
     def test_html_sanitizer_iframe(self):
-        assert self.sanitize_html('<div><iframe></iframe></div>') == '<div></div>'
+        assert (self.sanitize_html('<div><iframe></iframe></div>') ==
+                '<div>&lt;iframe&gt;&lt;/iframe&gt;</div>')
 
     def test_html_sanitizer_youtube_iframe(self):
         assert (self.sanitize_html(
@@ -260,17 +261,20 @@ class TestHTMLSanitizer:
             '<div><iframe src="https://www.youtube-nocookie.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
 
         assert (self.sanitize_html('<div><iframe src="https://evil.com/embed/x"></iframe></div>') ==
-                '<div></div>')
+                '<div>&lt;iframe src="https://evil.com/embed/x"&gt;&lt;/iframe&gt;</div>')
 
     def test_html_sanitizer_form_elements(self):
         assert (self.sanitize_html('<p>test</p><form method="post" action="http://localhost/foo.php">'
                                    '<input type=file><input type=text><textarea>asdf</textarea></form>') ==
-                '<p>test</p>')
+                '<p>test</p>&lt;form method="post" action="http://localhost/foo.php"&gt;'
+                '&lt;input type="file"&gt;&lt;input type="text"&gt;'
+                '&lt;textarea&gt;asdf&lt;/textarea&gt;&lt;/form&gt;')
 
     def test_html_sanitizer_checkbox(self):
         assert (self.sanitize_html('<p><input type="checkbox" disabled/><input type="text" disabled/>'
                                    '<input type="checkbox" disabled checked/></p>') ==
-                '<p><input type="checkbox" disabled=""><input type="checkbox" disabled="" checked=""></p>')
+                '<p><input type="checkbox" disabled="">&lt;input type="text" disabled=""&gt;'
+                '<input type="checkbox" disabled="" checked=""></p>')
 
     def test_html_sanitizer_summary(self):
         assert (self.sanitize_html('<details open="open"><summary>An Summary</summary><ul><li>Bullet Item</li></ul></details>') ==

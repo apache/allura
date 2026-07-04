@@ -355,10 +355,9 @@ class Test():
         }
         r = g.markdown_wiki.convert('[[embed url=http://www.youtube.com/watch?v=kOLpSPEA72U]]')
         assert ('<p><iframe height="270" '
-                'src="https://www.youtube-nocookie.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe></p>' in
+                'src="https://www.youtube-nocookie.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe>'
+                '&lt;script&gt;alert(1)&lt;/script&gt;</p>' in
                 r.replace('\n', ''))
-        assert 'script' not in r
-        assert 'alert' not in r
 
     def test_macro_embed_video_gone(self):
         # this does a real fetch
@@ -473,9 +472,9 @@ class Test():
             '<div class="markdown_content"><p>Multi</p>\n'
             '<p>Line</p></div>')
 
-        # should not raise an exception; unknown tag is removed:
+        # should not raise an exception:
         assert g.markdown.convert("<class 'foo'>") == \
-            '<div class="markdown_content"><p></p></div>'
+            '''<div class="markdown_content"><p>&lt;class 'foo'=""&gt;&lt;/class&gt;</p></div>'''
 
         assert g.markdown.convert(dedent('''\
             # Header
@@ -602,7 +601,7 @@ class Test():
 
     def test_markdown_invalid_script(self):
         r = g.markdown.convert('<script>alert(document.cookies)</script>')
-        assert '<div class="markdown_content">\n</div>' == r
+        assert '<div class="markdown_content">&lt;script&gt;alert(document.cookies)&lt;/script&gt;\n</div>' == r
 
     def test_markdown_invalid_onerror(self):
         r = g.markdown.convert('<img src=x onerror=alert(document.cookie)>')

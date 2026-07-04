@@ -597,7 +597,13 @@ class ForgeHTMLSanitizer:
     """
     Sanitize HTML by walking the turbohtml parse tree, keeping only whitelisted
     elements and attributes, with some additional Allura-specific rules.
+    Disallowed elements are escaped into visible text (like our previous html5lib-based
+    sanitizer did), so someone writing about e.g. script tags doesn't have them vanish.
     """
+
+    # end tags aren't written for these when escaping a disallowed element
+    _void_elements = frozenset(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta',
+                                'param', 'source', 'track', 'wbr'])
 
     # like our previous html5lib-based whitelist, minus form elements which could be
     # used for a social engineering attack to construct a form, minus obsolete/obscure
@@ -612,10 +618,6 @@ class ForgeHTMLSanitizer:
         'small', 'source', 'span', 'strike', 'strong', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'tfoot',
         'th', 'thead', 'time', 'tr', 'tt', 'u', 'ul', 'var', 'video', 'wbr',
     ])
-
-    # disallowed elements whose contents aren't meaningful on their own, so are removed entirely
-    # (other disallowed elements are removed but their contents are kept)
-    _removed_elements = frozenset(['script', 'style', 'textarea', 'select', 'datalist'])
 
     # generic attributes allowed on any element, similar to our previous html5lib-based whitelist.
     # srcset is used in our own project_list/project_summary widgets
@@ -691,26 +693,20 @@ class ForgeHTMLSanitizer:
         append a "(hostname)" suffix after links with misleading visible text
         """
         tag = el.tag
-        if tag in self._removed_elements:
-            el.decompose()
-            return
-        if el.namespace is not Namespace.HTML or tag not in self.allowed_elements:
-            # drop the tag itself but keep its (sanitized) contents
+        allowed = el.namespace is Namespace.HTML and tag in self.allowed_elements
+        if allowed and tag == 'iframe':
+            allowed = (el.attrs.get('src') or '').startswith(self.valid_iframe_srcs)
+        if allowed and tag == 'input':
+            allowed = el.attrs.get('type') == 'checkbox'
+        if not allowed:
             self._sanitize_children(el)
-            el.unwrap()
+            self._escape_element(el)
             return
 
         self._sanitize_attrs(el)
 
         if tag == 'iframe':
-            if (el.attrs.get('src') or '').startswith(self.valid_iframe_srcs):
-                el.clear()  # iframe contents are fallback-only, and would serialize unescaped
-            else:
-                el.decompose()
-            return
-        if tag == 'input':
-            if el.attrs.get('type') != 'checkbox':
-                el.decompose()
+            el.clear()  # iframe contents are fallback-only, and would serialize unescaped
             return
 
         self._sanitize_children(el)
@@ -719,6 +715,16 @@ class ForgeHTMLSanitizer:
             suffix = self._link_suffix(el)
             if suffix:
                 el.insert_after(Text(suffix))
+
+    def _escape_element(self, el: Element) -> None:
+        # replace a disallowed element with visible text of its tags (escaped during serialization),
+        # keeping its already-sanitized contents in place
+        attrs = ''.join(f' {name}="{" ".join(value) if isinstance(value, list) else value or ""}"'
+                        for name, value in el.attrs.items())
+        el.insert_before(Text(f'<{el.tag}{attrs}>'))
+        if el.tag not in self._void_elements:
+            el.insert_after(Text(f'</{el.tag}>'))
+        el.unwrap()
 
     def _sanitize_attrs(self, el: Element) -> None:
         for name in list(el.attrs):
