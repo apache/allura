@@ -34,12 +34,11 @@ class TestNewForgeController(TestController):
             '/nf/markdown_to_html?markdown=*aaa*bb[wiki:Home]&project=test&app=wiki&neighborhood=%s' % n._id, validate_chunk=True)
         assert '<p><em>aaa</em>bb<a class="alink" href="/p/test/wiki/Home/">[wiki:Home]</a></p>' in r, r
 
-        # this happens to trigger an error
+        # this used to trigger a parsing error; now the unknown tag is simply removed
         bad_markdown = '<foo {bar}>'
         r = self.app.get('/nf/markdown_to_html?markdown=%s&project=test&app=wiki&neighborhood=%s' %
                          (quote(bad_markdown), n._id))
-        r.mustcontain('The markdown supplied could not be parsed correctly.')
-        r.mustcontain('<pre>&lt;foo {bar}&gt;</pre>')
+        r.mustcontain('<div class="markdown_content"><p></p></div>')
 
         r = self.app.get('/nf/markdown_to_html?markdown=*aaa*bb[wiki:Home]&project=test&app=wiki&neighborhood=bogus',
                          status=400)

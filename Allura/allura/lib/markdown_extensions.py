@@ -18,7 +18,6 @@
 from __future__ import annotations
 import re
 import logging
-import warnings
 import xml.etree.ElementTree as etree
 import os
 
@@ -26,10 +25,7 @@ from urllib.parse import urljoin
 
 from tg import config
 from tg import tmpl_context as c
-from bs4 import BeautifulSoup, MarkupResemblesLocatorWarning
-import html5lib
-import html5lib.serializer
-import html5lib.filters.alphabeticalattributes
+from turbohtml import parse_fragment
 import markdown
 import markdown.inlinepatterns
 import markdown.util
@@ -39,7 +35,7 @@ from markupsafe import Markup
 from . import macro
 from . import helpers as h
 from allura import model as M
-from allura.lib.utils import ForgeHTMLSanitizerFilter, is_nofollow_url
+from allura.lib.utils import ForgeHTMLSanitizer, is_nofollow_url
 
 log = logging.getLogger(__name__)
 
@@ -474,38 +470,32 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
         self._make_absolute = make_absolute
 
     def run(self, text: str):
-        with warnings.catch_warnings():
-            # sometimes short snippets of code (especially escaped html) can trigger this
-            warnings.filterwarnings('ignore', category=MarkupResemblesLocatorWarning)
-
-            soup = BeautifulSoup(text,
-                                 'html5lib')  # 'html.parser' parser gives weird </li> behaviour with test_macro_members
+        doc = parse_fragment(text)
         if self._make_absolute:
             rewrite = self._rewrite_abs
         else:
             rewrite = self._rewrite
-        for link in soup.find_all('a'):
+        for link in doc.find_all('a'):
             rewrite(link, 'href')
-        for link in soup.find_all('img'):
+        for link in doc.find_all('img'):
             rewrite(link, 'src')
 
-        # html5lib parser adds html/head/body tags, so output <body> without its own tags
-        return str(soup.body)[len('<body>'):-len('</body>')]
+        return doc.inner_html
 
     def _rewrite(self, tag, attr):
-        val = tag.get(attr)
+        val = tag.attrs.get(attr)
         if val is None:
             return
         if ' ' in val:
             # Don't urllib.quote to avoid possible double-quoting
             # just make sure no spaces
             val = val.replace(' ', '%20')
-            tag[attr] = val
+            tag.attrs[attr] = val
         if 'markdown_syntax' in val:
-            tag['rel'] = 'nofollow'
+            tag.attrs['rel'] = 'nofollow'
         if '://' in val:
             if is_nofollow_url(val):
-                tag['rel'] = 'nofollow'
+                tag.attrs['rel'] = 'nofollow'
             return
         if val.startswith('/'):
             return
@@ -519,30 +509,19 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
             return
         # if none of the above, assume relative to directory link
         val = os.path.join('.', val)
-        tag[attr] = val
+        tag.attrs[attr] = val
 
     def _rewrite_abs(self, tag, attr):
         self._rewrite(tag, attr)
-        val = tag.get(attr)
+        val = tag.attrs.get(attr)
         val = urljoin(config['base_url'], val)
-        tag[attr] = val
+        tag.attrs[attr] = val
 
 
 class HTMLSanitizer(markdown.postprocessors.Postprocessor):
 
     def run(self, text):
-        parsed = html5lib.parseFragment(text)
-
-        # if we didn't have to customize our sanitization, could just do:
-        # return html5lib.serialize(parsed, sanitize=True)
-
-        # instead we do the same steps as that function,
-        # but add our ForgeHTMLSanitizerFilter instead of sanitize=True which would use the standard one
-        TreeWalker = html5lib.treewalkers.getTreeWalker("etree")
-        walker = TreeWalker(parsed)
-        walker = ForgeHTMLSanitizerFilter(walker)  # this is our custom step
-        s = html5lib.serializer.HTMLSerializer()
-        return s.render(walker)
+        return ForgeHTMLSanitizer().sanitize(text)
 
 
 class AutolinkPattern(markdown.inlinepatterns.InlineProcessor):

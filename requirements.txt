@@ -105,9 +105,7 @@ gunicorn==25.3.0
 h11==0.16.0
     # via httpcore
 html5lib==1.1
-    # via
-    #   -r requirements.in
-    #   pypeline
+    # via pypeline
 httpcore==1.0.9
     # via httpx
 httpx==0.27.2
@@ -318,6 +316,8 @@ tinycss2==1.1.1
 translationstring==1.4
     # via colander
 turbogears2==2.5.0
+    # via -r requirements.in
+turbohtml @ git+https://github.com/tox-dev/turbohtml@76a6d3b1d588b93c403fc0a6238b556d09871b33
     # via -r requirements.in
 typing-extensions==4.15.0
     # via beautifulsoup4

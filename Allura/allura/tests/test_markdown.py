@@ -148,7 +148,7 @@ Not *strong* or _underlined_."""
 * <a href="/p/project/tool/artifact/">ticket:100</a><br>
 * <a href="/p/project/tool/artifact/#abc">comment:13:ticket:2</a><br>
 * <a href="/p/project/tool/2/tree/test.py#l3">source:test.py@2#L3</a></p>
-<p>Not *strong* or _underlined_.</div>"""
+<p>Not *strong* or _underlined_.</p></div>"""
 
         md = markdown.Markdown(
             extensions=[mde.CommitMessageExtension(app), 'markdown.extensions.nl2br'],

@@ -355,9 +355,10 @@ class Test():
         }
         r = g.markdown_wiki.convert('[[embed url=http://www.youtube.com/watch?v=kOLpSPEA72U]]')
         assert ('<p><iframe height="270" '
-                'src="https://www.youtube-nocookie.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe>'
-                '&lt;script&gt;alert(1)&lt;/script&gt;</p>' in
+                'src="https://www.youtube-nocookie.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe></p>' in
                 r.replace('\n', ''))
+        assert 'script' not in r
+        assert 'alert' not in r
 
     def test_macro_embed_video_gone(self):
         # this does a real fetch
@@ -465,16 +466,16 @@ class Test():
 
         assert (
             g.markdown.convert('Multi\nLine') ==
-            '<div class="markdown_content"><p>Multi<br/>\n'
+            '<div class="markdown_content"><p>Multi<br>\n'
             'Line</p></div>')
         assert (
             g.markdown.convert('Multi\n\nLine') ==
             '<div class="markdown_content"><p>Multi</p>\n'
             '<p>Line</p></div>')
 
-        # should not raise an exception:
+        # should not raise an exception; unknown tag is removed:
         assert g.markdown.convert("<class 'foo'>") == \
-            '''<div class="markdown_content"><p>&lt;class 'foo'=""&gt;&lt;/class&gt;</p></div>'''
+            '<div class="markdown_content"><p></p></div>'
 
         assert g.markdown.convert(dedent('''\
             # Header
@@ -510,7 +511,7 @@ class Test():
                [1]: http://url
                [2]: http://another.url "A funky title"
         ''')) == dedent('''\
-            <div class="markdown_content"><p>You can also put the <a href="http://url" rel="nofollow">link URL</a> below the current paragraph like <a href="http://another.url" rel="nofollow" title="A funky title">this</a>.</p></div>''')
+            <div class="markdown_content"><p>You can also put the <a href="http://url" rel="nofollow">link URL</a> below the current paragraph like <a href="http://another.url" title="A funky title" rel="nofollow">this</a>.</p></div>''')
 
         assert g.markdown.convert(dedent('''\
             Or you can use a [shortcut][] reference
@@ -579,7 +580,7 @@ class Test():
         # beginning of doc
         assert '<a href=' in g.markdown.convert('http://domain.net abc')
         # beginning of a line
-        assert ('<br/>\n<a href="http://' in
+        assert ('<br>\n<a href="http://' in
                 g.markdown.convert('foobar\nhttp://domain.net abc'))
         # special characters allowed
         assert (' href="http://mst.dn/@acct:%20#target" ' in
@@ -601,7 +602,7 @@ class Test():
 
     def test_markdown_invalid_script(self):
         r = g.markdown.convert('<script>alert(document.cookies)</script>')
-        assert '<div class="markdown_content">&lt;script&gt;alert(document.cookies)&lt;/script&gt;\n</div>' == r
+        assert '<div class="markdown_content">\n</div>' == r
 
     def test_markdown_invalid_onerror(self):
         r = g.markdown.convert('<img src=x onerror=alert(document.cookie)>')
@@ -614,13 +615,13 @@ class Test():
     def test_markdown_invalid_script_in_link(self):
         r = g.markdown.convert('[xss](http://"><a onmouseover=prompt(document.domain)>xss</a>)')
         assert ('<div class="markdown_content"><p><a '
-                '''href='http://"&gt;&lt;a%20onmouseover=prompt(document.domain)&gt;xss&lt;/a' '''
+                'href="http://&quot;><a%20onmouseover=prompt(document.domain)>xss</a" '
                 'rel="nofollow">xss</a>)</p></div>' == r)
 
     def test_markdown_invalid_script_in_link2(self):
         r = g.markdown.convert('[xss](http://"><img src=x onerror=alert(document.cookie)>)')
         assert ('<div class="markdown_content"><p><a '
-                '''href='http://"&gt;&lt;img%20src=x%20onerror=alert(document.cookie)' '''
+                'href="http://&quot;><img%20src=x%20onerror=alert(document.cookie)" '
                 'rel="nofollow">xss</a>)</p></div>' == r)
 
     def test_markdown_invalid_classes_ids(self):
@@ -667,7 +668,7 @@ class Test():
 
     def test_macro_include(self):
         r = g.markdown.convert('[[include ref=Home id=foo class=modal data-a=b]]')
-        assert '<div class="" id="user-content-foo">' in r, r
+        assert '<div id="user-content-foo" class="">' in r, r
         assert 'href="./foo"' in g.markdown.convert('[My foo](foo)')
         assert 'href="..' not in g.markdown.convert('[My foo](./foo)')
 
@@ -779,7 +780,7 @@ class Test():
 
         with h.push_context(p_nbhd.neighborhood_project._id):
             r = g.markdown_wiki.convert('[[projects]]')
-            assert ('<div class="feature"> <a href="http://award.org" rel="nofollow" title="Winner!">'
+            assert ('<div class="feature"> <a href="http://award.org" title="Winner!" rel="nofollow">'
                     'Award short</a> </div>' in
                     squish_spaces(r))
 

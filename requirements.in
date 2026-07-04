@@ -14,7 +14,6 @@ feedgenerator
 feedparser
 FormEncode
 GitPython
-html5lib
 idna
 Jinja2
 # Webob uses legacy-cgi and so our tests need it too for cgi.FieldStorage, maybe webob 2 will remove it?  https://github.com/Pylons/webob/pull/466
@@ -53,6 +52,8 @@ six
 sxsdiff
 TimerMiddleware
 TurboGears2
+# pre-release version, no PyPI release has all we need yet
+turbohtml @ git+https://github.com/tox-dev/turbohtml@76a6d3b1d588b93c403fc0a6238b556d09871b33
 WebHelpers2
 WebOb
 werkzeug
