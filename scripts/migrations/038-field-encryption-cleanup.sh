@@ -35,3 +35,4 @@ export PYTHONWARNINGS="${PYTHONWARNINGS:-ignore:pkg_resources is deprecated as a
 CMD="paster script $INI ../scripts/convert_encrypted_field.py -- --remove-unencrypted"
 
 $CMD allura.model.auth.User email_addresses
+$CMD allura.model.auth.User preferences.email_address
