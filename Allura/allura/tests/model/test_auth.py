@@ -467,7 +467,7 @@ class TestAuth:
         assert 'email_addresses' not in state(user).document
         assert state(user).document['email_addresses_encrypted'] == expected_encrypted
 
-    def test_preference_email_address_encrypted_is_populated_on_creation(self):
+    def test_preference_email_address_is_stored_encrypted_on_creation(self):
         user = M.User(
             username='preference-email-address-encrypted-create-test',
             preferences={'email_address': 'primary@example.com'})
@@ -475,11 +475,11 @@ class TestAuth:
 
         raw_preferences = state(user).document['preferences']
         assert user.get_pref('email_address') == 'primary@example.com'
-        assert raw_preferences['email_address'] == 'primary@example.com'
+        assert 'email_address' not in raw_preferences
         assert raw_preferences['email_address_encrypted'] == M.User.encr('primary@example.com')
         assert M.User.decr(raw_preferences['email_address_encrypted']) == 'primary@example.com'
 
-    def test_preference_email_address_encrypted_is_synced_on_update(self):
+    def test_preference_email_address_updates_encrypted_field(self):
         user = M.User(
             username='preference-email-address-encrypted-update-test',
             preferences={'email_address': 'old@example.com'})
@@ -490,7 +490,7 @@ class TestAuth:
 
         raw_preferences = state(user).document['preferences']
         assert user.get_pref('email_address') == 'new@example.com'
-        assert raw_preferences['email_address'] == 'new@example.com'
+        assert 'email_address' not in raw_preferences
         assert raw_preferences['email_address_encrypted'] == M.User.encr('new@example.com')
         assert M.User.decr(raw_preferences['email_address_encrypted']) == 'new@example.com'
 
