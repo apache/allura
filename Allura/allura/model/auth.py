@@ -38,7 +38,7 @@ from tg import config
 from tg import tmpl_context as c, app_globals as g
 from tg import request
 from ming import schema as S
-from ming.odm import session, state
+from ming.odm import session, state, MapperExtension
 from ming.odm import FieldProperty, RelationProperty, ForeignIdProperty, DecryptedProperty, DecryptedListProperty
 from ming.odm.declarative import MappedClass
 from ming.odm.odmsession import ThreadLocalODMSession
@@ -266,6 +266,15 @@ class FieldPropertyDisplayName(DecryptedProperty):
         return super().__get__(instance, type(instance))
 
 
+class UserPreferencesMapperExtension(MapperExtension):
+
+    def before_insert(self, obj, state, sess):
+        obj.sync_preference_email_address_encrypted()
+
+    def before_update(self, obj, state, sess):
+        obj.sync_preference_email_address_encrypted()
+
+
 class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     SALT_LEN = 8
 
@@ -274,6 +283,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         session = main_orm_session
         indexes = ['tool_data.AuthPasswordReset.hash']
         unique_indexes = ['username']
+        extensions = [UserPreferencesMapperExtension]
         custom_indexes = [
             dict(fields=('tool_data.phone_verification.number_hash',), sparse=True),
         ]
@@ -302,6 +312,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     preferences = FieldProperty(dict(
         results_per_page=int,
         email_address=str,
+        email_address_encrypted=S.Binary,
         email_format=str,
         disable_user_messages=bool,
         mention_notifications=bool,
@@ -787,6 +798,16 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         d = self.tool_data.setdefault(tool, {})
         d.update(kw)
         state(self).soil()
+
+    @classmethod
+    def encrypt_preference_email_address(cls, email_address):
+        return cls.encr(email_address)
+
+    def sync_preference_email_address_encrypted(self):
+        preferences = dict(self.preferences or {})
+        preferences['email_address_encrypted'] = type(self).encrypt_preference_email_address(
+            preferences.get('email_address'))
+        self.preferences = preferences
 
     def address_object(self, addr):
         return EmailAddress.get(email=addr, claimed_by_user_id=self._id)
