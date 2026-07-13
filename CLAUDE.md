@@ -58,6 +58,8 @@ Tests use `pytest`. Run everything from the repo root:
 ./run_tests                 # all packages, in parallel, plus npm run lint-es6
 ./run_tests -p ForgeTracker # just one package
 ./run_tests --coverage      # with coverage
+./run_tests -n X # number of processes to be used per suite
+./run_tests -m X # number of parallel processes to be used per suite
 ```
 Or run a single package/test directly (faster while iterating):
 ```bash
