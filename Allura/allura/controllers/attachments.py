@@ -37,6 +37,7 @@ SAFE_CONTENT_TYPES = (
     'image/bmp',
     'image/tiff',
     'image/x-icon',
+    'image/webp',
 )
 
 

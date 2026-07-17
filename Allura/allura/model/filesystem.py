@@ -44,7 +44,9 @@ SUPPORTED_BY_PIL = {
     'image/png',
     'image/x-png',
     'image/gif',
-    'image/bmp'}
+    'image/bmp',
+    'image/webp',
+}
 
 
 class File(MappedClass):
