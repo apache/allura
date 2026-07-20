@@ -16,19 +16,19 @@
 #       under the License.
 
 from ming import schema as S
+from ming.encryption import NestedEncryptedProperty
 from ming.odm import FieldProperty
 
 from scripts.convert_encrypted_field import (
+    _encryption_schema_info,
     _encrypt_nested_array_value,
     _remove_nested_array_value,
-    _schema_info_for_field_path,
 )
 
 
 class TestModel:
-    socialnetworks = FieldProperty([dict(
+    socialnetworks = NestedEncryptedProperty([dict(
         socialnetwork=str,
-        accounturl=str,
         accounturl_encrypted=S.Binary,
     )])
 
@@ -37,11 +37,31 @@ class TestModel:
         return None if value is None else f'encrypted:{value}'.encode()
 
 
-def test_schema_info_supports_nested_array_path():
-    field_schema, traverses_array = _schema_info_for_field_path(
-        TestModel, 'socialnetworks.accounturl_encrypted')
+def test_encryption_schema_info_uses_encrypted_nested_array_path():
+    field_schema, traverses_array = _encryption_schema_info(
+        TestModel,
+        'socialnetworks.accounturl',
+        'socialnetworks.accounturl_encrypted',
+    )
 
     assert isinstance(field_schema, S.Binary)
+    assert traverses_array is True
+
+
+def test_encryption_schema_info_supports_model_without_encrypted_field():
+    class PreMigrationTestModel:
+        socialnetworks = FieldProperty([dict(
+            socialnetwork=str,
+            accounturl=str,
+        )])
+
+    field_schema, traverses_array = _encryption_schema_info(
+        PreMigrationTestModel,
+        'socialnetworks.accounturl',
+        'socialnetworks.accounturl_encrypted',
+    )
+
+    assert field_schema is None
     assert traverses_array is True
 
 
