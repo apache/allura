@@ -306,7 +306,7 @@ class PersonalDataSection(ProfileSectionBase):
             joined=auth_provider.user_registration_date(self.user),
             localization=self.user.get_pref('localization')._deinstrument(),
             sex=self.user.get_pref('sex'),
-            telnumbers=self.user.get_pref('telnumbers')._deinstrument(),
+            telnumbers=list(self.user.get_pref('telnumbers')),
             webpages=self.user.get_pref('webpages')._deinstrument(),
             availability=self.user.get_pref('availability')._deinstrument())
 
@@ -334,7 +334,10 @@ class SocialSection(ProfileSectionBase):
 
     def __json__(self):
         return dict(
-            socialnetworks=self.user.get_pref('socialnetworks')._deinstrument())
+            socialnetworks=[
+                dict(socialnetwork.items())
+                for socialnetwork in self.user.get_pref('socialnetworks')
+            ])
 
     def check_display(self):
         return bool(self.user.get_pref('socialnetworks'))
