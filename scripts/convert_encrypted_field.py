@@ -45,7 +45,7 @@ def _split_field_path(field_name: str) -> list[str]:
     return field_path
 
 
-def _schema_for_field_path(Model: type[MappedClass], field_name: str):
+def _schema_info_for_field_path(Model: type[MappedClass], field_name: str):
     field_path = _split_field_path(field_name)
     top_level_name = field_path[0]
     try:
@@ -56,11 +56,12 @@ def _schema_for_field_path(Model: type[MappedClass], field_name: str):
     assert isinstance(top_level_prop, FieldProperty)
 
     current_schema = top_level_prop.field.schema
+    traverses_array = False
     for i, path_part in enumerate(field_path[1:], start=1):
         traversed = '.'.join(field_path[:i])
-        if isinstance(current_schema, schema.Array):
-            raise AssertionError(
-                f'Nested array paths are not supported: {field_name!r} (array at {traversed!r})')
+        while isinstance(current_schema, schema.Array):
+            traverses_array = True
+            current_schema = current_schema.field_type
         if not isinstance(current_schema, schema.Object):
             raise AssertionError(
                 f'Invalid nested field path {field_name!r}; {traversed!r} is not an object field')
@@ -70,7 +71,12 @@ def _schema_for_field_path(Model: type[MappedClass], field_name: str):
 
         current_schema = current_schema.fields[path_part]
 
-    return current_schema
+    return current_schema, traverses_array
+
+
+def _schema_for_field_path(Model: type[MappedClass], field_name: str):
+    field_schema, _ = _schema_info_for_field_path(Model, field_name)
+    return field_schema
 
 
 def _get_nested_value(rec: dict, field_name: str):
@@ -78,6 +84,67 @@ def _get_nested_value(rec: dict, field_name: str):
     for path_part in _split_field_path(field_name):
         value = value[path_part]
     return value
+
+
+def _transform_nested_array_value(value, field_path, transform_leaf):
+    if isinstance(value, list):
+        transformed = []
+        changed = False
+        for item in value:
+            transformed_item, item_changed = _transform_nested_array_value(
+                item, field_path, transform_leaf)
+            transformed.append(transformed_item)
+            changed |= item_changed
+        return (transformed, True) if changed else (value, False)
+
+    if not isinstance(value, dict) or not field_path:
+        return value, False
+
+    field_name = field_path[0]
+    if len(field_path) == 1:
+        return transform_leaf(value, field_name)
+    if field_name not in value:
+        return value, False
+
+    transformed_child, changed = _transform_nested_array_value(
+        value[field_name], field_path[1:], transform_leaf)
+    if not changed:
+        return value, False
+
+    transformed = dict(value)
+    transformed[field_name] = transformed_child
+    return transformed, True
+
+
+def _encrypt_nested_array_value(Model, value, plain_field_path, encrypted_field_name,
+                                field_schema, redo_all):
+    def encrypt_leaf(item, plain_field_name):
+        if plain_field_name not in item:
+            return item, False
+
+        plain_value = item[plain_field_name]
+        if not redo_all and encrypted_field_name in item:
+            encrypted_value = item[encrypted_field_name]
+            if encrypted_value is not None or plain_value is None:
+                return item, False
+
+        transformed = dict(item)
+        transformed[encrypted_field_name] = _encrypt_field_value(
+            Model, plain_value, field_schema)
+        return transformed, True
+
+    return _transform_nested_array_value(value, plain_field_path, encrypt_leaf)
+
+
+def _remove_nested_array_value(value, plain_field_path):
+    def remove_leaf(item, plain_field_name):
+        if plain_field_name not in item:
+            return item, False
+        transformed = dict(item)
+        del transformed[plain_field_name]
+        return transformed, True
+
+    return _transform_nested_array_value(value, plain_field_path, remove_leaf)
 
 
 def _is_encrypted_list_schema(field_schema) -> bool:
@@ -91,6 +158,42 @@ def _encrypt_field_value(Model: type[MappedClass], value, field_schema):
     if _is_encrypted_list_schema(field_schema):
         return [Model.encr(v) if v is not None else None for v in value or []]
     return Model.encr(value)
+
+
+def _update_nested_array_records(raw_collection, plain_field_name, transform, limit):
+    field_path = _split_field_path(plain_field_name)
+    top_level_field = field_path[0]
+    nested_field_path = field_path[1:]
+    assert nested_field_path
+
+    query = {plain_field_name: {'$exists': True}}
+    projection = {'_id': 1, top_level_field: 1}
+    count = 0
+    last_id = None
+    while count < limit if limit else True:
+        chunk_query = (
+            {'$and': [query, {'_id': {'$gt': last_id}}]}
+            if last_id is not None else query
+        )
+        docs = list(raw_collection.find(chunk_query, projection).sort('_id', 1).limit(CHUNK_SIZE))
+        if not docs:
+            break
+
+        for doc in docs:
+            transformed, changed = transform(doc[top_level_field], nested_field_path)
+            if changed:
+                raw_collection.update_one(
+                    {'_id': doc['_id']},
+                    {'$set': {top_level_field: transformed}},
+                )
+                count += 1
+            if limit and count >= limit:
+                break
+
+        last_id = docs[-1]['_id']
+        print(f'Updated {count} nested-array records so far...')
+
+    return count
 
 
 def main(class_name: str, plain_field_name: str,
@@ -133,6 +236,43 @@ def main(class_name: str, plain_field_name: str,
     # TODO: figure out how it works with inheritance
 
     sess = session(Model)
+    m = mapper(Model)
+    raw_collection = sess.impl.db[m.collection.m.collection_name]
+
+    _, traverses_array = _schema_info_for_field_path(Model, plain_field_name)
+    if traverses_array:
+        plain_field_path = _split_field_path(plain_field_name)
+        encrypted_field_path = _split_field_path(encrypted_field_name)
+        assert plain_field_path[:-1] == encrypted_field_path[:-1]
+
+        encrypted_count = _update_nested_array_records(
+            raw_collection,
+            plain_field_name,
+            lambda value, nested_path: _encrypt_nested_array_value(
+                Model,
+                value,
+                nested_path,
+                encrypted_field_path[-1],
+                encr_schema,
+                redo_all,
+            ),
+            limit,
+        )
+        print(
+            f'Encrypted {encrypted_count} {class_name} records with '
+            f'nested-array {plain_field_name} values')
+
+        if remove_unencrypted:
+            removed_count = _update_nested_array_records(
+                raw_collection,
+                plain_field_name,
+                _remove_nested_array_value,
+                limit,
+            )
+            print(
+                f'Removed {removed_count} {class_name} unencrypted '
+                f'nested-array {plain_field_name} values')
+        return
 
     # encrypt all records that need it.  Even for --remove-unencrypted, to make sure everything's converted first
     bulk_update_values = ["", None]
@@ -160,9 +300,6 @@ def main(class_name: str, plain_field_name: str,
     }
     if not redo_all:
         q[encrypted_field_name] = None
-
-    m = mapper(Model)
-    raw_collection = sess.impl.db[m.collection.m.collection_name]
 
     count = 0
     projection = {'_id': 1, plain_field_name: 1}
