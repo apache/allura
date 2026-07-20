@@ -17,6 +17,7 @@
 
 import mock
 import tg
+from ming.odm import ThreadLocalODMSession
 
 from alluratest.controller import TestRestApiBase
 from allura.model import Project, User
@@ -99,6 +100,24 @@ class TestUserProfile(TestDiscussBase):
         assert user.get_pref('localization')['city'] in r.html.find('span', attrs={'class': 'subitem-loc'}).getText()
         assert user.get_pref('localization')['country'] in r.html.find('span', attrs={'class': 'subitem-loc'}).getText()
         assert user.get_pref('webpages')[0] in str(r.html.find('span', attrs={'class': 'subitem-web'}))
+
+    @td.with_user_project('test-admin')
+    def test_profile_rest_returns_decrypted_contacts(self):
+        user = User.by_username('test-admin')
+        user.set_pref('telnumbers', ['+1-555-0100', '+1-555-0101'])
+        user.set_pref('socialnetworks', [{
+            'socialnetwork': 'Mastodon',
+            'accounturl': 'https://example.com/@test-admin',
+        }])
+        ThreadLocalODMSession.flush_all()
+
+        response = self.app.get('/rest/u/test-admin/profile/')
+
+        assert response.json['telnumbers'] == ['+1-555-0100', '+1-555-0101']
+        assert response.json['socialnetworks'] == [{
+            'socialnetwork': 'Mastodon',
+            'accounturl': 'https://example.com/@test-admin',
+        }]
 
     def test_wrong_profile(self):
         self.app.get('/u/no-such-user/profile/', status=404)

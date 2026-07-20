@@ -494,7 +494,7 @@ class TestAuth:
         assert raw_preferences['email_address_encrypted'] == M.User.encr('new@example.com')
         assert M.User.decr(raw_preferences['email_address_encrypted']) == 'new@example.com'
 
-    def test_personal_data_encrypted_fields_are_populated_on_creation(self):
+    def test_personal_data_fields_are_stored_encrypted_on_creation(self):
         user = M.User(
             username='personal-data-encrypted-create-test',
             last_access={
@@ -509,19 +509,26 @@ class TestAuth:
         )
         ThreadLocalODMSession.flush_all()
 
+        assert user.last_access['login_ip'] == '192.0.2.1'
+        assert user.last_access['session_ip'] == '198.51.100.1'
+        assert user.socialnetworks[0]['accounturl'] == 'https://example.com/@user'
+        assert user.socialnetworks[1]['accounturl'] is None
+        assert user.telnumbers == ['+1-555-0100', None]
+
         document = state(user).document
-        assert document['last_access']['login_ip'] == '192.0.2.1'
+        assert 'login_ip' not in document['last_access']
         assert document['last_access']['login_ip_encrypted'] == M.User.encr('192.0.2.1')
-        assert document['last_access']['session_ip'] == '198.51.100.1'
+        assert 'session_ip' not in document['last_access']
         assert document['last_access']['session_ip_encrypted'] == M.User.encr('198.51.100.1')
-        assert document['socialnetworks'][0]['accounturl'] == 'https://example.com/@user'
+        assert 'accounturl' not in document['socialnetworks'][0]
         assert document['socialnetworks'][0]['accounturl_encrypted'] == M.User.encr(
             'https://example.com/@user')
+        assert 'accounturl' not in document['socialnetworks'][1]
         assert document['socialnetworks'][1]['accounturl_encrypted'] is None
-        assert document['telnumbers'] == ['+1-555-0100', None]
-        assert user.telnumbers_encrypted == [M.User.encr('+1-555-0100'), None]
+        assert 'telnumbers' not in document
+        assert document['telnumbers_encrypted'] == [M.User.encr('+1-555-0100'), None]
 
-    def test_personal_data_encrypted_fields_are_synced_on_update(self):
+    def test_personal_data_fields_stay_encrypted_on_update(self):
         user = M.User(
             username='personal-data-encrypted-update-test',
             last_access={
@@ -548,22 +555,27 @@ class TestAuth:
         user.telnumbers.append('+1-555-0103')
         ThreadLocalODMSession.flush_all()
 
+        assert user.last_access['login_ip'] == '203.0.113.2'
+        assert user.last_access['session_ip'] is None
+        assert user.socialnetworks[0]['accounturl'] == 'https://new.example/@user'
+        assert user.telnumbers == ['+1-555-0102', '+1-555-0103']
+
         document = state(user).document
-        assert document['last_access']['login_ip'] == '203.0.113.2'
+        assert 'login_ip' not in document['last_access']
         assert document['last_access']['login_ip_encrypted'] == M.User.encr('203.0.113.2')
-        assert document['last_access']['session_ip'] is None
+        assert 'session_ip' not in document['last_access']
         assert document['last_access']['session_ip_encrypted'] is None
         assert len(document['socialnetworks']) == 1
-        assert document['socialnetworks'][0]['accounturl'] == 'https://new.example/@user'
+        assert 'accounturl' not in document['socialnetworks'][0]
         assert document['socialnetworks'][0]['accounturl_encrypted'] == M.User.encr(
             'https://new.example/@user')
-        assert document['telnumbers'] == ['+1-555-0102', '+1-555-0103']
-        assert user.telnumbers_encrypted == [
+        assert 'telnumbers' not in document
+        assert document['telnumbers_encrypted'] == [
             M.User.encr('+1-555-0102'),
             M.User.encr('+1-555-0103'),
         ]
 
-    def test_user_login_details_ip_encrypted_is_synced(self):
+    def test_user_login_details_ip_is_stored_encrypted(self):
         detail = M.UserLoginDetails(
             user_id=c.user._id,
             ip='192.0.2.3',
@@ -573,14 +585,19 @@ class TestAuth:
 
         assert detail.ip == '192.0.2.3'
         assert detail.ip_encrypted == M.UserLoginDetails.encr('192.0.2.3')
-        assert state(detail).document['ip'] == '192.0.2.3'
+        assert 'ip' not in state(detail).document
 
         detail.ip = '203.0.113.3'
         session(detail).flush(detail)
 
         assert detail.ip == '203.0.113.3'
         assert detail.ip_encrypted == M.UserLoginDetails.encr('203.0.113.3')
-        assert state(detail).document['ip'] == '203.0.113.3'
+        assert 'ip' not in state(detail).document
+
+    def test_user_login_details_unique_index_uses_encrypted_ip(self):
+        assert M.UserLoginDetails.__mongometa__.unique_indexes == [
+            ('user_id', 'ip_encrypted', 'ua'),
+        ]
 
     def test_set_display_name_pref_updates_encrypted_field_and_cache(self):
         user = M.User(username='display-name-cache-test',
