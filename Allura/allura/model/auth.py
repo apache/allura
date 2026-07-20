@@ -39,7 +39,7 @@ from tg import tmpl_context as c, app_globals as g
 from tg import request
 from ming import schema as S
 from ming.encryption import NestedEncryptedProperty
-from ming.odm import session, state, MapperExtension
+from ming.odm import session, state
 from ming.odm import FieldProperty, RelationProperty, ForeignIdProperty, DecryptedProperty, DecryptedListProperty
 from ming.odm.declarative import MappedClass
 from ming.odm.odmsession import ThreadLocalODMSession
@@ -267,15 +267,6 @@ class FieldPropertyDisplayName(DecryptedProperty):
         return super().__get__(instance, type(instance))
 
 
-class UserFieldEncryptionMapperExtension(MapperExtension):
-
-    def before_insert(self, obj, state, sess):
-        obj.sync_personal_data_encrypted()
-
-    def before_update(self, obj, state, sess):
-        obj.sync_personal_data_encrypted()
-
-
 class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     SALT_LEN = 8
 
@@ -284,7 +275,6 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         session = main_orm_session
         indexes = ['tool_data.AuthPasswordReset.hash']
         unique_indexes = ['username']
-        extensions = [UserFieldEncryptionMapperExtension]
         custom_indexes = [
             dict(fields=('tool_data.phone_verification.number_hash',), sparse=True),
         ]
@@ -342,12 +332,11 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         end_date=S.DateTime)])
 
     # Additional contacts
-    socialnetworks = FieldProperty([dict(
+    socialnetworks = NestedEncryptedProperty([dict(
         socialnetwork=str,
-        accounturl=str,
         accounturl_encrypted=S.Binary,
     )])
-    telnumbers = FieldProperty([str])
+    telnumbers = DecryptedListProperty('telnumbers_encrypted')
     telnumbers_encrypted = FieldProperty([S.Binary], if_missing=[])
     webpages = FieldProperty([str])
 
@@ -359,29 +348,13 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 
     # Statistics
     stats_id = FieldProperty(S.ObjectId, if_missing=None)
-    last_access = FieldProperty(dict(
+    last_access = NestedEncryptedProperty(dict(
         login_date=S.DateTime,
-        login_ip=str,
         login_ip_encrypted=S.Binary,
         login_ua=str,
         session_date=S.DateTime,
-        session_ip=str,
         session_ip_encrypted=S.Binary,
         session_ua=str))
-
-    def sync_personal_data_encrypted(self):
-        last_access = dict(self.last_access or {})
-        for field_name in ('login_ip', 'session_ip'):
-            value = last_access.get(field_name)
-            last_access[f'{field_name}_encrypted'] = self.encr(value)
-        self.last_access = last_access
-
-        socialnetworks = [dict(socialnetwork) for socialnetwork in self.socialnetworks or []]
-        for socialnetwork in socialnetworks:
-            socialnetwork['accounturl_encrypted'] = self.encr(socialnetwork.get('accounturl'))
-        self.socialnetworks = socialnetworks
-
-        self.telnumbers_encrypted = [self.encr(telnumber) for telnumber in self.telnumbers or []]
 
     def __repr__(self):
         try:
@@ -1224,15 +1197,6 @@ class AuditLog(MappedClass):
         return cls.log_user(message, *args, **kwargs)
 
 
-class UserLoginDetailsEncryptionMapperExtension(MapperExtension):
-
-    def before_insert(self, obj, state, sess):
-        obj.sync_ip_encrypted()
-
-    def before_update(self, obj, state, sess):
-        obj.sync_ip_encrypted()
-
-
 class UserLoginDetails(MappedClass):
     """
     Store unique entries for users' previous login details.  And other trusted actions like successful password reset
@@ -1244,15 +1208,14 @@ class UserLoginDetails(MappedClass):
         name = 'user_login_details'
         session = main_explicitflush_orm_session
         indexes = ['user_id']
-        unique_indexes = [('user_id', 'ip', 'ua'),  # DuplicateKeyError checked in add_login_detail
+        unique_indexes = [('user_id', 'ip_encrypted', 'ua'),  # DuplicateKeyError checked in add_login_detail
                           ]
-        extensions = [UserLoginDetailsEncryptionMapperExtension]
 
     query: Query[UserLoginDetails]
 
     _id = FieldProperty(S.ObjectId)
     user_id: ObjectId = AlluraUserProperty(required=True)
-    ip = FieldProperty(str)
+    ip = DecryptedProperty(str, 'ip_encrypted')
     ip_encrypted = FieldProperty(S.Binary, if_missing=None)
     ua = FieldProperty(str)
     extra = FieldProperty({
@@ -1260,6 +1223,3 @@ class UserLoginDetails(MappedClass):
     })
 
     user = RelationProperty('User')
-
-    def sync_ip_encrypted(self):
-        self.ip_encrypted = self.encr(self.ip)

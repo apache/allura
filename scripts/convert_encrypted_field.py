@@ -74,9 +74,15 @@ def _schema_info_for_field_path(Model: type[MappedClass], field_name: str):
     return current_schema, traverses_array
 
 
-def _schema_for_field_path(Model: type[MappedClass], field_name: str):
-    field_schema, _ = _schema_info_for_field_path(Model, field_name)
-    return field_schema
+def _encryption_schema_info(Model: type[MappedClass], plain_field_name: str,
+                            encrypted_field_name: str):
+    try:
+        return _schema_info_for_field_path(Model, encrypted_field_name)
+    except MissingFieldPathError:
+        # Pre-migration support: infer array traversal from the plaintext
+        # schema when the encrypted field has not been added to the model yet.
+        _, traverses_array = _schema_info_for_field_path(Model, plain_field_name)
+        return None, traverses_array
 
 
 def _get_nested_value(rec: dict, field_name: str):
@@ -212,12 +218,8 @@ def main(class_name: str, plain_field_name: str,
     Model: type[MappedClass] = getattr(module, class_basename)
 
     # sanity checks that the fields are correct and ready
-    try:
-        encr_schema = _schema_for_field_path(Model, encrypted_field_name)
-    except MissingFieldPathError:
-        # pre-migration support: encrypted field might not yet be present in
-        # model schema, but we can still create it with raw MongoDB updates
-        encr_schema = None
+    encr_schema, traverses_array = _encryption_schema_info(
+        Model, plain_field_name, encrypted_field_name)
     if encr_schema is not None:
         assert isinstance(encr_schema, schema.Binary) or _is_encrypted_list_schema(encr_schema)
     elif remove_unencrypted:
@@ -239,7 +241,6 @@ def main(class_name: str, plain_field_name: str,
     m = mapper(Model)
     raw_collection = sess.impl.db[m.collection.m.collection_name]
 
-    _, traverses_array = _schema_info_for_field_path(Model, plain_field_name)
     if traverses_array:
         plain_field_path = _split_field_path(plain_field_name)
         encrypted_field_path = _split_field_path(encrypted_field_name)

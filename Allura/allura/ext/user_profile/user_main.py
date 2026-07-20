@@ -306,7 +306,7 @@ class PersonalDataSection(ProfileSectionBase):
             joined=auth_provider.user_registration_date(self.user),
             localization=self.user.get_pref('localization')._deinstrument(),
             sex=self.user.get_pref('sex'),
-            telnumbers=self.user.get_pref('telnumbers')._deinstrument(),
+            telnumbers=list(self.user.get_pref('telnumbers')),
             webpages=self.user.get_pref('webpages')._deinstrument(),
             availability=self.user.get_pref('availability')._deinstrument())
 
