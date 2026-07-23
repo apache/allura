@@ -726,17 +726,21 @@ class TestNeighborhood(TestController):
                 "groups": %s
                 }""" % (json.dumps(test_groups))),
             extra_environ=dict(username='root'))
-        r = self.app.post(
-            '/adobe/register',
-            params=dict(
-                project_unixname='testtemp',
-                project_name='Test Template',
-                project_description='',
-                neighborhood='Mozq1',
-                private_project='off'),
-            antispam=True,
-            extra_environ=dict(username='root'),
-            status=302).follow()
+        icon_file = os.path.join(
+            allura.__path__[0], 'nf', 'allura', 'images', 'neo-icon-set-454545-256x350.png')
+        with patch('allura.lib.plugin.requests.get') as get:
+            get.return_value.content = open(icon_file, 'rb').read()
+            r = self.app.post(
+                '/adobe/register',
+                params=dict(
+                    project_unixname='testtemp',
+                    project_name='Test Template',
+                    project_description='',
+                    neighborhood='Mozq1',
+                    private_project='off'),
+                antispam=True,
+                extra_environ=dict(username='root'),
+                status=302).follow()
         p = M.Project.query.get(shortname='testtemp')
         # make sure the correct tools got installed in the right order
         top_nav = r.html.find('div', {'id': 'top_nav'}).contents[1]
