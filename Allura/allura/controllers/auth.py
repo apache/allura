@@ -1187,8 +1187,14 @@ class UserContactsController(BaseController):
     @validate(F.remove_socialnetwork_form, error_handler=index)
     def remove_social_network(self, **kw):
         require_authenticated()
-        c.user.remove_multivalue_pref('socialnetworks',
-                                      {'socialnetwork': kw['socialnetwork'], 'accounturl': kw['account']})
+        target = {'socialnetwork': kw['socialnetwork'], 'accounturl': kw['account']}
+        stored = next(
+            (account for account in c.user.get_pref('socialnetworks')
+             if account.socialnetwork == kw['socialnetwork']
+             and account.accounturl == kw['account']),
+            target,
+        )
+        c.user.remove_multivalue_pref('socialnetworks', stored)
         flash('Your personal contacts were successfully updated!')
         redirect('.')
 

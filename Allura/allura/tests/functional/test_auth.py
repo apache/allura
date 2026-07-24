@@ -1459,6 +1459,12 @@ class TestPreferences(TestController):
 
     @td.with_user_project('test-admin')
     def test_contacts(self):
+        def socialnetwork_data(user):
+            return [
+                {'socialnetwork': social.socialnetwork, 'accounturl': social.accounturl}
+                for social in user.socialnetworks
+            ]
+
         # Get page
         self.app.get('/auth/user_info/contacts/')
         # Add social network account
@@ -1486,7 +1492,7 @@ class TestPreferences(TestController):
         assert len(user.socialnetworks) == 2
         expected = [{'socialnetwork': socialnetwork, 'accounturl': accounturl},
                     {'socialnetwork': socialnetwork2, 'accounturl': accounturl2}]
-        assert all([social in expected for social in user.socialnetworks])
+        assert all(social in expected for social in socialnetwork_data(user))
 
         socialnetwork3 = 'Mastodon'
         accounturl3 = '@username@server.social'
@@ -1508,7 +1514,7 @@ class TestPreferences(TestController):
         assert len(user.socialnetworks) == 2
         expected = [{'socialnetwork': socialnetwork2, 'accounturl': accounturl2},
                     {'socialnetwork': socialnetwork3, 'accounturl': accounturl3}]
-        assert all([social in expected for social in user.socialnetworks])
+        assert all(social in expected for social in socialnetwork_data(user))
 
         # Add empty social network account
         self.app.post('/auth/user_info/contacts/add_social_network',
@@ -1519,7 +1525,7 @@ class TestPreferences(TestController):
         assert len(user.socialnetworks) == 2
         expected = [{'socialnetwork': socialnetwork2, 'accounturl': accounturl2},
                     {'socialnetwork': socialnetwork3, 'accounturl': accounturl3}]
-        assert all([social in expected for social in user.socialnetworks])
+        assert all(social in expected for social in socialnetwork_data(user))
 
         # Add invalid social network account
         self.app.post('/auth/user_info/contacts/add_social_network',
@@ -1530,7 +1536,7 @@ class TestPreferences(TestController):
         assert len(user.socialnetworks) == 2
         expected = [{'socialnetwork': socialnetwork2, 'accounturl': accounturl2},
                     {'socialnetwork': socialnetwork3, 'accounturl': accounturl3}]
-        assert all([social in expected for social in user.socialnetworks])
+        assert all(social in expected for social in socialnetwork_data(user))
 
         # Add telephone number
         telnumber = '+3902123456'
