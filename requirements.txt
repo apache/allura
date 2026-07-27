@@ -10,7 +10,7 @@ atpublic==7.0.0
     # via aiosmtpd
 attrs==25.4.0
     # via aiosmtpd
-beaker==1.13.0
+beaker==1.14.1
     # via
     #   -r requirements.in
     #   beaker-session-jwt
