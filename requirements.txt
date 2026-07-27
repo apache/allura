@@ -80,7 +80,7 @@ emoji==2.15.0
     # via -r requirements.in
 execnet==2.1.2
     # via pytest-xdist
-faust-cchardet==2.1.19
+faust-cchardet==2.2.1
     # via -r requirements.in
 feedgenerator==2.2.1
     # via -r requirements.in
