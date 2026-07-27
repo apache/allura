@@ -258,7 +258,7 @@ qrcode==8.2
     # via -r requirements.in
 regex==2026.7.19 ; implementation_name != 'pypy'
     # via textile
-repoze-lru==0.7
+repoze-lru==0.8
     # via turbogears2
 requests==2.34.2
     # via
