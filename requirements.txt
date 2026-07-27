@@ -94,7 +94,7 @@ formencode==2.1.1
     # via
     #   -r requirements.in
     #   easywidgets
-genshi==0.7.9
+genshi==0.7.11
     # via creoleparser
 gitdb==4.0.12
     # via gitpython
@@ -162,7 +162,7 @@ ming==0.17.1
     # via -r requirements.in
 mock==5.2.0
     # via -r requirements.in
-nh3==0.3.2
+nh3==0.3.6
     # via textile
 nodeenv==1.10.0
     # via pre-commit
@@ -256,7 +256,7 @@ pyyaml==6.0.3
     # via pre-commit
 qrcode==8.2
     # via -r requirements.in
-regex==2026.1.15 ; implementation_name != 'pypy'
+regex==2026.7.19 ; implementation_name != 'pypy'
     # via textile
 repoze-lru==0.7
     # via turbogears2
@@ -286,7 +286,6 @@ six==1.17.0
     # via
     #   -r requirements.in
     #   creoleparser
-    #   genshi
     #   html5lib
     #   pockets
     #   python-dateutil
@@ -309,7 +308,7 @@ termcolor==3.3.0
     # via pytest-sugar
 testfixtures==10.0.0
     # via -r requirements.in
-textile==4.0.3
+textile==4.0.4
     # via pypeline
 timermiddleware==0.6.3
     # via -r requirements.in
