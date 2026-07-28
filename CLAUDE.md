@@ -37,25 +37,35 @@ This is a multi-package monorepo. Each top-level directory is an independently `
 - `Forge*/` (ForgeTracker, ForgeWiki, ForgeDiscussion, ForgeGit, ForgeSVN, ForgeBlog, ForgeChat, ForgeActivity,
   ForgeLink, ForgeShortUrl, ForgeFiles, ForgeFeedback, ForgeUserStats, ForgeImporters) — individual "tools"
   (plugins) that plug into the core platform. Each has its own `setup.py`/`pyproject.toml`, own package dir
-  (lowercase, e.g. `forgetracker/`), own tests, and its own `*.egg-info`.
+  (lowercase, e.g. `forgetracker/`) and its own tests.
 - `scm_config/`, `solr_config/` — config for git/http and Solr, used by the Docker dev environment.
 - `scripts/` — one-off admin/migration scripts (run with the app's Python env), e.g.
   `scripts/convert_encrypted_field.py`, `scripts/migrations/`.
 
-Sibling repos extend this one as plugins rather than living in this monorepo: SourceForge's commercial
-layer `forge-classic` (dev checkout typically `/src/forge-classic`, deployed `/var/local/forge-classic`)
-and its theme `sftheme` (`/src/sftheme`, `/var/local/sftheme`). This repo has zero references back to
+Sibling repos extend this one as plugins rather than living in this monorepo. This repo has zero references back to
 either — the dependency runs one-way, entirely through the entry-point mechanism described below. See
 "Working with sibling extension repos" further down for how to debug across that boundary.
 
 Each Forge package registers itself with the core platform via entry points declared in its
-`pyproject.toml` (older packages may still show these in `setup.cfg`/`*.egg-info`), most importantly:
+`pyproject.toml`, most importantly:
 ```toml
 [project.entry-points.allura]
 Tickets = "forgetracker.tracker_main:ForgeTrackerApp"
 ```
 To find the root controller for a tool, look up its `[project.entry-points.allura]` entry, find that
 `Application` subclass, and look at its `root` attribute.
+
+## Code Style
+
+- No inline imports — put imports at the top of the file.
+- Prefer f-strings over `%s` formatting or `.format()` in new code; match existing nearby code if it already uses one of those.
+- Comments and docstrings: sparing and short — only when something is genuinely non-obvious.
+- Add type hints to function signatures when practical; keep them simple.
+- Line length up to 119 chars is ok
+
+### Tests
+- `assert` statements: no trailing explanation string.
+- Use `mock.patch` (decorator or context manager), not the `monkeypatch` pytest fixture.
 
 ## Setup / running locally
 
@@ -105,7 +115,7 @@ Notes:
 
 ## Linting
 
-- Python: `ruff` (config in `ruff.toml`, line length 119, py310 target). Notable repo-wide conventions
+- Python: `ruff` (config in `ruff.toml`, line length 119). Notable repo-wide conventions
   enforced via pre-commit rather than ruff: use `.utcnow()`/`.utcfromtimestamp()`/`calendar.timegm()`, never
   `.now()`/`.fromtimestamp()`/`.mktime()` (timezone-safety rule, checked by `pre-commit`'s local `tz-functions`
   hook and mirrored in `test_syntax.py`).
@@ -116,13 +126,12 @@ Notes:
 
 ## Frontend build
 
-JS/CSS is built with Broccoli + Babel (ES6) and node-sass, orchestrated via `Brocfile.js`/`package.json`:
+Most JS & CSS is simple and does not need to be compiled.  The bit of JS/CSS that does is built with Broccoli + Babel (ES6) and node-sass, orchestrated via `Brocfile.js`/`package.json`:
 ```bash
 npm run watch          # transpile ES6 JS on change (needed while editing frontend code)
 npm run css-watch       # compile SCSS on change
 npm run build           # one-off JS build
 ```
-Uses React + ES6 for newer frontend code; jQuery/plain JS + Jinja2 templates for older/most pages.
 
 ## Core architecture concepts
 
@@ -219,60 +228,21 @@ entry points. Full list in `Allura/docs/development/extending.rst`.
   subclass it points to, and follow its `root` attribute — that's the tool's root controller. Failing
   that, grep for static text from the rendered page's HTML, or the template filename once you find it.
   (`Allura/docs/development/contributing.rst` has more detail.)
-- **Interactive debugging (`ipdb`)**: insert `import ipdb; ipdb.set_trace()` at the line of interest,
-  then run the relevant process in the foreground so the debugger has a console to attach to:
-  ```bash
-  cd Allura
-  pkill -f gunicorn; gunicorn --reload --paste development.ini -b :8080      # web
-  pkill -f taskd; paster taskd development.ini --nocapture                    # taskd
-  ```
-  Docker equivalent:
-  ```bash
-  docker compose run --rm web pip install ipdb
-  docker compose stop web taskd
-  docker compose run --rm --service-ports web gunicorn --reload --paste Allura/docker-dev.ini -b :8088
-  docker compose run --rm taskd paster taskd docker-dev.ini --nocapture
-  ```
 - **One-off scripts**: `paster script <ini> <script.py> -- <args>` (implemented by
   `allura.command.script:ScriptCommand`, registered under `[project.entry-points."paste.paster_command"]`
   in `Allura/pyproject.toml`) loads the full app config (DB bindings, TG globals, logging) and executes
   the script inside that context — no serving loop. Add `--pdb` to drop into `pdb.post_mortem()` on an
   uncaught exception instead of just printing a traceback.
-- **Entry points silently not registering**: `Globals.__init__` caches every entry-point group once, per
-  process, into `g.entry_points` (`Allura/allura/lib/app_globals.py:328-338`, `_cache_eps`) — and that
-  cache function swallows exceptions from a failed `ep.load()`, only logging `Could not load entry
-  point [%s] %s` (`resources.py` similarly logs `Cannot import entry point %s` for static-resource
-  registration). If a class you expect to see registered (your own, or a sibling package's) isn't
-  showing up in `g.entry_points[...]`, check the web/taskd process logs for those messages before
-  assuming the entry point declaration itself is wrong — an import error inside the target module fails
-  silently from the caller's perspective. Also remember `g` is built once at process startup
-  (`Allura/allura/lib/app_globals.py:212-217`): adding/editing an entry point (even via `pip install -e`)
-  needs a process restart, a code *reload* (`--reload`) is not enough. Escalating checks, from
-  outside-in:
-  ```bash
-  # 1. is it discoverable at all, independent of Allura's own filtering?
-  python -c "import importlib.metadata as m; [print(ep) for ep in m.entry_points(group='allura.theme.override')]"
-  ```
-  ```python
-  # 2. is Allura's own loader (dedup/subclass/disable filtering) seeing it? run inside
-  #    `paster script development.ini <tmp_script.py>` (see docs/getting_started/administration.rst)
-  from allura.lib import helpers as h
-  list(h.iter_entry_points('allura.theme.override'))
-  list(h.iter_entry_points('allura.admin'))
-  # or inspect the live cache directly:
-  import tg; tg.app_globals.entry_points['admin']
-  ```
   There's no `paster shell`/REPL command registered in this stack for ad hoc poking — use a throwaway
   script under `Allura/scripts/` with `paster script` instead.
 
-## Working with sibling extension repos (forge-classic, sftheme)
+## Working with sibling extension repos
 
-`forge-classic` layers SourceForge-specific tools, overrides, and business logic on top of this Allura
-checkout purely via the entry-point mechanisms above — see its own `CLAUDE.md` for what it registers.
+Other repos can layer specific tools, overrides, and business logic on top of this Allura
+checkout purely via the entry-point mechanisms above.
 From this side, a few things make debugging across that boundary easier:
 
-- **Template overrides**: a sibling package's `override/` directory (e.g. forge-classic's
-  `ForgeSF/forgesf/override/`) is spliced into the Jinja search path by
+- **Template overrides**: a sibling package's `override/` directory is spliced into the Jinja search path by
   `allura.lib.package_path_loader.PackagePathLoader`, driven by that package's
   `[project.entry-points."allura.theme.override"]` registration. Default resolution order puts each
   override just before the stock `allura` path (`_load_paths`,
@@ -290,17 +260,6 @@ From this side, a few things make debugging across that boundary easier:
   A common failure is the physical directory being nested one level off — the convention is
   `override/<top-level-package-of-the-module>/templates/...` (see the "magic directory" example in
   `package_path_loader.py`'s module docstring), not `override/<full.dotted.module>/...`.
-- **Non-template overrides are monkeypatches, not templates**: some `override/` files are plain Python
-  that reassigns methods/attributes directly onto imported Allura classes at import time (forge-classic's
-  `repo_monkey_patching.py`, imported eagerly from its package `__init__.py`, is one example). If
-  behavior differs from what this repo's source implies, grep the sibling package for the Allura
-  class/method name before assuming you're looking at stock behavior — check whether the specific
-  override file in question is a template or a patch, since the two mechanisms are unrelated. Allura's
-  own idiomatic monkeypatch shape is `allura.lib.helpers.monkeypatch(*objs)` (used internally in
-  `allura/lib/patches.py`), which only takes effect once its module is actually imported — if a
-  sibling-package patch isn't applying, confirm its module is really being imported (e.g. as a side
-  effect of package `__init__.py`, or of an `allura.command_init`/`allura.macros` entry-point load) before
-  assuming the patch logic itself is wrong.
 - **Shared MongoDB, independently resolved dependencies**: sibling repos typically point at the *same*
   physical Mongo (so a data bug can originate in either codebase's model layer — check both), but each
   repo's `requirements.txt` is compiled independently, so their installed dependency versions can drift
