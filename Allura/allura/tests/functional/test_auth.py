@@ -3752,11 +3752,14 @@ class TestTrackUserSessions(TestController):
         user = M.User.by_username('test-user')
         user.set_tool_data('web_session', ids=[])
 
-        # Now that sessions for logged in users are tracked, navigating to a page without a session id should no longer
-        # redirect to the login page
-        r = self.app.get('/auth/preferences/', extra_environ={'username': 'test-user'})
-        assert r.status_code == 200
-        assert 'User Preferences for test-user' in r.text
+        # An empty allowlist must revoke an existing session when enforcement is enabled.
+        r = self.app.get('/auth/preferences/',
+                         extra_environ={'username': 'test-user', 'disable_auth_magic': 'True'},
+                         status=302)
+        assert '/auth/?return_to=%2Fauth%2Fpreferences%2F' in r.location
+
+        user = M.User.by_username('test-user')
+        assert user.get_tool_data('web_session', 'ids') == []
 
     @mock.patch.dict(config, {'auth.reject_untracked_sessions': True})
     def test_navigation_with_invalid_session(self):
@@ -3793,19 +3796,21 @@ class TestTrackUserSessions(TestController):
         assert session_ids[-1] == 1
 
     @mock.patch.dict(config, {'auth.reject_untracked_sessions': True})
-    def test_track_session_already_logged_in(self):
+    def test_does_not_track_unlisted_session(self):
         r = login(self.app)
         session_id = r.session.id
         user = M.User.by_username('test-user')
         session_ids = user.get_tool_data('web_session', 'ids')
         assert session_id in session_ids
 
-        # Delete the tracked web session to simulate an already logged-in user at the time the feature is enabled
+        # Delete the tracked web session to simulate an already logged-in user at the time enforcement is enabled.
         user.set_tool_data('web_session', ids=[])
 
-        # Navigate to a page, a web session id should be created and tracked
-        r = self.app.get('/auth/preferences/', extra_environ={'username': 'test-user'})
+        # Navigating must not recreate an allowlist entry for the existing session.
+        self.app.get('/auth/preferences/',
+                     extra_environ={'username': 'test-user', 'disable_auth_magic': 'True'},
+                     status=302)
 
         user = M.User.by_username('test-user')
         session_ids = user.get_tool_data('web_session', 'ids')
-        assert len(session_ids) == 1
+        assert session_ids == []
