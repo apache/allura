@@ -260,6 +260,7 @@ class TestRootController(_TestCase):
             link = 'http://localhost/p/test/src-git/ci/9a7df788cf800241e3bb5a849c8870f2f8259d98/'
             assert earliest_commit.find('link').text == link
             assert earliest_commit.find('guid').text == link
+            assert earliest_commit.find('guid').attrib['isPermaLink'] == 'false'
 
         # .atom has slightly different structure
         prefix = '{http://www.w3.org/2005/Atom}'

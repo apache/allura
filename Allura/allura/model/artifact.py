@@ -1057,6 +1057,7 @@ class Feed(MappedClass):
                           pubdate=r.pubdate,
                           description=r.description,
                           unique_id=h.absurl(r.unique_id),
+                          unique_id_is_permalink=False,
                           author_name=r.author_name,
                           author_link=h.absurl(r.author_link))
         return feed
