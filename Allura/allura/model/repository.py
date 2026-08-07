@@ -146,6 +146,9 @@ class RepositoryImplementation:
         the repo.  Optionally provide a path from which to copy existing hooks.'''
         raise NotImplementedError('_setup_hooks')
 
+    def set_force_push_allowed(self, allowed):  # pragma no cover
+        raise NotImplementedError('set_force_push_allowed')
+
     # pragma no cover
     def log(self, revs=None, path=None, exclude=None, id_only=True, **kw):
         """
@@ -387,6 +390,7 @@ class Repository(Artifact, ActivityObject):
     repo_tags = FieldProperty(S.Deprecated)
     upstream_repo = FieldProperty(dict(name=str, url=str))
     default_branch_name = FieldProperty(str)
+    force_push_allowed = FieldProperty(bool, if_missing=False)
     cached_branches = FieldProperty([dict(name=str, object_id=str)])
     cached_tags = FieldProperty([dict(name=str, object_id=str)])
 
@@ -549,6 +553,9 @@ class Repository(Artifact, ActivityObject):
 
     def set_default_branch(self, name):
         return self._impl.set_default_branch(name)
+
+    def set_force_push_allowed(self, allowed: bool):
+        return self._impl.set_force_push_allowed(allowed)
 
     def paged_diffs(self, commit_id, start=0, end=None, onlyChangedFiles=False):
         return self._impl.paged_diffs(commit_id, start, end, onlyChangedFiles)

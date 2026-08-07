@@ -54,7 +54,7 @@ class RepositoryApp(Application):
         'read': 'Browse repo via web UI. Removing read does not prevent direct repo read access.',
         'write': 'Repo push access.',
         'create': 'Not used.',
-        'admin': 'Set permissions, default branch, and viewable files.',
+        'admin': 'Set permissions, default branch, force push, and viewable files.',
     }
     config_options = Application.config_options + [
         ConfigOption('cloned_from_project_id', ObjectId, None),
@@ -298,6 +298,24 @@ class RepoAdminController(DefaultAdminController):
         else:
             return dict(app=self.app,
                         default_branch_name=self.app.default_branch_name)
+
+    @without_trailing_slash
+    @expose('jinja:allura:templates/repo/force_push.html')
+    def force_push(self, allowed=None, **kw):
+        if not asbool(config.get(f'scm.force_push.{self.app.config.tool_name}.enabled')):
+            raise exc.HTTPNotFound()
+        if not self.repo:
+            # repo is still being created
+            raise exc.HTTPNotFound()
+        if request.method == 'POST':
+            allowed = bool(allowed)
+            if allowed != self.repo.force_push_allowed:
+                M.AuditLog.log('{}: set "{}" {} => {}'.format(
+                    self.app.config.options['mount_point'], 'force_push_allowed',
+                    self.repo.force_push_allowed, allowed))
+                self.repo.set_force_push_allowed(allowed)
+            redirect(six.ensure_text(c.app.url))
+        return dict(app=self.app, force_push_allowed=self.repo.force_push_allowed)
 
     @without_trailing_slash
     @expose('jinja:allura:templates/repo/checkout_url.html')

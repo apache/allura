@@ -197,3 +197,10 @@ def update_head_reference(fs_path, branch_name):
         new_branch = [ref for ref in repo.refs if ref.name == branch_name]
         _ref = SymbolicReference.create(repo, 'HEAD', repo.head.reference)
         _ref.reference = new_branch[0]
+
+
+@task
+def update_force_push_config(fs_path: str, allowed: bool):
+    repo = git.Repo(fs_path, odbt=git.GitCmdObjectDB)
+    with repo.config_writer() as cw:  # config_level defaults to 'repository'
+        cw.set_value('receive', 'denyNonFastForwards', 'false' if allowed else 'true')

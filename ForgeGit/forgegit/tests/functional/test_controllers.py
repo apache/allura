@@ -547,6 +547,37 @@ class TestRootController(_TestCase):
         assert 'bad</a>' not in r
         assert 'README</a>' in r
 
+    def test_force_push_toggle(self):
+        with h.push_config(tg.config, **{'scm.force_push.git.enabled': 'true'}):
+            r = self.app.get('/p/test/admin/src-git/force_push')
+            assert 'name="allowed"' in r
+            self.app.post('/p/test/admin/src-git/force_push', params={'allowed': 'on'})
+            assert GM.Repository.query.get(_id=c.app.repo._id).force_push_allowed is True
+            assert M.AuditLog.query.find(
+                {'message': 'src-git: set "force_push_allowed" False => True'}).count() == 1
+
+            self.app.post('/p/test/admin/src-git/force_push', params={})
+            assert GM.Repository.query.get(_id=c.app.repo._id).force_push_allowed is False
+            assert M.AuditLog.query.find(
+                {'message': 'src-git: set "force_push_allowed" True => False'}).count() == 1
+
+    def test_force_push_menu_entry(self):
+        with h.push_config(tg.config, **{'scm.force_push.git.enabled': 'true'}):
+            assert any(l.label == 'Force push' for l in c.app.admin_menu())
+            c.app.repo.force_push_allowed = True
+            assert any(l.label == 'Force push (enabled)' for l in c.app.admin_menu())
+
+    def test_force_push_disabled_by_default(self):
+        assert not any(l.label.startswith('Force push') for l in c.app.admin_menu())
+        self.app.get('/p/test/admin/src-git/force_push', status=404)
+        self.app.post('/p/test/admin/src-git/force_push',
+                      params={'allowed': 'on'}, status=404)
+
+    def test_force_push_requires_admin(self):
+        with h.push_config(tg.config, **{'scm.force_push.git.enabled': 'true'}):
+            self.app.get('/p/test/admin/src-git/force_push',
+                         extra_environ=dict(username='test-user'), status=403)
+
     def test_index_branch_unicode(self):
         # more realistic case is the default branch having unicode, but passing the branch name is easier
         resp = self.app.get('/p/test/src-git/', params={'branch': 'ƒ∂ß'})
@@ -724,6 +755,35 @@ class TestFork(_TestCase):
         r = self._fork_page()
         assert 'Clone of' in r
         assert 'Test forked repository' in r
+
+    def test_fork_does_not_inherit_force_push(self):
+        # Set parent repo to have force_push_allowed = True BEFORE creating fork
+        h.set_context('test', 'src-git', neighborhood='Projects')
+        parent_repo = c.app.repo
+        parent_repo.force_push_allowed = True
+        ThreadLocalODMSession.flush_all()
+
+        # Create a new fork with parent now having force_push_allowed = True
+        to_project = M.Project.query.get(
+            shortname='test2', neighborhood_id=c.project.neighborhood_id)
+        r = self.app.post('/src-git/fork', params=dict(
+            project_id=str(to_project._id),
+            mount_point='code_force_test',
+            mount_label='Test fork for force_push'))
+        assert "{status: 'error'}" not in str(r.follow())
+
+        # Initialize the forked repo and verify force_push_allowed was not inherited
+        cloned_from = parent_repo
+        with h.push_context('test2', 'code_force_test', neighborhood='Projects'):
+            c.app.repo.init_as_clone(
+                cloned_from.full_fs_path,
+                cloned_from.app.config.script_name(),
+                cloned_from.full_fs_path,
+                bypass_path_check_for_tests=True,
+            )
+            assert c.app.repo.force_push_allowed is False
+            with c.app.repo._impl._git.config_reader('repository') as cr:
+                assert not cr.has_section('receive')
 
     def test_fork_links_go_to_fork(self):
         r = self._fork_page()

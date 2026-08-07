@@ -34,7 +34,7 @@ import pytest
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
-from allura.tasks.repo_tasks import tarball, update_head_reference
+from allura.tasks.repo_tasks import tarball, update_head_reference, update_force_push_config
 from allura.tests import decorators as td
 from allura.tests.model.test_repo import RepoImplTestBase
 from allura import model as M
@@ -675,6 +675,32 @@ By Dave Brondsema''' in text_body
         finally:
             update_head_reference(self.repo.full_fs_path, 'master')
             assert impl._git.head.reference.name == 'master'
+
+    def test_update_force_push_config(self):
+        fs_path = self.repo.full_fs_path
+        git_repo = git.Repo(fs_path)
+        try:
+            update_force_push_config(fs_path, True)
+            with git_repo.config_reader('repository') as cr:
+                assert cr.get_value('receive', 'denyNonFastForwards') is False
+            update_force_push_config(fs_path, False)
+            with git_repo.config_reader('repository') as cr:
+                assert cr.get_value('receive', 'denyNonFastForwards') is True
+        finally:
+            with git_repo.config_writer() as cw:
+                cw.remove_section('receive')
+
+    def test_set_force_push_allowed(self):
+        # setup_with_tools() ends with close_all(), so self.repo is detached and
+        # session() on it returns None; re-query to get a session-attached instance
+        repo = GM.Repository.query.get(_id=self.repo._id)
+        with mock.patch('allura.tasks.repo_tasks.update_force_push_config.post') as post:
+            repo.set_force_push_allowed(True)
+            assert repo.force_push_allowed is True
+            post.assert_called_once_with(repo.full_fs_path, True)
+
+    def test_force_push_allowed_defaults_false(self):
+        assert self.repo.force_push_allowed is False
 
     def test_default_branch_non_standard_unset(self):
         with mock.patch.object(self.repo, 'get_branches') as gb, \
