@@ -19,6 +19,8 @@ import logging
 
 # Non-stdlib imports
 from tg import tmpl_context as c
+from tg import config
+from paste.deploy.converters import asbool
 
 from ming.utils import LazyProperty
 from ming.odm.odmsession import ThreadLocalODMSession
@@ -75,6 +77,14 @@ class ForgeGitApp(RepositoryApp):
             c.project.url() + 'admin/' + self.config.options.mount_point +
             '/' + 'set_default_branch_name',
             className='admin_modal'))
+        if asbool(config.get(f'scm.force_push.{self.config.tool_name}.enabled')):
+            # self.repo is None while a repo is still being created
+            label = 'Force push (enabled)' if (self.repo and self.repo.force_push_allowed) else 'Force push'
+            links.append(SitemapEntry(
+                label,
+                c.project.url() + 'admin/' + self.config.options.mount_point +
+                '/' + 'force_push',
+                className='admin_modal'))
         links += super().admin_menu()
         return links
 

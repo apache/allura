@@ -224,6 +224,9 @@ class GitImplementation(M.RepositoryImplementation):
                 if os.path.exists(post_receive):
                     os.rename(post_receive, post_receive + '-user')
                 repo = git.Repo(fullname)
+                # a hotcopy inherits the parent's config verbatim; force push is not inherited
+                with repo.config_writer() as cw:
+                    cw.remove_section('receive')
             else:
                 repo = git.Repo.clone_from(
                     source_url,
@@ -642,6 +645,11 @@ class GitImplementation(M.RepositoryImplementation):
             return
         self._repo.default_branch_name = name
         allura.tasks.repo_tasks.update_head_reference.post(self._repo.full_fs_path, name)
+        session(self._repo).flush(self._repo)
+
+    def set_force_push_allowed(self, allowed: bool):
+        self._repo.force_push_allowed = allowed
+        allura.tasks.repo_tasks.update_force_push_config.post(self._repo.full_fs_path, allowed)
         session(self._repo).flush(self._repo)
 
     def _get_last_commit(self, commit_id, paths):

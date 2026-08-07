@@ -1,0 +1,46 @@
+{#-
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+-#}
+<form action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/force_push" method="POST">
+    <div class="grid-13">
+        <label>
+            <input type="checkbox" name="allowed" {% if force_push_allowed %}checked{% endif %}/>
+            Allow force push to this repository
+        </label>
+    </div>
+    <div class="grid-13">&nbsp;</div>
+    <div class="grid-13">
+        <p>By default this repository refuses any push that would discard commits. Someone
+        attempting one sees:</p>
+        <p><code>remote: error: denying non-fast-forward refs/heads/master</code></p>
+        <p>Ticking the box above lets <code>git push --force</code> succeed. Be aware that:</p>
+        <ul>
+            <li>Commits discarded by a force push are gone permanently unless someone still
+            has a copy.</li>
+            <li>Pages for discarded commits stay visible on this site, and their entries in
+            the activity feed cannot be removed.</li>
+            <li>This setting stays on until you switch it back off here.</li>
+        </ul>
+    </div>
+    <div class="grid-13">&nbsp;</div>
+    <hr>
+    <div class="grid-13">&nbsp;</div>
+    <div class="grid-13">
+        <input type="submit" value="Save">
+    </div>
+</form>
