@@ -556,8 +556,6 @@ class SetHeadersMiddleware:
         resp = req.get_response(self.app)
         if self.config.get('permissions_policies', ''):
             resp.headers.add('Permissions-Policy', self.config['permissions_policies'])
-        if self.config.get('features_policies', ''):
-            resp.headers.add('Feature-Policy', self.config['features_policies'])
         if self.config.get('referrer_policy'):
             resp.headers.add('Referrer-Policy', self.config['referrer_policy'])
         if self.config.get('cross_origin_opener_policy'):
