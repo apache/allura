@@ -250,7 +250,8 @@ class TestRootController(TestController):
     def test_permissions_coop_etc_headers(self):
         resp = self.app.get("/p/wiki/Home/")
         assert 'microphone=(), ' in resp.headers['Permissions-Policy']
-        assert "microphone 'none'; " in resp.headers['Feature-Policy']
+        assert 'publickey-credentials-get=()' in resp.headers['Permissions-Policy']
+        assert 'Feature-Policy' not in resp.headers
         assert resp.headers["Cross-Origin-Opener-Policy"] == "same-origin"
 
 
