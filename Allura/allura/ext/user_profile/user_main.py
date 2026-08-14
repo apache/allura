@@ -334,7 +334,13 @@ class SocialSection(ProfileSectionBase):
 
     def __json__(self):
         return dict(
-            socialnetworks=self.user.get_pref('socialnetworks')._deinstrument())
+            socialnetworks=[
+                {
+                    'socialnetwork': socialnetwork.socialnetwork,
+                    'accounturl': socialnetwork.accounturl,
+                }
+                for socialnetwork in self.user.get_pref('socialnetworks')
+            ])
 
     def check_display(self):
         return bool(self.user.get_pref('socialnetworks'))

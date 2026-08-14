@@ -695,6 +695,16 @@ class TestDoap(TestRestApiBase):
 class TestUserProfile(TestRestApiBase):
     @td.with_user_project('test-admin')
     def test_profile_data(self):
+        user = M.User.by_username('test-admin')
+        user.socialnetworks = [{
+            'socialnetwork': 'Linkedin',
+            'accounturl': 'https://www.linkedin.com/in/test-admin',
+        }]
+        user.telnumbers = ['+1-555-0100']
+        ThreadLocalODMSession.flush_all()
+        assert user.socialnetworks[0].accounturl_encrypted is not None
+        assert user.telnumbers_encrypted
+
         r = self.app.get('/rest/u/test-admin/profile/')
         assert r.content_type == 'application/json'
         json = r.json
@@ -706,6 +716,9 @@ class TestUserProfile(TestRestApiBase):
         assert 'projects' in json
         assert 'sex' in json
         assert 'skills' in json
-        assert 'socialnetworks' in json
-        assert 'telnumbers' in json
+        assert json['socialnetworks'] == [{
+            'socialnetwork': 'Linkedin',
+            'accounturl': 'https://www.linkedin.com/in/test-admin',
+        }]
+        assert json['telnumbers'] == ['+1-555-0100']
         assert 'webpages' in json
