@@ -24,6 +24,7 @@ from email.mime.text import MIMEText
 from email import header
 from email.message import EmailMessage
 
+import idna
 import six
 import tg
 from paste.deploy.converters import asbool, asint, aslist
@@ -42,11 +43,23 @@ config = ConfigProxy(
     common_suffix='forgemail.domain',
     common_suffix_alt='forgemail.domain.alternates',
     return_path='forgemail.return_path',
+    sender_authentication_enabled='forgemail.sender_authentication.enabled',
+    sender_authentication_header='forgemail.sender_authentication.header',
 )
 EMAIL_VALIDATOR = fev.Email(not_empty=True)
 
 # http://www.jebriggs.com/blog/2010/07/smtp-maximum-line-lengths/
 MAX_MAIL_LINE_OCTETS = 990
+MAX_SENDER_AUTHENTICATION_HEADER_OCTETS = 1024
+MAX_FROM_HEADER_OCTETS = 2 * 1024
+SENDER_AUTHENTICATION_HEADER = 'X-SourceForge-Sender-Auth'
+RE_HEADER_NAME = re.compile(r'(?a)\A[A-Za-z0-9][A-Za-z0-9-]{0,126}\Z')
+RE_DMARC_SENDER_AUTHENTICATION = re.compile(
+    r'(?a)\Av=1;[ \t]+dmarc=pass;[ \t]+'
+    r'from-domain=([A-Za-z0-9.-]+)\Z')
+RE_SPF_SENDER_AUTHENTICATION = re.compile(
+    r'(?a)\Av=1;[ \t]+result=pass;[ \t]+method=spf-aligned;[ \t]+'
+    r'from-domain=([A-Za-z0-9.-]+)\Z')
 
 email_policy = email.policy.SMTP + email.policy.strict
 
@@ -144,6 +157,20 @@ def parse_message(data):
     # Extract relevant data
     result = {}
     result['multipart'] = multipart = msg.is_multipart()
+    # dict(msg) intentionally retains the longstanding, first-header-wins view
+    # used by message handlers. Sender authentication separately preserves all
+    # From and configured authentication fields so duplicates fail closed.
+    raw_headers = list(msg.raw_items())
+    result['from_headers'] = [
+        value for name, value in raw_headers if name.casefold() == 'from']
+    authentication_header = config.get('sender_authentication_header', '')
+    if isinstance(authentication_header, str):
+        authentication_header = authentication_header.strip().casefold()
+    else:
+        authentication_header = ''
+    result['sender_authentication_headers'] = [
+        value for name, value in raw_headers
+        if authentication_header and name.casefold() == authentication_header]
     result['headers'] = dict(msg)
     result['message_id'] = _parse_message_id(msg.get('Message-ID'))
     result['in_reply_to'] = _parse_message_id(msg.get('In-Reply-To'))
@@ -176,7 +203,179 @@ def parse_message(data):
     return result
 
 
-def identify_sender(peer, email_address, headers, msg):
+class SenderAuthenticationError(ValueError):
+
+    def __init__(self, reason):
+        self.reason = reason
+        super().__init__(reason)
+
+
+def _unfold_sender_authentication_header(value, max_octets):
+    if not isinstance(value, str):
+        raise SenderAuthenticationError('header_type')
+    try:
+        if len(value.encode('utf-8')) > max_octets:
+            raise SenderAuthenticationError('header_too_long')
+    except UnicodeEncodeError:
+        raise SenderAuthenticationError('header_unicode')
+
+    unfolded = []
+    i = 0
+    while i < len(value):
+        char = value[i]
+        if char in '\r\n':
+            if char == '\r':
+                if i + 1 >= len(value) or value[i + 1] != '\n':
+                    raise SenderAuthenticationError('header_bad_fold')
+                i += 2
+            else:
+                i += 1
+            if i >= len(value) or value[i] not in ' \t':
+                raise SenderAuthenticationError('header_bad_fold')
+            while i < len(value) and value[i] in ' \t':
+                i += 1
+            unfolded.append(' ')
+            continue
+        codepoint = ord(char)
+        if ((codepoint < 0x20 and char != '\t') or codepoint == 0x7f or
+                0x80 <= codepoint <= 0x9f):
+            raise SenderAuthenticationError('header_control')
+        unfolded.append(char)
+        i += 1
+
+    value = ''.join(unfolded).strip(' \t')
+    if not value:
+        raise SenderAuthenticationError('header_empty')
+    return value
+
+
+def _normalize_sender_domain(domain):
+    if (not isinstance(domain, str) or not domain or
+            domain.startswith('.') or domain.endswith('.')):
+        raise SenderAuthenticationError('domain_invalid')
+    try:
+        normalized = idna.encode(
+            domain,
+            uts46=True,
+            transitional=False,
+            std3_rules=True,
+        ).decode('ascii').lower()
+    except (idna.IDNAError, UnicodeError):
+        raise SenderAuthenticationError('domain_invalid')
+    labels = normalized.split('.')
+    if (len(normalized) > 253 or '..' in normalized or
+            any(not label or len(label) > 63 for label in labels)):
+        raise SenderAuthenticationError('domain_invalid')
+    return normalized
+
+
+def _parse_sender_authentication_header(value, from_domain):
+    value = _unfold_sender_authentication_header(
+        value, MAX_SENDER_AUTHENTICATION_HEADER_OCTETS)
+    for method, pattern in (
+            ('dmarc', RE_DMARC_SENDER_AUTHENTICATION),
+            ('spf_aligned', RE_SPF_SENDER_AUTHENTICATION)):
+        match = pattern.fullmatch(value)
+        if match:
+            break
+    else:
+        raise SenderAuthenticationError('sender_authentication_syntax')
+
+    if _normalize_sender_domain(match.group(1)) != from_domain:
+        raise SenderAuthenticationError('from_domain_mismatch')
+    return method
+
+
+def _parse_from_mailbox(value):
+    value = _unfold_sender_authentication_header(
+        value, MAX_FROM_HEADER_OCTETS)
+    parsed = email.parser.HeaderParser(policy=email.policy.default).parsestr(
+        f'From: {value}\n\n')
+    field = parsed['From']
+    if field is None or field.defects:
+        raise SenderAuthenticationError('from_defect')
+    addresses = tuple(field.addresses)
+    groups = tuple(field.groups)
+    if (len(addresses) != 1 or
+            any(group.display_name is not None for group in groups)):
+        raise SenderAuthenticationError('from_mailbox_count')
+    address = addresses[0]
+    if not address.username or not address.domain:
+        raise SenderAuthenticationError('from_invalid')
+    mailbox = address.addr_spec
+    if len(mailbox.encode('utf-8')) > 320:
+        raise SenderAuthenticationError('from_too_long')
+    return mailbox, _normalize_sender_domain(address.domain)
+
+
+def _configured_sender_authentication_header():
+    header_name = config.get('sender_authentication_header', '')
+    if not isinstance(header_name, str):
+        raise SenderAuthenticationError('sender_authentication_header_config')
+    header_name = header_name.strip()
+    # Exim strips this reserved name before adding its own attestation. Treat
+    # the setting as a deployment-parity check; accepting an arbitrary name
+    # would let an inbound copy under that other name bypass Exim's stripping.
+    if (not RE_HEADER_NAME.fullmatch(header_name) or
+            header_name.casefold() !=
+            SENDER_AUTHENTICATION_HEADER.casefold()):
+        raise SenderAuthenticationError('sender_authentication_header_config')
+    return header_name
+
+
+def _sender_authentication_enabled():
+    value = config.get('sender_authentication_enabled', False)
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        value = value.strip().lower()
+        if value in {'true', 'yes', 'on', '1'}:
+            return True
+        if value in {'false', 'no', 'off', '0'}:
+            return False
+    raise ValueError('invalid sender authentication enabled value')
+
+
+def _authenticated_sender(msg):
+    from allura import model as M
+
+    anonymous = M.User.anonymous()
+    try:
+        _configured_sender_authentication_header()
+        if not isinstance(msg, dict):
+            raise SenderAuthenticationError('message_missing')
+        authentication_headers = msg.get('sender_authentication_headers')
+        from_headers = msg.get('from_headers')
+        if (not isinstance(authentication_headers, (list, tuple)) or
+                len(authentication_headers) != 1):
+            raise SenderAuthenticationError('sender_authentication_header_count')
+        if (not isinstance(from_headers, (list, tuple)) or
+                len(from_headers) != 1):
+            raise SenderAuthenticationError('from_count')
+
+        mailbox, from_domain = _parse_from_mailbox(from_headers[0])
+        authentication_method = _parse_sender_authentication_header(
+            authentication_headers[0], from_domain)
+
+        # DMARC or aligned SPF proves control of the From domain, not a
+        # cryptographic per-mailbox identity. The exact confirmed address is
+        # the application-side mapping for that domain-authenticated mailbox.
+        owners = {}
+        for address in M.EmailAddress.find({
+                'email': mailbox,
+                'confirmed': True,
+        }):
+            owner = address.claimed_by_user()
+            if owner is not None:
+                owners[owner._id] = owner
+        if len(owners) != 1:
+            raise SenderAuthenticationError('active_owner_count')
+        return next(iter(owners.values())), f'{authentication_method}_pass'
+    except SenderAuthenticationError as error:
+        return anonymous, error.reason
+
+
+def _legacy_identify_sender(email_address, headers):
     from allura import model as M
     # Dumb ID -- just look for email address claimed by a particular user
     addr = M.EmailAddress.get(email=email_address, confirmed=True)
@@ -189,6 +388,38 @@ def identify_sender(peer, email_address, headers, msg):
     if addr and addr.claimed_by_user_id:
         return addr.claimed_by_user() or M.User.anonymous()
     return M.User.anonymous()
+
+
+def identify_sender(peer, email_address, headers, msg):
+    from allura import model as M
+
+    try:
+        enabled = _sender_authentication_enabled()
+    except ValueError:
+        log.error(
+            'Invalid forgemail sender authentication enabled value; '
+            'using anonymous sender')
+        return M.User.anonymous()
+
+    if not enabled:
+        return _legacy_identify_sender(email_address, headers)
+    try:
+        verified_user, reason = _authenticated_sender(msg)
+    except Exception:
+        log.exception('Unexpected inbound sender authentication error')
+        return M.User.anonymous()
+    peer_address = (
+        peer[0]
+        if isinstance(peer, (tuple, list)) and peer
+        else 'invalid')
+    log.info(
+        'Inbound sender authentication enabled=true result=%s reason=%s '
+        'peer=%s',
+        not verified_user.is_anonymous(),
+        reason,
+        peer_address,
+    )
+    return verified_user
 
 
 def encode_email_part(content, content_type):

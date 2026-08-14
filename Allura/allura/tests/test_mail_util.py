@@ -24,6 +24,7 @@ from ming.odm import ThreadLocalODMSession
 from tg import config as tg_config
 from smtplib import SMTP as SMTPClient
 from alluratest.controller import setup_basic_test, setup_global_objects
+from allura import model as M
 from allura.lib.utils import ConfigProxy
 from allura.app import Application
 from allura.lib.mail_util import (
@@ -212,6 +213,25 @@ Content-Type: text/html; charset="utf-8"
                 continue
             assert isinstance(part['payload'], str), type(part['payload'])
 
+    @mock.patch.dict(tg_config, {
+        'forgemail.sender_authentication.header': 'X-Test-Sender-Auth',
+    })
+    def test_parse_message_preserves_repeated_sender_authentication_headers(self):
+        msg = parse_message('''\
+From: first@example.com
+From: second@example.com
+X-Test-Sender-Auth: v=1; dmarc=pass; from-domain=example.com
+x-test-sender-auth:
+ v=1; result=pass; method=spf-aligned; from-domain=example.com
+
+body''')
+
+        assert msg['from_headers'] == ['first@example.com', 'second@example.com']
+        assert msg['sender_authentication_headers'] == [
+            'v=1; dmarc=pass; from-domain=example.com',
+            '\n v=1; result=pass; method=spf-aligned; from-domain=example.com',
+        ]
+
 
 class TestHeader:
 
@@ -319,6 +339,262 @@ class TestIdentifySender:
             identify_sender(None, 'arg', {'From': 'from'}, None) == anon)
         assert (EA.get.call_args_list ==
                 [mock.call(email='arg', confirmed=True), mock.call(email='from')])
+
+
+class TestAuthenticatedIdentifySender:
+
+    HEADER_NAME = 'X-SourceForge-Sender-Auth'
+    AUTH_CONFIG = {
+        'forgemail.sender_authentication.enabled': 'true',
+        'forgemail.sender_authentication.header': HEADER_NAME,
+    }
+    DMARC_PASS = 'v=1; dmarc=pass; from-domain=users.localhost'
+    SPF_ALIGNED_PASS = (
+        'v=1; result=pass; method=spf-aligned; '
+        'from-domain=users.localhost')
+
+    def setup_method(self, method):
+        setup_basic_test()
+        setup_global_objects()
+        ThreadLocalODMSession.flush_all()
+
+    def _message(self, from_headers=None, sender_authentication_headers=None,
+                 header_name=None, extra_headers=None):
+        if from_headers is None:
+            from_headers = ['"Test Admin" <test-admin@users.localhost>']
+        if sender_authentication_headers is None:
+            sender_authentication_headers = [self.DMARC_PASS]
+        if header_name is None:
+            header_name = self.HEADER_NAME
+        lines = []
+        lines.extend(f'From: {value}' for value in from_headers)
+        lines.extend(
+            f'{header_name}: {value}'
+            for value in sender_authentication_headers)
+        lines.extend(extra_headers or [])
+        lines.extend(['Subject: inbound sender authentication test', '', 'body'])
+        return parse_message('\n'.join(lines))
+
+    def _identify(self, *, peer=('127.0.0.1', 2525),
+                  mailfrom='test-admin@users.localhost', from_headers=None,
+                  sender_authentication_headers=None, auth_config=None,
+                  header_name=None, extra_headers=None):
+        if auth_config is None:
+            auth_config = self.AUTH_CONFIG
+        with mock.patch.dict(tg_config, auth_config):
+            msg = self._message(
+                from_headers, sender_authentication_headers, header_name,
+                extra_headers)
+            return identify_sender(peer, mailfrom, msg['headers'], msg)
+
+    def test_disabled_preserves_envelope_sender_lookup(self):
+        user = self._identify(
+            peer=('203.0.113.10', 2525),
+            sender_authentication_headers=[],
+            auth_config={
+                'forgemail.sender_authentication.enabled': 'false',
+                'forgemail.sender_authentication.header': self.HEADER_NAME,
+            })
+
+        assert user.username == 'test-admin'
+
+    @pytest.mark.parametrize('sender_authentication_header', [
+        DMARC_PASS,
+        SPF_ALIGNED_PASS,
+        'v=1; dmarc=pass; from-domain=USERS.LOCALHOST',
+    ])
+    def test_enabled_accepts_unique_confirmed_from_owner(
+            self, sender_authentication_header):
+        user = self._identify(
+            mailfrom='attacker@example.net',
+            sender_authentication_headers=[sender_authentication_header])
+
+        assert user.username == 'test-admin'
+
+    def test_enabled_accepts_case_insensitive_canonical_header_name(self):
+        header_name = 'x-sourceforge-sender-auth'
+        user = self._identify(
+            mailfrom='attacker@example.net',
+            auth_config={
+                'forgemail.sender_authentication.enabled': 'true',
+                'forgemail.sender_authentication.header': header_name,
+            },
+            header_name=header_name)
+
+        assert user.username == 'test-admin'
+
+    def test_enabled_rejects_noncanonical_header_name(self):
+        user = self._identify(
+            auth_config={
+                'forgemail.sender_authentication.enabled': 'true',
+                'forgemail.sender_authentication.header': 'X-Other-Sender-Auth',
+            })
+
+        assert user.is_anonymous()
+
+    def test_enabled_accepts_folded_header(self):
+        user = self._identify(sender_authentication_headers=[
+            'v=1; result=pass;\n method=spf-aligned;\n '
+            'from-domain=users.localhost',
+        ])
+
+        assert user.username == 'test-admin'
+
+    def test_enabled_accepts_encoded_from_display_name(self):
+        user = self._identify(
+            mailfrom='attacker@example.net',
+            from_headers=[
+                '=?utf-8?q?J=C3=B6hn?= <test-admin@users.localhost>'])
+
+        assert user.username == 'test-admin'
+
+    @pytest.mark.parametrize('sender_authentication_headers', [
+        pytest.param([], id='missing-header'),
+        pytest.param([DMARC_PASS, DMARC_PASS], id='duplicate-header'),
+        pytest.param(
+            ['v=1; dmarc=fail; from-domain=users.localhost'],
+            id='dmarc-fail'),
+        pytest.param(
+            ['v=1; dmarc=none; from-domain=users.localhost'],
+            id='dmarc-none-is-not-a-pass'),
+        pytest.param(
+            ['v=1; result=fail; method=spf-aligned; '
+             'from-domain=users.localhost'],
+            id='spf-fallback-fail'),
+        pytest.param(
+            ['v=1; result=pass; method=spf; '
+             'from-domain=users.localhost'],
+            id='unsupported-method'),
+        pytest.param(
+            ['v=2; dmarc=pass; from-domain=users.localhost'],
+            id='unsupported-version'),
+        pytest.param(
+            ['dmarc=pass; v=1; from-domain=users.localhost'],
+            id='reordered-fields'),
+        pytest.param(
+            ['v=1; dmarc=pass; from-domain=users.localhost; extra=value'],
+            id='extra-field'),
+        pytest.param(
+            ['note=dmarc=pass; v=1; from-domain=users.localhost'],
+            id='dmarc-pass-substring'),
+        pytest.param(
+            ['v=1; dmarc=pass; from-domain=example.net'],
+            id='from-domain-mismatch'),
+        pytest.param(
+            ['v=1; dmarc=pass; from-domain=users.localhost\x00'],
+            id='header-control-character'),
+        pytest.param(
+            ['v=1; dmarc=pass; from-domain=' + ('a' * 1024)],
+            id='header-too-long'),
+        pytest.param(
+            ['mx.sourceforge.net; dmarc=pass '
+             'header.from=users.localhost'],
+            id='authentication-results-shape'),
+    ])
+    def test_enabled_rejects_invalid_authentication_header(
+            self, sender_authentication_headers):
+        user = self._identify(
+            sender_authentication_headers=sender_authentication_headers)
+
+        assert user.is_anonymous()
+
+    def test_enabled_ignores_standard_authentication_results(self):
+        user = self._identify(
+            sender_authentication_headers=[],
+            extra_headers=[
+                'Authentication-Results: mx.sourceforge.net; '
+                'dmarc=pass header.from=users.localhost',
+            ])
+
+        assert user.is_anonymous()
+
+    @pytest.mark.parametrize('from_headers', [
+        [],
+        ['test-admin@users.localhost', 'other@users.localhost'],
+        ['test-admin@users.localhost, other@users.localhost'],
+        ['Friends: test-admin@users.localhost;'],
+        ['not-an-email-address'],
+    ])
+    def test_enabled_rejects_ambiguous_from(self, from_headers):
+        user = self._identify(from_headers=from_headers)
+
+        assert user.is_anonymous()
+
+    @pytest.mark.parametrize('owner_state', [
+        'missing',
+        'unconfirmed',
+        'disabled',
+        'pending',
+        'duplicate',
+    ])
+    def test_enabled_requires_confirmed_unique_active_owner(self, owner_state):
+        address = 'authenticated-owner@example.net'
+        if owner_state != 'missing':
+            owner = M.User.by_username('test-user-1')
+            email_address = owner.claim_address(address)
+            email_address.confirmed = owner_state != 'unconfirmed'
+            if owner_state == 'disabled':
+                owner.disabled = True
+            elif owner_state == 'pending':
+                owner.pending = True
+            elif owner_state == 'duplicate':
+                other_owner = M.User.by_username('test-user-2')
+                other_address = other_owner.claim_address(address)
+                other_address.confirmed = True
+        ThreadLocalODMSession.flush_all()
+
+        user = self._identify(
+            from_headers=[address],
+            sender_authentication_headers=[
+                'v=1; dmarc=pass; from-domain=example.net'])
+
+        assert user.is_anonymous()
+
+    @pytest.mark.parametrize('auth_config', [
+        {
+            'forgemail.sender_authentication.enabled': 'unexpected',
+            'forgemail.sender_authentication.header': HEADER_NAME,
+        },
+        {
+            'forgemail.sender_authentication.enabled': 'true',
+            'forgemail.sender_authentication.header': '',
+        },
+        {
+            'forgemail.sender_authentication.enabled': 'true',
+            'forgemail.sender_authentication.header': None,
+        },
+        {
+            'forgemail.sender_authentication.enabled': 'true',
+            'forgemail.sender_authentication.header': 'Not A Header Name',
+        },
+    ])
+    def test_invalid_enabled_config_fails_closed(self, auth_config):
+        user = self._identify(auth_config=auth_config)
+
+        assert user.is_anonymous()
+
+    @mock.patch(
+        'allura.lib.mail_util._authenticated_sender',
+        side_effect=RuntimeError('verification failed unexpectedly'))
+    def test_enabled_fails_closed_on_unexpected_error(self, authenticated_sender):
+        user = self._identify()
+
+        assert user.is_anonymous()
+        authenticated_sender.assert_called_once()
+
+    @mock.patch('allura.lib.mail_util.log')
+    def test_enabled_logs_authentication_method(self, log):
+        user = self._identify(
+            sender_authentication_headers=[self.SPF_ALIGNED_PASS])
+
+        assert user.username == 'test-admin'
+        log.info.assert_called_once_with(
+            'Inbound sender authentication enabled=true result=%s reason=%s '
+            'peer=%s',
+            True,
+            'spf_aligned_pass',
+            '127.0.0.1',
+        )
 
 
 def test_parse_message_id():
