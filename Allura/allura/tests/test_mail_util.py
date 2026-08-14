@@ -24,6 +24,7 @@ from ming.odm import ThreadLocalODMSession
 from tg import config as tg_config
 from smtplib import SMTP as SMTPClient
 from alluratest.controller import setup_basic_test, setup_global_objects
+from allura import model as M
 from allura.lib.utils import ConfigProxy
 from allura.app import Application
 from allura.lib.mail_util import (
@@ -212,6 +213,22 @@ Content-Type: text/html; charset="utf-8"
                 continue
             assert isinstance(part['payload'], str), type(part['payload'])
 
+    def test_parse_message_preserves_repeated_sender_authentication_headers(self):
+        msg = parse_message('''\
+From: first@example.com
+From: second@example.com
+Authentication-Results: mx.sourceforge.net; spf=pass smtp.mailfrom=example.com;
+ dmarc=pass header.from=example.com
+Authentication-Results: untrusted.example; dmarc=pass header.from=example.com
+
+body''')
+
+        assert msg['from_headers'] == ['first@example.com', 'second@example.com']
+        assert msg['authentication_results'] == [
+            'mx.sourceforge.net; spf=pass smtp.mailfrom=example.com;\n dmarc=pass header.from=example.com',
+            'untrusted.example; dmarc=pass header.from=example.com',
+        ]
+
 
 class TestHeader:
 
@@ -320,6 +337,320 @@ class TestIdentifySender:
         assert (EA.get.call_args_list ==
                 [mock.call(email='arg', confirmed=True), mock.call(email='from')])
 
+
+class TestAuthenticatedIdentifySender:
+
+    AUTH_CONFIG = {
+        'forgemail.sender_authentication.mode': 'enforce',
+        'forgemail.sender_authentication.authserv_id': 'mx.sourceforge.net',
+        'forgemail.sender_authentication.trusted_relay_networks': '127.0.0.0/8',
+    }
+    PASS_AUTH_RESULTS = (
+        'mx.sourceforge.net;\n'
+        ' iprev=pass smtp.remote-ip=127.0.0.1;\n'
+        ' spf=pass smtp.mailfrom=users.localhost;\n'
+        ' dkim=fail (signature did not verify; headers probably modified in transit) '
+        'header.d=bad.example;\n'
+        ' dkim=pass header.d=users.localhost header.s=test header.a=rsa-sha256;\n'
+        ' dmarc=pass header.from=users.localhost'
+    )
+
+    def setup_method(self, method):
+        setup_basic_test()
+        setup_global_objects()
+        ThreadLocalODMSession.flush_all()
+
+    def _message(self, from_headers=None, authentication_results=None):
+        if from_headers is None:
+            from_headers = ['"Test Admin" <test-admin@users.localhost>']
+        if authentication_results is None:
+            authentication_results = [self.PASS_AUTH_RESULTS]
+        lines = []
+        lines.extend(f'From: {value}' for value in from_headers)
+        lines.extend(
+            f'Authentication-Results: {value}'
+            for value in authentication_results)
+        lines.extend(['Subject: inbound sender authentication test', '', 'body'])
+        return parse_message('\n'.join(lines))
+
+    def _identify(self, *, peer=('127.0.0.1', 2525),
+                  mailfrom='test-admin@users.localhost', from_headers=None,
+                  authentication_results=None, auth_config=None):
+        msg = self._message(from_headers, authentication_results)
+        with mock.patch.dict(tg_config, auth_config or self.AUTH_CONFIG):
+            return identify_sender(peer, mailfrom, msg['headers'], msg)
+
+    def test_disabled_mode_preserves_envelope_sender_lookup(self):
+        user = self._identify(
+            peer=('203.0.113.10', 2525),
+            authentication_results=[],
+            auth_config={'forgemail.sender_authentication.mode': 'disabled'})
+
+        assert user.username == 'test-admin'
+
+    def test_monitor_mode_preserves_legacy_sender_on_auth_failure(self):
+        config = dict(self.AUTH_CONFIG)
+        config['forgemail.sender_authentication.mode'] = 'monitor'
+
+        user = self._identify(
+            peer=('203.0.113.10', 2525),
+            authentication_results=[],
+            auth_config=config)
+
+        assert user.username == 'test-admin'
+
+    @mock.patch(
+        'allura.lib.mail_util._authenticated_sender',
+        side_effect=RuntimeError('shadow verifier failed'))
+    def test_monitor_mode_preserves_legacy_sender_on_unexpected_error(
+            self, authenticated_sender):
+        config = dict(self.AUTH_CONFIG)
+        config['forgemail.sender_authentication.mode'] = 'monitor'
+
+        user = self._identify(auth_config=config)
+
+        assert user.username == 'test-admin'
+        authenticated_sender.assert_called_once()
+
+    def test_enforce_accepts_unique_confirmed_from_with_trusted_dmarc_pass(self):
+        user = self._identify(mailfrom='attacker@example.net')
+
+        assert user.username == 'test-admin'
+
+    @pytest.mark.parametrize('authentication_results', [
+        [
+            'mx.sourceforge.net; '
+            'dmarc=pass header.from=users.localhost',
+        ],
+        [
+            'mx.sourceforge.net; '
+            'arc=pass; dmarc=pass header.from=USERS.LOCALHOST; '
+            'spf=fail smtp.mailfrom=example.net; iprev=fail',
+        ],
+    ])
+    def test_enforce_accepts_dmarc_pass_without_parsing_other_results(
+            self, authentication_results):
+        user = self._identify(
+            mailfrom='attacker@example.net',
+            authentication_results=authentication_results)
+
+        assert user.username == 'test-admin'
+
+    @pytest.mark.parametrize('authentication_results', [
+        [
+            'mx.sourceforge.net; '
+            'spf=pass smtp.mailfrom=users.localhost; '
+            'dmarc=none header.from=users.localhost',
+        ],
+        [
+            'mx.sourceforge.net; '
+            'dkim=fail header.d=bad.example; '
+            'spf=pass smtp.mailfrom=USERS.LOCALHOST',
+        ],
+    ])
+    def test_enforce_accepts_aligned_spf_fallback(
+            self, authentication_results):
+        user = self._identify(
+            mailfrom='attacker@example.net',
+            authentication_results=authentication_results)
+
+        assert user.username == 'test-admin'
+
+    def test_enforce_accepts_encoded_from_display_name(self):
+        user = self._identify(
+            mailfrom='attacker@example.net',
+            from_headers=[
+                '=?utf-8?q?J=C3=B6hn?= <test-admin@users.localhost>'])
+
+        assert user.username == 'test-admin'
+
+    @pytest.mark.parametrize('peer,authentication_results', [
+        pytest.param(
+            ('203.0.113.10', 2525), [PASS_AUTH_RESULTS],
+            id='untrusted-peer'),
+        pytest.param(('127.0.0.1', 2525), [], id='missing-header'),
+        pytest.param(
+            ('127.0.0.1', 2525), [PASS_AUTH_RESULTS, PASS_AUTH_RESULTS],
+            id='duplicate-header'),
+        pytest.param(('127.0.0.1', 2525), [
+            'other.example; spf=pass smtp.mailfrom=users.localhost; '
+            'dmarc=pass header.from=users.localhost'],
+            id='wrong-authserv-id'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'dmarc=fail header.from=users.localhost'],
+            id='dmarc-fail-does-not-fallback'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'dmarc=temperror header.from=users.localhost'],
+            id='dmarc-temperror-does-not-fallback'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'dmarc=permerror header.from=users.localhost'],
+            id='dmarc-permerror-does-not-fallback'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.sourceforge.net; spf=fail smtp.mailfrom=users.localhost; '
+            'dmarc=none header.from=users.localhost'],
+            id='dmarc-none-spf-fail'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.sourceforge.net; '
+            'dmarc=none header.from=users.localhost'],
+            id='dmarc-none-spf-missing'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.sourceforge.net; '
+            'spf=fail smtp.mailfrom=users.localhost'],
+            id='dmarc-missing-spf-fail'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.sourceforge.net; '
+            'dkim=pass header.d=users.localhost'],
+            id='dmarc-and-spf-missing'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.sourceforge.net; spf=pass smtp.mailfrom=example.net; '
+            'dmarc=none header.from=users.localhost'],
+            id='spf-domain-mismatch'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.sourceforge.net; '
+            'spf=pass smtp.mailfrom=mail.users.localhost'],
+            id='spf-subdomain-is-not-exact-alignment'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.sourceforge.net; spf=pass smtp.helo=users.localhost; '
+            'dmarc=none header.from=users.localhost'],
+            id='helo-spf-is-not-author-proof'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'dmarc=pass header.from=users.localhost; '
+            'dmarc=fail header.from=users.localhost'],
+            id='duplicate-dmarc'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'spf=pass smtp.mailfrom=users.localhost; '
+            'dmarc=none header.from=users.localhost'],
+            id='duplicate-spf-fallback'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'dmarc=PASS header.from=users.localhost'],
+            id='malformed-dmarc-does-not-become-absent'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'dmarc=none'],
+            id='malformed-dmarc-none'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.sourceforge.net; '
+            'spf=pass smtp.mailfrom=users.localhost extra=value; '
+            'dmarc=none header.from=users.localhost'],
+            id='malformed-spf'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'dmarc=pass header.from=example.net'],
+            id='dmarc-from-domain-mismatch'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'dkim=fail (dmarc=pass; header.from=users.localhost) '
+            'header.d=bad.example; '
+            'dmarc=fail header.from=users.localhost'],
+            id='dmarc-pass-in-dkim-comment'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'dkim=fail reason="verification failed; dmarc=pass '
+            'header.from=users.localhost"; '
+            'dmarc=fail header.from=users.localhost'],
+            id='dmarc-pass-in-quoted-value'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'dkim=pass header.d=bad.example '
+            'header.i=dmarc=pass@bad.example; '
+            'dmarc=fail header.from=users.localhost'],
+            id='dmarc-pass-in-dkim-identity'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.sourceforge.net 1; spf=pass smtp.mailfrom=users.localhost; '
+            'dmarc=pass header.from=users.localhost'],
+            id='unexpected-authserv-version'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'dmarc=pass header.from=users.localhost\x00'],
+            id='header-control-character'),
+    ])
+    def test_enforce_rejects_untrusted_or_invalid_authentication(
+            self, peer, authentication_results):
+        user = self._identify(
+            peer=peer,
+            authentication_results=authentication_results)
+
+        assert user.is_anonymous()
+
+    def test_enforce_accepts_ipv4_mapped_relay_peer(self):
+        user = self._identify(peer=('::ffff:127.0.0.1', 2525))
+
+        assert user.username == 'test-admin'
+
+    @pytest.mark.parametrize('from_headers', [
+        [],
+        ['test-admin@users.localhost', 'other@users.localhost'],
+        ['test-admin@users.localhost, other@users.localhost'],
+        ['Friends: test-admin@users.localhost;'],
+        ['not-an-email-address'],
+    ])
+    def test_enforce_rejects_ambiguous_from(self, from_headers):
+        user = self._identify(from_headers=from_headers)
+
+        assert user.is_anonymous()
+
+    @pytest.mark.parametrize('owner_state', [
+        'unconfirmed',
+        'disabled',
+        'pending',
+        'duplicate',
+    ])
+    def test_enforce_requires_confirmed_unique_active_owner(self, owner_state):
+        address = 'authenticated-owner@example.net'
+        owner = M.User.by_username('test-user-1')
+        email_address = owner.claim_address(address)
+        email_address.confirmed = owner_state != 'unconfirmed'
+        if owner_state == 'disabled':
+            owner.disabled = True
+        elif owner_state == 'pending':
+            owner.pending = True
+        elif owner_state == 'duplicate':
+            other_owner = M.User.by_username('test-user-2')
+            other_address = other_owner.claim_address(address)
+            other_address.confirmed = True
+        ThreadLocalODMSession.flush_all()
+
+        user = self._identify(
+            from_headers=[address],
+            authentication_results=[
+                'mx.sourceforge.net; spf=pass smtp.mailfrom=example.net; '
+                'dmarc=pass header.from=example.net'])
+
+        assert user.is_anonymous()
+
+    @pytest.mark.parametrize('auth_config', [
+        {'forgemail.sender_authentication.mode': 'unexpected'},
+        {
+            'forgemail.sender_authentication.mode': 'enforce',
+            'forgemail.sender_authentication.authserv_id': '',
+            'forgemail.sender_authentication.trusted_relay_networks': '127.0.0.0/8',
+        },
+        {
+            'forgemail.sender_authentication.mode': 'enforce',
+            'forgemail.sender_authentication.authserv_id': 'mx.sourceforge.net',
+            'forgemail.sender_authentication.trusted_relay_networks': '',
+        },
+        {
+            'forgemail.sender_authentication.mode': 'enforce',
+            'forgemail.sender_authentication.authserv_id': 'mx.sourceforge.net',
+            'forgemail.sender_authentication.trusted_relay_networks': 'not-a-network',
+        },
+        {
+            'forgemail.sender_authentication.mode': 'enforce',
+            'forgemail.sender_authentication.authserv_id': None,
+            'forgemail.sender_authentication.trusted_relay_networks': '127.0.0.0/8',
+        },
+    ])
+    def test_invalid_or_incomplete_enforce_config_fails_closed(self, auth_config):
+        user = self._identify(auth_config=auth_config)
+
+        assert user.is_anonymous()
 
 def test_parse_message_id():
     assert _parse_message_id('<de31888f6be2d87dc377d9e713876bb514548625.patches@libjpeg-turbo.p.domain.net>, </p/libjpeg-turbo/patches/54/de31888f6be2d87dc377d9e713876bb514548625.patches@libjpeg-turbo.p.domain.net>') == [

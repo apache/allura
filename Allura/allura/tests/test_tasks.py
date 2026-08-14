@@ -507,6 +507,68 @@ class TestMailTasks:
             assert args[0] == 'Page'
             assert len(args) == 2
 
+    @td.with_wiki
+    @mock.patch.dict(tg.config, {
+        'forgemail.sender_authentication.mode': 'enforce',
+        'forgemail.sender_authentication.authserv_id': 'mx.sourceforge.net',
+        'forgemail.sender_authentication.trusted_relay_networks': '127.0.0.0/8',
+    })
+    def test_route_email_enforce_uses_authenticated_from_user(self):
+        message = dedent('''\
+            From: "Test Admin" <test-admin@users.localhost>
+            Authentication-Results: mx.sourceforge.net;
+             spf=pass smtp.mailfrom=users.localhost;
+             dmarc=pass header.from=users.localhost
+            Subject: authenticated inbound message
+
+            body''')
+        import forgewiki
+        senders = []
+
+        def capture_sender(*args):
+            senders.append(c.user.username)
+
+        with mock.patch.object(
+                forgewiki.wiki_main.ForgeWikiApp, 'handle_message',
+                side_effect=capture_sender):
+            mail_tasks.route_email(
+                ('127.0.0.1', 2525), 'attacker@example.net',
+                ['Page@wiki.test.p.in.localhost'], message)
+
+        assert senders == ['test-admin']
+
+    @td.with_wiki
+    @mock.patch.dict(tg.config, {
+        'forgemail.sender_authentication.mode': 'enforce',
+        'forgemail.sender_authentication.authserv_id': 'mx.sourceforge.net',
+        'forgemail.sender_authentication.trusted_relay_networks': '127.0.0.0/8',
+    })
+    def test_route_email_enforce_does_not_trust_spoofed_envelope(self):
+        message = dedent('''\
+            From: "Test Admin" <test-admin@users.localhost>
+            Authentication-Results: mx.sourceforge.net;
+             spf=fail smtp.mailfrom=users.localhost;
+             dmarc=fail header.from=users.localhost
+            Subject: unauthenticated inbound message
+
+            body''')
+        import forgewiki
+        senders = []
+
+        def capture_sender(*args):
+            senders.append(c.user.username)
+
+        with mock.patch.object(
+                forgewiki.wiki_main.ForgeWikiApp, 'has_access', return_value=True), \
+                mock.patch.object(
+                    forgewiki.wiki_main.ForgeWikiApp, 'handle_message',
+                    side_effect=capture_sender):
+            mail_tasks.route_email(
+                ('127.0.0.1', 2525), 'test-admin@users.localhost',
+                ['Page@wiki.test.p.in.localhost'], message)
+
+        assert senders == ['*anonymous']
+
     @td.with_tool('test', 'Tickets', 'bugs')
     def test_receive_autoresponse(self):
         message = dedent('''\
