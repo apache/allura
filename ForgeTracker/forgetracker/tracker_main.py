@@ -1920,6 +1920,8 @@ class TicketRestController(BaseController):
 
     @expose('json:')
     def index(self, **kw):
+        if self.ticket.deleted and not has_access(self.ticket, 'delete'):
+            raise exc.HTTPNotFound('Ticket #%s does not exist.' % self.ticket_num)
         return dict(ticket=self.ticket.__json__(posts_limit=10))
 
     @expose()

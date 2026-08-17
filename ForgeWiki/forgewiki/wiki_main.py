@@ -890,8 +890,7 @@ class PageRestController(BaseController):
     def __init__(self, title):
         self.title = h.really_unicode(unquote(title)) if title else None
         self.page = WM.Page.query.get(app_config_id=c.app.config._id,
-                                      title=self.title,
-                                      deleted=False)
+                                      title=self.title)
 
     def _check_security(self):
         if self.page:

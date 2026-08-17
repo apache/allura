@@ -601,6 +601,10 @@ class PostRestController(PostController):
 
     @expose('json:')
     def index(self, **kw):
+        if self.post.deleted:
+            raise exc.HTTPNotFound
+        if self.post.status != 'ok' and not has_access(self.post.thread, 'moderate'):
+            raise exc.HTTPNotFound
         return dict(post=self.post.__json__())
 
     @h.vardec

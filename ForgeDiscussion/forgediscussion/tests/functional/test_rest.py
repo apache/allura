@@ -229,6 +229,15 @@ class TestRootRestController(TestDiscussionApiBase):
                      extra_environ={'username': '*anonymous'},
                      status=401)
 
+    def test_thread_acl_enforced(self):
+        t = ForumThread.query.find({'subject': 'Hi guys'}).first()
+        blocked = M.ProjectRole.by_user(M.User.by_username('test-user'), upsert=True)._id
+        t.acl.append(M.ACE.deny(blocked, 'read'))
+        ThreadLocalODMSession.flush_all()
+        url = '/rest/p/test/discussion/general/thread/%s/' % t._id
+        self.api_get(url)
+        self.api_get(url, user='test-user', status=403)
+
     def test_private_forums(self):
         r = self.app.get('/p/test/admin/discussion/forums')
         form = r.forms['edit-forums']

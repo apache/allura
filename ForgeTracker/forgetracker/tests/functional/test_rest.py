@@ -159,6 +159,16 @@ class TestRestIndex(TestTrackerApiBase):
         ThreadLocalODMSession.flush_all()
         self.api_get('/rest/p/test/bugs/', user='*anonymous', status=[401, 403])
 
+    def test_deleted_ticket_hidden(self):
+        h.set_context('test', 'bugs', neighborhood='Projects')
+        ticket = TM.Ticket.query.get(app_config_id=c.app.config._id, ticket_num=1)
+        ticket.deleted = True
+        ThreadLocalODMSession.flush_all()
+        self.api_get('/rest/p/test/bugs/1/', user='*anonymous', status=404)
+        # but visible to someone who can undelete it
+        r = self.api_get('/rest/p/test/bugs/1/', user='test-admin')
+        assert r.json['ticket']['ticket_num'] == 1
+
     @td.with_tool('test', 'Tickets', 'dummy')
     def test_move_ticket_redirect(self):
         p = M.Project.query.get(shortname='test')
@@ -194,6 +204,29 @@ class TestRestDiscussion(TestTrackerApiBase):
         assert reply.json['post']['text'] == 'This is a reply', reply.json
         thread = self.api_get('/rest/p/test/bugs/_discuss/thread/%s/' % thread_id)
         assert len(thread.json['thread']['posts']) == 2, thread.json
+
+    def _new_post(self, text='This is a comment'):
+        r = self.api_get('/rest/p/test/bugs/1/')
+        thread_id = r.json['ticket']['discussion_thread']['_id']
+        post = self.api_post('/rest/p/test/bugs/_discuss/thread/%s/new' % thread_id,
+                             text=text)
+        return f"/rest/p/test/bugs/_discuss/thread/{thread_id}/{post.json['post']['slug']}/"
+
+    def test_deleted_post_hidden(self):
+        url = self._new_post()
+        M.Post.query.get(text='This is a comment').deleted = True
+        ThreadLocalODMSession.flush_all()
+        self.api_get(url, user='*anonymous', status=404)
+        self.api_get(url, user='test-admin', status=404)
+
+    def test_unmoderated_post_hidden(self):
+        url = self._new_post()
+        M.Post.query.get(text='This is a comment').status = 'pending'
+        ThreadLocalODMSession.flush_all()
+        self.api_get(url, user='*anonymous', status=404)
+        # but visible to a moderator
+        r = self.api_get(url, user='test-admin')
+        assert r.json['post']['text'] == 'This is a comment'
 
 
 class TestRestSearch(TestTrackerApiBase):

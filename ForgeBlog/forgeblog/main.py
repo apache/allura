@@ -661,8 +661,9 @@ class PostRestController(BaseController):
         self.post = post
 
     def _check_security(self):
-        if self.post:
-            require_access(self.post, 'read')
+        require_access(self.post, 'read')
+        if self.post.state == 'draft':
+            require_access(self.post, 'write')
 
     @h.vardec
     @expose('json:')
@@ -670,8 +671,6 @@ class PostRestController(BaseController):
         if request.method == 'POST':
             return self._update_post(**kw)
         else:
-            if self.post.state == 'draft':
-                require_access(self.post, 'write')
             return self.post.__json__(posts_limit=10)
 
     def _update_post(self, **post_data):

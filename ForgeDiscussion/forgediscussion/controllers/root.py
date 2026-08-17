@@ -395,7 +395,7 @@ class ForumTopicRestController(BaseController):
         self.topic = topic
 
     def _check_security(self):
-        require_access(self.forum, 'read')
+        require_access(self.topic, 'read')
 
     @expose('json:')
     def index(self, limit=None, page=0, **kw):
