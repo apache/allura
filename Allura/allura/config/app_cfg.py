@@ -30,7 +30,10 @@ convert them into boolean, for example, you should use the
 """
 import logging
 import sys
+from datetime import datetime
 
+from bson import Binary
+from ming import Session
 import tg
 from tg.configuration import config
 from tg.configurator.application import ApplicationConfigurator
@@ -147,6 +150,46 @@ class InMemoryBytecodeCache(jinja2.BytecodeCache):
 long_term_in_memory_bytecode_cache = InMemoryBytecodeCache()
 
 
+class MongoBytecodeCache(jinja2.BytecodeCache):
+    """Shares compiled template bytecode across processes and hosts via mongo.  Uses the raw
+    pymongo collection rather than a Ming model, since Ming's make_safe rejects raw bytes."""
+
+    collection_name = 'jinja_bytecode_cache'
+
+    def __init__(self, prefix: str, retain_days: int = 7):
+        self.prefix = prefix
+        self.retain_days = retain_days
+        self._indexes_ensured = False
+
+    def _collection(self):
+        # a deployment may point this at a dedicated cache db via ming.cache.*; otherwise it lands in main
+        bind = Session.by_name('cache').bind or Session.by_name('main').bind
+        collection = bind.db[self.collection_name]
+        if not self._indexes_ensured:
+            collection.create_index('key', unique=True)
+            collection.create_index('created', expireAfterSeconds=self.retain_days * 86400)
+            self._indexes_ensured = True
+        return collection
+
+    def load_bytecode(self, bucket):
+        try:
+            doc = self._collection().find_one({'key': self.prefix + bucket.key})
+        except Exception:
+            log.exception('mongo jinja bytecode load failed')
+            return
+        if doc is not None:
+            bucket.bytecode_from_string(doc['value'])
+
+    def dump_bytecode(self, bucket):
+        try:
+            self._collection().update_one(
+                {'key': self.prefix + bucket.key},
+                {'$set': {'value': Binary(bucket.bytecode_to_string()), 'created': datetime.utcnow()}},
+                upsert=True)
+        except Exception:
+            log.exception('mongo jinja bytecode dump failed')
+
+
 class AlluraJinjaRenderer(JinjaRenderer):
 
     @classmethod
@@ -155,7 +198,8 @@ class AlluraJinjaRenderer(JinjaRenderer):
         bcc = None
         try:
             if 'pytest' in sys.modules:
-                # speedup for tests: avoid memcache, avoid loading/dumping bytecode to strings.  Use same one for all tests
+                # speedup for tests: avoid external backends, avoid loading/dumping bytecode to strings.
+                # Use same one for all tests
                 bcc = long_term_in_memory_bytecode_cache
             elif cache_type == 'memcached' and config.get('memcached_host'):
                 import pylibmc
@@ -164,6 +208,11 @@ class AlluraJinjaRenderer(JinjaRenderer):
                 bcc_prefix = f'jinja2/{jinja2.__version__}/'
                 bcc_prefix += f'py{sys.version_info.major}{sys.version_info.minor}/'
                 bcc = MemcachedBytecodeCache(client, prefix=bcc_prefix)
+            elif cache_type == 'mongodb':
+                retain_days = int(config.get('jinja_bytecode_cache_retain_days', 7))
+                bcc_prefix = f'jinja2/{jinja2.__version__}/'
+                bcc_prefix += f'py{sys.version_info.major}{sys.version_info.minor}/'
+                bcc = MongoBytecodeCache(bcc_prefix, retain_days=retain_days)
             elif cache_type == 'filesystem':
                 from jinja2 import FileSystemBytecodeCache
                 bcc = FileSystemBytecodeCache(pattern=f'__jinja2_{jinja2.__version__}_%s.cache')
