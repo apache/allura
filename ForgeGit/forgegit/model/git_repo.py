@@ -200,7 +200,29 @@ class GitImplementation(M.RepositoryImplementation):
             shared='all')
         self.__dict__['_git'] = repo
         self._setup_special_files()
+        self._apply_force_push_config()
         self._repo.set_status('ready')
+
+    def force_push_allowed_on_disk(self):
+        # what the repo itself currently permits, regardless of what Mongo records;
+        # None if that can't be determined, so callers fall back to the stored field
+        if self._git is None:
+            return None
+        try:
+            with self._git.config_reader('repository') as cr:
+                return not asbool(cr.get_value('receive', 'denyNonFastForwards', False))
+        except Exception:
+            log.exception('Could not read receive.denyNonFastForwards for %r', self._repo)
+            return None
+
+    def _apply_force_push_config(self):
+        # keep the repo's on-disk setting in step with force_push_allowed; a repo Allura has
+        # never written is left alone entirely, so this is a no-op when the feature is off
+        if not asbool(tg.config.get(f'scm.force_push.{self._repo.tool}.enabled')):
+            return
+        with self._git.config_writer() as cw:
+            cw.set_value('receive', 'denyNonFastForwards',
+                         'false' if self._repo.force_push_allowed else 'true')
 
     def can_hotcopy(self, source_url):
         enabled = asbool(tg.config.get('scm.git.hotcopy', True))
@@ -234,6 +256,7 @@ class GitImplementation(M.RepositoryImplementation):
                     bare=True)
             self.__dict__['_git'] = repo
             self._setup_special_files(source_url)
+            self._apply_force_push_config()
         except Exception:
             self._repo.set_status('ready')
             raise

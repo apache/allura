@@ -149,6 +149,9 @@ class RepositoryImplementation:
     def set_force_push_allowed(self, allowed):  # pragma no cover
         raise NotImplementedError('set_force_push_allowed')
 
+    def force_push_allowed_on_disk(self):  # pragma no cover
+        raise NotImplementedError('force_push_allowed_on_disk')
+
     # pragma no cover
     def log(self, revs=None, path=None, exclude=None, id_only=True, **kw):
         """
@@ -556,6 +559,12 @@ class Repository(Artifact, ActivityObject):
 
     def set_force_push_allowed(self, allowed: bool):
         return self._impl.set_force_push_allowed(allowed)
+
+    def force_push_allowed_effective(self) -> bool:
+        # repos predating this feature have no receive setting, so the stored field can understate
+        # what they actually permit; trust the repo itself when it can be read
+        on_disk = self._impl.force_push_allowed_on_disk()
+        return self.force_push_allowed if on_disk is None else on_disk
 
     def paged_diffs(self, commit_id, start=0, end=None, onlyChangedFiles=False):
         return self._impl.paged_diffs(commit_id, start, end, onlyChangedFiles)

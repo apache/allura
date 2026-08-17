@@ -702,6 +702,55 @@ By Dave Brondsema''' in text_body
     def test_force_push_allowed_defaults_false(self):
         assert self.repo.force_push_allowed is False
 
+    def test_force_push_allowed_effective(self):
+        git_repo = git.Repo(self.repo.full_fs_path)
+        try:
+            # no receive setting at all: the repo accepts force pushes even though the field is False
+            assert self.repo.force_push_allowed is False
+            assert self.repo.force_push_allowed_effective() is True
+            with git_repo.config_writer() as cw:
+                cw.set_value('receive', 'denyNonFastForwards', 'true')
+            assert self.repo.force_push_allowed_effective() is False
+            with git_repo.config_writer() as cw:
+                cw.set_value('receive', 'denyNonFastForwards', 'false')
+            assert self.repo.force_push_allowed_effective() is True
+        finally:
+            with git_repo.config_writer() as cw:
+                cw.remove_section('receive')
+
+    def test_force_push_allowed_effective_falls_back(self):
+        with mock.patch.object(GM.git_repo.GitImplementation, 'force_push_allowed_on_disk') as on_disk:
+            on_disk.return_value = None
+            self.repo.force_push_allowed = True
+            assert self.repo.force_push_allowed_effective() is True
+
+    def _init_scratch_repo(self):
+        repo = GM.Repository(name='testgit.git', fs_path=g.tmpdir + '/', url_path='/test/',
+                             tool='git', status='creating')
+        dirname = os.path.join(repo.fs_path, repo.name)
+        if os.path.exists(dirname):
+            shutil.rmtree(dirname)
+        return repo, dirname
+
+    def test_init_denies_force_push_when_enabled(self):
+        repo, dirname = self._init_scratch_repo()
+        try:
+            with h.push_config(tg.config, **{'scm.force_push.git.enabled': 'true'}):
+                repo.init()
+            with git.Repo(dirname).config_reader('repository') as cr:
+                assert cr.get_value('receive', 'denyNonFastForwards') is True
+        finally:
+            shutil.rmtree(dirname, ignore_errors=True)
+
+    def test_init_leaves_config_alone_when_disabled(self):
+        repo, dirname = self._init_scratch_repo()
+        try:
+            repo.init()
+            with git.Repo(dirname).config_reader('repository') as cr:
+                assert not cr.has_section('receive')
+        finally:
+            shutil.rmtree(dirname, ignore_errors=True)
+
     def test_default_branch_non_standard_unset(self):
         with mock.patch.object(self.repo, 'get_branches') as gb, \
                 mock.patch.object(self.repo, 'set_default_branch') as set_db:

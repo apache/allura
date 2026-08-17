@@ -573,6 +573,30 @@ class TestRootController(_TestCase):
         self.app.post('/p/test/admin/src-git/force_push',
                       params={'allowed': 'on'}, status=404)
 
+    def test_force_push_save_writes_even_when_unchanged(self):
+        # repos predating the feature have no receive section; saving must still apply the value
+        with h.push_config(tg.config, **{'scm.force_push.git.enabled': 'true'}):
+            with patch('allura.tasks.repo_tasks.update_force_push_config.post') as post:
+                self.app.post('/p/test/admin/src-git/force_push', params={})
+            assert GM.Repository.query.get(_id=c.app.repo._id).force_push_allowed is False
+            post.assert_called_once_with(c.app.repo.full_fs_path, False)
+            assert M.AuditLog.query.find(
+                {'message': 'src-git: set "force_push_allowed" False => False'}).count() == 0
+
+    def test_force_push_hidden_until_repo_ready(self):
+        with h.push_config(tg.config, **{'scm.force_push.git.enabled': 'true'}):
+            for status in ('initializing', 'cloning'):
+                c.app.repo.status = status
+                ThreadLocalODMSession.flush_all()
+                assert not any(l.label.startswith('Force push') for l in c.app.admin_menu())
+                self.app.get('/p/test/admin/src-git/force_push', status=404)
+                self.app.post('/p/test/admin/src-git/force_push',
+                              params={'allowed': 'on'}, status=404)
+            c.app.repo.status = 'analyzing'
+            ThreadLocalODMSession.flush_all()
+            assert any(l.label.startswith('Force push') for l in c.app.admin_menu())
+            self.app.get('/p/test/admin/src-git/force_push', status=200)
+
     def test_force_push_requires_admin(self):
         with h.push_config(tg.config, **{'scm.force_push.git.enabled': 'true'}):
             self.app.get('/p/test/admin/src-git/force_push',

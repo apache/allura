@@ -304,8 +304,8 @@ class RepoAdminController(DefaultAdminController):
     def force_push(self, allowed=None, **kw):
         if not asbool(config.get(f'scm.force_push.{self.app.config.tool_name}.enabled')):
             raise exc.HTTPNotFound()
-        if not self.repo:
-            # repo is still being created
+        if not self.repo or self.repo.status not in ('ready', 'analyzing'):
+            # init/clone/import recreate the repo dir, discarding config written before they finish
             raise exc.HTTPNotFound()
         if request.method == 'POST':
             allowed = bool(allowed)
@@ -313,9 +313,12 @@ class RepoAdminController(DefaultAdminController):
                 M.AuditLog.log('{}: set "{}" {} => {}'.format(
                     self.app.config.options['mount_point'], 'force_push_allowed',
                     self.repo.force_push_allowed, allowed))
-                self.repo.set_force_push_allowed(allowed)
+            # written even when unchanged, so repos predating this feature get the value applied
+            self.repo.set_force_push_allowed(allowed)
             redirect(six.ensure_text(c.app.url))
-        return dict(app=self.app, force_push_allowed=self.repo.force_push_allowed)
+        # shown from the repo itself, not the stored field, so a repo predating this feature
+        # that still accepts force pushes is not displayed as if it refused them
+        return dict(app=self.app, force_push_allowed=self.repo.force_push_allowed_effective())
 
     @without_trailing_slash
     @expose('jinja:allura:templates/repo/checkout_url.html')
