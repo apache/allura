@@ -123,8 +123,8 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         try:
             return super().urlopen(url, headers=headers, unredirected_hdrs=unredirected_hdrs, **kw)
         except six.moves.urllib.error.HTTPError as e:
-            # GitHub will return 403 if rate limit exceeded.
-            if e.code == 403 and e.info().get('X-RateLimit-Remaining') == '0':
+            # https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api#exceeding-the-rate-limit
+            if e.code in (403, 429) and e.info().get('X-RateLimit-Remaining') == '0':
                 self.wait_for_limit_reset(e.info())
                 # call ourselves to try again:
                 return self.urlopen(url, headers=headers, use_auth_headers_on_redirects=use_auth_headers_on_redirects,
