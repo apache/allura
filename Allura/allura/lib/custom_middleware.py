@@ -367,13 +367,6 @@ class AlluraTimerMiddleware(TimerMiddleware):
                       'bind_s', 'unbind_s', 'add_s', 'modify_s', 'search_s'),
             ]
 
-        if self.config.get('memcached_host'):
-            import pylibmc
-            timers += [
-                Timer('memcache.get', pylibmc.client.Client, 'get'),
-                Timer('memcache.set', pylibmc.client.Client, 'set'),
-            ]
-
         return timers
 
     def before_logging(self, stat_record):

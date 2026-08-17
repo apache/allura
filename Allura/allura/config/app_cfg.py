@@ -155,15 +155,14 @@ class AlluraJinjaRenderer(JinjaRenderer):
         bcc = None
         try:
             if 'pytest' in sys.modules:
-                # speedup for tests: avoid memcache, avoid loading/dumping bytecode to strings.  Use same one for all tests
+                # speedup for tests: avoid mongo, avoid loading/dumping bytecode to strings.  Use same one for all tests
                 bcc = long_term_in_memory_bytecode_cache
-            elif cache_type == 'memcached' and config.get('memcached_host'):
-                import pylibmc
-                from jinja2 import MemcachedBytecodeCache
-                client = pylibmc.Client([config['memcached_host']])
+            elif cache_type == 'mongodb':
+                from sftheme.jinja_bytecode_cache import MongoBytecodeCache
+                retain_days = int(config.get('jinja_bytecode_cache_retain_days', 7))
                 bcc_prefix = f'jinja2/{jinja2.__version__}/'
                 bcc_prefix += f'py{sys.version_info.major}{sys.version_info.minor}/'
-                bcc = MemcachedBytecodeCache(client, prefix=bcc_prefix)
+                bcc = MongoBytecodeCache(bcc_prefix, ming_session_name='main', retain_days=retain_days)
             elif cache_type == 'filesystem':
                 from jinja2 import FileSystemBytecodeCache
                 bcc = FileSystemBytecodeCache(pattern=f'__jinja2_{jinja2.__version__}_%s.cache')
