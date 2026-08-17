@@ -173,6 +173,14 @@ class TestBlogApi(TestRestApiBase):
                          extra_environ={'username': '*anonymous'})
         assert r.json['posts'][0]['title'] == 'test'
 
+    def test_get_draft_post_denied(self):
+        self.api_post('/rest/p/test/blog/', title='test',
+                      text='test text', state='draft')
+        url = '/rest' + BM.BlogPost.query.find().first().url()
+        self.app.get(url, extra_environ={'username': '*anonymous'}, status=401)
+        r = self.api_get(url)
+        assert r.json['text'] == 'test text'
+
     def test_draft_post(self):
         self.api_post('/rest/p/test/blog/', title='test',
                       text='test text', state='draft')

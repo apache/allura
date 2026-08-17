@@ -18,7 +18,10 @@
 import json
 
 import tg
+from ming.odm import ThreadLocalODMSession
+from tg import tmpl_context as c
 
+from allura import model as M
 from allura.lib import helpers as h
 from allura.tests import decorators as td
 from alluratest.controller import TestRestApiBase
@@ -62,6 +65,24 @@ class TestWikiApi(TestRestApiBase):
 
     def test_page_does_not_exist(self):
         r = self.api_get('/rest/p/test/wiki/fake/', status=404)
+
+    def test_deleted_page_needs_delete_access(self):
+        self.api_post('/rest/p/test/wiki/gone/', text='secret text')
+        page = Page.query.get(app_config_id=c.app.config._id, title='gone')
+        page.deleted = True
+        ThreadLocalODMSession.flush_all()
+
+        # a Member has 'create' and 'edit' but not 'delete'
+        user = M.User.by_username('test-user')
+        user_role = M.ProjectRole.by_user(user, upsert=True)
+        user_role.roles.append(M.ProjectRole.by_name('Member')._id)
+        ThreadLocalODMSession.flush_all()
+
+        self.api_get('/rest/p/test/wiki/gone/', user='test-user', status=403)
+        self.api_post('/rest/p/test/wiki/gone/', text='overwritten',
+                      user='test-user', status=403)
+        page = Page.query.get(app_config_id=c.app.config._id, title='gone')
+        assert page.text == 'secret text'
 
     def test_update_page(self):
         data = {
