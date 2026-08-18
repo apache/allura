@@ -201,6 +201,7 @@ def update_head_reference(fs_path, branch_name):
 
 @task
 def update_force_push_config(fs_path: str, allowed: bool):
+    # git's own config writer rather than GitPython's: it edits in place so comments and
+    # formatting survive, and matches the key case-insensitively so a legacy spelling is replaced
     repo = git.Repo(fs_path, odbt=git.GitCmdObjectDB)
-    with repo.config_writer() as cw:  # config_level defaults to 'repository'
-        cw.set_value('receive', 'denyNonFastForwards', 'false' if allowed else 'true')
+    repo.git.config('--replace-all', 'receive.denyNonFastForwards', 'false' if allowed else 'true')

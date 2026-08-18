@@ -18,6 +18,7 @@ import json
 import re
 import os
 import shutil
+import subprocess
 import tempfile
 import textwrap
 
@@ -585,17 +586,37 @@ class TestRootController(_TestCase):
 
     def test_force_push_hidden_until_repo_ready(self):
         with h.push_config(tg.config, **{'scm.force_push.git.enabled': 'true'}):
-            for status in ('initializing', 'cloning'):
-                c.app.repo.status = status
+            for status, ready in (('initializing', False), ('cloning', False),
+                                  ('analyzing', True), ('ready', True)):
+                # re-query: c.app.repo detaches from the session after the first request, so
+                # assigning to it would silently not persist
+                repo = GM.Repository.query.get(_id=c.app.repo._id)
+                repo.status = status
                 ThreadLocalODMSession.flush_all()
-                assert not any(l.label.startswith('Force push') for l in c.app.admin_menu())
-                self.app.get('/p/test/admin/src-git/force_push', status=404)
-                self.app.post('/p/test/admin/src-git/force_push',
-                              params={'allowed': 'on'}, status=404)
-            c.app.repo.status = 'analyzing'
-            ThreadLocalODMSession.flush_all()
-            assert any(l.label.startswith('Force push') for l in c.app.admin_menu())
-            self.app.get('/p/test/admin/src-git/force_push', status=200)
+                c.app.repo.status = status  # the in-process copy admin_menu() reads
+                assert any(l.label.startswith('Force push')
+                           for l in c.app.admin_menu()) is ready
+                self.app.get('/p/test/admin/src-git/force_push', status=200 if ready else 404)
+                if not ready:
+                    self.app.post('/p/test/admin/src-git/force_push',
+                                  params={'allowed': 'on'}, status=404)
+
+    def test_force_push_checkbox_reflects_repo_state(self):
+        # the form must show what the repo really permits, not just the stored field: a repo
+        # predating this feature has no receive setting and does accept force pushes
+        R = c.app.repo.full_fs_path
+        assert c.app.repo.force_push_allowed is False
+        with h.push_config(tg.config, **{'scm.force_push.git.enabled': 'true'}):
+            try:
+                r = self.app.get('/p/test/admin/src-git/force_push')
+                assert 'name="allowed" checked' in squish_spaces(r.text)
+                subprocess.run(['git', '--git-dir', R, 'config',
+                                'receive.denyNonFastForwards', 'true'], check=True)
+                r = self.app.get('/p/test/admin/src-git/force_push')
+                assert 'name="allowed" checked' not in squish_spaces(r.text)
+            finally:
+                subprocess.run(['git', '--git-dir', R, 'config',
+                                '--remove-section', 'receive'], check=False)
 
     def test_force_push_requires_admin(self):
         with h.push_config(tg.config, **{'scm.force_push.git.enabled': 'true'}):

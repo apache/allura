@@ -209,20 +209,25 @@ class GitImplementation(M.RepositoryImplementation):
         if self._git is None:
             return None
         try:
-            with self._git.config_reader('repository') as cr:
-                return not asbool(cr.get_value('receive', 'denyNonFastForwards', False))
+            denied = self._git.git.config('--bool', '--get', 'receive.denyNonFastForwards')
+        except git.exc.GitCommandError as err:
+            if err.status == 1:
+                return True  # unset, and git does not deny non-fast-forwards by default
+            log.exception('Could not read receive.denyNonFastForwards for %r', self._repo)
+            return None
         except Exception:
             log.exception('Could not read receive.denyNonFastForwards for %r', self._repo)
             return None
+        return not asbool(denied)
 
     def _apply_force_push_config(self):
-        # keep the repo's on-disk setting in step with force_push_allowed; a repo Allura has
-        # never written is left alone entirely, so this is a no-op when the feature is off
+        # `git init --shared=all` denies non-fast-forwards but `git clone --bare` does not, so
+        # clones need this to match a fresh repo; no-op when the feature is off
+        # http://git-scm.com/docs/git-init#Documentation/git-init.txt---sharedltpermissionsgt
         if not asbool(tg.config.get(f'scm.force_push.{self._repo.tool}.enabled')):
             return
-        with self._git.config_writer() as cw:
-            cw.set_value('receive', 'denyNonFastForwards',
-                         'false' if self._repo.force_push_allowed else 'true')
+        self._git.git.config('--replace-all', 'receive.denyNonFastForwards',
+                             'false' if self._repo.force_push_allowed else 'true')
 
     def can_hotcopy(self, source_url):
         enabled = asbool(tg.config.get('scm.git.hotcopy', True))
@@ -246,9 +251,6 @@ class GitImplementation(M.RepositoryImplementation):
                 if os.path.exists(post_receive):
                     os.rename(post_receive, post_receive + '-user')
                 repo = git.Repo(fullname)
-                # a hotcopy inherits the parent's config verbatim; force push is not inherited
-                with repo.config_writer() as cw:
-                    cw.remove_section('receive')
             else:
                 repo = git.Repo.clone_from(
                     source_url,

@@ -724,6 +724,33 @@ By Dave Brondsema''' in text_body
             self.repo.force_push_allowed = True
             assert self.repo.force_push_allowed_effective() is True
 
+    def test_update_force_push_config_preserves_other_settings(self):
+        # a real repo's config holds unrelated settings and comments; only our key may change
+        path = os.path.join(g.tmpdir, 'cfgtest.git')
+        shutil.rmtree(path, ignore_errors=True)
+        git.Repo.init(path=path, mkdir=True, quiet=True, bare=True)
+        try:
+            with open(os.path.join(path, 'config'), 'a') as f:
+                f.write('# keep me\n'
+                        '[receive]\n\tdenyDeletes = true\n\tdenyNonFastforwards = true\n'
+                        '; keep me too\n'
+                        '[remote "origin"]\n\turl = /srv/git/p/foo/code.git\n'
+                        '\tfetch = +refs/heads/*:refs/remotes/origin/*\n'
+                        '\tfetch = +refs/tags/*:refs/tags/*\n')
+            update_force_push_config(path, True)
+            update_force_push_config(path, False)
+            repo = git.Repo(path)
+            text = open(os.path.join(path, 'config')).read()
+            assert '# keep me' in text
+            assert '; keep me too' in text
+            # the legacy lower-case spelling is replaced in place, not duplicated alongside ours
+            assert text.lower().count('denynonfastforwards') == 1
+            assert repo.git.config('--get', 'receive.denyDeletes') == 'true'
+            assert repo.git.config('--bool', '--get', 'receive.denyNonFastForwards') == 'true'
+            assert len(repo.git.config('--get-all', 'remote.origin.fetch').splitlines()) == 2
+        finally:
+            shutil.rmtree(path, ignore_errors=True)
+
     def _init_scratch_repo(self):
         repo = GM.Repository(name='testgit.git', fs_path=g.tmpdir + '/', url_path='/test/',
                              tool='git', status='creating')
@@ -746,8 +773,23 @@ By Dave Brondsema''' in text_body
         repo, dirname = self._init_scratch_repo()
         try:
             repo.init()
-            with git.Repo(dirname).config_reader('repository') as cr:
-                assert not cr.has_section('receive')
+            # git init --shared=all writes this itself, in its own lower-case spelling;
+            # with the feature off Allura must not rewrite it
+            text = open(os.path.join(dirname, 'config')).read()
+            assert 'denyNonFastforwards = true' in text
+        finally:
+            shutil.rmtree(dirname, ignore_errors=True)
+
+    def test_clone_denies_force_push_when_enabled(self):
+        # git clone --bare does NOT inherit the deny that git init --shared=all sets, so without
+        # this a fork would accept force pushes while its checkbox showed unticked
+        repo, dirname = self._init_scratch_repo()
+        try:
+            with h.push_config(tg.config, **{'scm.force_push.git.enabled': 'true'}):
+                repo.init()
+                repo._impl.clone_from(pkg_file('forgegit', 'tests/data/testgit.git'))
+            cloned = git.Repo(dirname)
+            assert cloned.git.config('--bool', '--get', 'receive.denyNonFastForwards') == 'true'
         finally:
             shutil.rmtree(dirname, ignore_errors=True)
 
