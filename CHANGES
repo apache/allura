@@ -1,3 +1,44 @@
+Version 1.20.0  (August 2026)
+
+Upgrade Instructions
+
+  Stop any running Allura services while upgrading.
+
+  Install updated dependencies by running:
+    pip install -r requirements.txt --no-deps --upgrade --upgrade-strategy=only-if-needed
+
+  Run scripts/migrations/037-field-encryption.sh
+  If using docker, this is the full command (replace your .ini file path):
+    docker compose run -e INI=docker-dev.ini --rm taskd ../scripts/migrations/037-field-encryption.sh
+
+  Run: `paster ensure_index development.ini --clean` in Allura dir.  Replace your .ini file path
+
+  After the new version of Allura is up and running, delete the plaintext versions of the encrypted fields by running
+    scripts/migrations/038-field-encryption-cleanup.sh
+
+Security Improvements
+ * Python package upgrades
+ * [#8610] Implement field level encryption for User's email addresses list
+ * [#8613] Implement field level encryption for email address in user preferences
+ * [#8614] Implement field level encryption for more user fields
+
+Major Changes
+ * enable webp screenshots & attachments
+
+Other Changes
+ * [#6687] set isPermaLink=false on RSS feeds.  Link to atom feeds more than rss
+ * do github rate-limit logic on 429 status codes too
+ * solr param fixes
+
+For Developers
+ * get_tool_data should return ming-deinstrumented objects, so changes to them can't sync back to the database unexpectedly
+ * added CLAUDE.md
+ * make test more reliable (not reliant on fetching "url":"https://httpbin.org/image/png"
+ * config pip in rebuild-all.sh to install in a more compatible way for LSPs
+ * get chained exception details into errormiddleware output
+ * add docker/compose health checks and use --wait to check them
+
+
 Version 1.19.1  (June 2026)
 
 Upgrade Instructions
