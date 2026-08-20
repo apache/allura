@@ -78,8 +78,8 @@ class ForgeGitApp(RepositoryApp):
             '/' + 'set_default_branch_name',
             className='admin_modal'))
         if (asbool(config.get(f'scm.force_push.{self.config.tool_name}.enabled'))
-                and self.repo and self.repo.status in ('ready', 'analyzing')):
-            # hidden until ready: init/clone recreate the repo dir and would discard the setting
+                and self.repo and self.repo.status == 'ready'):
+            # hidden unless ready, matching sidebar_menu; a repo being built or refreshed is not settable
             label = 'Force push (enabled)' if self.repo.force_push_allowed else 'Force push'
             links.append(SitemapEntry(
                 label,

@@ -587,7 +587,7 @@ class TestRootController(_TestCase):
     def test_force_push_hidden_until_repo_ready(self):
         with h.push_config(tg.config, **{'scm.force_push.git.enabled': 'true'}):
             for status, ready in (('initializing', False), ('cloning', False),
-                                  ('analyzing', True), ('ready', True)):
+                                  ('analyzing', False), ('ready', True)):
                 # re-query: c.app.repo detaches from the session after the first request, so
                 # assigning to it would silently not persist
                 repo = GM.Repository.query.get(_id=c.app.repo._id)

@@ -32,7 +32,7 @@ import argparse
 import logging
 import sys
 
-from ming.odm import session, ThreadLocalODMSession
+from ming.odm import ThreadLocalODMSession
 
 from allura.lib.utils import chunked_find
 from forgegit import model as GM
@@ -64,10 +64,11 @@ def main():
             log.info('%s: force_push_allowed %s => %s',
                      repo.full_fs_path, repo.force_push_allowed, on_disk)
             if not opts.dry_run:
-                repo.force_push_allowed = on_disk
-                session(repo).flush(repo)
-        if not opts.dry_run:
-            ThreadLocalODMSession.flush_all()
+                # targeted $set, not a whole-document save: taskd and the web app write other
+                # fields on this record and a full flush would put back our stale copy of them
+                repo.query.update({'$set': {'force_push_allowed': on_disk}})
+        # drop each chunk from the identity map, or memory grows for the whole run
+        ThreadLocalODMSession.close_all()
     log.info('%s %d git repos: %d updated, %d unreadable',
              'would update' if opts.dry_run else 'synced', counts['seen'],
              counts['changed'], counts['unreadable'])

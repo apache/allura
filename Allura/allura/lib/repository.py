@@ -304,8 +304,8 @@ class RepoAdminController(DefaultAdminController):
     def force_push(self, allowed=None, **kw):
         if not asbool(config.get(f'scm.force_push.{self.app.config.tool_name}.enabled')):
             raise exc.HTTPNotFound()
-        if not self.repo or self.repo.status not in ('ready', 'analyzing'):
-            # init/clone/import recreate the repo dir, discarding config written before they finish
+        if not self.repo or self.repo.status != 'ready':
+            # any other status means the repo is still being built or refreshed
             raise exc.HTTPNotFound()
         if request.method == 'POST':
             allowed = bool(allowed)
