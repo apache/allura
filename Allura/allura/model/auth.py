@@ -786,15 +786,28 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         return plugin.AuthenticationProvider.get(request).by_username(name)
 
     def get_tool_data(self, tool, key, default=None):
-        result = self.tool_data.get(tool, {}).get(key, default)
+        tool_data = self.tool_data.get(tool, {})
+        encrypted_key = f'{key}_encrypted'
+        if encrypted_key in tool_data:
+            result = self.decr(tool_data[encrypted_key])
+        else:
+            result = tool_data.get(key, default)
         if hasattr(result, '_deinstrument'):
             return result._deinstrument()
         else:
             return result
 
-    def set_tool_data(self, tool, **kw):
+    def set_tool_data(self, tool, *, encrypt=False, store_plaintext=None, **kw):
         d = self.tool_data.setdefault(tool, {})
-        d.update(kw)
+        if store_plaintext is None:
+            store_plaintext = not encrypt
+        if store_plaintext:
+            d.update(kw)
+        if encrypt:
+            for key, value in kw.items():
+                d[f'{key}_encrypted'] = self.encr(value)
+                if not store_plaintext:
+                    d.pop(key, None)
         state(self).soil()
 
     def address_object(self, addr):
