@@ -494,6 +494,35 @@ class TestAuth:
         assert raw_preferences['email_address_encrypted'] == M.User.encr('new@example.com')
         assert M.User.decr(raw_preferences['email_address_encrypted']) == 'new@example.com'
 
+    def test_set_tool_data_can_dual_write_encrypted_values(self):
+        user = M.User(
+            username='tool-data-encrypted-setter-test',
+            tool_data={'sfx': {'unrelated': 'keep'}},
+        )
+        user.set_tool_data(
+            'sfx',
+            encrypt=True,
+            registration_ip='198.51.100.12',
+            registration_rdns=None,
+            normalized_email='',
+        )
+        user.set_tool_data('temp_reg_fields', encrypt=True, phone_ext='104')
+        user.set_tool_data('sfx', registration_ua='TestBrowser/1.0')
+        ThreadLocalODMSession.flush_all()
+
+        tool_data = state(user).document['tool_data']
+        assert tool_data['sfx']['registration_ip'] == '198.51.100.12'
+        assert tool_data['sfx']['registration_ip_encrypted'] == M.User.encr('198.51.100.12')
+        assert tool_data['sfx']['registration_rdns'] is None
+        assert tool_data['sfx']['registration_rdns_encrypted'] is None
+        assert tool_data['sfx']['normalized_email'] == ''
+        assert tool_data['sfx']['normalized_email_encrypted'] == M.User.encr('')
+        assert tool_data['temp_reg_fields']['phone_ext'] == '104'
+        assert tool_data['temp_reg_fields']['phone_ext_encrypted'] == M.User.encr('104')
+        assert tool_data['sfx']['registration_ua'] == 'TestBrowser/1.0'
+        assert 'registration_ua_encrypted' not in tool_data['sfx']
+        assert tool_data['sfx']['unrelated'] == 'keep'
+
     def test_personal_data_fields_are_stored_encrypted_on_creation(self):
         user = M.User(
             username='personal-data-encrypted-create-test',

@@ -45,7 +45,7 @@ def _split_field_path(field_name: str) -> list[str]:
     return field_path
 
 
-def _schema_info_for_field_path(Model: type[MappedClass], field_name: str):
+def _schema_path_info(Model: type[MappedClass], field_name: str):
     field_path = _split_field_path(field_name)
     top_level_name = field_path[0]
     try:
@@ -57,6 +57,7 @@ def _schema_info_for_field_path(Model: type[MappedClass], field_name: str):
 
     current_schema = top_level_prop.field.schema
     traverses_array = False
+    traverses_dynamic_object = False
     for i, path_part in enumerate(field_path[1:], start=1):
         traversed = '.'.join(field_path[:i])
         while isinstance(current_schema, schema.Array):
@@ -65,24 +66,54 @@ def _schema_info_for_field_path(Model: type[MappedClass], field_name: str):
         if not isinstance(current_schema, schema.Object):
             raise AssertionError(
                 f'Invalid nested field path {field_name!r}; {traversed!r} is not an object field')
-        if path_part not in current_schema.fields:
+        if path_part in current_schema.fields:
+            current_schema = current_schema.fields[path_part]
+            continue
+
+        if len(current_schema.fields) == 1:
+            key_schema, field_schema = next(iter(current_schema.fields.items()))
+        else:
+            key_schema = None
+        if isinstance(key_schema, str) or key_schema is None:
             raise MissingFieldPathError(
                 f'Invalid nested field path {field_name!r}; missing key {traversed + "." + path_part!r}')
 
-        current_schema = current_schema.fields[path_part]
+        try:
+            schema.SchemaItem.make(key_schema).validate(path_part)
+        except schema.Invalid as e:
+            raise MissingFieldPathError(
+                f'Invalid nested field path {field_name!r}; missing key '
+                f'{traversed + "." + path_part!r}') from e
+        current_schema = field_schema
+        traverses_dynamic_object = True
 
-    return current_schema, traverses_array
+    return current_schema, traverses_array, traverses_dynamic_object
+
+
+def _schema_info_for_field_path(Model: type[MappedClass], field_name: str):
+    field_schema, traverses_array, _ = _schema_path_info(Model, field_name)
+    return field_schema, traverses_array
 
 
 def _encryption_schema_info(Model: type[MappedClass], plain_field_name: str,
-                            encrypted_field_name: str):
+                            encrypted_field_name: str, *, encrypt_dynamic_field=False):
     try:
-        return _schema_info_for_field_path(Model, encrypted_field_name)
+        field_schema, traverses_array, traverses_dynamic_object = _schema_path_info(
+            Model, encrypted_field_name)
     except MissingFieldPathError:
         # Pre-migration support: infer array traversal from the plaintext
         # schema when the encrypted field has not been added to the model yet.
         _, traverses_array = _schema_info_for_field_path(Model, plain_field_name)
         return None, traverses_array
+
+    if traverses_dynamic_object and not isinstance(field_schema, schema.Binary):
+        if not encrypt_dynamic_field:
+            raise AssertionError(
+                f'{encrypted_field_name!r} uses a dynamic schema; '
+                'pass --encrypt-dynamic-field to convert it')
+        field_schema = schema.Binary()
+
+    return field_schema, traverses_array
 
 
 def _get_nested_value(rec: dict, field_name: str):
@@ -203,12 +234,14 @@ def _update_nested_array_records(raw_collection, plain_field_name, transform, li
 
 
 def main(class_name: str, plain_field_name: str,
-         *, remove_unencrypted: bool = False, redo_all: bool = False, limit: int | None = None):
+         *, remove_unencrypted: bool = False, redo_all: bool = False,
+         encrypt_dynamic_field: bool = False, limit: int | None = None):
     """
     :param class_name: full class name, e.g. allura.model.user.User
     :param plain_field_name: name of the unencrypted field, e.g. display_name
     :param remove_unencrypted: WARNING only run this after your codebase is already on the latest code
     :param redo_all: re-encrypt records that already have encrypted values (in case they changed since last run)
+    :param encrypt_dynamic_field: treat a field in a dynamic object schema as an encrypted scalar
     :param limit: convert this many records per update type (bulk, individual, removal) default All
     """
     encrypted_field_name = _default_encrypted_field_name(plain_field_name)
@@ -219,7 +252,8 @@ def main(class_name: str, plain_field_name: str,
 
     # sanity checks that the fields are correct and ready
     encr_schema, traverses_array = _encryption_schema_info(
-        Model, plain_field_name, encrypted_field_name)
+        Model, plain_field_name, encrypted_field_name,
+        encrypt_dynamic_field=encrypt_dynamic_field)
     if encr_schema is not None:
         assert isinstance(encr_schema, schema.Binary) or _is_encrypted_list_schema(encr_schema)
     elif remove_unencrypted:

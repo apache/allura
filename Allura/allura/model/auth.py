@@ -792,9 +792,14 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         else:
             return result
 
-    def set_tool_data(self, tool, **kw):
+    def set_tool_data(self, tool, *, encrypt=False, **kw):
         d = self.tool_data.setdefault(tool, {})
         d.update(kw)
+        if encrypt:
+            d.update({
+                f'{key}_encrypted': self.encr(value)
+                for key, value in kw.items()
+            })
         state(self).soil()
 
     def address_object(self, addr):
