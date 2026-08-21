@@ -15,6 +15,8 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import pytest
+
 from ming import schema as S
 from ming.encryption import NestedEncryptedProperty
 from ming.odm import FieldProperty
@@ -35,6 +37,10 @@ class TestModel:
     @classmethod
     def encr(cls, value):
         return None if value is None else f'encrypted:{value}'.encode()
+
+
+class DynamicToolDataModel:
+    tool_data = FieldProperty({str: {str: None}})
 
 
 def test_encryption_schema_info_uses_encrypted_nested_array_path():
@@ -63,6 +69,27 @@ def test_encryption_schema_info_supports_model_without_encrypted_field():
 
     assert field_schema is None
     assert traverses_array is True
+
+
+def test_encryption_schema_info_supports_opted_in_dynamic_field():
+    field_schema, traverses_array = _encryption_schema_info(
+        DynamicToolDataModel,
+        'tool_data.sfx.registration_ip',
+        'tool_data.sfx.registration_ip_encrypted',
+        encrypt_dynamic_field=True,
+    )
+
+    assert isinstance(field_schema, S.Binary)
+    assert traverses_array is False
+
+
+def test_encryption_schema_info_rejects_dynamic_field_without_opt_in():
+    with pytest.raises(AssertionError, match='--encrypt-dynamic-field'):
+        _encryption_schema_info(
+            DynamicToolDataModel,
+            'tool_data.sfx.registration_ip',
+            'tool_data.sfx.registration_ip_encrypted',
+        )
 
 
 def test_encrypt_nested_array_value_updates_every_item():
