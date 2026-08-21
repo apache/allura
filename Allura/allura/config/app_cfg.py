@@ -162,7 +162,9 @@ class MongoBytecodeCache(jinja2.BytecodeCache):
         self._indexes_ensured = False
 
     def _collection(self):
-        collection = Session.by_name('main').bind.db[self.collection_name]
+        # a deployment may point this at a dedicated cache db via ming.cache.*; otherwise it lands in main
+        bind = Session.by_name('cache').bind or Session.by_name('main').bind
+        collection = bind.db[self.collection_name]
         if not self._indexes_ensured:
             collection.create_index('key', unique=True)
             collection.create_index('created', expireAfterSeconds=self.retain_days * 86400)
