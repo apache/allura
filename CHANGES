@@ -35,6 +35,7 @@ Upgrade Instructions
     scripts/migrations/038-field-encryption-cleanup.sh
 
 Security Improvements
+ * [#8616] Fix Unauthenticated REST disclosure (CVE-2026-75099)
  * Python package upgrades
  * [#8610] Implement field level encryption for User's email addresses list
  * [#8613] Implement field level encryption for email address in user preferences
