@@ -607,6 +607,7 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
             'fn:', 'fnref:',  # from footnotes extension
         } | set(aslist(tg.config.get('safe_html.id_prefixes', [])))
         self._prev_token_was_ok_iframe = False
+        self._inside_ok_iframe = False
         self._current_link = None
         self._pending_link_suffix = None
 
@@ -639,6 +640,7 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
                 ok_opening_iframe = True
             elif token.get('type') == "EndTag" and self._prev_token_was_ok_iframe:
                 self.allowed_elements.add(iframe_el)
+            self._prev_token_was_ok_iframe = ok_opening_iframe
 
         # sanitize classes and ids
         if token.get('type') == 'StartTag':
@@ -654,8 +656,6 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
             if id:
                 if not any(id.startswith(prefix) for prefix in self.valid_id_prefixes):
                     token['data'][(None, 'id')] = 'user-content-' + id
-
-        self._prev_token_was_ok_iframe = ok_opening_iframe
 
         if token.get('name') == 'input':
             attrs = token.get('data') or {}
