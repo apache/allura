@@ -376,6 +376,25 @@ class Test():
         assert (r == '<div class="markdown_content"><p>Could not embed: '
                 'http://www.youtube.com/watch?v=6YbBmqUnoQM</p></div>')
 
+    def test_iframe_src_ok_with_scripts(self):
+        # an allowed iframe's body is always dropped (never emitted, even escaped): its
+        # rawtext content is only safe to serialize unescaped if it stays HTML-namespace
+        # content on reparse, which isn't guaranteed (see test_utils.py's mXSS coverage)
+        r = g.markdown_wiki.convert('<iframe src="https://www.youtube.com/embed/x"><script>alert(1)</script></iframe><script>alert(2)</script>')
+        assert r == (
+            '<div class="markdown_content"><iframe src="https://www.youtube.com/embed/x">&lt;script&gt;alert(1)&lt;/script&gt;</iframe>\n'
+            '&lt;script&gt;alert(2)&lt;/script&gt;\n'
+            '</div>'
+        )
+
+    def test_iframe_no_src_with_scripts(self):
+        r = g.markdown_wiki.convert('<iframe><script>alert(1)</script></iframe><script>alert(2)</script>')
+        assert r == (
+            '<div class="markdown_content">&lt;iframe&gt;&lt;script&gt;alert(1)&lt;/script&gt;&lt;/iframe&gt;\n'
+            '&lt;script&gt;alert(2)&lt;/script&gt;\n'
+            '</div>'
+        )
+
     def test_macro_embed_notsupported(self):
         r = g.markdown_wiki.convert('[[embed url=http://vimeo.com/46163090]]')
         assert (
