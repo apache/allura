@@ -639,14 +639,21 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
         input_el = (html5lib.constants.namespaces['html'], 'input')
         self.allowed_elements.discard(input_el)
 
-        if token.get('name') == 'iframe':
+        if token.get('name') == 'iframe' and token.get('namespace') in (None, html5lib.constants.namespaces['html']):
             attrs = token.get('data') or {}
-            if attrs.get((None, 'src'), '').startswith(self.valid_iframe_srcs):
+            if token.get('type') == 'StartTag' and attrs.get((None, 'src'), '').startswith(self.valid_iframe_srcs):
                 self.allowed_elements.add(iframe_el)
                 ok_opening_iframe = True
             elif token.get('type') == "EndTag" and self._prev_token_was_ok_iframe:
                 self.allowed_elements.add(iframe_el)
             self._prev_token_was_ok_iframe = ok_opening_iframe
+            self._inside_ok_iframe = ok_opening_iframe if token.get('type') == 'StartTag' else False
+
+        # drop an allowed iframe's body: it's serialized unescaped (iframe is rawtext), which is
+        # only safe if a browser re-parses it as HTML content - not guaranteed if an escaped
+        # ancestor (e.g. <math><ms>) leaves it as a direct child of <math> on reparse (mXSS)
+        if self._inside_ok_iframe and token.get('type') in ('Characters', 'SpaceCharacters'):
+            return None
 
         # sanitize classes and ids
         if token.get('type') == 'StartTag':
