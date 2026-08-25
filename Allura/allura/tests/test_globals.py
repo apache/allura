@@ -395,6 +395,26 @@ class Test():
             '</div>'
         )
 
+    def test_svg_blocked(self):
+        # SVG's <animate>/<set> can set an ancestor's href to an unchecked javascript: URI
+        r = g.markdown.convert('<svg><circle cx="5" cy="5" r="3"/></svg>')
+        assert r == '<div class="markdown_content"><p>&lt;svg&gt;&lt;circle cx="5" cy="5" r="3"&gt;&lt;/circle&gt;&lt;/svg&gt;</p></div>'
+
+        r = g.markdown.convert(
+            '<svg><a><animate attributeName="href" values="javascript:alert(1)"/>'
+            '<text x="20" y="20">CLICK ME</text></a></svg>')
+        assert r == ('<div class="markdown_content"><p>&lt;svg&gt;&lt;a&gt;'
+                      '&lt;animate attributeName="href" values="javascript:alert(1)"&gt;&lt;/animate&gt;'
+                      '&lt;text x="20" y="20"&gt;CLICK ME&lt;/text&gt;&lt;/a&gt;&lt;/svg&gt;</p></div>')
+
+    def test_mathml_allowed(self):
+        r = g.markdown.convert('<math><mi>x</mi><mo>+</mo><mn>1</mn></math>')
+        assert r == '<div class="markdown_content"><math><mi>x</mi><mo>+</mo><mn>1</mn></math>\n</div>'
+
+        # xlink:href is still URI-scheme-checked, e.g. the old maction statusline XSS
+        r = g.markdown.convert('<math><maction actiontype="statusline" xlink:href="javascript:alert(1)">click</maction></math>')
+        assert r == '<div class="markdown_content"><math><maction actiontype="statusline">click</maction></math>\n</div>'
+
     def test_macro_embed_notsupported(self):
         r = g.markdown_wiki.convert('[[embed url=http://vimeo.com/46163090]]')
         assert (
