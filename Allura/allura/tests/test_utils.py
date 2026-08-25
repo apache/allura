@@ -417,6 +417,8 @@ def test_text_contains_hostname():
     assert utils.text_contains_hostname('click here', 'example.com') is False
     assert utils.text_contains_hostname('visit sub.example.com for info', 'sub.example.com') is True
     assert utils.text_contains_hostname('visit example.com/path/ for info', 'example.com') is True
+    # substring match isn't good enough: 'pal.com' is a substring of 'paypal.com' but not the same host
+    assert utils.text_contains_hostname('https://paypal.com/login', 'pal.com') is False
 
 
 def test_ip_address():
