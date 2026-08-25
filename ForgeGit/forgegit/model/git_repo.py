@@ -477,7 +477,7 @@ class GitImplementation(M.RepositoryImplementation):
         Then log returns something like this:
             <commit hash>x00 <refs>
             \n # empty line
-            R100 <renamed from path> <renamed to path> # when rename happens
+            R100\t<renamed from path>\t<renamed to path> # when rename happens
             A\t<some path> # other cases
             D\t<some path> # other cases
             etc
@@ -493,7 +493,7 @@ class GitImplementation(M.RepositoryImplementation):
                 # hash line read, need to yield previous commit
                 # first, cleaning lines a bit
                 commit_lines = [
-                    ln.strip('\n ').replace('\t', ' ')
+                    ln.strip('\n ')
                     for ln in commit_lines if ln.strip('\n ')
                 ]
                 if commit_lines:
@@ -511,7 +511,7 @@ class GitImplementation(M.RepositoryImplementation):
                     renamed = {}
                     # merge commits don't have any --name-status output
                     if len(commit_lines) > 1:
-                        name_stat_parts = commit_lines[1].split(' ')
+                        name_stat_parts = commit_lines[1].split('\t')
                         if name_stat_parts[0] == 'R100':
                             renamed['from'] = name_stat_parts[1]
                             renamed['to'] = name_stat_parts[2]
