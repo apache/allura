@@ -58,7 +58,7 @@
                 {% if commit.rename_details %}
                     <div>
                       <b>renamed from</b>
-                      <a href={{commit.rename_details['commit_url']}}log/?path={{ commit.rename_details['path'] }} rel="nofollow">
+                      <a href="{{commit.rename_details['commit_url']}}log/?path={{ commit.rename_details['path'] }}" rel="nofollow">
                         {{ commit.rename_details['path'] }}
                       </a>
                     </div>
