@@ -1115,7 +1115,23 @@ class NotInternalHTTPHandler(urllib.request.HTTPHandler):
             return super().http_open(req)
 
 
-urllib.request.install_opener(urllib.request.build_opener(NotInternalHTTPHandler, NoInternalHTTPSHandler))
+def _build_http_only_opener() -> urllib.request.OpenerDirector:
+    """Only support http(s), so a redirect can't reach ftp/file/data and skip our host checks."""
+    opener = urllib.request.OpenerDirector()
+    for handler_cls in (
+        urllib.request.ProxyHandler,
+        urllib.request.UnknownHandler,
+        urllib.request.HTTPDefaultErrorHandler,
+        urllib.request.HTTPRedirectHandler,
+        urllib.request.HTTPErrorProcessor,
+    ):
+        opener.add_handler(handler_cls())
+    opener.add_handler(NotInternalHTTPHandler())
+    opener.add_handler(NoInternalHTTPSHandler())
+    return opener
+
+
+urllib.request.install_opener(_build_http_only_opener())
 
 
 def urlopen(url: str | urllib.request.Request, retries=3, codes=(408, 500, 502, 503, 504), timeout=None):
