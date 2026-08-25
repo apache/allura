@@ -24,51 +24,74 @@ stores what it actually permits, so the admin UI and menu label agree with reali
 
 Reads git; writes only Mongo.  No repo's behaviour changes.
 
+Documents are read raw (validate=False) with a narrow projection, so a record that fails schema
+validation -- e.g. a legacy doc whose acl is not a list -- cannot stop the run, and no ODM
+objects accumulate in memory.
+
     paster script /var/local/config/production.ini \
         ../scripts/migrations/force-push-sync-from-repo-config.py -- --dry-run
 """
 
 import argparse
 import logging
+import os
 import sys
 
-from ming.odm import ThreadLocalODMSession
+from ming.base import Object
+from ming.odm import mapper
 
-from allura.lib.utils import chunked_find
 from forgegit import model as GM
+from forgegit.model.git_repo import GitImplementation
 
 log = logging.getLogger(__name__)
+
+PROJECTION = {'fs_path': 1, 'name': 1, 'force_push_allowed': 1}
 
 
 def parse_options():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--dry-run', action='store_true',
                         help='report what would change without writing to Mongo')
+    parser.add_argument('--pagesize', type=int, default=1024,
+                        help='documents per query (default 1024)')
     return parser.parse_args(sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else [])
+
+
+def iter_repo_docs(pagesize):
+    # paged by _id like chunked_find, but raw: no schema validation, no identity map
+    collection = mapper(GM.Repository).collection
+    last_id = None
+    while True:
+        spec = {'_id': {'$gt': last_id}} if last_id else {}
+        page = list(collection.m.find(spec, projection=PROJECTION, validate=False,
+                                      sort=[('_id', 1)], limit=pagesize))
+        if not page:
+            return
+        yield from page
+        last_id = page[-1]['_id']
+        if len(page) < pagesize:
+            return
 
 
 def main():
     opts = parse_options()
     counts = dict(seen=0, changed=0, unreadable=0)
-    for chunk in chunked_find(GM.Repository):
-        for repo in chunk:
-            counts['seen'] += 1
-            on_disk = repo._impl.force_push_allowed_on_disk()
-            if on_disk is None:
-                counts['unreadable'] += 1
-                log.warning('unreadable, leaving alone: %s', repo.full_fs_path)
-                continue
-            if on_disk == repo.force_push_allowed:
-                continue
-            counts['changed'] += 1
-            log.info('%s: force_push_allowed %s => %s',
-                     repo.full_fs_path, repo.force_push_allowed, on_disk)
-            if not opts.dry_run:
-                # targeted $set, not a whole-document save: taskd and the web app write other
-                # fields on this record and a full flush would put back our stale copy of them
-                repo.query.update({'$set': {'force_push_allowed': on_disk}})
-        # drop each chunk from the identity map, or memory grows for the whole run
-        ThreadLocalODMSession.close_all()
+    for doc in iter_repo_docs(opts.pagesize):
+        counts['seen'] += 1
+        path = os.path.join(doc.get('fs_path') or '', doc.get('name') or '')
+        stored = bool(doc.get('force_push_allowed'))
+        on_disk = GitImplementation(Object(full_fs_path=path)).force_push_allowed_on_disk()
+        if on_disk is None:
+            counts['unreadable'] += 1
+            log.warning('unreadable, leaving alone: %s (%s)', path, doc['_id'])
+            continue
+        if on_disk == stored:
+            continue
+        counts['changed'] += 1
+        log.info('%s: force_push_allowed %s => %s', path, stored, on_disk)
+        if not opts.dry_run:
+            GM.Repository.query.update({'_id': doc['_id']},
+                                       {'$set': {'force_push_allowed': on_disk}})
     log.info('%s %d git repos: %d updated, %d unreadable',
              'would update' if opts.dry_run else 'synced', counts['seen'],
              counts['changed'], counts['unreadable'])
