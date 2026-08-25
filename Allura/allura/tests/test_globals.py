@@ -377,12 +377,10 @@ class Test():
                 'http://www.youtube.com/watch?v=6YbBmqUnoQM</p></div>')
 
     def test_iframe_src_ok_with_scripts(self):
-        # an allowed iframe's body is always dropped (never emitted, even escaped): its
-        # rawtext content is only safe to serialize unescaped if it stays HTML-namespace
-        # content on reparse, which isn't guaranteed (see test_utils.py's mXSS coverage)
+        # an allowed iframe's body is always dropped, see test_iframe_body_dropped_prevents_mxss
         r = g.markdown_wiki.convert('<iframe src="https://www.youtube.com/embed/x"><script>alert(1)</script></iframe><script>alert(2)</script>')
         assert r == (
-            '<div class="markdown_content"><iframe src="https://www.youtube.com/embed/x">&lt;script&gt;alert(1)&lt;/script&gt;</iframe>\n'
+            '<div class="markdown_content"><iframe src="https://www.youtube.com/embed/x"></iframe>\n'
             '&lt;script&gt;alert(2)&lt;/script&gt;\n'
             '</div>'
         )
@@ -394,6 +392,17 @@ class Test():
             '&lt;script&gt;alert(2)&lt;/script&gt;\n'
             '</div>'
         )
+
+    def test_iframe_body_dropped_prevents_mxss(self):
+        # an escaped ancestor like <math><ms> can leave an allowed iframe as a direct child of
+        # <math> on reparse, where it's not rawtext, so a "text" body would run as live markup
+        r = g.markdown.convert('<math><ms><iframe src="https://www.youtube.com/embed/y"><img src=x onerror=alert(1)>')
+        assert r == ('<div class="markdown_content"><math>&lt;ms&gt;'
+                      '<iframe src="https://www.youtube.com/embed/y"></iframe>&lt;/ms&gt;</math></div>')
+
+        r = g.markdown.convert('<svg><foreignObject><iframe src="https://www.youtube.com/embed/y"><p><script>alert(1)</script>')
+        assert r == ('<div class="markdown_content"><p>&lt;svg&gt;&lt;foreignObject&gt;'
+                      '<iframe src="https://www.youtube.com/embed/y"></iframe>&lt;/foreignObject&gt;&lt;/svg&gt;</p></div>')
 
     def test_svg_blocked(self):
         # SVG's <animate>/<set> can set an ancestor's href to an unchecked javascript: URI
