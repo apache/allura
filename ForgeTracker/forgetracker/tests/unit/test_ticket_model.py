@@ -18,9 +18,6 @@
 from tg import tmpl_context as c
 from datetime import datetime
 import os
-import six.moves.urllib.parse
-import six.moves.urllib.request
-import six.moves.urllib.error
 
 import mock
 import pytest
@@ -348,10 +345,10 @@ class TestTicketModel(TrackerTestWithModel):
             ticket.summary = 'test ticket'
             ticket.description = 'test description'
         assert len(ticket.attachments) == 0
-        f = six.moves.urllib.request.urlopen('file://%s' % __file__)  # noqa: S310
-        TicketAttachment.save_attachment(
-            'test_ticket_model.py', ResettableStream(f),
-            artifact_id=ticket._id)
+        with open(__file__, 'rb') as f:
+            TicketAttachment.save_attachment(
+                'test_ticket_model.py', ResettableStream(f),
+                artifact_id=ticket._id)
         ThreadLocalODMSession.flush_all()
         # need to refetch since attachments are cached
         session(ticket).expunge(ticket)
