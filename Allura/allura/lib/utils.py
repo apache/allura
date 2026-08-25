@@ -656,7 +656,8 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
             return None
 
         # sanitize classes and ids
-        if token.get('type') == 'StartTag':
+        # (void elements like <img>/<br>/<input> are 'EmptyTag', not 'StartTag')
+        if token.get('type') in ('StartTag', 'EmptyTag'):
             classes = token.get('data', {}).get((None, 'class'), '')
             if classes:
                 classes = classes.split()
