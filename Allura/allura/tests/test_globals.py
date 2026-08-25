@@ -404,6 +404,14 @@ class Test():
         assert r == ('<div class="markdown_content"><p>&lt;svg&gt;&lt;foreignObject&gt;'
                       '<iframe src="https://www.youtube.com/embed/y"></iframe>&lt;/foreignObject&gt;&lt;/svg&gt;</p></div>')
 
+    def test_class_id_sanitized_on_void_element(self):
+        r = g.markdown.convert('<img src="http://x/y.png" class="evilclass btn" id="page-body">')
+        assert r == ('<div class="markdown_content"><p>'
+                      '<img class="" id="user-content-page-body" rel="nofollow" src="http://x/y.png"/></p></div>')
+
+        r = g.markdown.convert('<br class="pwn" id="pwn2">')
+        assert r == '<div class="markdown_content"><p><br class="" id="user-content-pwn2"/></p></div>'
+
     def test_svg_blocked(self):
         # SVG's <animate>/<set> can set an ancestor's href to an unchecked javascript: URI
         r = g.markdown.convert('<svg><circle cx="5" cy="5" r="3"/></svg>')
