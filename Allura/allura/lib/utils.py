@@ -809,10 +809,6 @@ def text_contains_any_url(text: str) -> bool:
 
 
 def text_contains_hostname(text: str, hostname: str) -> bool:
-    normalized_text = text.casefold()
-    if hostname.casefold() in normalized_text:
-        return True
-
     for token in _HOST_TOKEN_RE.findall(text):
         candidate = token.strip('\'"[]{}()<>,;!?')
         if not candidate or ('@' in candidate and '://' not in candidate):
