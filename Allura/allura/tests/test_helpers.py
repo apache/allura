@@ -16,6 +16,7 @@
 #       under the License.
 
 import io
+import urllib.request
 from unittest import skipIf
 from os import path
 from datetime import datetime, timedelta
@@ -534,6 +535,19 @@ class TestUrlOpen:
     ])
     def test_ok(self, url):
         h.urlopen(url)
+
+    @pytest.mark.parametrize('url', [
+        f'https://{httpbin_domain}/redirect-to?url=ftp://127.0.0.1/',
+        f'https://{httpbin_domain}/redirect-to?url=ftp://localhost/',
+    ])
+    def test_internal_invalid_ftp_redirect(self, url):
+        # our opener has no ftp handler at all, so a redirect to ftp:// can't be used to bypass NonPrivateUrl
+        with pytest.raises(urllib.error.URLError, match='unknown url type'):
+            h.urlopen(url)
+
+    def test_ftp_not_supported(self):
+        with pytest.raises(urllib.error.URLError, match='unknown url type'):
+            urllib.request.urlopen('ftp://127.0.0.1/some/file')  # noqa: S310
 
     @patch('urllib.request.urlopen')
     @patch.dict(config, {'urlopen_allow_internal_hostnames': 'true'})
