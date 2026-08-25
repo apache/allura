@@ -572,7 +572,13 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
         _extra_allowed_elements = {
             (ns_html, 'summary'),
         }
-        self.allowed_elements = (set(html5lib.filters.sanitizer.allowed_elements) | _extra_allowed_elements) - _form_elements
+        self.allowed_elements = (
+            (set(html5lib.filters.sanitizer.allowed_elements) | _extra_allowed_elements)
+            - _form_elements
+        )
+        # SVG is not worth the attack surface, so block SVG entirely
+        ns_svg = html5lib.constants.namespaces['svg']
+        self.allowed_elements = {el for el in self.allowed_elements if el[0] != ns_svg}
 
         # srcset is used in our own project_list/project_summary widgets
         # which are used as macros so go through markdown
