@@ -79,9 +79,9 @@ class SearchController(BaseController):
             q=q,
             history=history,
             app=False,
+            # no '-deleted_b:true' needed here; search_app() now always applies it itself
             fq=[
                 'project_id_s:(%s)' % project_match,
-                '-deleted_b:true',
             ],
             limit=limit,
             page=page,

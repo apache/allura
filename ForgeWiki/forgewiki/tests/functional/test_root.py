@@ -114,8 +114,8 @@ class TestRootController(TestController):
             'fq': [
                 'project_id_s:%s' % p._id,
                 'mount_point_s:wiki',
-                '-deleted_b:true',
                 'type_s:("WikiPage" OR "WikiPage Snapshot")',
+                '-deleted_b:true',
                 'is_history_b:False',
             ],
             'hl': 'true',
@@ -128,14 +128,14 @@ class TestRootController(TestController):
         r = self.app.get(
             '/wiki/search/?q=test&search_comments=on&history=on&sort=mod_date_dt+desc')
         solr_query['fq'][
-            3] = 'type_s:("WikiPage" OR "WikiPage Snapshot" OR "Post")'
+            2] = 'type_s:("WikiPage" OR "WikiPage Snapshot" OR "Post")'
         solr_query['fq'].remove('is_history_b:False')
         solr_query['sort'] = 'mod_date_dt desc'
         search.assert_called_with('test', **solr_query)
 
         r = self.app.get('/wiki/search/?q=test&parser=standard')
         solr_query['sort'] = 'score desc'
-        solr_query['fq'][3] = 'type_s:("WikiPage" OR "WikiPage Snapshot")'
+        solr_query['fq'][2] = 'type_s:("WikiPage" OR "WikiPage Snapshot")'
         solr_query['fq'].append('is_history_b:False')
         solr_query.pop('qt')
         solr_query.pop('qf')
