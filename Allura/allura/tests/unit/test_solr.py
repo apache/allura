@@ -16,12 +16,15 @@
 #       under the License.
 
 
+import bson
 import mock
 from markupsafe import Markup
 from pysolr import SolrError
 import pytest
+from tg import tmpl_context as c
 from webob.exc import HTTPRequestEntityTooLarge
 
+import allura.model as M
 from allura.lib import helpers as h
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test
@@ -237,10 +240,19 @@ class TestSearch_app:
     @mock.patch('allura.lib.search.g.solr.search')
     @mock.patch('allura.lib.search.url')
     @mock.patch('allura.lib.search.request')
-    def test_escape_solr_text(self, req, url_fn, solr_search):
+    @mock.patch('allura.lib.security.has_access', return_value=True)
+    @mock.patch('allura.model.ArtifactReference.query.get')
+    def test_escape_solr_text(self, aref_get, has_access, req, url_fn, solr_search):
         req.GET = dict()
         req.path = '/test/wiki/search'
         url_fn.side_effect = ['the-score-url', 'the-date-url']
+        # these docs don't correspond to real artifacts, so give filter_unauthorized
+        # something resolvable to check (real ArtifactReference lookups would return None
+        # and, since neither doc is a Project/User, now correctly fail closed).
+        # deleted=False is required -- a bare Mock attribute is truthy and would be filtered.
+        fake_artifact = mock.Mock(deleted=False)
+        fake_artifact.primary.return_value = fake_artifact
+        aref_get.return_value = mock.Mock(artifact=fake_artifact)
         results = mock.Mock(hits=2, docs=[
             {'id': 123, 'type_s': 'WikiPage Snapshot',
              'url_s': '/test/wiki/Foo', 'version_i': 2},
@@ -279,16 +291,104 @@ class TestSearch_app:
                 'title_match': Markup('some <strong>Foo</strong> stuff'),
                 # HTML in the solr plaintext results get escaped
                 'text_match': Markup('scary &lt;script&gt;alert(1)&lt;/script&gt; bar'),
-                '_artifact': None,
+                '_artifact': fake_artifact,
             }, {
                 'id': 321,
                 'type_s': 'Post',
                 'title_match': Markup('blah blah'),
                 # highlighting in text
                 'text_match': Markup('less scary but still dangerous &amp;lt;script&amp;gt;alert(1)&amp;lt;/script&amp;gt; blah <strong>bar</strong> foo foo'),
-                '_artifact': None,
+                '_artifact': fake_artifact,
+                'url_paginated': fake_artifact.url_paginated.return_value,
             }]
         )
+
+    # NB: moderation-status and soft-delete filtering are covered with *real* model objects in
+    # allura/tests/functional/test_search.py -- filter_unauthorized decides those from the live
+    # artifact (isinstance(live, Post) etc), which mock.Mock stand-ins can't exercise.
+
+    @mock.patch('allura.lib.search.g.solr.search')
+    @mock.patch('allura.lib.search.url')
+    @mock.patch('allura.lib.search.request')
+    def test_hides_private_projects_from_non_members(self, req, url_fn, solr_search):
+        req.GET = dict()
+        req.path = '/search'
+        url_fn.side_effect = ['s', 'd'] * 3
+        p = M.Project.query.get(shortname='test')
+        p.private = True
+        doc = {
+            'id': p.index_id(),
+            'type_s': 'Project',
+            'shortname_s': p.shortname,
+            'neighborhood_id_s': str(p.neighborhood_id),
+        }
+        results = mock.Mock(hits=1, docs=[doc], highlighting={})
+        results.__iter__ = lambda self: iter(results.docs)
+        results.__len__ = lambda self: len(results.docs)
+        solr_search.return_value = results
+
+        with h.push_config(c, user=M.User.anonymous()):
+            resp = search_app(q='test', app=False)
+        assert resp['results'] == []
+        assert resp['count'] == 0
+
+        with h.push_config(c, user=M.User.query.get(username='test-admin')):
+            resp = search_app(q='test', app=False)
+        assert [d['id'] for d in resp['results']] == [doc['id']]
+        assert resp['count'] == 1
+
+    @mock.patch('allura.lib.search.g.solr.search')
+    @mock.patch('allura.lib.search.url')
+    @mock.patch('allura.lib.search.request')
+    def test_public_project_shown_to_anon(self, req, url_fn, solr_search):
+        req.GET = dict()
+        req.path = '/search'
+        url_fn.side_effect = ['s', 'd']
+        p = M.Project.query.get(shortname='test')
+        assert not p.private
+        doc = {
+            'id': p.index_id(),
+            'type_s': 'Project',
+            'shortname_s': p.shortname,
+            'neighborhood_id_s': str(p.neighborhood_id),
+        }
+        results = mock.Mock(hits=1, docs=[doc], highlighting={})
+        results.__iter__ = lambda self: iter(results.docs)
+        results.__len__ = lambda self: len(results.docs)
+        solr_search.return_value = results
+
+        with h.push_config(c, user=M.User.anonymous()):
+            resp = search_app(q='test', app=False)
+        assert [d['id'] for d in resp['results']] == [doc['id']]
+
+    @mock.patch('allura.lib.search.g.solr.search')
+    @mock.patch('allura.lib.search.url')
+    @mock.patch('allura.lib.search.request')
+    def test_project_lookup_scoped_by_neighborhood(self, req, url_fn, solr_search):
+        # a Solr doc's shortname_s alone isn't a safe lookup key: shortname is only unique
+        # per-neighborhood, so a same-named project in a different neighborhood must not be
+        # mistaken for the (private) one actually indexed
+        req.GET = dict()
+        req.path = '/search'
+        url_fn.side_effect = ['s', 'd']
+        p = M.Project.query.get(shortname='test')
+        p.private = True
+        doc = {
+            'id': p.index_id(),
+            'type_s': 'Project',
+            'shortname_s': p.shortname,
+            'neighborhood_id_s': str(bson.ObjectId()),  # doesn't match any real project
+        }
+        results = mock.Mock(hits=1, docs=[doc], highlighting={})
+        results.__iter__ = lambda self: iter(results.docs)
+        results.__len__ = lambda self: len(results.docs)
+        solr_search.return_value = results
+
+        with h.push_config(c, user=M.User.query.get(username='test-admin')):
+            resp = search_app(q='test', app=False)
+        # can't resolve a project matching both fields -> fails closed, doesn't fall back
+        # to a shortname-only match against the real (different-neighborhood) private project
+        assert resp['results'] == []
 
     def test_escape_solr_arg(self):
         text = 'some: weird "text" with symbols'

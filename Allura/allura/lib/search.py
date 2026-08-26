@@ -287,7 +287,7 @@ def search_app(q='', fq=None, app: bool = True, history: bool = False, project: 
 
     Uses dismax query parser. Matches on `title` and `text`. Handles paging, sorting, etc
     """
-    from allura.model import ArtifactReference
+    from allura.model import ArtifactReference, Post, Project, Snapshot
     from allura.lib.security import has_access
 
     if app and project:
@@ -317,10 +317,13 @@ def search_app(q='', fq=None, app: bool = True, history: bool = False, project: 
             fq = [
                 'project_id_s:%s' % c.project._id,
                 'mount_point_s:%s' % c.app.config.options.mount_point,
-                '-deleted_b:true',
                 'type_s:(%s)' % ' OR '.join(
                     ['"%s"' % t for t in allowed_types])
             ] + fq
+        # applies regardless of app/global search, so the global controller (app=False) can't
+        # skip it.  Only a cheap pre-filter -- filter_unauthorized below is authoritative,
+        # since this field goes stale on snapshot docs.
+        fq.append('-deleted_b:true')
         search_params = {
             'qt': 'dismax',
             'qf': 'title^2 text',
@@ -378,14 +381,57 @@ def search_app(q='', fq=None, app: bool = True, history: bool = False, project: 
                 return doc
 
             def filter_unauthorized(doc):
+                """Drop search hits the current user shouldn't be shown.
+
+                Decides everything from the live artifact, never from the doc's indexed fields:
+                a Snapshot holds a point-in-time copy of its original, and soft-deleting or
+                moderating an artifact re-indexes only the artifact itself, not its snapshots,
+                so deleted_b/status on a snapshot doc go stale.
+                """
                 aref = ArtifactReference.query.get(_id=doc.get('id'))
                 # cache for paginate_comment_urls to re-use
                 doc['_artifact'] = aref and aref.artifact
-                # .primary() necessary so that a ticket's comment for example is checked with the ticket's perms
-                if doc['_artifact'] and not has_access(doc['_artifact'].primary(), 'read', c.user):
-                    return None
-                else:
+                if doc['_artifact']:
+                    live = doc['_artifact']
+                    if isinstance(live, Snapshot):
+                        live = live.original()
+                    if live is None:
+                        return None
+                    # .primary() necessary so that a ticket's comment for example is checked with the ticket's perms
+                    primary = live.primary()
+                    if not has_access(primary, 'read', c.user):
+                        return None
+                    # hide soft-deleted content, including anything hanging off a soft-deleted
+                    # parent (e.g. a deleted ticket's comments)
+                    if getattr(live, 'deleted', False) or getattr(primary, 'deleted', False):
+                        return None
+                    # unmoderated (pending/spam) comment; hide until approved.  isinstance, not a
+                    # `status` attribute check -- Ticket.status is open/closed and would wrongly
+                    # hide most tickets.
+                    if isinstance(live, Post) and live.status != 'ok':
+                        return None
                     return doc
+                # Project docs have no ArtifactReference, so resolve the real Project and check
+                # its ACL rather than returning the doc unchecked.
+                if doc.get('type_s') == 'Project' and doc.get('shortname_s') and doc.get('neighborhood_id_s'):
+                    # shortname is only unique per-neighborhood, so both fields are needed to
+                    # resolve the correct project rather than a same-named one elsewhere
+                    try:
+                        nbhd_id = bson.ObjectId(doc['neighborhood_id_s'])
+                    except bson.errors.InvalidId:
+                        # malformed/stale index data; fail closed rather than 500 the search
+                        log.warning('Project doc %s has unparseable neighborhood_id_s %r',
+                                    doc.get('id'), doc['neighborhood_id_s'])
+                        return None
+                    project = Project.query.get(shortname=doc['shortname_s'], neighborhood_id=nbhd_id)
+                    if project is None or not has_access(project, 'read', c.user):
+                        return None
+                    return doc
+                if doc.get('type_s') == 'User':
+                    return doc  # no ACL concept for User docs
+                # any other non-artifact doc type we don't explicitly know how to check:
+                # fail closed rather than returning it unchecked
+                return None
 
             filtered_results = [_f for _f in map(filter_unauthorized, results) if _f]
             count -= len(results) - len(filtered_results)
