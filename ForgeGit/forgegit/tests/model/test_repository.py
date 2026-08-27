@@ -772,7 +772,8 @@ By Dave Brondsema''' in text_body
     def test_init_leaves_config_alone_when_disabled(self):
         repo, dirname = self._init_scratch_repo()
         try:
-            repo.init()
+            with h.push_config(tg.config, **{'scm.force_push.git.enabled': 'false'}):
+                repo.init()
             # git init --shared=all writes this itself, in its own lower-case spelling;
             # with the feature off Allura must not rewrite it
             text = open(os.path.join(dirname, 'config')).read()

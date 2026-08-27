@@ -568,11 +568,12 @@ class TestRootController(_TestCase):
             c.app.repo.force_push_allowed = True
             assert any(l.label == 'Force push (enabled)' for l in c.app.admin_menu())
 
-    def test_force_push_disabled_by_default(self):
-        assert not any(l.label.startswith('Force push') for l in c.app.admin_menu())
-        self.app.get('/p/test/admin/src-git/force_push', status=404)
-        self.app.post('/p/test/admin/src-git/force_push',
-                      params={'allowed': 'on'}, status=404)
+    def test_force_push_hidden_when_flag_off(self):
+        with h.push_config(tg.config, **{'scm.force_push.git.enabled': 'false'}):
+            assert not any(l.label.startswith('Force push') for l in c.app.admin_menu())
+            self.app.get('/p/test/admin/src-git/force_push', status=404)
+            self.app.post('/p/test/admin/src-git/force_push',
+                          params={'allowed': 'on'}, status=404)
 
     def test_force_push_save_writes_even_when_unchanged(self):
         # repos predating the feature have no receive section; saving must still apply the value
@@ -802,6 +803,10 @@ class TestFork(_TestCase):
         assert 'Test forked repository' in r
 
     def test_fork_does_not_inherit_force_push(self):
+        with h.push_config(tg.config, **{'scm.force_push.git.enabled': 'true'}):
+            self._fork_does_not_inherit_force_push()
+
+    def _fork_does_not_inherit_force_push(self):
         # Set parent repo to have force_push_allowed = True BEFORE creating fork
         h.set_context('test', 'src-git', neighborhood='Projects')
         parent_repo = c.app.repo
@@ -827,8 +832,9 @@ class TestFork(_TestCase):
                 bypass_path_check_for_tests=True,
             )
             assert c.app.repo.force_push_allowed is False
-            with c.app.repo._impl._git.config_reader('repository') as cr:
-                assert not cr.has_section('receive')
+            # the fork is written as denied, not left to inherit whatever the parent had
+            assert c.app.repo._impl._git.git.config(
+                '--bool', '--get', 'receive.denyNonFastForwards') == 'true'
 
     def test_fork_links_go_to_fork(self):
         r = self._fork_page()

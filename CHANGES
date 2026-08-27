@@ -2,13 +2,14 @@ Version 1.20.1  (Unreleased)
 
 Upgrade Instructions
 
-  Optional new feature: repo admins can turn force push on and off for their own git repos.
-  To enable it, set `scm.force_push.git.enabled = true` in your .ini file (see development.ini).
-  Allura writes `receive.denyNonFastForwards` in each repo's own config.  With the setting off,
-  Allura does not touch any repo's config and shows no admin UI.
+  New feature, ENABLED BY DEFAULT: repo admins can turn force push on and off for their own git
+  repos, from the repo's admin page.  Allura writes `receive.denyNonFastForwards` in each repo's
+  own config, and now writes it for every repo it creates or clones.
+  To keep the previous behaviour, set `scm.force_push.git.enabled = false` in your .ini file
+  before upgrading.  With it off, Allura touches no repo's config and shows no admin UI.
 
-  If you enable it, record what each existing repo already permits, so the admin page shows the
-  right value.  Run in the Allura dir (replace your .ini file path):
+  Record what each existing repo already permits, so the admin page shows the right value.
+  Run in the Allura dir (replace your .ini file path):
     `paster script your-ini-file.ini ../scripts/migrations/force-push-sync-from-repo-config.py -- --dry-run`
   Check the output, then run it again without `--dry-run` to apply.  The script reads each git
   repo and writes only to Mongo.  It changes no repository.

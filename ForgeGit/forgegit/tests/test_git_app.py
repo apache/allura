@@ -17,6 +17,7 @@
 
 
 from tg import tmpl_context as c
+import tg
 from ming.odm import ThreadLocalODMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
@@ -38,7 +39,9 @@ class TestGitApp:
         ThreadLocalODMSession.close_all()
 
     def test_admin_menu(self):
-        assert len(c.app.admin_menu()) == 7
+        # force push adds an entry when enabled; the force-push tests cover that
+        with h.push_config(tg.config, **{'scm.force_push.git.enabled': 'false'}):
+            assert len(c.app.admin_menu()) == 7
 
     def test_uninstall(self):
         from allura import model as M
