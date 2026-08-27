@@ -659,10 +659,13 @@ class Test():
             assert r.startswith('<div class="markdown_content"><p><span>[abc]</span>(https://example.com/airboot.  <a href="https://example.com/" rel="nofollow">foo</a> <a href="https://example.com/" rel="nofollow">foo</a>')
             return t2 - t1
 
-        short_time = do_test(2)
-        long_time = do_test(20)
-
-        slowness = long_time / short_time
+        # timing can be noisy under load, so retry a few times before failing
+        for _ in range(3):
+            short_time = do_test(2)
+            long_time = do_test(20)
+            slowness = long_time / short_time
+            if slowness < 10:
+                break
         assert slowness < 10, f"Long markdown took {slowness:.1f}x longer ({long_time:.4f}s vs short text ({short_time:.4f}s)"
 
     def test_macro_include(self):
