@@ -355,7 +355,8 @@ class ForumRestController(BaseController):
     @expose('json:')
     def index(self, limit=None, page=0, **kw):
         limit, page, start = g.handle_paging(limit, int(page))
-        topics = model.Forum.thread_class().query.find(dict(discussion_id=self.forum._id))
+        topics = model.Forum.thread_class().query.find(dict(discussion_id=self.forum._id,
+                                                            num_replies={'$gt': 0}))
         topics = topics.sort([('flags', pymongo.DESCENDING),
                               ('last_post_date', pymongo.DESCENDING)])
         topics = topics.skip(start).limit(limit)
@@ -377,8 +378,10 @@ class ForumRestController(BaseController):
         return json
 
     @expose()
-    def _lookup(self, thread, thread_id, *remainder):
+    def _lookup(self, thread, thread_id=None, *remainder):
         if thread == 'thread':
+            if thread_id is None:
+                raise exc.HTTPNotFound()
             topic = model.Forum.thread_class().query.find(dict(
                 app_config_id=c.app.config._id,
                 discussion_id=self.forum._id,

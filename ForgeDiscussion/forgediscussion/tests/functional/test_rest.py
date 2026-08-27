@@ -206,6 +206,15 @@ class TestRootRestController(TestDiscussionApiBase):
         posts = resp.json['topic']['posts']
         assert len(posts) == 1
 
+    def test_forum_hides_topics_without_posts(self):
+        self.create_topic('general', 'Doomed', 'secret text here')
+        t = ForumThread.query.find({'subject': 'Doomed'}).first()
+        t.first_post.delete()
+        ThreadLocalODMSession.flush_all()
+        forum = self.app.get('/rest/p/test/discussion/general/',
+                             extra_environ={'username': '*anonymous'})
+        assert 'Doomed' not in [x['subject'] for x in forum.json['forum']['topics']]
+
     def test_security(self):
         p = M.Project.query.get(shortname='test')
         acl = p.app_instance('discussion').config.acl

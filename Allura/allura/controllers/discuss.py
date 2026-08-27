@@ -214,6 +214,7 @@ class ThreadController(BaseController, FeedController, metaclass=h.ProxiedAttrMe
         count = self.thread.query_posts(page=page, limit=int(limit)).count()
         if self.thread.num_replies == 0 or all(p.status != 'ok' for p in self.thread.posts):
             # return status code 404 but still display the page content
+            # necessary so a moderated author can see thread page with "Post awaiting moderation"
             request.environ['tg.status_code_redirect'] = True
             response.status_int = 404
         return dict(discussion=self.thread.discussion,
