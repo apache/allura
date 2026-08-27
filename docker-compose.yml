@@ -31,6 +31,10 @@ services:
     links:
       - mongo
       - solr
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
 
   taskd:
     image: allura-web
