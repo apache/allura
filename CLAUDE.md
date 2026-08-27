@@ -280,3 +280,5 @@ From this side, a few things make debugging across that boundary easier:
 - Sensitive fields (e.g. user email) may be stored with field-level encryption — see
   `Allura/allura/model/auth.py` and `scripts/convert_encrypted_field.py` for the pattern used when adding new
   encrypted fields.
+
+See also SECURITY.md
