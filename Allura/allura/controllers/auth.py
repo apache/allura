@@ -24,7 +24,7 @@ from base64 import b32encode
 from datetime import datetime
 import re
 import ipaddress
-from urllib.parse import urlparse, urljoin, urlunparse
+from urllib.parse import urlparse, urlunparse
 
 import bson
 import formencode as fe
@@ -146,7 +146,9 @@ class AuthController(BaseController):
         if 'return_to' in kwargs:
             return_to = kwargs.pop('return_to')
         elif orig_request:
-            return_to = orig_request.url
+            # path_qs, not url: a TLS-terminating proxy leaves wsgi.url_scheme as http, so orig_request.url
+            # would be http:// even on an https site and _verify_return_to would reject the scheme mismatch
+            return_to = orig_request.path_qs
         else:
             if request.referer is not None and six.ensure_text(request.referer).split('/')[-1] == 'neighborhood':
                 return_to = '/'
@@ -398,12 +400,22 @@ class AuthController(BaseController):
 
     @staticmethod
     def _verify_return_to(return_to: str | None) -> str:
-        # protect against any "open redirect" attacks using an external URL
-        if not return_to or '\n' in return_to:
-            return_to = '/'
-        rt_host = urlparse(urljoin(config['base_url'], return_to)).netloc
-        base_host = urlparse(config['base_url']).netloc
-        if rt_host == base_host:
+        # Protect against "open redirect" attacks.  Validate the raw string rather than parse it since
+        # stdlib urlparse/urljoin don't follow RFCs and neither do browsers (they use the WHATWG URL spec)
+        if not return_to:
+            return '/'
+        if re.search(r'[\x00-\x20\x7f\\]', return_to):  # control chars, whitespace, backslash rejected
+            return '/'
+
+        # strip the site's url, if its there
+        base_url = config['base_url'].rstrip('/')
+        if return_to.startswith(f'{base_url}/'):
+            path = return_to[len(base_url):]
+        else:
+            path = return_to
+
+        # must start with / but not //
+        if path.startswith('/') and not path.startswith('//'):
             return return_to
         else:
             return '/'
