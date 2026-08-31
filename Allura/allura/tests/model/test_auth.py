@@ -497,31 +497,64 @@ class TestAuth:
     def test_set_tool_data_can_dual_write_encrypted_values(self):
         user = M.User(
             username='tool-data-encrypted-setter-test',
-            tool_data={'sfx': {'unrelated': 'keep'}},
+            tool_data={'test_tool': {'unrelated': 'keep'}},
         )
         user.set_tool_data(
-            'sfx',
+            'test_tool',
             encrypt=True,
-            registration_ip='198.51.100.12',
-            registration_rdns=None,
-            normalized_email='',
+            store_plaintext=True,
+            field='field value',
+            optional_field=None,
+            empty_field='',
         )
-        user.set_tool_data('temp_reg_fields', encrypt=True, phone_ext='104')
-        user.set_tool_data('sfx', registration_ua='TestBrowser/1.0')
+        user.set_tool_data(
+            'other_tool', encrypt=True, store_plaintext=True, field='another field value')
+        user.set_tool_data('test_tool', public_value='public value')
         ThreadLocalODMSession.flush_all()
 
         tool_data = state(user).document['tool_data']
-        assert tool_data['sfx']['registration_ip'] == '198.51.100.12'
-        assert tool_data['sfx']['registration_ip_encrypted'] == M.User.encr('198.51.100.12')
-        assert tool_data['sfx']['registration_rdns'] is None
-        assert tool_data['sfx']['registration_rdns_encrypted'] is None
-        assert tool_data['sfx']['normalized_email'] == ''
-        assert tool_data['sfx']['normalized_email_encrypted'] == M.User.encr('')
-        assert tool_data['temp_reg_fields']['phone_ext'] == '104'
-        assert tool_data['temp_reg_fields']['phone_ext_encrypted'] == M.User.encr('104')
-        assert tool_data['sfx']['registration_ua'] == 'TestBrowser/1.0'
-        assert 'registration_ua_encrypted' not in tool_data['sfx']
-        assert tool_data['sfx']['unrelated'] == 'keep'
+        assert tool_data['test_tool']['field'] == 'field value'
+        assert tool_data['test_tool']['field_encrypted'] == M.User.encr('field value')
+        assert tool_data['test_tool']['optional_field'] is None
+        assert tool_data['test_tool']['optional_field_encrypted'] is None
+        assert tool_data['test_tool']['empty_field'] == ''
+        assert tool_data['test_tool']['empty_field_encrypted'] == M.User.encr('')
+        assert tool_data['other_tool']['field'] == 'another field value'
+        assert tool_data['other_tool']['field_encrypted'] == M.User.encr('another field value')
+        assert tool_data['test_tool']['public_value'] == 'public value'
+        assert 'public_value_encrypted' not in tool_data['test_tool']
+        assert tool_data['test_tool']['unrelated'] == 'keep'
+
+    def test_set_tool_data_can_store_only_encrypted_values(self):
+        user = M.User(
+            username='tool-data-encrypted-only-setter-test',
+            tool_data={'test_tool': {'field': 'old field'}},
+        )
+
+        user.set_tool_data(
+            'test_tool',
+            encrypt=True,
+            store_plaintext=False,
+            field='new field',
+        )
+        ThreadLocalODMSession.flush_all()
+
+        tool_data = state(user).document['tool_data']['test_tool']
+        assert 'field' not in tool_data
+        assert tool_data['field_encrypted'] == M.User.encr('new field')
+
+    def test_get_tool_data_can_decrypt_encrypted_value(self):
+        user = M.User(
+            username='tool-data-encrypted-getter-test',
+            tool_data={'test_tool': {
+                'field': 'old field',
+                'field_encrypted': M.User.encr('new field'),
+            }},
+        )
+
+        assert user.get_tool_data('test_tool', 'field') == 'old field'
+        assert user.get_tool_data(
+            'test_tool', 'field', decrypt=True) == 'new field'
 
     def test_personal_data_fields_are_stored_encrypted_on_creation(self):
         user = M.User(

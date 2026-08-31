@@ -74,8 +74,8 @@ def test_encryption_schema_info_supports_model_without_encrypted_field():
 def test_encryption_schema_info_supports_opted_in_dynamic_field():
     field_schema, traverses_array = _encryption_schema_info(
         DynamicToolDataModel,
-        'tool_data.sfx.registration_ip',
-        'tool_data.sfx.registration_ip_encrypted',
+        'tool_data.test_tool.field',
+        'tool_data.test_tool.field_encrypted',
         encrypt_dynamic_field=True,
     )
 
@@ -87,8 +87,8 @@ def test_encryption_schema_info_rejects_dynamic_field_without_opt_in():
     with pytest.raises(AssertionError, match='--encrypt-dynamic-field'):
         _encryption_schema_info(
             DynamicToolDataModel,
-            'tool_data.sfx.registration_ip',
-            'tool_data.sfx.registration_ip_encrypted',
+            'tool_data.test_tool.field',
+            'tool_data.test_tool.field_encrypted',
         )
 
 
