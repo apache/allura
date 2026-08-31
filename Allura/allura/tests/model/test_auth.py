@@ -556,6 +556,23 @@ class TestAuth:
         assert user.get_tool_data(
             'test_tool', 'field', decrypt=True) == 'new field'
 
+    def test_get_tool_data_decrypts_without_plaintext(self):
+        user = M.User(
+            username='tool-data-encrypted-only-getter-test',
+            tool_data={'test_tool': {'field_encrypted': M.User.encr('field value')}},
+        )
+
+        assert user.get_tool_data('test_tool', 'field', decrypt=True) == 'field value'
+
+    def test_get_tool_data_decrypt_falls_back_to_plaintext(self):
+        user = M.User(
+            username='tool-data-plaintext-getter-test',
+            tool_data={'test_tool': {'field': 'field value'}},
+        )
+
+        assert user.get_tool_data('test_tool', 'field', decrypt=True) == 'field value'
+        assert user.get_tool_data('test_tool', 'missing', 'default', decrypt=True) == 'default'
+
     def test_personal_data_fields_are_stored_encrypted_on_creation(self):
         user = M.User(
             username='personal-data-encrypted-create-test',
