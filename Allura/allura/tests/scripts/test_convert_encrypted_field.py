@@ -20,11 +20,15 @@ import pytest
 from ming import schema as S
 from ming.encryption import NestedEncryptedProperty
 from ming.odm import FieldProperty
+from ming.odm.odmsession import ThreadLocalODMSession
 
+from allura import model as M
+from alluratest.controller import setup_basic_test
 from scripts.convert_encrypted_field import (
     _encryption_schema_info,
     _encrypt_nested_array_value,
     _remove_nested_array_value,
+    main,
 )
 
 
@@ -90,6 +94,32 @@ def test_encryption_schema_info_rejects_dynamic_field_without_opt_in():
             'tool_data.test_tool.field',
             'tool_data.test_tool.field_encrypted',
         )
+
+
+def test_remove_unencrypted_dynamic_field_preserves_ciphertext():
+    setup_basic_test()
+    user = M.User(
+        username='dynamic-field-conversion-test',
+        tool_data={'test_tool': {
+            'field': 'field value',
+            'field_encrypted': M.User.encr('field value'),
+        }},
+    )
+    ThreadLocalODMSession.flush_all()
+    user_id = user._id
+
+    main(
+        'allura.model.auth.User',
+        'tool_data.test_tool.field',
+        remove_unencrypted=True,
+        encrypt_dynamic_field=True,
+    )
+    ThreadLocalODMSession.close_all()
+
+    user = M.User.query.get(_id=user_id)
+    raw_tool_data = user.tool_data.test_tool
+    assert 'field' not in raw_tool_data
+    assert raw_tool_data.field_encrypted == M.User.encr('field value')
 
 
 def test_encrypt_nested_array_value_updates_every_item():
