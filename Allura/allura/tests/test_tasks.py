@@ -510,13 +510,13 @@ class TestMailTasks:
     @td.with_wiki
     @mock.patch.dict(tg.config, {
         'forgemail.sender_authentication.mode': 'enforce',
-        'forgemail.sender_authentication.authserv_id': 'mx.sourceforge.net',
+        'forgemail.sender_authentication.authserv_id': 'mx.mysite.com',
         'forgemail.sender_authentication.trusted_relay_networks': '127.0.0.0/8',
     })
     def test_route_email_enforce_uses_authenticated_from_user(self):
         message = dedent('''\
             From: "Test Admin" <test-admin@users.localhost>
-            Authentication-Results: mx.sourceforge.net;
+            Authentication-Results: mx.mysite.com;
              spf=pass smtp.mailfrom=users.localhost;
              dmarc=pass header.from=users.localhost
             Subject: authenticated inbound message
@@ -540,13 +540,13 @@ class TestMailTasks:
     @td.with_wiki
     @mock.patch.dict(tg.config, {
         'forgemail.sender_authentication.mode': 'enforce',
-        'forgemail.sender_authentication.authserv_id': 'mx.sourceforge.net',
+        'forgemail.sender_authentication.authserv_id': 'mx.mysite.com',
         'forgemail.sender_authentication.trusted_relay_networks': '127.0.0.0/8',
     })
     def test_route_email_enforce_does_not_trust_spoofed_envelope(self):
         message = dedent('''\
             From: "Test Admin" <test-admin@users.localhost>
-            Authentication-Results: mx.sourceforge.net;
+            Authentication-Results: mx.mysite.com;
              spf=fail smtp.mailfrom=users.localhost;
              dmarc=fail header.from=users.localhost
             Subject: unauthenticated inbound message

@@ -310,9 +310,8 @@ def _normalize_sender_domain(domain):
     try:
         normalized = idna.encode(
             domain,
-            uts46=True,
-            transitional=False,
-            std3_rules=True,
+            uts46=True,  # Normalize Unicode and case variants before encoding.
+            std3_rules=True,  # Request strict ASCII hostname character rules.
         ).decode('ascii').lower()
     except (idna.IDNAError, UnicodeError):
         raise SenderAuthenticationError('domain_invalid')
@@ -328,7 +327,9 @@ def _parse_exim_authentication_results(
     value = _unfold_sender_authentication_header(
         value, MAX_AUTHENTICATION_RESULTS_OCTETS)
     clauses = _split_authentication_results(value)
-    if clauses[0] != expected_authserv_id:
+    authserv = clauses[0].split()
+    # RFC 8601 treats an omitted header version as version 1.
+    if authserv not in ([expected_authserv_id], [expected_authserv_id, '1']):
         raise SenderAuthenticationError('authserv_id')
 
     results = {'dmarc': [], 'spf': []}

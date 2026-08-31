@@ -33,6 +33,7 @@ from allura.lib.mail_util import (
     Header,
     is_autoreply,
     identify_sender,
+    _normalize_sender_domain,
     _parse_message_id,
     email_policy,
 )
@@ -217,7 +218,7 @@ Content-Type: text/html; charset="utf-8"
         msg = parse_message('''\
 From: first@example.com
 From: second@example.com
-Authentication-Results: mx.sourceforge.net; spf=pass smtp.mailfrom=example.com;
+Authentication-Results: mx.mysite.com; spf=pass smtp.mailfrom=example.com;
  dmarc=pass header.from=example.com
 Authentication-Results: untrusted.example; dmarc=pass header.from=example.com
 
@@ -225,7 +226,7 @@ body''')
 
         assert msg['from_headers'] == ['first@example.com', 'second@example.com']
         assert msg['authentication_results'] == [
-            'mx.sourceforge.net; spf=pass smtp.mailfrom=example.com;\n dmarc=pass header.from=example.com',
+            'mx.mysite.com; spf=pass smtp.mailfrom=example.com;\n dmarc=pass header.from=example.com',
             'untrusted.example; dmarc=pass header.from=example.com',
         ]
 
@@ -338,15 +339,21 @@ class TestIdentifySender:
                 [mock.call(email='arg', confirmed=True), mock.call(email='from')])
 
 
+@pytest.mark.parametrize('domain', ['BÜCHER.example', 'xn--bcher-kva.example'])
+def test_normalize_sender_domain_idna(domain):
+    # Unicode/case variants and Punycode must normalize to the same domain.
+    assert _normalize_sender_domain(domain) == 'xn--bcher-kva.example'
+
+
 class TestAuthenticatedIdentifySender:
 
     AUTH_CONFIG = {
         'forgemail.sender_authentication.mode': 'enforce',
-        'forgemail.sender_authentication.authserv_id': 'mx.sourceforge.net',
+        'forgemail.sender_authentication.authserv_id': 'mx.mysite.com',
         'forgemail.sender_authentication.trusted_relay_networks': '127.0.0.0/8',
     }
     PASS_AUTH_RESULTS = (
-        'mx.sourceforge.net;\n'
+        'mx.mysite.com;\n'
         ' iprev=pass smtp.remote-ip=127.0.0.1;\n'
         ' spf=pass smtp.mailfrom=users.localhost;\n'
         ' dkim=fail (signature did not verify; headers probably modified in transit) '
@@ -417,13 +424,32 @@ class TestAuthenticatedIdentifySender:
 
         assert user.username == 'test-admin'
 
+    @pytest.mark.parametrize('authserv', [
+        'mx.mysite.com',
+        'mx.mysite.com 1',
+        'mx.mysite.com\t1',
+        'mx.mysite.com\r\n 1',
+    ])
+    @pytest.mark.parametrize('result', [
+        'dmarc=pass header.from=users.localhost',
+        'spf=pass smtp.mailfrom=users.localhost',
+    ])
+    def test_enforce_accepts_optional_authentication_results_version(
+            self, authserv, result):
+        # RFC 8601 allows version 1 explicitly or implicitly, with folding.
+        user = self._identify(
+            mailfrom='attacker@example.net',
+            authentication_results=[f'{authserv}; {result}'])
+
+        assert user.username == 'test-admin'
+
     @pytest.mark.parametrize('authentication_results', [
         [
-            'mx.sourceforge.net; '
+            'mx.mysite.com; '
             'dmarc=pass header.from=users.localhost',
         ],
         [
-            'mx.sourceforge.net; '
+            'mx.mysite.com; '
             'arc=pass; dmarc=pass header.from=USERS.LOCALHOST; '
             'spf=fail smtp.mailfrom=example.net; iprev=fail',
         ],
@@ -438,12 +464,12 @@ class TestAuthenticatedIdentifySender:
 
     @pytest.mark.parametrize('authentication_results', [
         [
-            'mx.sourceforge.net; '
+            'mx.mysite.com; '
             'spf=pass smtp.mailfrom=users.localhost; '
             'dmarc=none header.from=users.localhost',
         ],
         [
-            'mx.sourceforge.net; '
+            'mx.mysite.com; '
             'dkim=fail header.d=bad.example; '
             'spf=pass smtp.mailfrom=USERS.LOCALHOST',
         ],
@@ -477,96 +503,104 @@ class TestAuthenticatedIdentifySender:
             'dmarc=pass header.from=users.localhost'],
             id='wrong-authserv-id'),
         pytest.param(('127.0.0.1', 2525), [
-            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'mx.mysite.com; spf=pass smtp.mailfrom=users.localhost; '
             'dmarc=fail header.from=users.localhost'],
             id='dmarc-fail-does-not-fallback'),
         pytest.param(('127.0.0.1', 2525), [
-            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'mx.mysite.com; spf=pass smtp.mailfrom=users.localhost; '
             'dmarc=temperror header.from=users.localhost'],
             id='dmarc-temperror-does-not-fallback'),
         pytest.param(('127.0.0.1', 2525), [
-            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'mx.mysite.com; spf=pass smtp.mailfrom=users.localhost; '
             'dmarc=permerror header.from=users.localhost'],
             id='dmarc-permerror-does-not-fallback'),
         pytest.param(('127.0.0.1', 2525), [
-            'mx.sourceforge.net; spf=fail smtp.mailfrom=users.localhost; '
+            'mx.mysite.com; spf=fail smtp.mailfrom=users.localhost; '
             'dmarc=none header.from=users.localhost'],
             id='dmarc-none-spf-fail'),
         pytest.param(('127.0.0.1', 2525), [
-            'mx.sourceforge.net; '
+            'mx.mysite.com; '
             'dmarc=none header.from=users.localhost'],
             id='dmarc-none-spf-missing'),
         pytest.param(('127.0.0.1', 2525), [
-            'mx.sourceforge.net; '
+            'mx.mysite.com; '
             'spf=fail smtp.mailfrom=users.localhost'],
             id='dmarc-missing-spf-fail'),
         pytest.param(('127.0.0.1', 2525), [
-            'mx.sourceforge.net; '
+            'mx.mysite.com; '
             'dkim=pass header.d=users.localhost'],
             id='dmarc-and-spf-missing'),
         pytest.param(('127.0.0.1', 2525), [
-            'mx.sourceforge.net; spf=pass smtp.mailfrom=example.net; '
+            'mx.mysite.com; spf=pass smtp.mailfrom=example.net; '
             'dmarc=none header.from=users.localhost'],
             id='spf-domain-mismatch'),
         pytest.param(('127.0.0.1', 2525), [
-            'mx.sourceforge.net; '
+            'mx.mysite.com; '
             'spf=pass smtp.mailfrom=mail.users.localhost'],
             id='spf-subdomain-is-not-exact-alignment'),
         pytest.param(('127.0.0.1', 2525), [
-            'mx.sourceforge.net; spf=pass smtp.helo=users.localhost; '
+            'mx.mysite.com; spf=pass smtp.helo=users.localhost; '
             'dmarc=none header.from=users.localhost'],
             id='helo-spf-is-not-author-proof'),
         pytest.param(('127.0.0.1', 2525), [
-            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'mx.mysite.com; spf=pass smtp.mailfrom=users.localhost; '
             'dmarc=pass header.from=users.localhost; '
             'dmarc=fail header.from=users.localhost'],
             id='duplicate-dmarc'),
         pytest.param(('127.0.0.1', 2525), [
-            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'mx.mysite.com; spf=pass smtp.mailfrom=users.localhost; '
             'spf=pass smtp.mailfrom=users.localhost; '
             'dmarc=none header.from=users.localhost'],
             id='duplicate-spf-fallback'),
         pytest.param(('127.0.0.1', 2525), [
-            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'mx.mysite.com; spf=pass smtp.mailfrom=users.localhost; '
             'dmarc=PASS header.from=users.localhost'],
             id='malformed-dmarc-does-not-become-absent'),
         pytest.param(('127.0.0.1', 2525), [
-            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'mx.mysite.com; spf=pass smtp.mailfrom=users.localhost; '
             'dmarc=none'],
             id='malformed-dmarc-none'),
         pytest.param(('127.0.0.1', 2525), [
-            'mx.sourceforge.net; '
+            'mx.mysite.com; '
             'spf=pass smtp.mailfrom=users.localhost extra=value; '
             'dmarc=none header.from=users.localhost'],
             id='malformed-spf'),
         pytest.param(('127.0.0.1', 2525), [
-            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'mx.mysite.com; spf=pass smtp.mailfrom=users.localhost; '
             'dmarc=pass header.from=example.net'],
             id='dmarc-from-domain-mismatch'),
         pytest.param(('127.0.0.1', 2525), [
-            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'mx.mysite.com; spf=pass smtp.mailfrom=users.localhost; '
             'dkim=fail (dmarc=pass; header.from=users.localhost) '
             'header.d=bad.example; '
             'dmarc=fail header.from=users.localhost'],
             id='dmarc-pass-in-dkim-comment'),
         pytest.param(('127.0.0.1', 2525), [
-            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'mx.mysite.com; spf=pass smtp.mailfrom=users.localhost; '
             'dkim=fail reason="verification failed; dmarc=pass '
             'header.from=users.localhost"; '
             'dmarc=fail header.from=users.localhost'],
             id='dmarc-pass-in-quoted-value'),
         pytest.param(('127.0.0.1', 2525), [
-            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'mx.mysite.com; spf=pass smtp.mailfrom=users.localhost; '
             'dkim=pass header.d=bad.example '
             'header.i=dmarc=pass@bad.example; '
             'dmarc=fail header.from=users.localhost'],
             id='dmarc-pass-in-dkim-identity'),
         pytest.param(('127.0.0.1', 2525), [
-            'mx.sourceforge.net 1; spf=pass smtp.mailfrom=users.localhost; '
+            'mx.mysite.com 2; spf=pass smtp.mailfrom=users.localhost; '
             'dmarc=pass header.from=users.localhost'],
-            id='unexpected-authserv-version'),
+            id='unsupported-authserv-version'),
         pytest.param(('127.0.0.1', 2525), [
-            'mx.sourceforge.net; spf=pass smtp.mailfrom=users.localhost; '
+            'mx.mysite.com 1 extra; '
+            'dmarc=pass header.from=users.localhost'],
+            id='extra-authserv-text'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.mysite.com.evil.example 1; '
+            'dmarc=pass header.from=users.localhost'],
+            id='authserv-prefix-is-not-exact-match'),
+        pytest.param(('127.0.0.1', 2525), [
+            'mx.mysite.com; spf=pass smtp.mailfrom=users.localhost; '
             'dmarc=pass header.from=users.localhost\x00'],
             id='header-control-character'),
     ])
@@ -619,7 +653,7 @@ class TestAuthenticatedIdentifySender:
         user = self._identify(
             from_headers=[address],
             authentication_results=[
-                'mx.sourceforge.net; spf=pass smtp.mailfrom=example.net; '
+                'mx.mysite.com; spf=pass smtp.mailfrom=example.net; '
                 'dmarc=pass header.from=example.net'])
 
         assert user.is_anonymous()
@@ -633,12 +667,12 @@ class TestAuthenticatedIdentifySender:
         },
         {
             'forgemail.sender_authentication.mode': 'enforce',
-            'forgemail.sender_authentication.authserv_id': 'mx.sourceforge.net',
+            'forgemail.sender_authentication.authserv_id': 'mx.mysite.com',
             'forgemail.sender_authentication.trusted_relay_networks': '',
         },
         {
             'forgemail.sender_authentication.mode': 'enforce',
-            'forgemail.sender_authentication.authserv_id': 'mx.sourceforge.net',
+            'forgemail.sender_authentication.authserv_id': 'mx.mysite.com',
             'forgemail.sender_authentication.trusted_relay_networks': 'not-a-network',
         },
         {
