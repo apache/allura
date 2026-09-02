@@ -1673,14 +1673,8 @@ class ThemeProvider:
 
         active_notes = SiteNotification.actives()
         note_to_show = None
+        projects_by_role = {}  # my_projects_by_role_name is expensive, so keep a cache if we do use it
         for note in active_notes:
-            if note.user_role and (not user or user.is_anonymous()):
-                continue
-            if note.user_role:
-                projects = user.my_projects_by_role_name(note.user_role)
-                if len(projects) == 0 or len(projects) == 1 and projects[0].is_user_project:
-                    continue
-
             if note.page_regex and re.search(note.page_regex, url) is None:
                 continue
             if note.page_tool_type and tool_name.lower() != note.page_tool_type.lower():
@@ -1695,6 +1689,15 @@ class ThemeProvider:
 
             if closed or note.impressions > 0 and views > note.impressions:
                 continue
+
+            if note.user_role:
+                if not user or user.is_anonymous():
+                    continue
+                if note.user_role not in projects_by_role:
+                    projects_by_role[note.user_role] = user.my_projects_by_role_name(note.user_role)
+                projects = projects_by_role[note.user_role]
+                if len(projects) == 0 or len(projects) == 1 and projects[0].is_user_project:
+                    continue
 
             # this notification is ok to show, so this is the one.
             views += 1

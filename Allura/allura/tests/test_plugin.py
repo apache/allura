@@ -627,6 +627,45 @@ class TestThemeProvider_notifications:
         assert get_note[0] is note
         assert get_note[1] == 'testid-2-False'
 
+    @patch('allura.lib.plugin.c')
+    @patch('allura.model.notification.SiteNotification')
+    @patch('tg.response')
+    @patch('tg.request')
+    def test_get_site_notification_role_lookup_skipped_when_closed(self, request, response, SiteNotification, c):
+        note = MagicMock()
+        note._id = 'deadbeef'
+        note.user_role = 'Test'
+        note.page_regex = None
+        note.page_tool_type = None
+        note.impressions = 10
+        SiteNotification.actives.return_value = [note]
+        request.cookies = {'site-notification': 'deadbeef-1-true'}
+        c.user.is_anonymous.return_value = False
+
+        assert self.Provider().get_site_notification() is None
+        assert not c.user.my_projects_by_role_name.called
+
+    @patch('allura.lib.plugin.c')
+    @patch('allura.model.notification.SiteNotification')
+    @patch('tg.response', MagicMock())
+    @patch('tg.request', MagicMock())
+    def test_get_site_notification_role_lookup_done_once(self, SiteNotification, c):
+        notes = []
+        for i in range(2):
+            note = MagicMock()
+            note._id = f'deadbeef{i}'
+            note.user_role = 'Test'
+            note.page_regex = None
+            note.page_tool_type = None
+            note.impressions = 10
+            notes.append(note)
+        SiteNotification.actives.return_value = notes
+        c.user.is_anonymous.return_value = False
+        c.user.my_projects_by_role_name.return_value = []
+
+        assert self.Provider().get_site_notification() is None
+        assert c.user.my_projects_by_role_name.call_count == 1
+
 
 class TestLocalAuthenticationProvider:
 
