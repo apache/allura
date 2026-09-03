@@ -785,10 +785,10 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             return user
         return plugin.AuthenticationProvider.get(request).by_username(name)
 
-    def get_tool_data(self, tool, key, default=None, *, decrypt=False):
+    def get_tool_data(self, tool, key, default=None):
         tool_data = self.tool_data.get(tool, {})
         encrypted_key = f'{key}_encrypted'
-        if decrypt and encrypted_key in tool_data:
+        if encrypted_key in tool_data:
             result = self.decr(tool_data[encrypted_key])
         else:
             result = tool_data.get(key, default)
