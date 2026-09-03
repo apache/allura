@@ -525,7 +525,7 @@ class TestAuth:
         assert 'public_value_encrypted' not in tool_data['test_tool']
         assert tool_data['test_tool']['unrelated'] == 'keep'
 
-    def test_set_tool_data_can_store_only_encrypted_values(self):
+    def test_set_tool_data_stores_only_encrypted_values_by_default(self):
         user = M.User(
             username='tool-data-encrypted-only-setter-test',
             tool_data={'test_tool': {'field': 'old field'}},
@@ -534,7 +534,6 @@ class TestAuth:
         user.set_tool_data(
             'test_tool',
             encrypt=True,
-            store_plaintext=False,
             field='new field',
         )
         ThreadLocalODMSession.flush_all()
@@ -542,36 +541,35 @@ class TestAuth:
         tool_data = state(user).document['tool_data']['test_tool']
         assert 'field' not in tool_data
         assert tool_data['field_encrypted'] == M.User.encr('new field')
+        assert user.get_tool_data('test_tool', 'field') == 'new field'
 
-    def test_get_tool_data_can_decrypt_encrypted_value(self):
+    def test_get_tool_data_automatically_decrypts_encrypted_values(self):
         user = M.User(
             username='tool-data-encrypted-getter-test',
             tool_data={'test_tool': {
                 'field': 'old field',
                 'field_encrypted': M.User.encr('new field'),
+                'encrypted_only_encrypted': M.User.encr('encrypted-only value'),
+                'optional_field': 'old optional value',
+                'optional_field_encrypted': None,
+                'empty_field': 'old nonempty value',
+                'empty_field_encrypted': M.User.encr(''),
             }},
         )
 
-        assert user.get_tool_data('test_tool', 'field') == 'old field'
-        assert user.get_tool_data(
-            'test_tool', 'field', decrypt=True) == 'new field'
+        assert user.get_tool_data('test_tool', 'field') == 'new field'
+        assert user.get_tool_data('test_tool', 'encrypted_only') == 'encrypted-only value'
+        assert user.get_tool_data('test_tool', 'optional_field', 'default') is None
+        assert user.get_tool_data('test_tool', 'empty_field') == ''
 
-    def test_get_tool_data_decrypts_without_plaintext(self):
-        user = M.User(
-            username='tool-data-encrypted-only-getter-test',
-            tool_data={'test_tool': {'field_encrypted': M.User.encr('field value')}},
-        )
-
-        assert user.get_tool_data('test_tool', 'field', decrypt=True) == 'field value'
-
-    def test_get_tool_data_decrypt_falls_back_to_plaintext(self):
+    def test_get_tool_data_falls_back_to_plaintext(self):
         user = M.User(
             username='tool-data-plaintext-getter-test',
             tool_data={'test_tool': {'field': 'field value'}},
         )
 
-        assert user.get_tool_data('test_tool', 'field', decrypt=True) == 'field value'
-        assert user.get_tool_data('test_tool', 'missing', 'default', decrypt=True) == 'default'
+        assert user.get_tool_data('test_tool', 'field') == 'field value'
+        assert user.get_tool_data('test_tool', 'missing', 'default') == 'default'
 
     def test_personal_data_fields_are_stored_encrypted_on_creation(self):
         user = M.User(
