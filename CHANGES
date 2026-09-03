@@ -13,11 +13,16 @@ Upgrade Instructions
   The script reads each git repo's settings and records it in Mongo so the admin page shows the right value.
   It does not change any repository.
 
-New Features
+Major Changes
  * [#686] Repo admins can allow force push on their own git repos
  * Add mongodb option for the jinja bytecode cache
+ * Drop support for <svg> tags in Markdown/HTML
 
 Security Improvements
+ * CVE-2026-80180 [#8619] Stored XSS via markdown HTML processing
+ * CVE-2026-80181 [#8621] Server-side request forgery
+ * CVE-2026-80190 Stored XSS via code repositories
+ * CVE-2026-81270 [#8622] Information exposure via search
  * bumping webob 1.8.10 -> 1.8.11
  * strengthen _verify_return_to and tests for webob upgrade
  * start a SECURITY.md
