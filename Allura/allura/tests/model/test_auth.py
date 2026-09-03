@@ -525,7 +525,7 @@ class TestAuth:
         assert 'public_value_encrypted' not in tool_data['test_tool']
         assert tool_data['test_tool']['unrelated'] == 'keep'
 
-    def test_set_tool_data_can_store_only_encrypted_values(self):
+    def test_set_tool_data_stores_only_encrypted_values_by_default(self):
         user = M.User(
             username='tool-data-encrypted-only-setter-test',
             tool_data={'test_tool': {'field': 'old field'}},
@@ -534,7 +534,6 @@ class TestAuth:
         user.set_tool_data(
             'test_tool',
             encrypt=True,
-            store_plaintext=False,
             field='new field',
         )
         ThreadLocalODMSession.flush_all()
@@ -542,6 +541,7 @@ class TestAuth:
         tool_data = state(user).document['tool_data']['test_tool']
         assert 'field' not in tool_data
         assert tool_data['field_encrypted'] == M.User.encr('new field')
+        assert user.get_tool_data('test_tool', 'field') == 'new field'
 
     def test_get_tool_data_automatically_decrypts_encrypted_values(self):
         user = M.User(

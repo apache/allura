@@ -797,8 +797,10 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         else:
             return result
 
-    def set_tool_data(self, tool, *, encrypt=False, store_plaintext=True, **kw):
+    def set_tool_data(self, tool, *, encrypt=False, store_plaintext=None, **kw):
         d = self.tool_data.setdefault(tool, {})
+        if store_plaintext is None:
+            store_plaintext = not encrypt
         if store_plaintext:
             d.update(kw)
         if encrypt:
