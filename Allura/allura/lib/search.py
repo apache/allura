@@ -18,13 +18,15 @@
 
 import ast
 import re
+import sys
 from logging import getLogger
 
 
 import bson
 import markdown
 import markupsafe
-from tg import redirect, url
+from paste.deploy.converters import asbool
+from tg import redirect, url, config
 from tg import tmpl_context as c, app_globals as g
 from tg import request
 from pysolr import SolrError
@@ -34,6 +36,8 @@ from allura.lib.solr import escape_solr_arg
 from allura.lib.utils import urlencode
 
 log = getLogger(__name__)
+
+FILTER_FIELD_RE = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
 
 
 class SearchIndexable:
@@ -238,6 +242,13 @@ def search_artifact(atype, q, history=False, rows=10, short_timeout=False, filte
         filter = ast.literal_eval(filter)
     if isinstance(filter, dict):
         for name, values in (filter or {}).items():
+            # concatenated into an fq clause, so it must be a plain identifier
+            if not FILTER_FIELD_RE.match(name or ''):
+                if asbool(config['debug']) or 'pytest' in sys.modules:
+                    raise ValueError(f'Unexpected filter {name!r}: {values!r}')
+                else:
+                    log.warning('Ignoring search filter with unusable field name: %r', name)
+                    continue
             field_name = name + '_s'
             parts = []
             for v in values:
@@ -245,9 +256,10 @@ def search_artifact(atype, q, history=False, rows=10, short_timeout=False, filte
                 if v == '' or v is None:
                     part = f'(-{field_name}:[* TO *] AND *:*)'
                 else:
-                    part = f'{field_name}:{escape_solr_arg(v)}'
+                    part = f'{field_name}:{escape_solr_arg(str(v))}'
                 parts.append(part)
-            fq.append(' OR '.join(parts))
+            if parts:
+                fq.append(' OR '.join(parts))
     if not history:
         fq.append('is_history_b:False')
     return search(q, fq=fq, rows=rows, short_timeout=short_timeout, ignore_errors=False, sort=sort, start=start,

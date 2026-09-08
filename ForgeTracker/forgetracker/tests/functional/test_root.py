@@ -19,6 +19,9 @@ import os
 import time
 import json
 from io import BytesIO
+
+import pytest
+
 import allura
 import mock
 
@@ -1380,6 +1383,23 @@ class TestFunctionalController(TrackerTestController):
         # 'filter' is special kwarg, don't let it cause problems
         r = self.app.get('/p/test/bugs/search/?q=test&filter=blah')
         r = self.app.get('/p/test/bugs/search/?q=test&defType=asdf')
+
+    @patch('allura.lib.search.search')
+    def test_search_filter_field_names_validated(self, search):
+        search.return_value = None
+        self.new_ticket(summary='a ticket')
+        with pytest.raises(ValueError, match=r'Unexpected filter'):
+            self.app.get('/bugs/search/', params={'q': 'x', 'filter': '{"{!func}div(1,0)": ["v"]}'})
+        assert not search.called
+
+        self.app.get('/bugs/search/', params={'q': 'x', 'filter': '{"status": ["open"]}'})
+        assert 'status_s:open' in search.call_args[1]['fq']
+
+    def test_search_filter_non_string_value(self):
+        self.new_ticket(summary='a ticket')
+        self.app.get('/bugs/search/',
+                     params={'q': 'x', 'filter': '{"status": [{"$ne": null}]}'},
+                     status=200)
 
     def test_search_canonical(self):
         self.new_ticket(summary='test first ticket')
