@@ -16,10 +16,18 @@
 #       under the License.
 
 from formencode.variabledecode import variable_encode
+from ming.odm import ThreadLocalODMSession
 
+from tg import tmpl_context as c
+
+from allura import model as M
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura.lib import helpers as h
+from forgetracker import model as TM
+from forgewiki import model as WM
+
+ANON = dict(username='*anonymous')
 
 
 class TestFeeds(TestController):
@@ -79,6 +87,60 @@ class TestFeeds(TestController):
     def test_ticket_list_feed(self):
         self.app.get('/bugs/feed.rss')
         self.app.get('/bugs/feed.atom')
+
+    @td.with_tracker
+    @td.with_tracker
+    def test_ticket_feed_drops_privatised_ticket(self):
+        assert 'This is a ticket' in self.app.get('/bugs/feed.rss', extra_environ=ANON)
+        TM.Ticket.query.get(ticket_num=1).private = True
+        ThreadLocalODMSession.flush_all()
+        r = self.app.get('/bugs/feed.rss', extra_environ=ANON)
+        assert 'This is a ticket' not in r
+        assert 'This is a description' not in r
+
+    @td.with_wiki
+    def test_wiki_feed_drops_deleted_page(self):
+        self.app.post('/wiki/Doomed/update',
+                      params={'title': 'Doomed', 'text': 'sekrit', 'labels': ''})
+        assert 'sekrit' in self.app.get('/wiki/feed.rss', extra_environ=ANON)
+        self.app.post('/wiki/Doomed/delete')
+        assert 'sekrit' not in self.app.get('/wiki/feed.rss', extra_environ=ANON)
+
+    @td.with_wiki
+    def test_wiki_feed_drops_spammed_comment(self):
+        h.set_context('test', 'wiki', neighborhood='Projects')
+        page = WM.Page.query.get(title='Home', app_config_id=c.app.config._id)
+        page.discussion_thread.add_post(text='spammy comment')
+        ThreadLocalODMSession.flush_all()
+        assert 'spammy comment' in self.app.get('/wiki/feed.rss', extra_environ=ANON)
+
+        M.Post.query.get(text='spammy comment').spam(submit_spam_feedback=False)
+        ThreadLocalODMSession.flush_all()
+        assert 'spammy comment' not in self.app.get('/wiki/feed.rss', extra_environ=ANON)
+
+        h.set_context('test', 'wiki', neighborhood='Projects')
+        M.Post.query.get(text='spammy comment').undo('ok')
+        ThreadLocalODMSession.flush_all()
+        assert 'spammy comment' in self.app.get('/wiki/feed.rss', extra_environ=ANON)
+
+        # undoing again is a no-op; it must not file a second entry
+        h.set_context('test', 'wiki', neighborhood='Projects')
+        M.Post.query.get(text='spammy comment').undo('ok')
+        ThreadLocalODMSession.flush_all()
+        assert self.app.get('/wiki/feed.rss', extra_environ=ANON).text.count('spammy comment') == 1
+
+    @td.with_wiki
+    def test_wiki_feed_drops_hard_deleted_comment(self):
+        h.set_context('test', 'wiki', neighborhood='Projects')
+        page = WM.Page.query.get(title='Home', app_config_id=c.app.config._id)
+        page.discussion_thread.add_post(text='doomed comment')
+        ThreadLocalODMSession.flush_all()
+        assert 'doomed comment' in self.app.get('/wiki/feed.rss', extra_environ=ANON)
+
+        h.set_context('test', 'wiki', neighborhood='Projects')
+        M.Post.query.get(text='doomed comment').delete()
+        ThreadLocalODMSession.flush_all()
+        assert 'doomed comment' not in self.app.get('/wiki/feed.rss', extra_environ=ANON)
 
     @td.with_tracker
     def test_ticket_feed(self):

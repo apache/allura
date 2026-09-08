@@ -126,6 +126,10 @@ class Artifact(MappedClass, SearchIndexable):
                                            self.discussion_thread.url()),
         )
 
+    def revoke_feed_entries(self):
+        '''Drop feed entries, for soft-deletion or when access is narrowed.'''
+        Feed.remove_for(self)
+
     def parent_security_context(self):
         """Return the :class:`allura.model.project.AppConfig` instance for
         this Artifact.
@@ -500,6 +504,7 @@ class Artifact(MappedClass, SearchIndexable):
         idx_id = self.index_id()
         ArtifactReference.query.remove(dict(_id=idx_id))
         Shortlink.query.remove(dict(ref_id=idx_id))
+        self.revoke_feed_entries()  # Post overrides this; its entries aren't filed under its own ref_id
         super().delete()
         session(self).flush(self)
         session(self).imap.expunge(self)
@@ -973,6 +978,10 @@ class Feed(MappedClass):
     @classmethod
     def from_username(cls, username):
         return cls.query.find({'author_link': f"/u/{username}/"}).all()
+
+    @classmethod
+    def remove_for(cls, artifact):
+        cls.query.remove(dict(ref_id=artifact.index_id()))
 
     @classmethod
     def has_access(cls, artifact):

@@ -895,6 +895,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 acl += _allow_all(role_creator, security.all_allowed(self, role_creator))
             acl += [DENY_ALL]
             self.acl = acl
+            self.revoke_feed_entries()
         else:
             self.acl = []
     private = property(_get_private, _set_private)
@@ -1399,6 +1400,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
     def soft_delete(self):
         require_access(self, 'delete')
         Shortlink.query.remove(dict(ref_id=self.index_id()))
+        self.revoke_feed_entries()
         self.deleted = True
         suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(
             dt=datetime.utcnow())
