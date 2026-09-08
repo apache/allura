@@ -32,6 +32,7 @@ from ming.utils import LazyProperty
 
 from allura import model as M
 from .base import BaseController
+from allura.lib import exceptions as forge_exc
 from allura.lib import utils
 from allura.lib import helpers as h
 from allura.lib.decorators import require_post, memorable_forget
@@ -603,6 +604,12 @@ class ModerationController(BaseController, metaclass=h.ProxiedAttrMeta):
 
 class PostRestController(PostController):
 
+    def _rate_limit_comment(self):
+        '''Same limit as handle_post_or_reply(), as a status code not a flash.'''
+        if M.Post.is_limit_exceeded(c.app.config, user=c.user):
+            log.warning('Comment rate limit exceeded. %s', c.app.config.url())
+            raise forge_exc.HTTPTooManyRequests()
+
     @expose('json:')
     def index(self, **kw):
         if self.post.deleted:
@@ -617,6 +624,7 @@ class PostRestController(PostController):
     @validate(pass_validator, error_handler=h.json_validation_error)
     def reply(self, **kw):
         require_access(self.thread, 'post')
+        self._rate_limit_comment()
         kw = self.W.edit_post.to_python(kw, None)  # could raise Invalid, but doesn't seem like it ever does
         post = self.thread.post(parent_id=self.post._id, **kw)
         self.thread.num_replies += 1
@@ -624,6 +632,8 @@ class PostRestController(PostController):
 
 
 class ThreadRestController(ThreadController):
+
+    _rate_limit_comment = PostRestController._rate_limit_comment
 
     @expose('json:')
     def index(self, limit=25, page=None, **kw):
@@ -636,6 +646,7 @@ class ThreadRestController(ThreadController):
     @validate(pass_validator, error_handler=h.json_validation_error)
     def new(self, **kw):
         require_access(self.thread, 'post')
+        self._rate_limit_comment()
         kw = self.W.edit_post.to_python(kw, None)  # could raise Invalid, but doesn't seem like it ever does
         p = self.thread.add_post(**kw)
         redirect(p.slug + '/')
