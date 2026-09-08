@@ -468,6 +468,7 @@ class Globals:
             page = max(int(page), 0)
         except ValueError:
             page = 0
+        page = h.bound_page(page, limit)
         start = page * int(limit)
         return (limit, page, start)
 

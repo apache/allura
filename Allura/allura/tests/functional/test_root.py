@@ -187,6 +187,18 @@ class TestRootController(TestController):
         assert len(
             response.html.find_all('a', {'href': '/adobe/adobe-2/'})) == 1
 
+    def test_page_offset_max_redirects_browser(self):
+        r = self.app.get('/adobe/browse?limit=500&page=200', status=302)
+        assert r.location.endswith('/adobe/browse?limit=500&page=100')
+
+    def test_page_offset_max_rejects_ajax(self):
+        r = self.app.get('/adobe/browse?limit=500&page=200', status=400,
+                         headers={'X-Requested-With': 'XMLHttpRequest'})
+        assert r.json == {'error': 'page must be 100 or less when limit is 500'}
+
+    def test_page_offset_max_allows_last_page(self):
+        self.app.get('/adobe/browse?limit=500&page=100', status=200)
+
     def test_slash_redirect(self):
         self.app.get('/p', status=301)
         self.app.get('/p/', status=302)

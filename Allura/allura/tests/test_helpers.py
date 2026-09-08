@@ -16,6 +16,7 @@
 #       under the License.
 
 import io
+import sys
 import urllib.request
 from unittest import skipIf
 from os import path
@@ -257,6 +258,8 @@ def test_paging_sanitizer():
         (10, None, 0): (10, 0),
         (10, 0): (10, 0),
         ('junk', 'more junk'): (25, 0),
+        # page_offset_max allows limit * page up to 50000
+        (500, 100, sys.maxsize): (500, 100),
     }
     for input, output in test_data.items():
         assert (h.paging_sanitizer(*input)) == output
