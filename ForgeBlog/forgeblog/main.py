@@ -630,8 +630,9 @@ class RootRestController(BaseController, AppRestControllerMixin):
                 title=title,
                 state=state,
                 text=text,
-                labels=labels.split(','),
-                **kw)
+                labels=labels.split(','))
+            g.spam_checker.check(title + '\n' + text, artifact=post,
+                                 user=c.user, content_type='blog-post')
             return exc.HTTPCreated(headers=dict(Location=str(h.absurl('/rest' + post.url()))))
 
         else:
