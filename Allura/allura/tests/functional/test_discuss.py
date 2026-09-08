@@ -153,6 +153,15 @@ class TestDiscuss(TestDiscussBase):
             r = self._make_post('This is a post that should fail.')
             assert 'rate limit exceeded' in r.text
 
+    def test_rate_limit_comments_rest(self):
+        thread_url = self._thread_link()
+        with h.push_config(config, **{'allura.rate_limits_per_user': '{"3600": 1}'}):
+            self.app.post('/rest' + thread_url + 'new', params={'text': 'first'},
+                          status=302)
+            self.app.post('/rest' + thread_url + 'new', params={'text': 'second'},
+                          status=429)
+        assert M.Post.query.find(dict(text='second')).count() == 0
+
     @patch('allura.controllers.discuss.g.spam_checker.submit_spam')
     def test_spam_post_not_readable_at_permalink(self, submit_spam):
         r = self._make_post('Test post')

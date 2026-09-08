@@ -122,6 +122,12 @@ class TestWikiApi(TestRestApiBase):
             p = Page.query.get(title='page2')
             assert p is None
 
+    def test_edit_page_limit(self):
+        self.api_post('/rest/p/test/wiki/page1/', status=200, text='original')
+        with h.push_config(tg.config, **{'forgewiki.rate_limits': '{"3600": 1}'}):
+            self.api_post('/rest/p/test/wiki/page1/', status=429, text='edited')
+        assert Page.query.get(title='page1').text == 'original'
+
     # http://blog.watchfire.com/wfblog/2011/10/json-based-xss-exploitation.html
     def test_json_encoding_security(self):
         self.api_post('/rest/p/test/wiki/foo.html',

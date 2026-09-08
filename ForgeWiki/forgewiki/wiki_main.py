@@ -909,16 +909,17 @@ class PageRestController(BaseController):
 
     def _update_page(self, title, **post_data):
         with h.notifications_disabled(c.project):
-            if not self.page:
+            if self.page:
+                require_access(self.page, 'edit')
+            else:
                 require_access(c.app, 'create')
-                if WM.Page.is_limit_exceeded(c.app.config, user=c.user):
-                    log.warning('Page create/edit rate limit exceeded. %s',
-                                c.app.config.url())
-                    raise forge_exc.HTTPTooManyRequests()
+            if WM.Page.is_limit_exceeded(c.app.config, user=c.user):
+                log.warning('Page create/edit rate limit exceeded. %s',
+                            c.app.config.url())
+                raise forge_exc.HTTPTooManyRequests()
+            if not self.page:
                 self.page = WM.Page.upsert(title)
                 self.page.viewable_by = ['all']
-            else:
-                require_access(self.page, 'edit')
             self.page.text = post_data['text']
             if 'labels' in post_data:
                 self.page.labels = post_data['labels'].split(',')
