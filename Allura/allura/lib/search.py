@@ -37,7 +37,13 @@ from allura.lib.utils import urlencode
 
 log = getLogger(__name__)
 
-FILTER_FIELD_RE = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
+# \w so that custom field names keep working; they're slugified with \W, which leaves non-ascii letters in
+FILTER_FIELD_RE = re.compile(r'[^\W\d]\w*\Z')
+
+# "field", "field asc", or a comma-separated list of those.  Excluding parens
+# keeps out function queries, which solr evaluates per matching document.
+SORT_SPEC_RE = re.compile(r'[^\W\d]\w*( (asc|desc))?'
+                          r'(\s*,\s*[^\W\d]\w*( (asc|desc))?)*\Z')
 
 
 class SearchIndexable:
@@ -188,6 +194,14 @@ def search(q, short_timeout=False, ignore_errors=True, search_fn=None, **kw):
 
     # don't pass through sort=None etc
     kw = {k: v for k, v in kw.items() if v is not None}
+
+    sort = kw.get('sort')
+    if sort is not None and not (isinstance(sort, str) and SORT_SPEC_RE.match(sort)):
+        if asbool(config['debug']) or 'pytest' in sys.modules:
+            raise ValueError(f'Invalid sort spec: {sort!r}')
+        else:
+            log.warning('Ignoring unusable sort: %r', sort)
+            del kw['sort']
 
     try:
         # try once with opportunity to retry

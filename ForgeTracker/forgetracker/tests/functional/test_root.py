@@ -1395,11 +1395,30 @@ class TestFunctionalController(TrackerTestController):
         self.app.get('/bugs/search/', params={'q': 'x', 'filter': '{"status": ["open"]}'})
         assert 'status_s:open' in search.call_args[1]['fq']
 
+        # custom field names are slugified with \W, so non-ascii letters survive into them
+        self.app.get('/bugs/search/', params={'q': 'x', 'filter': '{"_café_field": ["v"]}'})
+        assert '_café_field_s:v' in search.call_args[1]['fq']
+
     def test_search_filter_non_string_value(self):
         self.new_ticket(summary='a ticket')
         self.app.get('/bugs/search/',
                      params={'q': 'x', 'filter': '{"status": [{"$ne": null}]}'},
                      status=200)
+
+    @patch('allura.lib.search.g.solr_short_timeout')
+    def test_search_sort_validated(self, solr):
+        solr.search.return_value = None
+        self.new_ticket(summary='a ticket')
+
+        with pytest.raises(ValueError, match=r'Invalid sort spec'):
+            self.app.get('/bugs/search/', params={'q': 'x', 'sort': 'div(1,0) desc'})
+        assert not solr.search.called
+
+        self.app.get('/bugs/search/', params={'q': 'x', 'sort': 'ticket_num_i asc'})
+        assert solr.search.call_args[1]['sort'] == 'ticket_num_i asc'
+
+        self.app.get('/bugs/search/', params={'q': 'x', 'sort': '_café_field_s asc'})
+        assert solr.search.call_args[1]['sort'] == '_café_field_s asc,ticket_num_i asc'
 
     def test_search_canonical(self):
         self.new_ticket(summary='test first ticket')
