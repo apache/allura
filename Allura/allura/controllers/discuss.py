@@ -347,6 +347,9 @@ class PostController(BaseController, metaclass=h.ProxiedAttrMeta):
         elif request.method == 'GET':
             if self.post.deleted:
                 raise exc.HTTPNotFound
+            # same rule as PostRestController.index
+            if self.post.status != 'ok' and not has_access(self.post.thread, 'moderate'):
+                raise exc.HTTPNotFound
             if version is not None:
                 HC = self.post.__mongometa__.history_class
                 ss = HC.query.find(

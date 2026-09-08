@@ -22,7 +22,7 @@ from ming.odm import session
 from allura.tests import TestController
 from allura import model as M
 from allura.lib import helpers as h
-from tg import config
+from tg import config, tmpl_context as c
 
 
 class TestDiscussBase(TestController):
@@ -152,6 +152,34 @@ class TestDiscuss(TestDiscussBase):
 
             r = self._make_post('This is a post that should fail.')
             assert 'rate limit exceeded' in r.text
+
+    @patch('allura.controllers.discuss.g.spam_checker.submit_spam')
+    def test_spam_post_not_readable_at_permalink(self, submit_spam):
+        r = self._make_post('Test post')
+        permalink = str(
+            r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
+        self.app.post(permalink + 'moderate', params=dict(spam='spam'))
+        assert M.Post.query.find().first().status == 'spam'
+        self.app.get(permalink, extra_environ=dict(username='*anonymous'), status=404)
+        self.app.get('/rest' + permalink, extra_environ=dict(username='*anonymous'), status=404)
+        assert 'Test post' in self.app.get(permalink)
+
+    def test_moderated_author_sees_own_pending_post(self):
+        """The thread page 404s when nothing is approved, but must still render the
+        'awaiting moderation' notice for the author who just posted [#2963]."""
+        self.app.get('/wiki/Home/')  # so the tool is set up before we change its ACL
+        h.set_context('test', 'wiki', neighborhood='Projects')
+        c.app.config.acl = [ace for ace in c.app.config.acl if ace.permission != 'unmoderated_post']
+        session(c.app.config).flush(c.app.config)
+
+        self._make_post('needs a moderator', username='test-user')
+        assert M.Post.query.get(text='needs a moderator').status == 'pending'
+
+        # posting redirects to the thread page, which 404s since nothing is approved,
+        # but the author must still get the notice rather than an empty error page
+        r = self.app.get(self._thread_link(), status=404, extra_environ=dict(username='test-user'))
+        assert 'Post awaiting moderation' in r
+        assert 'needs a moderator' not in r
 
     def test_permissions(self):
         thread_url = self._thread_link()
@@ -546,3 +574,11 @@ class TestAttachment(TestDiscussBase):
         # ... but moderator can
         self.app.get(alink, status=200, extra_environ=moderator)
         self.app.get(thumblink, status=200, extra_environ=moderator)
+
+        # same for a spammed post
+        post = M.Post.query.get(slug=slug)
+        post.status = 'spam'
+        session(post).flush(post)
+        self.app.get(alink, status=403, extra_environ=ordinary_user)
+        self.app.get(thumblink, status=403, extra_environ=ordinary_user)
+        self.app.get(alink, status=200, extra_environ=moderator)
