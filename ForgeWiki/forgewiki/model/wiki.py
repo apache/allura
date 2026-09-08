@@ -281,6 +281,7 @@ class Page(VersionedArtifact, ActivityObject):
         Notification.post(
             artifact=self, topic='metadata', text=description, subject=subject)
         Shortlink.query.remove(dict(ref_id=self.index_id()))
+        self.revoke_feed_entries()
         self.deleted = True
         suffix = f" {datetime.utcnow():%Y-%m-%d %H:%M:%S.%f}"
         self.title += suffix

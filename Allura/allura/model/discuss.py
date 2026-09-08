@@ -291,7 +291,7 @@ class Thread(Artifact, ActivityObject):
         return self.ref.artifact
 
     def post_to_feed(self, post):
-        if post.status == 'ok':
+        if post.status == 'ok' and not post.deleted:
             Feed.post(
                 self.primary(),
                 title=post.subject,
@@ -742,6 +742,16 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
             return f'{url}?limit={limit}#{slug}'
         return f'{url}?limit={limit}&page={page}#{slug}'
 
+    def revoke_feed_entries(self):
+        '''post_to_feed() files these under the thread's artifact, not the post.'''
+        primary = self.thread.primary() if self.thread else None
+        if primary is None:  # pragma no cover
+            return
+        suffix = '#' + h.urlquote(self.slug)  # the page number in the link can shift
+        for item in Feed.query.find(dict(ref_id=primary.index_id())):
+            if item.link and item.link.endswith(suffix):
+                item.delete()
+
     def shorthand_id(self):
         if self.thread:
             return f'{self.thread.shorthand_id()}#{self.slug}'
@@ -764,6 +774,7 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
 
     def soft_delete(self):
         self.deleted = True
+        self.revoke_feed_entries()
         session(self).flush(self)
         self.thread.update_stats()
 
@@ -836,6 +847,7 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
 
     def spam(self, submit_spam_feedback=True):
         self.status = 'spam'
+        self.revoke_feed_entries()
         if submit_spam_feedback:
             g.spam_checker.submit_spam(self.text, artifact=self, user=self.author())
         session(self).flush(self)
@@ -844,6 +856,7 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
     def undo(self, prev_status):
         if prev_status in ('ok', 'pending'):
             self.status = prev_status
+            self.thread.post_to_feed(self)  # spam() revoked it
             session(self).flush(self)
             self.thread.update_stats()
 
