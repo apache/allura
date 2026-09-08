@@ -236,8 +236,7 @@ class Oauth1Validator(oauthlib.oauth1.RequestValidator):
 
     def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
                                      request, request_token=None, access_token=None) -> bool:
-        # TODO: record and check nonces from reuse
-        return True
+        return M.OAuthNonce.claim(client_key, timestamp, nonce)
 
     def validate_redirect_uri(self, client_key, redirect_uri, request) -> bool:
         # TODO: have application owner specify redirect uris, save on OAuthConsumerToken

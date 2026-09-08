@@ -16,6 +16,8 @@
 #       under the License.
 
 
+import time
+
 from ming.odm import ThreadLocalODMSession
 
 from allura import model as M
@@ -39,3 +41,23 @@ class TestOAuthModel:
         assert M.OAuthConsumerToken.query.find().count() == 2
         assert token1._id == token2._id
         assert token1._id != token3._id
+
+
+class TestOAuthNonce:
+
+    def setup_method(self):
+        setup_basic_test()
+        ThreadLocalODMSession.close_all()
+        setup_global_objects()
+
+    def test_claim_rejects_reuse(self):
+        now = int(time.time())
+        assert M.OAuthNonce.claim('key', now, 'nonce') is True
+        assert M.OAuthNonce.claim('key', now, 'nonce') is False
+        assert M.OAuthNonce.claim('key', now, 'other') is True
+        assert M.OAuthNonce.claim('other', now, 'nonce') is True
+
+    def test_claim_rejects_bad_timestamp(self):
+        stale = int(time.time()) - M.OAuthNonce.WINDOW_SECONDS - 60
+        assert M.OAuthNonce.claim('key', stale, 'nonce') is False
+        assert M.OAuthNonce.claim('key', 'not-a-number', 'nonce') is False

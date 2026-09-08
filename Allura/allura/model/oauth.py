@@ -123,6 +123,52 @@ class OAuthRequestToken(OAuthToken):
     consumer_token: OAuthConsumerToken = RelationProperty('OAuthConsumerToken')
 
 
+# how far a request timestamp may be from our clock, and how long a nonce is kept
+OAUTH1_NONCE_WINDOW_SECONDS = 600
+
+
+class OAuthNonce(MappedClass):
+    """A used OAuth1 (client_key, timestamp, nonce) triple, per RFC 5849."""
+
+    WINDOW_SECONDS = OAUTH1_NONCE_WINDOW_SECONDS
+
+    class __mongometa__:
+        session = main_orm_session
+        name = 'oauth_nonce'
+        unique_indexes = [('client_key', 'timestamp', 'nonce')]
+        custom_indexes = [
+            dict(fields=('created_at',), expireAfterSeconds=OAUTH1_NONCE_WINDOW_SECONDS)
+        ]
+
+    query: 'Query[OAuthNonce]'
+
+    _id = FieldProperty(S.ObjectId)
+    client_key = FieldProperty(str)
+    timestamp = FieldProperty(int)
+    nonce = FieldProperty(str)
+    created_at = FieldProperty(datetime, if_missing=datetime.utcnow)
+
+    @classmethod
+    def claim(cls, client_key: str, timestamp: int, nonce: str) -> bool:
+        """Record this triple, returning False if it was already used."""
+        try:
+            timestamp = int(timestamp)
+        except (TypeError, ValueError):
+            return False
+        age = abs((datetime.utcnow() - datetime.utcfromtimestamp(timestamp)).total_seconds())
+        if age > cls.WINDOW_SECONDS:
+            log.info('OAuth1 timestamp outside the accepted window: %s', timestamp)
+            return False
+        record = cls(client_key=client_key, timestamp=timestamp, nonce=nonce)
+        try:
+            session(record).flush(record)
+        except pymongo.errors.DuplicateKeyError:
+            session(record).expunge(record)
+            log.info('OAuth1 nonce replay rejected for client %s', client_key)
+            return False
+        return True
+
+
 class OAuthAccessToken(OAuthToken):
 
     class __mongometa__:

@@ -36,11 +36,19 @@ def main():
     op.add_option('-t', '--to-wiki', action='store', dest='to_wiki',
                   help='URL of wiki API to copy to like http://toserver.com/rest/p/test/wiki/')
     op.add_option('-D', '--debug', action='store_true',
+                  help='Print page content but do not post it',
                   dest='debug', default=False)
     op.add_option('-O', '--oauth', type='int', dest='oauth_version', default=1,
                   help='OAuth version to use for authentication. Defaults to OAuth v1.',
                   action='callback', callback=validate_oauth_version)
     (options, args) = op.parse_args(sys.argv[1:])
+
+    if '/rest/' not in options.from_wiki:
+        print("--from-wiki should be an Allura /rest/ url")
+        return 1
+    if '/rest/' not in options.to_wiki:
+        print("--to-wiki should be an Allura /rest/ url")
+        return 1
 
     base_url = options.to_wiki.split('/rest/')[0]
     oauth_client = make_oauth2_client(base_url) if options.oauth_version == 2 else make_oauth_client(base_url)
@@ -201,4 +209,4 @@ def validate_oauth_version(option, opt_str, value, parser):
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
