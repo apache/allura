@@ -1087,6 +1087,7 @@ class TestUserMentions:
 class TestHandlePaging:
 
     def setup_method(self, method):
+        setup_basic_test()
         prefs = {}
         c.user = Mock()
 

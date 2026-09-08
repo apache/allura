@@ -744,6 +744,21 @@ def needs_email_verification(user) -> dict | None:
     return None
 
 
+def bound_page(page: int, limit: int) -> int:
+    """Refuse offsets deep enough that Solr and Mongo must walk the whole result set.
+
+    Machines get a 400 so they stop looping; browsers get sent to the last reachable page.
+    """
+    max_offset = asint(tg.config.get('page_offset_max', 50_000))
+    if not max_offset or page * limit <= max_offset:
+        return page
+    max_page = max_offset // limit
+    if request.path.startswith('/rest/') or utils.is_ajax(request):
+        raise webob.exc.HTTPBadRequest(
+            json_body={'error': f'page must be {max_page} or less when limit is {limit}'})
+    tg.redirect(querystring(request, {'page': str(max_page)}))
+
+
 def paging_sanitizer(limit, page, total_count=sys.maxsize, zero_based_pages=True):
     """Return limit, page - both converted to int and constrained to
     valid ranges based on total_count.
@@ -763,6 +778,7 @@ def paging_sanitizer(limit, page, total_count=sys.maxsize, zero_based_pages=True
         page = int(page or 0)
     except ValueError:
         page = 0
+    page = bound_page(page, limit)
     page = min(max(page, (0 if zero_based_pages else 1)), max_page)
     return limit, page
 

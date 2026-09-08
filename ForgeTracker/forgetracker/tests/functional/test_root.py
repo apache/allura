@@ -2563,6 +2563,10 @@ class TestFunctionalController(TrackerTestController):
         assert (r['ticket']['attachments'][0]['url'] ==
                 'http://localhost/p/test/bugs/1/attachment/test_root.py')
 
+    def test_rest_tickets_page_offset_max(self):
+        r = self.app.get('/rest/p/test/bugs/?limit=500&page=200', status=400)
+        assert r.json == {'error': 'page must be 100 or less when limit is 500'}
+
     def test_html_escaping(self):
         with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
             self.new_ticket(summary='test <h2> ticket',
