@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import sys
 import os
+import re
 import shutil
 import string
 import logging
@@ -57,6 +58,13 @@ assert sys.getfilesystemencoding() == 'utf-8', \
 
 gitdb.util.mman = gitdb.util.mman.__class__(
     max_open_handles=128)
+
+
+# Characters gitrevisions(7) treats as syntax rather than literal ref/hash content
+# (~N, ^N, :path, a..b range, @{...}), plus the control/space/glob characters
+# git-check-ref-format(1) bans from ref names outright. Anything else -- e.g. the
+# punctuation @ $ ! # % & is legal in a git branch/tag name and must not be rejected here.
+_UNSAFE_REV_CHARS_RE = re.compile(r'[\x00-\x1f\x7f ~^:?*\[\\]')
 
 
 class GitLibCmdWrapper:
@@ -270,7 +278,7 @@ class GitImplementation(M.RepositoryImplementation):
         if result is None:
             # find the id by branch/tag name
             try:
-                impl = self._git.rev_parse(str(rev) + '^0')
+                impl = self.rev_parse(rev, require_commit=True)
                 result = cache.get(M.repository.Commit, dict(_id=impl.hexsha))
             except Exception:
                 url = ''
@@ -279,7 +287,7 @@ class GitImplementation(M.RepositoryImplementation):
                     url = ' at ' + request.url
                 except Exception:
                     pass
-                log.info(f"couldn't run rev_parse({str(rev) + '^0'}){url}", exc_info=True)
+                log.info(f"couldn't run rev_parse({rev!r}){url}", exc_info=True)
         if result:
             result.set_context(self._repo)
         return result
@@ -319,7 +327,7 @@ class GitImplementation(M.RepositoryImplementation):
         ci_doc = CommitDoc.m.get(_id=oid)
         if ci_doc and lazy:
             return False
-        ci = self._git.rev_parse(oid)
+        ci = self.rev_parse(oid)
         args = dict(
             tree_id=ci.tree.hexsha,
             committed=Object(
@@ -560,8 +568,26 @@ class GitImplementation(M.RepositoryImplementation):
             binsha += bytes((int(e + o, 16),))
         return git.Object.new_from_sha(self._git, binsha)
 
-    def rev_parse(self, rev):
-        return self._git.rev_parse(rev)
+    def rev_parse(self, rev, require_commit: bool = False):
+        '''Resolve a plain commit hash or branch/tag name to a git object.
+
+        Only accepts safe rev syntax -- not relative-ref forms like ~N, ^N, :path, a..b range, @{...}
+
+        :param require_commit: dereference a tag object down to the commit it points to (git's `<rev>^0` syntax).
+        '''
+        if not self._is_safe_rev(rev):
+            raise ValueError(f'Unsafe rev spec: {rev!r}')
+        resolved = f'{rev}^0' if require_commit else str(rev)
+        return self._git.rev_parse(resolved)
+
+    @staticmethod
+    def _is_safe_rev(rev) -> bool:
+        rev = str(rev)
+        if not rev or rev.startswith('-'):
+            return False  # a leading dash risks being read as a git rev-parse option
+        if '..' in rev or '@{' in rev:
+            return False
+        return not _UNSAFE_REV_CHARS_RE.search(rev)
 
     def symbolics_for_commit(self, commit):
         try:
@@ -573,7 +599,7 @@ class GitImplementation(M.RepositoryImplementation):
             return [], []
 
     def compute_tree_new(self, commit, tree_path='/'):
-        ci = self._git.rev_parse(commit._id)
+        ci = self.rev_parse(commit._id)
         tree = self.refresh_tree_info(ci.tree, set())
         return tree._id
 
@@ -602,7 +628,7 @@ class GitImplementation(M.RepositoryImplementation):
 
     def is_file(self, path, rev=None):
         path = path.strip('/')
-        ci = self._git.rev_parse(rev)
+        ci = self.rev_parse(rev)
         try:
             node = ci.tree / path
             return node.type == 'blob'

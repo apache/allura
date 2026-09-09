@@ -599,7 +599,8 @@ By Dave Brondsema''' in text_body
         c.lcid_cache = {}  # else it'll be a mock
 
         # build the previous last-commit-doc.  This causes different behavior when generating the next one.
-        self.repo.commit('HEAD^').tree.ls()
+        # 'HEAD^' would be more readable, but commit() no longer accepts relative-ref syntax
+        self.repo.commit('df30427c488aeab84b2352bdf88a3b19223f9d7a').tree.ls()
 
         self.test_ls()
 
@@ -639,6 +640,38 @@ By Dave Brondsema''' in text_body
         tree = self.repo.commit('zz').tree
         assert self.repo._impl.blob_size(tree['README']) == 28
         assert self.repo._impl.blob_size(tree['bad']) == 9
+
+    def test_rev_parse_rejects_unsafe_rev(self):
+        impl = self.repo._impl
+        for unsafe_rev in ('zz~1', 'zz^1', 'zz^0', 'HEAD@{0}', 'zz:README', 'zz..master', '-zz'):
+            with pytest.raises(ValueError):
+                impl.rev_parse(unsafe_rev)
+
+    def test_rev_parse_allows_punctuation_legal_in_ref_names(self):
+        impl = self.repo._impl
+        for safe_rev in ('feature@2024', 'release/$version', 'foo!bar', 'a+b', 'x,y', 'name#1', "it's-fine"):
+            assert impl._is_safe_rev(safe_rev)
+
+    def test_rev_parse_require_commit(self):
+        # require_commit appends git's `^0` dereference suffix internally --
+        # after the safety check, not as a caller-supplied suffix that could itself smuggle in unsafe syntax
+        impl = self.repo._impl
+        obj = impl.rev_parse('master', require_commit=True)
+        assert obj.hexsha == '1e146e67985dcd71c74de79613719bef7bddca4a'
+
+    def test_commit_rejects_relative_ref_syntax(self):
+        # commit()'s docstring says rev can be "_id or a branch/tag name" -- it must
+        # not also accept git's relative-ref forms (~N, ^N, :path, a..b, @{...}).
+        for unsafe_rev in ('zz~1', 'zz^1', 'zz^0', 'HEAD@{0}', 'zz:README', 'zz..master', '-zz'):
+            assert self.repo.commit(unsafe_rev) is None
+
+    def test_commit_resolves_safe_revs(self):
+        # plain hashes (short and long) and branch/tag names must still resolve
+        full_hexsha = '1e146e67985dcd71c74de79613719bef7bddca4a'
+        for safe_rev in (full_hexsha, full_hexsha[:7], 'master'):
+            result = self.repo.commit(safe_rev)
+            assert result is not None
+            assert result._id == full_hexsha
 
     def test_tarball_status(self):
         tmpdir = tg.config['scm.repos.tarball.root']
