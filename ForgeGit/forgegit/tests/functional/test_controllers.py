@@ -331,6 +331,51 @@ class TestRootController(_TestCase):
         assert (resp.headers.get('Content-Disposition') ==
                 'attachment;filename="with%22%26%3Aspecials.txt"')
 
+    def _start_raw_download(self, url):
+        '''
+        Call the real WSGI stack for a `format=raw` blob download, but return the response iterator
+        after reading only its first chunk -- bypassing WebTest's normal do_request(), which always fully drains it
+        '''
+        environ = self.app._make_environ()
+        url, qs = url.split('?', 1)
+        environ['QUERY_STRING'] = qs
+        req = self.app.RequestClass.blank(url, environ)
+        _status, _headers, app_iter, exc_info = req.call_application(
+            self.app.app, catch_exc_info=True)
+        del exc_info
+        it = iter(app_iter)
+        next(it)
+        return app_iter, it
+
+    def test_abandoned_raw_download_does_not_corrupt_next_request(self):
+        # Regression test: a client that disconnects or WSGI server that doesn't close
+        # an abandoned response iterator from a raw download
+        # It must not corrupt later requests.  This used to fail:
+        # GitPython's persistent `cat-file` subprocess still held unread bytes
+        ci_master = '/p/test/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/'
+        ci_zz = '/p/test/src-git/ci/5c47243c8e424136fd5cdd18cd94d34c66d1955c/'
+
+        with patch.object(GM.git_repo._OpenedGitBlob, 'CHUNK_SIZE', 5):
+            # hold _abandoned_download on `self` so it doesn't get garbage collected
+            self._abandoned_download = self._start_raw_download(ci_master + 'tree/README?format=raw')
+
+            resp = self.app.get(ci_zz + 'tree/bad?format=raw')
+            assert resp.body == b'Not root\n'
+
+    def test_closed_raw_download_does_not_corrupt_next_request(self):
+        # Same as above, but the first download's iterator is properly closed.  Control case.
+        ci_master = '/p/test/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/'
+        ci_zz = '/p/test/src-git/ci/5c47243c8e424136fd5cdd18cd94d34c66d1955c/'
+
+        with patch.object(GM.git_repo._OpenedGitBlob, 'CHUNK_SIZE', 5):
+            app_iter, it = self._start_raw_download(ci_master + 'tree/README?format=raw')
+            it.close()
+            if hasattr(app_iter, 'close'):
+                app_iter.close()
+
+            resp = self.app.get(ci_zz + 'tree/bad?format=raw')
+            assert resp.body == b'Not root\n'
+
     def test_file_too_large(self):
         ci = self._get_ci()
         with h.push_config(tg.config, **{'scm.view.max_file_bytes': '3'}):
