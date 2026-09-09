@@ -524,11 +524,23 @@ class GitImplementation(M.RepositoryImplementation):
                 commit_lines.append(line)
 
     def open_blob(self, blob):
-        return _OpenedGitBlob(
-            self._object(blob._id).data_stream)
+        # A dedicated `git cat-file -p <sha>` subprocess, not GitPython's persistent,
+        # shared `cat-file --batch` process (used by e.g. `.data_stream`/`.parents`/
+        # `.tree`). This blob's bytes get streamed straight into an HTTP response.
+        # If that is ever abandoned partway through, only this one throwaway
+        # subprocess is affected, and GitPython's own AutoInterrupt wrapper kills it
+        # on garbage collection. Nothing else ever shares this pipe, so nothing else
+        # can be corrupted by bytes left over in it.
+        proc = self._git.git.cat_file(blob._id, p=True, as_process=True)  # -p: print the object's content
+        return _OpenedGitBlob(proc)
 
     def blob_size(self, blob):
-        return self._object(blob._id).data_stream.size
+        # Unlike open_blob(), this always finishes in one synchronous call -- never handed off to an HTTP response
+        # so it's safe to use GitPython's shared persistent process
+        stream = self._object(blob._id).data_stream
+        size = stream.size
+        del stream  # drain any unread body bytes before the persistent process is reused
+        return size
 
     def _setup_hooks(self, source_path=None):
         'Set up the git post-commit hook'
@@ -822,11 +834,14 @@ class GitImplementation(M.RepositoryImplementation):
 class _OpenedGitBlob:
     CHUNK_SIZE = 4096
 
-    def __init__(self, stream):
-        self._stream = stream
+    def __init__(self, proc: git.Git.AutoInterrupt):
+        self._proc = proc
+        self._stream = proc.stdout
 
     def read(self):
-        return self._stream.read()
+        data = self._stream.read()
+        self._proc.wait()  # reap the process now, and raise if git itself failed
+        return data
 
     def __iter__(self):
         '''
@@ -849,8 +864,13 @@ class _OpenedGitBlob:
                 break
             yield buffer[:eol + 1]
             buffer = buffer[eol + 1:]
+        self._proc.wait()  # reached naturally, not via close()/abandonment: reap now
 
     def close(self):
+        # no explicit cleanup needed: AutoInterrupt.__del__ closes the pipes and
+        # terminates the process (if still running) once `self._proc` is
+        # garbage collected, whether that's because of this close() call, the
+        # generator in __iter__() being closed early, or neither ever happening
         pass
 
 

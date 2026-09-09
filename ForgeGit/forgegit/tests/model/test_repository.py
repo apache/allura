@@ -20,6 +20,7 @@ import shutil
 import stat
 import datetime
 import email.iterators
+import threading
 import pytest
 import mock
 import git
@@ -601,6 +602,43 @@ By Dave Brondsema''' in text_body
         self.repo.commit('HEAD^').tree.ls()
 
         self.test_ls()
+
+    def test_open_blob_thread_safety(self):
+        # regression test: open_blob() spawns its own one-off `git cat-file` subprocess
+        # to avoid concurrent read corruption
+        impl = self.repo._impl
+        tree = self.repo.commit('zz').tree
+        blob_readme = tree['README']
+        blob_bad = tree['bad']
+        errors = []
+
+        def read_readme():
+            for _ in range(50):
+                data = impl.open_blob(blob_readme).read()
+                if data != b'This is readme\nAnother Line\n':
+                    errors.append(('readme', data))
+
+        def read_bad():
+            for _ in range(50):
+                data = impl.open_blob(blob_bad).read()
+                if data != b'Not root\n':
+                    errors.append(('bad', data))
+
+        threads = (
+            [threading.Thread(target=read_readme) for _ in range(5)]
+            + [threading.Thread(target=read_bad) for _ in range(5)]
+        )
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        assert errors == []
+
+    def test_blob_size(self):
+        tree = self.repo.commit('zz').tree
+        assert self.repo._impl.blob_size(tree['README']) == 28
+        assert self.repo._impl.blob_size(tree['bad']) == 9
 
     def test_tarball_status(self):
         tmpdir = tg.config['scm.repos.tarball.root']
