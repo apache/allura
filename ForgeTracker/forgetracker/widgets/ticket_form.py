@@ -240,12 +240,12 @@ class MilestoneField(ew.SingleSelectField):
                'class':css_class},
                attrs)}}>
             {% for o in open_milestones %}
-            <option{% if o.selected%} selected{% endif %} value="{{o.html_value}}">{{o.label|e}}</option>
+            <option{% if o.selected%} selected{% endif %} value="{{o.html_value|e}}">{{o.label|e}}</option>
             {% endfor %}
             {% if closed_milestones %}
             <optgroup label="Closed">
                 {% for o in closed_milestones %}
-                <option{% if o.selected%} selected{% endif %} value="{{o.html_value}}">{{o.label|e}}</option>
+                <option{% if o.selected%} selected{% endif %} value="{{o.html_value|e}}">{{o.label|e}}</option>
                 {% endfor %}
             </optgroup>
             {% endif %}

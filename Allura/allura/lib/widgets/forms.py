@@ -44,9 +44,11 @@ weekdays = ['Monday', 'Tuesday', 'Wednesday',
 
 
 class _HTMLExplanation(ew.InputField):
+    # text is developer-supplied markup (never user input); |safe keeps
+    # easywidgets' autoescaping from mangling it
     template = ew.Snippet(
         '''<label class="grid-4">&nbsp;</label>
-           <div class="grid-14" style="margin:2px;">{{widget.text}}</div>
+           <div class="grid-14" style="margin:2px;">{{widget.text|safe}}</div>
         ''',
         'jinja2')
 

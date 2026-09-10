@@ -413,6 +413,11 @@ def test_split_select_field_options():
             ['test', 'message', 'test2'])
     assert (h.split_select_field_options('abc ƒå∂ ººº') ==
             ['abc', 'ƒå∂', 'ººº'])
+    # shlex unescapes \" inside a quoted word, so a double quote can reach the
+    # option even when parsing succeeds.  It has to be stripped there too, or
+    # it breaks out of the value attr the option is rendered into.
+    assert (h.split_select_field_options(r'"x\" onmouseover=alert(1) y" normal') ==
+            ['x onmouseover=alert(1) y', 'normal'])
 
 
 def test_notifications_disabled():
