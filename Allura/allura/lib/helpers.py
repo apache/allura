@@ -1029,12 +1029,12 @@ def split_select_field_options(field_options):
         field_options = shlex_split(field_options)
     except ValueError:
         field_options = field_options.split()
-        # After regular split field_options might contain a " characters,
-        # which would break html when rendered inside tag's value attr.
-        # Escaping doesn't help here, 'cause it breaks EasyWidgets' validation,
-        # so we're getting rid of those.
-        field_options = [o.replace('"', '') for o in field_options]
-    return field_options
+    # An option containing a " breaks out of the value attr it gets rendered
+    # into.  shlex_split can hand one through even on the success path -- it
+    # unescapes \" inside a quoted word -- so strip them on *both* branches,
+    # not just after the plain split.  Escaping instead of stripping isn't an
+    # option here, it breaks EasyWidgets' validation of the submitted value.
+    return [o.replace('"', '') for o in field_options]
 
 
 @contextmanager
