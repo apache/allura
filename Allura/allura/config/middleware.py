@@ -21,6 +21,7 @@ import ast
 import importlib
 import mimetypes
 import re
+import threading
 import warnings
 
 from tg import config
@@ -33,6 +34,7 @@ from werkzeug.debug import DebuggedApplication
 import activitystream
 import ew
 import ew.jinja2_ew
+import ew.resource
 import formencode
 from ming.odm.middleware import MingMiddleware
 from beaker_session_jwt import JWTCookieSession
@@ -55,6 +57,7 @@ from allura.lib.custom_middleware import AlluraTimerMiddleware
 from allura.lib.custom_middleware import SSLMiddleware
 from allura.lib.custom_middleware import StaticFilesMiddleware
 from allura.lib.custom_middleware import CSRFMiddleware
+from allura.lib.custom_middleware import EwSlimRequestLimitMiddleware
 from allura.lib.custom_middleware import CORSMiddleware
 from allura.lib.custom_middleware import LoginRedirectMiddleware
 from allura.lib.custom_middleware import RememberLoginMiddleware
@@ -69,14 +72,39 @@ from allura.lib.utils import configure_ming, pkg_file
 __all__ = ['make_app']
 
 
+class _BoundedResourceCache(dict):
+    """A byte-budgeted replacement for easywidgets' unbounded resource cache.
+    drop this once requirements pin easywidgets >= 0.5.
+    """
+
+    def __init__(self, max_bytes):
+        super().__init__()
+        self.max_bytes = max_bytes
+        self._bytes = 0
+        self._lock = threading.Lock()
+
+    def __setitem__(self, key, value):
+        if len(value) > self.max_bytes:
+            return
+        with self._lock:
+            if key in self:
+                self._bytes -= len(super().__getitem__(key))
+                super().__delitem__(key)
+            super().__setitem__(key, value)
+            self._bytes += len(value)
+            while self._bytes > self.max_bytes and len(self) > 1:
+                oldest = next(iter(self))
+                self._bytes -= len(super().__getitem__(oldest))
+                super().__delitem__(oldest)
+
+
+def _bound_ew_resource_cache(max_bytes):
+    ew.resource.ResourceManager.resource_cache = _BoundedResourceCache(max_bytes)
+
+
 def _mark_ew_script_bodies_safe():
     """Keep inline <script>/<style> bodies out of easywidgets' autoescaping.
-
-    easywidgets 0.4.x renders JSScript/CSSScript through a bare ``{{widget.text}}``.  That was
-    harmless while its jinja env had autoescaping off, but _make_core_app turns it on, which would
-    escape every inline script and style body in the site (``&&`` -> ``&amp;&amp;`` and so on).
-    Script bodies are developer-supplied markup by definition, so mark them safe.  0.5 does this
-    itself; drop this once requirements pin easywidgets >= 0.5.
+    drop this once requirements pin easywidgets >= 0.5.
     """
     ew.jinja2_ew.JSScript.WidgetClass.template = ew.jinja2_ew.Snippet(
         '<script type="text/javascript">{{widget.text|safe}}</script>', 'jinja2')
@@ -173,6 +201,7 @@ def _make_core_app(root, global_conf: dict, **app_conf):
         app = SSLMiddleware(app, app_conf.get('no_redirect.pattern'),
                             app_conf.get('force_ssl.pattern'))
     _mark_ew_script_bodies_safe()
+    _bound_ew_resource_cache(asint(app_conf.get('ew.max_cache_bytes', 64 * 1024 * 1024)))
     # Setup resource manager, widget context SOP
     app = ew.WidgetMiddleware(
         app,
@@ -183,16 +212,10 @@ def _make_core_app(root, global_conf: dict, **app_conf):
         extra_headers=ast.literal_eval(app_conf.get('ew.extra_headers', '[]')),
         cache_max_age=asint(app_conf.get('ew.cache_header_seconds', 60*60*24*365)),
 
-        # settings to pass through to jinja Environment for EW core widgets
+        # settings to pass through to a second jinja Environment for EW core widgets
         # these are for the easywidgets' own [easy_widgets.engines] entry point
         # (the Allura [easy_widgets.engines] entry point is named "jinja" (not jinja2) but it doesn't need
         #  any settings since it is a class that uses the same jinja env as the rest of allura)
-        # NB: this is a *second* jinja environment, separate from the one in
-        # AlluraJinjaRenderer.  Widgets render through this one and their output
-        # is spliced into our own templates as Markup, so it does not inherit
-        # their autoescaping -- it has to be turned on here too.  Recent
-        # easywidgets defaults it on; set it explicitly so an older pin can't
-        # silently render widgets unescaped.
         **{
             'jinja2.auto_reload': asbool(config['auto_reload_templates']),
             'jinja2.autoescape': True,
@@ -200,6 +223,11 @@ def _make_core_app(root, global_conf: dict, **app_conf):
             'jinja2.cache_size': asint(config.get('jinja_cache_size', -1)),
         }
     )
+    # Refuse oversized _slim requests before WidgetMiddleware can concatenate them
+    app = EwSlimRequestLimitMiddleware(
+        app,
+        script_name=app_conf.get('ew.script_name', '/_ew_resources/'),
+        max_hrefs=asint(app_conf.get('ew.max_slim_hrefs', 100)))
     # Handle static files (by tool)
     app = StaticFilesMiddleware(app, app_conf.get('static.script_name'))
     # Handle setup and flushing of Ming ORM sessions
