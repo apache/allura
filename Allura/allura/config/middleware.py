@@ -32,6 +32,7 @@ from werkzeug.debug import DebuggedApplication
 
 import activitystream
 import ew
+import ew.jinja2_ew
 import formencode
 from ming.odm.middleware import MingMiddleware
 from beaker_session_jwt import JWTCookieSession
@@ -66,6 +67,21 @@ from allura.lib import helpers as h
 from allura.lib.utils import configure_ming, pkg_file
 
 __all__ = ['make_app']
+
+
+def _mark_ew_script_bodies_safe():
+    """Keep inline <script>/<style> bodies out of easywidgets' autoescaping.
+
+    easywidgets 0.4.x renders JSScript/CSSScript through a bare ``{{widget.text}}``.  That was
+    harmless while its jinja env had autoescaping off, but _make_core_app turns it on, which would
+    escape every inline script and style body in the site (``&&`` -> ``&amp;&amp;`` and so on).
+    Script bodies are developer-supplied markup by definition, so mark them safe.  0.5 does this
+    itself; drop this once requirements pin easywidgets >= 0.5.
+    """
+    ew.jinja2_ew.JSScript.WidgetClass.template = ew.jinja2_ew.Snippet(
+        '<script type="text/javascript">{{widget.text|safe}}</script>', 'jinja2')
+    ew.jinja2_ew.CSSScript.WidgetClass.template = ew.jinja2_ew.Snippet(
+        '<style>{{widget.text|safe}}</style>', 'jinja2')
 
 
 # this is webapp entry point from setup.py
@@ -156,6 +172,7 @@ def _make_core_app(root, global_conf: dict, **app_conf):
     if config.get('override_root') != 'task':
         app = SSLMiddleware(app, app_conf.get('no_redirect.pattern'),
                             app_conf.get('force_ssl.pattern'))
+    _mark_ew_script_bodies_safe()
     # Setup resource manager, widget context SOP
     app = ew.WidgetMiddleware(
         app,
