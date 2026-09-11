@@ -16,6 +16,15 @@
 #       under the License.
 
 from mock import MagicMock, patch
+from paste.registry import Registry
+
+import ew.jinja2_ew
+from ew import widget_context
+from ew.core import WidgetContext
+from ew.render import TemplateEngine
+from ew.resource import ResourceManager
+
+from allura.config.middleware import _mark_ew_script_bodies_safe
 from allura.lib.custom_middleware import CORSMiddleware
 
 
@@ -103,3 +112,42 @@ class TestCORSMiddleware:
         assert f({key: ''}) == set()
         assert (f({key: 'Authorization, Accept'}) ==
                 {'authorization', 'accept'})
+
+
+class TestEwScriptBodiesStayRaw:
+    """_make_core_app turns easywidgets' autoescaping on, which would otherwise escape every
+    inline script and style body rendered through JSScript/CSSScript."""
+
+    def setup_method(self):
+        self.saved_engines = TemplateEngine._engines
+        self.saved_js = ew.jinja2_ew.JSScript.WidgetClass.template
+        self.saved_css = ew.jinja2_ew.CSSScript.WidgetClass.template
+        TemplateEngine.initialize({'jinja2.autoescape': True})
+        self.registry = Registry()
+        self.registry.prepare()
+        self.manager = ResourceManager()
+        self.registry.register(
+            widget_context, WidgetContext(scheme='http', resource_manager=self.manager))
+        _mark_ew_script_bodies_safe()
+
+    def teardown_method(self):
+        self.registry.cleanup()
+        TemplateEngine._engines = self.saved_engines
+        ew.jinja2_ew.JSScript.WidgetClass.template = self.saved_js
+        ew.jinja2_ew.CSSScript.WidgetClass.template = self.saved_css
+
+    def _render(self, widget):
+        widget.manager = self.manager
+        return widget.display()
+
+    def test_js_script_body_is_not_escaped(self):
+        body = '''$(function () {$('.x').go({"a": 1}); if (a && b) { c(); }});'''
+        assert body in self._render(ew.jinja2_ew.JSScript(body))
+
+    def test_css_script_body_is_not_escaped(self):
+        body = 'div.x table{ width: 700px; } a > b { color: red }'
+        assert body in self._render(ew.jinja2_ew.CSSScript(body))
+
+    def test_widget_values_are_still_escaped(self):
+        rendered = ew.jinja2_ew.TextField(name='f').display(value='a" onmouseover=alert(1)')
+        assert '&#34;' in rendered
