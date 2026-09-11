@@ -21,6 +21,7 @@ import ast
 import importlib
 import mimetypes
 import re
+import threading
 import warnings
 
 from tg import config
@@ -33,6 +34,7 @@ from werkzeug.debug import DebuggedApplication
 import activitystream
 import ew
 import ew.jinja2_ew
+import ew.resource
 import formencode
 from ming.odm.middleware import MingMiddleware
 from beaker_session_jwt import JWTCookieSession
@@ -55,6 +57,7 @@ from allura.lib.custom_middleware import AlluraTimerMiddleware
 from allura.lib.custom_middleware import SSLMiddleware
 from allura.lib.custom_middleware import StaticFilesMiddleware
 from allura.lib.custom_middleware import CSRFMiddleware
+from allura.lib.custom_middleware import EwSlimRequestLimitMiddleware
 from allura.lib.custom_middleware import CORSMiddleware
 from allura.lib.custom_middleware import LoginRedirectMiddleware
 from allura.lib.custom_middleware import RememberLoginMiddleware
@@ -67,6 +70,44 @@ from allura.lib import helpers as h
 from allura.lib.utils import configure_ming, pkg_file
 
 __all__ = ['make_app']
+
+
+class _BoundedResourceCache(dict):
+    """A byte-budgeted replacement for easywidgets' unbounded resource cache.
+
+    ew 0.4.x keeps ResourceManager.resource_cache -- a plain class-level dict shared by every
+    instance and every request -- forever, keyed on the raw href query string and with no eviction.
+    WidgetMiddleware answers /_ew_resources/ before the wrapped app, so anyone at all can grow the
+    worker's heap until it dies.  It only ever does ``cache[href]`` and ``cache[href] = content``,
+    so evicting on insert is enough to bound it without touching the library's code.
+
+    Oldest-first rather than true LRU: eviction only happens under abuse, where the recency of what
+    gets dropped does not matter.  easywidgets 0.5 bounds this itself; drop once the pin moves.
+    """
+
+    def __init__(self, max_bytes):
+        super().__init__()
+        self.max_bytes = max_bytes
+        self._bytes = 0
+        self._lock = threading.Lock()
+
+    def __setitem__(self, key, value):
+        if len(value) > self.max_bytes:
+            return
+        with self._lock:
+            if key in self:
+                self._bytes -= len(super().__getitem__(key))
+                super().__delitem__(key)
+            super().__setitem__(key, value)
+            self._bytes += len(value)
+            while self._bytes > self.max_bytes and len(self) > 1:
+                oldest = next(iter(self))
+                self._bytes -= len(super().__getitem__(oldest))
+                super().__delitem__(oldest)
+
+
+def _bound_ew_resource_cache(max_bytes):
+    ew.resource.ResourceManager.resource_cache = _BoundedResourceCache(max_bytes)
 
 
 def _mark_ew_script_bodies_safe():
@@ -173,6 +214,7 @@ def _make_core_app(root, global_conf: dict, **app_conf):
         app = SSLMiddleware(app, app_conf.get('no_redirect.pattern'),
                             app_conf.get('force_ssl.pattern'))
     _mark_ew_script_bodies_safe()
+    _bound_ew_resource_cache(asint(app_conf.get('ew.max_cache_bytes', 64 * 1024 * 1024)))
     # Setup resource manager, widget context SOP
     app = ew.WidgetMiddleware(
         app,
@@ -200,6 +242,11 @@ def _make_core_app(root, global_conf: dict, **app_conf):
             'jinja2.cache_size': asint(config.get('jinja_cache_size', -1)),
         }
     )
+    # Refuse oversized _slim requests before WidgetMiddleware can concatenate them
+    app = EwSlimRequestLimitMiddleware(
+        app,
+        script_name=app_conf.get('ew.script_name', '/_ew_resources/'),
+        max_hrefs=asint(app_conf.get('ew.max_slim_hrefs', 100)))
     # Handle static files (by tool)
     app = StaticFilesMiddleware(app, app_conf.get('static.script_name'))
     # Handle setup and flushing of Ming ORM sessions

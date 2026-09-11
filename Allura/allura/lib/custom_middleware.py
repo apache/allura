@@ -18,6 +18,7 @@
 import os
 import re
 import logging
+from urllib.parse import parse_qs
 
 import tg
 from paste import fileapp
@@ -657,3 +658,33 @@ class StatusCodeRedirect:
             newstatus, headers, app_iter, exc_info = _call_wsgi_application(self.app, new_environ)
         start_response(status, headers, exc_info)
         return app_iter
+
+
+class EwSlimRequestLimitMiddleware:
+    """Cap how many files one /_ew_resources/_slim/ request may concatenate.
+
+    easywidgets 0.4.x joins as many files as the query string names, with no bound, and its
+    WidgetMiddleware answers that path before the wrapped app sees it -- so an unauthenticated
+    request can name one file hundreds of times and get back a response hundreds of times its own
+    size, which is then cached for the life of the process.  Naming Allura's largest registered
+    resource 500 times turns a 9 KB query string into a 155 MB response.
+
+    This has to sit *outside* WidgetMiddleware so oversized requests never reach it.  easywidgets
+    0.5 enforces the same limit itself via max_slim_hrefs; drop this once the pin moves.
+    """
+
+    def __init__(self, app, script_name='/_ew_resources/', max_hrefs=100):
+        self.app = app
+        self.slim_prefix = script_name + '_slim/'
+        self.max_hrefs = max_hrefs
+
+    def __call__(self, environ, start_response):
+        if environ.get('PATH_INFO', '').startswith(self.slim_prefix):
+            href = parse_qs(environ.get('QUERY_STRING', '')).get('href', [''])[0]
+            count = len([h for h in href.split(';') if h])
+            if count > self.max_hrefs:
+                log.warning('Refusing _slim request for %s files (max %s) from %s',
+                            count, self.max_hrefs, environ.get('REMOTE_ADDR'))
+                resp = exc.HTTPBadRequest('Too many resources requested')
+                return resp(environ, start_response)
+        return self.app(environ, start_response)
