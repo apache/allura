@@ -19,10 +19,12 @@
 Model tests for auth
 """
 
+import re
 import textwrap
 from datetime import datetime, timedelta
 
-from bson import ObjectId
+import pytest
+from bson import Binary, ObjectId
 from tg import tmpl_context as c, app_globals as g, request as r
 from webob import Request
 from mock import patch, Mock
@@ -735,8 +737,57 @@ class TestAuditLog:
         setup_basic_test()
         setup_global_objects()
 
+    @pytest.mark.parametrize('message', ['IP Address: 192.0.2.1\nName: Carlos', '', None])
+    def test_dual_write_on_insert(self, message):
+        entry = M.AuditLog(message=message)
+        session(entry).flush(entry)
+
+        raw = M.main_doc_session.db.audit_log.find_one({'_id': entry._id})
+        assert raw['message'] == message
+        assert raw['message_encrypted'] == M.AuditLog.encr(message)
+        assert M.AuditLog.decr(raw['message_encrypted']) == message
+        if message is not None:
+            assert isinstance(raw['message_encrypted'], Binary)
+        assert M.AuditLog.query.get(_id=entry._id, message=message) is entry
+
+    def test_dual_write_on_update(self):
+        entry = M.AuditLog(message='add user alice to Admin')
+        session(entry).flush(entry)
+        original_ciphertext = entry.message_encrypted
+
+        entry.message = 'add user <REDACTED> to Admin'
+        session(entry).flush(entry)
+        entry_id = entry._id
+        session(entry).expunge(entry)
+
+        entry = M.AuditLog.query.get(_id=entry_id)
+        assert entry.message == 'add user <REDACTED> to Admin'
+        assert entry.message_encrypted != original_ciphertext
+        assert M.AuditLog.decr(entry.message_encrypted) == entry.message
+        assert M.AuditLog.query.find({
+            '_id': entry_id, 'message': re.compile(r'user <REDACTED>'),
+        }).count() == 1
+
+    def test_legacy_message_read_and_update(self):
+        entry_id = ObjectId()
+        collection = M.main_doc_session.db.audit_log
+        collection.insert_one({'_id': entry_id, 'message': 'Legacy message'})
+
+        entry = M.AuditLog.query.get(_id=entry_id)
+        assert entry.message == 'Legacy message'
+        assert entry.message_encrypted is None
+        assert 'message_encrypted' not in collection.find_one({'_id': entry_id})
+
+        entry.url = '/updated'
+        session(entry).flush(entry)
+        raw = collection.find_one({'_id': entry_id})
+        assert raw['message'] == 'Legacy message'
+        assert M.AuditLog.decr(raw['message_encrypted']) == 'Legacy message'
+
     def test_message_html(self):
         al = h.auditlog_user('our message <script>alert(1)</script>')
+        session(al).flush(al)
+        assert M.AuditLog.decr(al.message_encrypted) == al.message
         assert al.message == textwrap.dedent('''\
             IP Address: 127.0.0.1
             User-Agent: None
