@@ -17,6 +17,9 @@
        under the License.
 -#}
 {% macro checkout_info(app) %}
+  <div class="error">
+    The Chat / IRC app is deprecated and will be removed in the next release of Allura.
+  </div>
   {% if app.channel.channel %}
   <p>
     {{ app.project.name }} / {{app.config.options.mount_label }} is
