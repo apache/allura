@@ -179,6 +179,13 @@
         <tr class="description"><th>Description:</th><td>{{consumer_token.description_html }}</td></tr>
         <tr class="consumer_key"><th>Consumer Key:</th><td>{{consumer_token.api_key}}</td></tr>
         <tr class="consumer_secret"><th>Consumer Secret:</th><td>{{consumer_token.secret_key}}</td></tr>
+        <tr><th>Redirect URL:</th><td>
+            {% for uri in consumer_token.redirect_uris %}
+                {{ uri }}<br/>
+            {% else %}
+                None registered (legacy app)
+            {% endfor %}
+        </td></tr>
         <tr class="controls">
             <td colspan="2">
                 <form method="POST" action="deregister" class="deregister_consumer_token">

@@ -1,5 +1,15 @@
 Next Version
 
+Upgrade Instructions
+
+  Run: `paster ensure_index development.ini` in Allura dir.  Replace your .ini file path.
+  This creates the oauth_nonce collection's indexes.  Without them, OAuth1 replay protection
+  silently accepts every nonce.
+
+  OAuth1 applications must now register at least one https:// Redirect URL, and their callback
+  must match one exactly.  Applications registered before this release keep working with any
+  callback until their owner edits them to add a URL, so let your users know to do that.
+
 Major Changes
  * ForgeChat deprecated and scheduled to be removed in next release.  Join the Allura dev team if you would like to support and maintain this tool.
 

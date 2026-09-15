@@ -2095,20 +2095,33 @@ class TestOAuth(TestController):
         r = self.app.get('/auth/oauth/')
         r = self.app.post('/auth/oauth/register',
                           params={'application_name': 'oautstapp', 'application_description': 'Oauth rulez',
+                                  'redirect_url_1': 'https://example.com/cb',
                                   '_csrf_token': self.app.cookies['_csrf_token'],
                                   }).follow()
         assert 'oautstapp' in r
+        assert M.OAuthConsumerToken.query.get(name='oautstapp').redirect_uris == ['https://example.com/cb']
         # deregister
         assert r.forms[0].action == 'deregister'
         r.forms[0].submit()
         r = self.app.get('/auth/oauth/')
         assert 'oautstapp' not in r
 
+    def test_register_app_requires_redirect_url(self):
+        # the form marks it required, but a hand-crafted POST could omit the field entirely
+        self.app.get('/auth/oauth/')
+        r = self.app.post('/auth/oauth/register',
+                          params={'application_name': 'noredirect', 'application_description': 'x',
+                                  '_csrf_token': self.app.cookies['_csrf_token'],
+                                  })
+        assert 'At least one Redirect URL is required' in self.webflash(r)
+        assert M.OAuthConsumerToken.query.get(name='noredirect') is None
+
     def test_generate_revoke_access_token(self):
         # generate
         self.app.get('/').follow()  # establish session
         r = self.app.post('/auth/oauth/register',
                           params={'application_name': 'oautstapp', 'application_description': 'Oauth rulez',
+                                  'redirect_url_1': 'https://example.com/cb',
                                   '_csrf_token': self.app.cookies['_csrf_token'],
                                   }, status=302)
         r = self.app.get('/auth/oauth/')
@@ -2138,12 +2151,13 @@ class TestOAuth(TestController):
             secret_key='test-client-secret',
             user_id=user._id,
             description='ctok_desc',
+            redirect_uris=['https://my.domain.com/callback'],
         )
         ThreadLocalODMSession.flush_all()
         oauth_params = dict(
             client_key='api_key_api_key_12345',
             client_secret='test-client-secret',
-            callback_uri='http://my.domain.com/callback',
+            callback_uri='https://my.domain.com/callback',
         )
         r = self.app.post(*oauth1_webtest('/rest/oauth/request_token', oauth_params, method='POST'))
         rtok = parse_qs(r.text)['oauth_token'][0]
@@ -2153,7 +2167,7 @@ class TestOAuth(TestController):
         r = self.app.post('/rest/oauth/authorize',
                           params={'oauth_token': rtok})
         r = r.forms[0].submit('yes')
-        assert r.location.startswith('http://my.domain.com/callback')
+        assert r.location.startswith('https://my.domain.com/callback')
         pin = parse_qs(urlparse(r.location).query)['oauth_verifier'][0]
         assert pin
 
@@ -2708,19 +2722,46 @@ class TestOAuthRequestToken(TestController):
         super().setup_method(method)
         dummy_oauths()
 
-    def test_request_token_valid(self):
-        user = M.User.by_username('test-user')
+    def _consumer_token(self, redirect_uris=()):
         consumer_token = M.OAuthConsumerToken(
             api_key='api_key_api_key_12345',
             secret_key='test-client-secret',
-            user_id=user._id,
+            user_id=M.User.by_username('test-user')._id,
+            redirect_uris=list(redirect_uris),
         )
         ThreadLocalODMSession.flush_all()
+        return consumer_token
+
+    def test_request_token_valid(self):
+        consumer_token = self._consumer_token()
         r = self.app.post(*oauth1_webtest('/rest/oauth/request_token', self.oauth_params, method='POST'))
         r.mustcontain('oauth_token=')
         r.mustcontain('oauth_token_secret=')
         request_token = M.OAuthRequestToken.query.get(consumer_token_id=consumer_token._id)
         assert request_token is not None
+        assert request_token.callback == 'oob'
+
+    def test_request_token_callback_registered(self):
+        consumer_token = self._consumer_token(['https://example.com/cb'])
+        oauth_params = dict(self.oauth_params, callback_uri='https://example.com/cb')
+        r = self.app.post(*oauth1_webtest('/rest/oauth/request_token', oauth_params, method='POST'))
+        r.mustcontain('oauth_token=')
+        request_token = M.OAuthRequestToken.query.get(consumer_token_id=consumer_token._id)
+        assert request_token.callback == 'https://example.com/cb'
+
+    def test_request_token_callback_not_registered(self):
+        self._consumer_token(['https://example.com/cb'])
+        oauth_params = dict(self.oauth_params, callback_uri='https://evil.com/cb')
+        self.app.post(*oauth1_webtest('/rest/oauth/request_token', oauth_params, method='POST'), status=401)
+        assert M.OAuthRequestToken.query.get(callback='https://evil.com/cb') is None
+
+    def test_request_token_callback_none_registered(self):
+        # app registered before redirect URLs were required, any callback still allowed
+        consumer_token = self._consumer_token()
+        oauth_params = dict(self.oauth_params, callback_uri='https://example.com/cb')
+        self.app.post(*oauth1_webtest('/rest/oauth/request_token', oauth_params, method='POST'))
+        request_token = M.OAuthRequestToken.query.get(consumer_token_id=consumer_token._id)
+        assert request_token.callback == 'https://example.com/cb'
 
     def test_request_token_no_consumer_token_matching(self):
         self.app.post(*oauth1_webtest('/rest/oauth/request_token', self.oauth_params), status=401)

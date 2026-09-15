@@ -24,6 +24,29 @@ from .form_fields import AutoResizeTextarea
 from .forms import ForgeForm
 
 
+REDIRECT_URL_FIELDS = ('redirect_url_1', 'redirect_url_2', 'redirect_url_3')
+
+
+def add_redirect_url_fields(fields: ew_core.NameList) -> None:
+    """Add the redirect URL fields shared by the OAuth1 and OAuth2 application forms.
+
+    HttpsUrl prevents unencrypted http so tokens can't be intercepted.  In theory could allow some
+    other protocols (but not http:) so it can work with mobile apps etc.
+    """
+    for i, field_name in enumerate(REDIRECT_URL_FIELDS):
+        first = i == 0
+        attrs = dict(type='url', pattern='https://.*', title='must start with https://',
+                     # match grid-4 label width for the ones with no label
+                     style='min-width:25em' if first else 'min-width:25em; margin-left: 162px;')
+        kwargs = {}
+        if first:
+            attrs.update(placeholder='https://...', required=True)
+            kwargs['label'] = 'Redirect URL(s)'
+        field = ew.TextField(validator=V.HttpsUrl(not_empty=first), attrs=attrs, **kwargs)
+        field.name = field_name  # set after construction, else ew derives a label from it for the unlabeled fields
+        fields.append(field)
+
+
 class OAuthApplicationForm(ForgeForm):
     submit_text = 'Register new application'
     style = 'wide'
@@ -37,6 +60,8 @@ class OAuthApplicationForm(ForgeForm):
                                         )
         application_description = AutoResizeTextarea(
             label='Application Description')
+
+    add_redirect_url_fields(fields)
 
 
 class OAuthRevocationForm(ForgeForm):
@@ -60,24 +85,4 @@ class OAuth2ApplicationForm(ForgeForm):
                                         )
         application_description = AutoResizeTextarea(label='Application Description')
 
-        # SortableRepeatedField would be nice to use (and ignore sorting) so you can add many dynamically,
-        # but couldn't get it to work easily
-
-        # use HttpsUrl so unencrypted http is prevented and tokens can't be intercepted
-        # in theory could allow some other protocols (but not http:) so it can work with mobile apps etc
-        redirect_url_1 = ew.TextField(
-            label='Redirect URL(s)',
-            validator=V.HttpsUrl(not_empty=True),
-            attrs=dict(type='url', style='min-width:25em', required=True, placeholder='https://...',
-                       pattern='https://.*', title='must start with https://'),
-        )
-        redirect_url_2 = ew.TextField(
-            validator=V.HttpsUrl(),
-            attrs=dict(type='url', style='min-width:25em; margin-left: 162px;',  # match grid-4 label width
-                       pattern='https://.*', title='must start with https://'),
-        )
-        redirect_url_3 = ew.TextField(
-            validator=V.HttpsUrl(),
-            attrs=dict(type='url', style='min-width:25em; margin-left: 162px;',  # match grid-4 label width
-                       pattern='https://.*', title='must start with https://'),
-        )
+    add_redirect_url_fields(fields)

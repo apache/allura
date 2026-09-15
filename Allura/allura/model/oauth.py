@@ -79,6 +79,7 @@ class OAuthConsumerToken(OAuthToken):
     name = FieldProperty(str)
     description = FieldProperty(str, if_missing='')
     description_cache = FieldProperty(MarkdownCache)
+    redirect_uris = FieldProperty([str])
 
     user = RelationProperty('User')
 
