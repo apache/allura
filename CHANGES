@@ -11,6 +11,7 @@ Upgrade Instructions
   callback until their owner edits them to add a URL, so let your users know to do that.
 
 Major Changes
+ * edit support for OAuth1 and OAuth2 app configurations
  * ForgeChat deprecated and scheduled to be removed in next release.  Join the Allura dev team if you would like to support and maintain this tool.
 
 

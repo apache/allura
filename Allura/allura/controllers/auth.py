@@ -80,6 +80,8 @@ class F:
     registration_form = forms.RegistrationForm(action='/auth/save_new')
     oauth_application_form = OAuthApplicationForm(action='register')
     oauth2_application_form = OAuth2ApplicationForm(action='register2')
+    oauth_application_edit_form = OAuthApplicationForm(action='/auth/oauth/update', submit_text='Save')
+    oauth2_application_edit_form = OAuth2ApplicationForm(action='/auth/oauth/update2', submit_text='Save')
     oauth_revocation_form = OAuthRevocationForm(
         action='/auth/preferences/revoke_oauth')
     change_personal_data_form = forms.PersonalDataForm()
@@ -1506,6 +1508,10 @@ class OAuthController(BaseController):
     @require_post()
     @validate(F.oauth_application_form, error_handler=index)
     def register(self, application_name=None, application_description=None, **kw):
+        # the name validator skips this check when editing, so a crafted _id must not reach the unique index
+        if M.OAuthConsumerToken.query.get(name=application_name, user_id=c.user._id):
+            flash('That name is already taken, please choose another', 'error')
+            redirect('.')
         M.OAuthConsumerToken(name=application_name,
                              description=application_description,
                              redirect_uris=_redirect_urls(kw))
@@ -1526,16 +1532,73 @@ class OAuthController(BaseController):
         flash('OAuth2 Client registered')
         redirect('.')
 
+    def _my_consumer_token(self, _id):
+        try:
+            app = M.OAuthConsumerToken.query.get(_id=bson.ObjectId(_id))
+        except bson.errors.InvalidId:
+            app = None
+        if app is None or app.user_id != c.user._id:
+            flash('Invalid app ID', 'error')
+            redirect('.')
+        return app
+
+    def _my_client_app(self, client_id):
+        client = M.OAuth2ClientApp.query.get(client_id=client_id)
+        if client is None or client.user_id != c.user._id:
+            flash('Invalid client ID', 'error')
+            redirect('.')
+        return client
+
+    @expose('jinja:allura:templates/oauth_app_edit.html')
+    def edit(self, _id=None):
+        app = self._my_consumer_token(_id)
+        return dict(form=F.oauth_application_edit_form, app_name=app.name, value=dict(
+            _id=str(app._id),
+            application_name=app.name,
+            application_description=app.description,
+            **dict(zip(REDIRECT_URL_FIELDS, app.redirect_uris)),
+        ))
+
+    @expose()
+    @require_post()
+    @validate(F.oauth_application_edit_form, error_handler=index)
+    def update(self, _id=None, application_name=None, application_description=None, **kw):
+        app = self._my_consumer_token(_id)
+        app.name = application_name
+        app.description = application_description
+        app.redirect_uris = _redirect_urls(kw)
+        flash('OAuth Application updated')
+        redirect('.')
+
+    @expose('jinja:allura:templates/oauth_app_edit.html')
+    def edit2(self, client_id=None):
+        if not asbool(config.get('auth.oauth2.enabled', False)):
+            raise wexc.HTTPNotFound
+        client = self._my_client_app(client_id)
+        return dict(form=F.oauth2_application_edit_form, app_name=client.name, value=dict(
+            client_id=client.client_id,
+            application_name=client.name,
+            application_description=client.description,
+            **dict(zip(REDIRECT_URL_FIELDS, client.redirect_uris)),
+        ))
+
+    @expose()
+    @require_post()
+    @validate(F.oauth2_application_edit_form, error_handler=index)
+    def update2(self, client_id=None, application_name=None, application_description=None, **kw):
+        if not asbool(config.get('auth.oauth2.enabled', False)):
+            raise wexc.HTTPNotFound
+        client = self._my_client_app(client_id)
+        client.name = application_name
+        client.description = application_description
+        client.redirect_uris = _redirect_urls(kw)
+        flash('OAuth2 Client updated')
+        redirect('.')
+
     @expose()
     @require_post()
     def deregister(self, _id=None):
-        app = M.OAuthConsumerToken.query.get(_id=bson.ObjectId(_id))
-        if app is None:
-            flash('Invalid app ID', 'error')
-            redirect('.')
-        if app.user_id != c.user._id:
-            flash('Invalid app ID', 'error')
-            redirect('.')
+        app = self._my_consumer_token(_id)
         M.OAuthRequestToken.query.remove({'consumer_token_id': app._id})
         M.OAuthAccessToken.query.remove({'consumer_token_id': app._id})
         app.delete()
@@ -1549,10 +1612,7 @@ class OAuthController(BaseController):
         if not asbool(config.get('auth.oauth2.enabled', False)):
             raise wexc.HTTPNotFound
 
-        client = M.OAuth2ClientApp.query.get(client_id=client_id)
-        if client is None or client.user_id != c.user._id:
-            flash('Invalid client ID', 'error')
-            redirect('.')
+        client = self._my_client_app(client_id)
 
         M.OAuth2AuthorizationCode.query.remove({'client_id': client_id})
         M.OAuth2AccessToken.query.remove({'client_id': client_id})
@@ -1583,13 +1643,7 @@ class OAuthController(BaseController):
         less secure (since they rely only on the token, which is transmitted
         with each request, unlike the access token secret).
         """
-        consumer_token = M.OAuthConsumerToken.query.get(_id=bson.ObjectId(_id))
-        if consumer_token is None:
-            flash('Invalid app ID', 'error')
-            redirect('.')
-        if consumer_token.user_id != c.user._id:
-            flash('Invalid app ID', 'error')
-            redirect('.')
+        consumer_token = self._my_consumer_token(_id)
         request_token = M.OAuthRequestToken(
             consumer_token_id=consumer_token._id,
             user_id=c.user._id,
@@ -1619,10 +1673,7 @@ class OAuthController(BaseController):
         """
         Manually generates an OAuth2 access token without needing to go through the OAuth2 flow.
         """
-        client = M.OAuth2ClientApp.query.get(client_id=client_id)
-        if client is None or client.user_id != c.user._id:
-            flash('Invalid client ID', 'error')
-            redirect('.')
+        self._my_client_app(client_id)
 
         M.OAuth2AccessToken(
             client_id=client_id,
