@@ -181,6 +181,8 @@ info:
         # Step 2: Redirect to the provider. Since this is a CLI script we do not
         # redirect. In a web application you would redirect the user to the URL
         # below, specifying the additional parameter oauth_callback=<your callback URL>.
+        # The callback URL must exactly match one of the https:// Redirect URLs registered
+        # with the application, otherwise the request token request is rejected.
 
         webbrowser.open(oauth.authorization_url(AUTHORIZE_URL, request_token['oauth_token']))
 

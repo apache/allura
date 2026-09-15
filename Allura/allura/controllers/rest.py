@@ -141,6 +141,11 @@ class RestController:
         return NeighborhoodRestController(neighborhood), remainder
 
 
+def valid_redirect_uri(redirect_uri: str, registered_uris: list[str]) -> bool:
+    """Shared by OAuth1 & OAuth2: the URI must exactly match one the app owner registered, and not be plain http"""
+    return not redirect_uri.startswith('http:') and redirect_uri in registered_uris
+
+
 class Oauth1Validator(oauthlib.oauth1.RequestValidator):
 
     def validate_client_key(self, client_key: str, request: oauthlib.common.Request) -> bool:
@@ -239,8 +244,16 @@ class Oauth1Validator(oauthlib.oauth1.RequestValidator):
         return M.OAuthNonce.claim(client_key, timestamp, nonce)
 
     def validate_redirect_uri(self, client_key, redirect_uri, request) -> bool:
-        # TODO: have application owner specify redirect uris, save on OAuthConsumerToken
-        return True
+        if redirect_uri == 'oob':
+            # out-of-band: no redirect happens, the user is shown a PIN to copy into the app
+            return True
+        consumer_token = M.OAuthConsumerToken.query.get(api_key=client_key)  # may be the dummy client key
+        if consumer_token is None:
+            return False
+        if not consumer_token.redirect_uris:
+            # app registered before redirect URLs were required; don't break it
+            return True
+        return valid_redirect_uri(redirect_uri, consumer_token.redirect_uris)
 
     @property
     def dummy_client(self) -> str:
@@ -265,10 +278,8 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
         return M.OAuth2ClientApp.query.get(client_id=client_id) is not None
 
     def validate_redirect_uri(self, client_id, redirect_uri, request, *args, **kwargs):
-        if redirect_uri.startswith('http:'):
-            return False
         client = M.OAuth2ClientApp.query.get(client_id=client_id)
-        return redirect_uri in client.redirect_uris
+        return client is not None and valid_redirect_uri(redirect_uri, client.redirect_uris)
 
     def validate_response_type(self, client_id: str, response_type: str, client: oauthlib.oauth2.Client,
                                request: oauthlib.common.Request, *args, **kwargs) -> bool:

@@ -57,6 +57,7 @@ from allura.lib.widgets import (
     ForgottenPasswordForm,
     DisableAccountForm)
 from allura.lib.widgets import forms, form_fields as ffw
+from allura.lib.widgets.oauth_widgets import REDIRECT_URL_FIELDS
 from allura.lib import mail_util
 from allura.lib.multifactor import TotpService, RecoveryCodeService, EmailCodeAuthenticationService
 from allura.lib import utils
@@ -1433,6 +1434,17 @@ class SubscriptionsController(BaseController):
         redirect(six.ensure_text(request.referer or '/'))
 
 
+def _redirect_urls(kw: dict) -> list[str]:
+    """The form marks these required, but a hand-crafted POST can omit the fields entirely,
+    and an app with no redirect URLs isn't subject to callback validation.  So require one here too.
+    """
+    urls = [url for url in (kw.get(name) for name in REDIRECT_URL_FIELDS) if url]
+    if not urls:
+        flash('At least one Redirect URL is required', 'error')
+        redirect('.')
+    return urls
+
+
 class OAuthController(BaseController):
 
     def _check_security(self):
@@ -1495,7 +1507,8 @@ class OAuthController(BaseController):
     @validate(F.oauth_application_form, error_handler=index)
     def register(self, application_name=None, application_description=None, **kw):
         M.OAuthConsumerToken(name=application_name,
-                             description=application_description)
+                             description=application_description,
+                             redirect_uris=_redirect_urls(kw))
         flash('OAuth Application registered')
         redirect('.')
 
@@ -1506,13 +1519,9 @@ class OAuthController(BaseController):
         if not asbool(config.get('auth.oauth2.enabled', False)):
             raise wexc.HTTPNotFound
 
-        redirect_urls = [
-            v for k, v in kw.items()
-            if k.startswith('redirect_url_') and v
-        ]
         M.OAuth2ClientApp(name=application_name,
                           description=application_description,
-                          redirect_uris=redirect_urls,
+                          redirect_uris=_redirect_urls(kw),
                           user_id=c.user._id)
         flash('OAuth2 Client registered')
         redirect('.')
