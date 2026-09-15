@@ -501,7 +501,15 @@ def generate_code_stats(blob):
 
 
 def is_text_file(file):
-    msg = magic.from_buffer(file[:1024])
+    try:
+        msg = magic.from_buffer(file[:1024])
+    except magic.MagicException as e:
+        try:
+            url = tg.request.path_info
+        except TypeError:
+            url = six.ensure_text(file[:50]) + '...'
+        log.exception(f"can't detect file type: {e!r} on {url}")
+        return False
     if ("text" in msg) or ("empty" in msg):
         return True
     return False
