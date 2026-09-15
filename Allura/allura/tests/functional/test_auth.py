@@ -2114,6 +2114,97 @@ class TestOAuth(TestController):
         assert 'At least one Redirect URL is required' in self.webflash(r)
         assert M.OAuthConsumerToken.query.get(name='noredirect') is None
 
+    def test_redirect_url_fields_unlabeled(self):
+        # only the first gets a label; the others line up under it via margin-left, not a grid label column
+        r = self.app.get('/auth/oauth/')
+        assert 'Redirect URL(s):' in r
+        assert 'Redirect_url_2' not in r
+        assert 'Redirect_url_3' not in r
+
+    def test_register_duplicate_name(self):
+        self.app.get('/auth/oauth/')  # establish session
+        params = {'application_name': 'dupapp', 'application_description': 'x',
+                  'redirect_url_1': 'https://example.com/cb',
+                  '_csrf_token': self.app.cookies['_csrf_token']}
+        self.app.post('/auth/oauth/register', params=params, status=302)
+        app = M.OAuthConsumerToken.query.get(name='dupapp')
+        # an _id of your own app must not let the name validator wave a duplicate through to the unique index
+        r = self.app.post('/auth/oauth/register', params=dict(params, _id=str(app._id)), status=302)
+        assert 'That name is already taken' in self.webflash(r)
+        assert M.OAuthConsumerToken.query.find({'name': 'dupapp'}).count() == 1
+
+    def test_edit_app(self):
+        self.app.get('/auth/oauth/')  # establish session
+        self.app.post('/auth/oauth/register',
+                      params={'application_name': 'oautstapp', 'application_description': 'Oauth rulez',
+                              'redirect_url_1': 'https://example.com/cb',
+                              '_csrf_token': self.app.cookies['_csrf_token'],
+                              }, status=302)
+        app = M.OAuthConsumerToken.query.get(name='oautstapp')
+
+        r = self.app.get(f'/auth/oauth/edit/{app._id}')
+        form = [f for f in r.forms.values() if f.action == '/auth/oauth/update'][0]
+        assert form['application_name'].value == 'oautstapp'
+        assert form['redirect_url_1'].value == 'https://example.com/cb'
+        # keeping the same name must not trip the uniqueness validator
+        form['application_description'] = 'now with feeling'
+        form['redirect_url_1'] = 'https://example.com/newcb'
+        form['redirect_url_2'] = 'https://example.com/other'
+        r = form.submit().follow()
+
+        app = M.OAuthConsumerToken.query.get(name='oautstapp')
+        assert app.description == 'now with feeling'
+        assert app.redirect_uris == ['https://example.com/newcb', 'https://example.com/other']
+
+    def test_edit_app_legacy_can_add_redirect_url(self):
+        # app registered before redirect URLs existed; owner can add one to opt into callback validation
+        app = M.OAuthConsumerToken(name='legacyapp', user_id=M.User.by_username('test-admin')._id)
+        ThreadLocalODMSession.flush_all()
+        assert app.redirect_uris == []
+
+        self.app.get('/auth/oauth/')
+        r = self.app.post('/auth/oauth/update',
+                          params={'_id': str(app._id), 'application_name': 'legacyapp',
+                                  'application_description': '', 'redirect_url_1': 'https://example.com/cb',
+                                  '_csrf_token': self.app.cookies['_csrf_token'],
+                                  }, status=302)
+        assert 'OAuth Application updated' in self.webflash(r)
+        assert M.OAuthConsumerToken.query.get(name='legacyapp').redirect_uris == ['https://example.com/cb']
+
+    def test_edit_app_not_owner(self):
+        app = M.OAuthConsumerToken(name='someoneelses', user_id=M.User.by_username('test-admin')._id,
+                                   redirect_uris=['https://example.com/cb'])
+        ThreadLocalODMSession.flush_all()
+        self.app.get('/auth/oauth/')
+        env = {'username': 'test-user'}
+        r = self.app.get(f'/auth/oauth/edit/{app._id}', extra_environ=env)
+        assert 'Invalid app ID' in self.webflash(r)
+        r = self.app.post('/auth/oauth/update',
+                          params={'_id': str(app._id), 'application_name': 'hijacked',
+                                  'redirect_url_1': 'https://evil.com/cb',
+                                  '_csrf_token': self.app.cookies['_csrf_token'],
+                                  }, extra_environ=env)
+        assert 'Invalid app ID' in self.webflash(r)
+        assert M.OAuthConsumerToken.query.get(name='someoneelses').redirect_uris == ['https://example.com/cb']
+
+    def test_edit_app_bad_id(self):
+        self.app.get('/auth/oauth/')
+        r = self.app.get('/auth/oauth/edit/not-an-objectid')
+        assert 'Invalid app ID' in self.webflash(r)
+
+    def test_edit_app_requires_redirect_url(self):
+        app = M.OAuthConsumerToken(name='needsurl', user_id=M.User.by_username('test-admin')._id,
+                                   redirect_uris=['https://example.com/cb'])
+        ThreadLocalODMSession.flush_all()
+        self.app.get('/auth/oauth/')
+        r = self.app.post('/auth/oauth/update',
+                          params={'_id': str(app._id), 'application_name': 'needsurl',
+                                  'application_description': '',
+                                  '_csrf_token': self.app.cookies['_csrf_token'],
+                                  })
+        assert 'At least one Redirect URL is required' in self.webflash(r)
+        assert M.OAuthConsumerToken.query.get(name='needsurl').redirect_uris == ['https://example.com/cb']
+
     def test_generate_revoke_access_token(self):
         # generate
         self.app.get('/').follow()  # establish session
@@ -2385,6 +2476,51 @@ class TestOAuth2(TestController):
         form.submit()
         r = self.app.get('/auth/oauth/')
         assert 'testoauth2' not in r
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_edit_client(self):
+        M.OAuth2ClientApp(
+            client_id='client_edit_1', client_secret='98765',
+            user_id=M.User.by_username('test-admin')._id,
+            name='editme', description='before', redirect_uris=['https://example.com/cb'],
+        )
+        ThreadLocalODMSession.flush_all()
+
+        r = self.app.get('/auth/oauth/edit2/client_edit_1')
+        form = [f for f in r.forms.values() if f.action == '/auth/oauth/update2'][0]
+        assert form['application_name'].value == 'editme'
+        assert form['redirect_url_1'].value == 'https://example.com/cb'
+        form['application_description'] = 'after'
+        form['redirect_url_1'] = 'https://example.com/newcb'
+        form.submit().follow()
+
+        client = M.OAuth2ClientApp.query.get(client_id='client_edit_1')
+        assert client.description == 'after'
+        assert client.redirect_uris == ['https://example.com/newcb']
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_edit_client_not_owner(self):
+        M.OAuth2ClientApp(
+            client_id='client_edit_2', client_secret='98765',
+            user_id=M.User.by_username('test-admin')._id,
+            name='notyours', redirect_uris=['https://example.com/cb'],
+        )
+        ThreadLocalODMSession.flush_all()
+        self.app.get('/auth/oauth/')
+        env = {'username': 'test-user'}
+        r = self.app.get('/auth/oauth/edit2/client_edit_2', extra_environ=env)
+        assert 'Invalid client ID' in self.webflash(r)
+        r = self.app.post('/auth/oauth/update2',
+                          params={'client_id': 'client_edit_2', 'application_name': 'hijacked',
+                                  'redirect_url_1': 'https://evil.com/cb',
+                                  '_csrf_token': self.app.cookies['_csrf_token'],
+                                  }, extra_environ=env)
+        assert 'Invalid client ID' in self.webflash(r)
+        assert M.OAuth2ClientApp.query.get(client_id='client_edit_2').redirect_uris == ['https://example.com/cb']
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': False})
+    def test_edit_client_disabled(self):
+        self.app.get('/auth/oauth/edit2/whatever', status=404)
 
     @mock.patch.dict(config, {'auth.oauth2.enabled': True})
     def test_authorize(self):

@@ -140,6 +140,7 @@
         </td></tr>
         <tr class="controls">
             <td colspan="2">
+                <a href="edit2/{{client.client_id}}" class="btn button" style="float: left; margin-right: 10px">Edit App</a>
                 <form method="POST" action="deregister2" class="deregister_consumer_token">
                     <input type="hidden" name="client_id" value="{{client.client_id}}"/>
                     <input type="submit" value="Delete App"/>
@@ -188,6 +189,7 @@
         </td></tr>
         <tr class="controls">
             <td colspan="2">
+                <a href="edit/{{consumer_token._id}}" class="btn button" style="float: left; margin-right: 10px">Edit App</a>
                 <form method="POST" action="deregister" class="deregister_consumer_token">
                     <input type="hidden" name="_id" value="{{consumer_token._id}}"/>
                     <input type="submit" value="Delete App"/>

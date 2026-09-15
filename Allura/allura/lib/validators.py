@@ -169,7 +169,8 @@ class UniqueOAuthApplicationName(UnicodeString):
     def _convert_to_python(self, value, state):
         from allura import model as M
         app = M.OAuthConsumerToken.query.get(name=value, user_id=c.user._id)
-        if app is not None:
+        editing_id = state.params.get('_id') if state else None  # editing an app keeps its own name
+        if app is not None and str(app._id) != editing_id:
             raise fe.Invalid(
                 'That name is already taken, please choose another', value, state)
         return value

@@ -52,6 +52,7 @@ class OAuthApplicationForm(ForgeForm):
     style = 'wide'
 
     class fields(ew_core.NameList):
+        _id = ew.HiddenField()  # empty when registering, set when editing an existing app
         application_name = ew.TextField(label='Application Name',
                                         validator=V.UniqueOAuthApplicationName(),
                                         attrs=dict(
@@ -77,6 +78,7 @@ class OAuth2ApplicationForm(ForgeForm):
     style = 'wide'
 
     class fields(ew_core.NameList):
+        client_id = ew.HiddenField()  # empty when registering, set when editing an existing app
         application_name = ew.TextField(label='Application Name',
                                         validator=V.UnicodeString(not_empty=True),
                                         attrs=dict(
