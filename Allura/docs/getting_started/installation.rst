@@ -306,6 +306,8 @@ For any other wsgi server (e.g. mod_wsgi with Apache, or waitress) you will need
     fileConfig(config_file)
     application = loadapp('config:%s' % config_file)
 
+You should also set up a WAF in front of Allura to implement rate-limiting and similar web traffic security mitigations.
+Rate-limiting POST on /auth/* is highly recommended.
 
 
 Configuring Optional Features
@@ -340,6 +342,8 @@ use :samp:`transport_maps` with::
     *.mydomain.com smtp:127.0.0.1:8825
 
 Various other settings may be necessary depending on your environment.
+
+Once it is working, update the :samp:`forgemail.sender_authentication.` settings to check authenticity of the emails.
 
 SMTP in development
 ^^^^^^^^^^^^^^^^^^^

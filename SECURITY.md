@@ -19,9 +19,10 @@
 
 # Vulnerability Scope
 
-- Site Admins and Neighborhood (nbhd) Admins are trusted roles.  They are allowed to do things without concern for security vulnerabilities.
+- Site Admins, Neighborhood (nbhd) Admins, and server administrators are trusted roles.  They are allowed to do things without concern for security vulnerabilities.
 - Allura runs with TurboGears and WebOb.  HTTP vulnerabilities must be tested with a full stack (self.app.get or manual in browser)
 - Features that are disabled by default (e.g. Trac importer) are not subject to vulnerability reports
+- A WAF is expected to be deployed in front of Allura to enforce rate-limiting and other web attacks.  Allura does not protect against them.
 
 # Code Conventions
 
