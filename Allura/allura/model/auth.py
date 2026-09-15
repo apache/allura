@@ -39,7 +39,7 @@ from tg import tmpl_context as c, app_globals as g
 from tg import request
 from ming import schema as S
 from ming.encryption import NestedEncryptedProperty
-from ming.odm import session, state
+from ming.odm import session, state, MapperExtension
 from ming.odm import FieldProperty, RelationProperty, ForeignIdProperty, DecryptedProperty, DecryptedListProperty
 from ming.odm.declarative import MappedClass
 from ming.odm.odmsession import ThreadLocalODMSession
@@ -1125,10 +1125,21 @@ class ProjectRole(MappedClass):
                                     user_id={'$ne': None}, roles=self._id)).all()
 
 
+class AuditLogMapperExtension(MapperExtension):
+    """Dual-write encrypted messages while plaintext remains the source of truth."""
+
+    def before_insert(self, instance, state, sess):
+        instance.message_encrypted = instance.encr(instance.message)
+
+    def before_update(self, instance, state, sess):
+        instance.message_encrypted = instance.encr(instance.message)
+
+
 class AuditLog(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name = 'audit_log'
+        extensions = [AuditLogMapperExtension]
         indexes = [
             'project_id',
             'user_id',
@@ -1144,6 +1155,7 @@ class AuditLog(MappedClass):
     timestamp = FieldProperty(datetime, if_missing=datetime.utcnow)
     url = FieldProperty(str)
     message = FieldProperty(str)
+    message_encrypted = FieldProperty(S.Binary, if_missing=None)
 
     @property
     def timestamp_str(self):
