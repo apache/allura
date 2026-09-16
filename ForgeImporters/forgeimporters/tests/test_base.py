@@ -52,6 +52,7 @@ class TestProjectExtractor:
         with pytest.raises(ValueError):
             base.ProjectExtractor.urlopen('ftp://something.com', data='foo')
 
+    @pytest.mark.network
     def test_urlopen_internal_blocked(self):
         # by default this is invalid
         with pytest.raises(Invalid):

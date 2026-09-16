@@ -359,6 +359,7 @@ class Test():
                 '&lt;script&gt;alert(1)&lt;/script&gt;</p>' in
                 r.replace('\n', ''))
 
+    @pytest.mark.network
     def test_macro_embed_video_gone(self):
         # this does a real fetch
         r = g.markdown_wiki.convert('[[embed url=https://www.youtube.com/watch?v=OWsFqPZ3v-0]]')

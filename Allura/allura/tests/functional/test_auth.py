@@ -152,6 +152,7 @@ class TestAuth(TestController):
 
     @patch('allura.lib.plugin.AuthenticationProvider.hibp_password_check_enabled', Mock(return_value=True))
     @patch('allura.tasks.mail_tasks.sendsimplemail')
+    @pytest.mark.network
     def test_login_hibp_compromised_password_untrusted_client(self, sendsimplemail):
         # first & only login by this user, so won't have any trusted previous logins
         self.app.extra_environ = {'disable_auth_magic': 'True'}
@@ -175,6 +176,7 @@ class TestAuth(TestController):
         assert [] == M.UserLoginDetails.query.find().all()  # no records created
 
     @patch('allura.tasks.mail_tasks.sendsimplemail')
+    @pytest.mark.network
     def test_login_hibp_compromised_password_trusted_client(self, sendsimplemail):
         self.app.extra_environ = {'disable_auth_magic': 'True'}
 
@@ -757,6 +759,7 @@ class TestAuth(TestController):
 
     @patch('allura.lib.plugin.AuthenticationProvider.hibp_password_check_enabled', Mock(return_value=True))
     @td.with_user_project('test-admin')
+    @pytest.mark.network
     def test_change_password_hibp(self):
         self.app.get('/').follow()  # establish session
         # Get and assert user with password reset token.
@@ -2041,6 +2044,7 @@ To update your password on {}, please visit the following URL:
     @patch('allura.lib.plugin.AuthenticationProvider.hibp_password_check_enabled', Mock(return_value=True))
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
+    @pytest.mark.network
     def test_pwd_reset_hibp_check(self, gen_message_id, sendmail):
         self.app.get('/').follow()  # establish session
         user = M.User.query.get(username='test-admin')

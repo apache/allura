@@ -94,13 +94,20 @@ Tests use `pytest`. Run everything from the repo root:
 ./run_tests --coverage      # with coverage
 ./run_tests -n X # number of processes to be used per suite
 ./run_tests -m X # number of parallel processes to be used per suite
+./run_tests --no-network    # skip the tests marked `network` (see below)
 ```
 Or run a single package/test directly (faster while iterating):
 ```bash
 cd ForgeTracker && pytest
 cd ForgeTracker && pytest forgetracker/tests/functional/test_root.py::TestRootController::test_new_ticket -v
+cd Allura && pytest -m 'not network'
 ```
 Notes:
+- A handful of tests need outbound internet (they fetch `httpbin.dev` or `allura.apache.org`, or resolve a
+  hostname while validating a webhook URL) or need to bind a listening socket (`TestMailServer`). They are
+  marked `network` (registered in `pytest.ini`) and fail in a sandbox without those. Skip them with
+  `./run_tests --no-network`, or `pytest -m 'not network'` directly — `run_tests` needs its own flag because
+  it already uses `-m` for something else.
 - `AlluraTest` always runs first (it's imported by everything else; catches syntax errors early).
 - `ForgeGit` and `ForgeSVN` are NOT safe to run with `pytest-xdist` multiprocessing (`run_tests` handles
   this automatically).
