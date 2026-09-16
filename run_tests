@@ -122,6 +122,9 @@ def run_tests_in_parallel(options, runner_args):
     default_args = [
         # '-c /dev/null',  # pytest's equivalent of nose's NOSE_IGNORE_CONFIG_FILES='1' is '-c /dev/null/'
     ]
+    if options.no_network:
+        # can't pass `-m 'not network'` through, since -m is our own option
+        default_args.append("-m 'not network'")
 
     def get_pkg_path(pkg):
         return ALT_PKG_PATHS.get(pkg, '')
@@ -212,6 +215,9 @@ def parse_args():
                         dest='concurrent_tests', type=int, default=CONCURRENT_TESTS)
     parser.add_argument('--coverage', action='store_true',
                         help='Collect code coverage details, and report')
+    parser.add_argument('--no-network', action='store_true',
+                        help="Skip tests marked 'network', which need outbound internet or to bind a "
+                             'listening socket.  Useful in a sandbox without those.')
     parser.add_argument(
         '-p', help='List of packages to run tests on. Default: all',
         dest='packages', choices=get_packages(), default=get_packages(),

@@ -33,6 +33,7 @@ class TestTracImportController(TestController):
         r = self.app.get('/p/import_project/trac/')
         assert 'Trac URL' in r
 
+    @pytest.mark.network
     def test_submit(self):
         r = self.app.get('/p/import_project/trac/')
         form = r.forms['project-import-form']
@@ -53,6 +54,7 @@ class TestTracImportController(TestController):
                 hasattr(r, 'html') and r.html.find_all('div', {'class': 'error'})
             )
 
+    @pytest.mark.network
     def test_import_with_phone_validation(self):
         self.app.extra_environ = {'username': 'test-user'}
         with h.push_config(config, **{'project.verify_phone': 'true'}):

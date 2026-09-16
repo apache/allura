@@ -533,6 +533,7 @@ class TestUrlOpen:
         f'https://{httpbin_domain}/status/200',
         f'http://{httpbin_domain}:80/status/200',
     ])
+    @pytest.mark.network
     def test_ok(self, url):
         h.urlopen(url)
 
@@ -540,6 +541,7 @@ class TestUrlOpen:
         f'https://{httpbin_domain}/redirect-to?url=ftp://127.0.0.1/',
         f'https://{httpbin_domain}/redirect-to?url=ftp://localhost/',
     ])
+    @pytest.mark.network
     def test_internal_invalid_ftp_redirect(self, url):
         # our opener has no ftp handler at all, so a redirect to ftp:// can't be used to bypass NonPrivateUrl
         with pytest.raises(urllib.error.URLError, match='unknown url type'):

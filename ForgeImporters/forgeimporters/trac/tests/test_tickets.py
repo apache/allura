@@ -131,6 +131,7 @@ class TestTracTicketImportController(TestController):
     @with_tracker
     @patch('forgeimporters.trac.requests.head')
     @patch('forgeimporters.base.import_tool')
+    @pytest.mark.network
     def test_create(self, import_tool, head):
         head.return_value.status_code = 200
         params = dict(trac_url='http://example.com/trac/url',
@@ -155,6 +156,7 @@ class TestTracTicketImportController(TestController):
     @with_tracker
     @patch('forgeimporters.trac.requests.head')
     @patch('forgeimporters.base.import_tool')
+    @pytest.mark.network
     def test_create_limit(self, import_tool, head):
         head.return_value.status_code = 200
         project = M.Project.query.get(shortname='test')

@@ -572,6 +572,7 @@ class TestRestNbhdAddProject(TestRestApiBase):
                           status=400)
         assert "You can't create private projects in the Projects neighborhood" == r.json['error']
 
+    @pytest.mark.network
     def test_add_project(self):
         project_data = {
             "shortname": "my-new-proj",

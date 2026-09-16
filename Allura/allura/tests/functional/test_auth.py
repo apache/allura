@@ -152,6 +152,7 @@ class TestAuth(TestController):
 
     @patch('allura.lib.plugin.AuthenticationProvider.hibp_password_check_enabled', Mock(return_value=True))
     @patch('allura.tasks.mail_tasks.sendsimplemail')
+    @pytest.mark.network
     def test_login_hibp_compromised_password_untrusted_client(self, sendsimplemail):
         # first & only login by this user, so won't have any trusted previous logins
         self.app.extra_environ = {'disable_auth_magic': 'True'}
@@ -175,6 +176,7 @@ class TestAuth(TestController):
         assert [] == M.UserLoginDetails.query.find().all()  # no records created
 
     @patch('allura.tasks.mail_tasks.sendsimplemail')
+    @pytest.mark.network
     def test_login_hibp_compromised_password_trusted_client(self, sendsimplemail):
         self.app.extra_environ = {'disable_auth_magic': 'True'}
 

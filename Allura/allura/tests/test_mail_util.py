@@ -699,6 +699,7 @@ class TestMailServer:
         setup_basic_test()
 
     @mock.patch('allura.command.base.log', autospec=True)
+    @pytest.mark.network
     def test(self, log):
         hostname = tg_config.get('forgemail.host', '0.0.0.0')
         port = asint(tg_config.get('forgemail.port', 8827))

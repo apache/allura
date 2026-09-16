@@ -174,6 +174,7 @@ class TestWebhookController(TestController):
         else:
             assert False, 'Validation error not found'
 
+    @pytest.mark.network
     def test_AAAA_WORKAROUND__edit(self):
         """
         This must run first in this test class for unknown reasons ever since
@@ -239,6 +240,7 @@ class TestWebhookController(TestController):
     def test_invalid_hook_type(self):
         self.app.get(self.url + '/invalid-hook-type/', status=404)
 
+    @pytest.mark.network
     def test_create(self):
         assert M.Webhook.query.find().count() == 0
         r = self.app.get(self.url)
@@ -266,6 +268,7 @@ class TestWebhookController(TestController):
                         '"repo-push" webhook already exists for Git http://httpbin.org/post')
         assert M.Webhook.query.find().count() == 1
 
+    @pytest.mark.network
     def test_create_limit_reached(self):
         assert M.Webhook.query.find().count() == 0
         limit = json.dumps({'git': 1})
@@ -314,6 +317,7 @@ class TestWebhookController(TestController):
         'http://127.0.0.1/hook',
         'https://10.0.0.1/hook',
     ])
+    @pytest.mark.network
     def test_edit_ssrf_private_url_rejected(self, url):
         data = {'url': 'http://httpbin.org/post', 'secret': 'secret'}
         self.create_webhook(data).follow()
@@ -322,6 +326,7 @@ class TestWebhookController(TestController):
         r = self.app.post(self.url + '/repo-push/edit', edit_data)
         self.find_error(r, 'url', 'Invalid URL', 'edit')
 
+    @pytest.mark.network
     def test_edit_validation(self):
         invalid = M.Webhook(
             type='invalid type',
@@ -347,6 +352,7 @@ class TestWebhookController(TestController):
         r = self.app.post(self.url + '/repo-push/edit', data)
         self.find_error(r, 'url', 'Please enter a value', 'edit')
 
+    @pytest.mark.network
     def test_delete(self):
         data = {'url': 'http://httpbin.org/post',
                 'secret': 'secret'}
@@ -378,6 +384,7 @@ class TestWebhookController(TestController):
         assert M.Webhook.query.find().count() == 1
 
     @with_git2
+    @pytest.mark.network
     def test_list_webhooks(self):
         git2 = self.project.app_instance('src2')
         url2 = str(git2.admin_url + 'webhooks')
@@ -790,6 +797,7 @@ class TestWebhookRestController(TestRestApiBase):
         assert r.json == expected
         assert M.Webhook.query.find().count() == len(self.webhooks)
 
+    @pytest.mark.network
     def test_create(self):
         assert M.Webhook.query.find().count() == len(self.webhooks)
         data = {'url': 'http://hook.slack.com/abcd'}
@@ -812,6 +820,7 @@ class TestWebhookRestController(TestRestApiBase):
         assert r.json == expected
         assert M.Webhook.query.find().count() == len(self.webhooks) + 1
 
+    @pytest.mark.network
     def test_create_duplicates(self):
         assert M.Webhook.query.find().count() == len(self.webhooks)
         data = {'url': self.webhooks[0].hook_url}
@@ -824,6 +833,7 @@ class TestWebhookRestController(TestRestApiBase):
         assert r.json == expected
         assert M.Webhook.query.find().count() == len(self.webhooks)
 
+    @pytest.mark.network
     def test_create_limit_reached(self):
         assert M.Webhook.query.find().count() == len(self.webhooks)
         data = {'url': 'http://hook.slack.com/abcd'}
@@ -849,6 +859,7 @@ class TestWebhookRestController(TestRestApiBase):
         }
         assert r.json == expected
 
+    @pytest.mark.network
     def test_edit(self):
         webhook = self.webhooks[0]
         url = f'{self.url}/repo-push/{webhook._id}'
@@ -891,6 +902,7 @@ class TestWebhookRestController(TestRestApiBase):
         }
         assert r.json == expected
 
+    @pytest.mark.network
     def test_edit_duplicates(self):
         webhook = self.webhooks[0]
         url = f'{self.url}/repo-push/{webhook._id}'
