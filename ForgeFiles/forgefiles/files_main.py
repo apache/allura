@@ -525,8 +525,11 @@ def folder_breadcrumbs(folder_object=None):
     urls = {}
     for i in list_object:
         length += len(i)
-        folder_object = UploadFolder.query.get(folder_name=i)
-        urls[str(i)] = str(folder_object.url())
+        segment = UploadFolder.query.get(
+            app_config_id=c.app.config._id, folder_name=i)
+        if segment:  # a stale path segment no longer resolves
+            folder_object = segment
+            urls[str(i)] = str(folder_object.url())
         if length in range(1, (61-len(list_object[-1])+1)):
             second_list.append(i)
     second_list.append('...')

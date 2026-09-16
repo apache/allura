@@ -14,9 +14,12 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+from ming.odm import ThreadLocalODMSession
 from tg import tmpl_context as c
 
 from allura import model as M
+from allura.lib import helpers as h
+from allura.tests import decorators as td
 from alluratest.controller import TestController
 
 
@@ -114,6 +117,28 @@ class TestFiles(TestController):
         self.app.post('/p/test/files/delete_file', data1)
         new_file_object = UploadFiles.query.get(_id=db_file_object._id)
         assert new_file_object is None
+
+
+class TestFolderBreadcrumbs(TestController):
+
+    @td.with_tool('test2', 'Files', 'files')
+    @td.with_tool('test', 'Files', 'files')
+    def test_breadcrumb_ignores_other_projects(self):
+        h.set_context('test2', 'files', neighborhood='Projects')
+        parent = UploadFolder(app_config_id=c.app.config._id, project_id=c.project._id,
+                              folder_name='OtherParent', path='OtherParent')
+        ThreadLocalODMSession.flush_all()
+        UploadFolder(app_config_id=c.app.config._id, project_id=c.project._id,
+                     folder_name='shared', parent_folder_id=parent._id,
+                     path='OtherParent/shared')
+
+        h.set_context('test', 'files', neighborhood='Projects')
+        UploadFolder(app_config_id=c.app.config._id, project_id=c.project._id,
+                     folder_name='shared', path='shared')
+        ThreadLocalODMSession.flush_all()
+
+        r = self.app.get('/p/test/files/shared/')
+        assert 'OtherParent' not in r
 
 
 def create_folder(self):
