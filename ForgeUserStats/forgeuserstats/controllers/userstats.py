@@ -23,7 +23,7 @@ from webob import exc
 
 from allura.controllers import BaseController
 import allura.model as M
-from allura.lib.security import require_access
+from allura.lib.security import has_access, require_access
 from allura.lib.decorators import require_post
 
 from forgeuserstats.model.stats import UserStats
@@ -126,6 +126,9 @@ class ForgeUserStatsController(BaseController):
 
         categories = {}
         for p in self.user.my_projects():
+            # my_projects() is unfiltered; don't expose projects the viewer can't read
+            if self.user != c.user and not has_access(p, 'read'):
+                continue
             for cat in p.trove_topic:
                 cat = M.TroveCategory.query.get(_id=cat)
                 if categories.get(cat):
