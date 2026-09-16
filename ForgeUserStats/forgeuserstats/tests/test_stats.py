@@ -17,6 +17,8 @@
 
 from tg import tmpl_context as c
 
+from ming.odm import ThreadLocalODMSession
+
 from allura.lib.utils import pkg_file
 from alluratest.controller import TestController, setup_basic_test, setup_global_objects
 from allura.tests import decorators as td
@@ -45,6 +47,25 @@ class TestStats(TestController):
 
         assert user.stats.tot_logins_count == 1 + init_logins
         assert user.stats.getLastMonthLogins() == 1 + init_logins
+
+    @td.with_user_project('test-user')
+    def test_private_project_category_not_shown(self):
+        cat = M.TroveCategory(trove_cat_id=9999, trove_parent_id=0, shortname='seekrit',
+                              fullname='Topic :: Seekrit', fullpath='Topic :: Seekrit')
+        nbhd = M.Neighborhood.query.get(name='Projects')
+        private = nbhd.register_project('hushhush', User.by_username('test-admin'))
+        private.trove_topic = [cat._id]
+        private.add_user(User.by_username('test-user'), ['Developer'])
+        anon = M.ProjectRole.anonymous(private)
+        private.acl = [ace for ace in private.acl if ace.role_id != anon._id]
+        ThreadLocalODMSession.flush_all()
+
+        r = self.app.get('/u/test-user/userstats/',
+                         extra_environ=dict(username='*anonymous'))
+        assert 'Seekrit' not in r
+        r = self.app.get('/u/test-user/userstats/',
+                         extra_environ=dict(username='test-user'))
+        assert 'Seekrit' in r
 
     @td.with_user_project('test-admin')
     @td.with_tool('test', 'wiki', mount_point='wiki', mount_label='wiki', username='test-admin')
