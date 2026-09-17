@@ -1212,7 +1212,7 @@ class GroupsController(BaseController):
         user_role = M.ProjectRole.by_user(user, upsert=True)
         if group._id in user_role.roles:
             return dict(error=f'{user.display_name} ({username}) is already in the group {group.name}.')
-        M.AuditLog.log('add user %s to %s', username, group.name)
+        M.AuditLog.log('add user %s to %s', username, group.name, event_type='project.member.added')
         user_role.roles.append(group._id)
         if group.name == 'Admin':
             for ac in c.project.app_configs:
@@ -1236,7 +1236,7 @@ class GroupsController(BaseController):
         user_role = M.ProjectRole.by_user(user)
         if not user_role or group._id not in user_role.roles:
             return dict(error=f'{user.display_name} ({username}) is not in the group {group.name}.')
-        M.AuditLog.log('remove user %s from %s', username, group.name)
+        M.AuditLog.log('remove user %s from %s', username, group.name, event_type='project.member.removed')
         user_role.roles.remove(group._id)
         if len(user_role.roles) == 0:
             # user has no roles in this project any more, so don't leave a useless doc around

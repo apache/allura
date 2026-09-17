@@ -253,7 +253,7 @@ class TestProjectRegistrationProviderPhoneVerification:
                 self.user.get_tool_data('phone_verification', 'number_hash') ==
                 'hash')
             audit.assert_called_once_with(
-                'Phone verification succeeded. Hash: hash', user=self.user)
+                'Phone verification succeeded. Hash: hash', user=self.user, event_type='account.phone.verified')
 
     @patch.object(plugin, 'g')
     def test_verify_phone_max_limit_not_reached(self, g):
@@ -771,7 +771,7 @@ class TestLocalAuthenticationProvider:
     def test_enable_user(self):
         user = Mock(disabled=True, __ming__=Mock(), is_anonymous=lambda: False, _id=ObjectId())
         c.user = Mock(username='test-admin')
-        with audits('Account enabled', user=True, actor='test-admin'):
+        with audits('Account enabled', user=True, actor='test-admin', event_type='account.enabled'):
             self.provider.enable_user(user)
             ThreadLocalODMSession.flush_all()
         assert user.disabled is False
@@ -779,7 +779,7 @@ class TestLocalAuthenticationProvider:
     def test_disable_user(self):
         user = Mock(disabled=False, __ming__=Mock(), is_anonymous=lambda: False, _id=ObjectId())
         c.user = Mock(username='test-admin')
-        with audits('Account disabled', user=True, actor='test-admin'):
+        with audits('Account disabled', user=True, actor='test-admin', event_type='account.disabled'):
             self.provider.disable_user(user)
             ThreadLocalODMSession.flush_all()
         assert user.disabled is True

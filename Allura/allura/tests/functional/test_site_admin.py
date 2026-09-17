@@ -584,7 +584,7 @@ class TestUserDetails(TestController):
         assert form['username'].value == 'test-user-3'
         assert form['status'].value == 'pending'
         form['status'].value = 'enable'
-        with td.audits('Account activated', user=True):
+        with td.audits('Account activated', user=True, event_type='account.activated'):
             r = form.submit()
             assert M.AuditLog.query.find().count() == 1
         assert 'User enabled' in self.webflash(r)
@@ -680,7 +680,8 @@ class TestUserDetails(TestController):
         assert user.get_pref('email_address') == 'test@example.com'
 
         # change primary: test -> test2
-        with td.audits('Primary email changed: test@example.com => test2@example.com', user=True):
+        with td.audits('Primary email changed: test@example.com => test2@example.com', user=True,
+                       event_type='account.email.primary_changed'):
             r = self.app.post('/nf/admin/user/update_emails', params={
                 'username': 'test-user',
                 'new_addr.addr': '',

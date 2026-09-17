@@ -46,7 +46,7 @@ class DeleteProjects(ScriptTask):
                         auth_provider.disable_user(user, audit=False)
                         msg = 'Account disabled because user-project was specified for deletion. Reason: {}'.format(
                             options.reason)
-                        log_entry = h.auditlog_user(msg, user=user)
+                        log_entry = h.auditlog_user(msg, user=user, event_type='account.disabled')
                         session(log_entry).flush(log_entry)
                     else:
                         log.info('Could not find associated user for user-project %s', proj.shortname)

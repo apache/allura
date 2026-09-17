@@ -249,7 +249,7 @@ class AuthenticationProvider:
 
         expire_reason = None
         if self.is_password_expired(user):
-            h.auditlog_user(f'{auditlog_msg}; Password expired', user=user)
+            h.auditlog_user(f'{auditlog_msg}; Password expired', user=user, event_type='auth.login.succeeded')
             expire_reason = 'via expiration process'
         if not expire_reason:
             expire_reason = self.login_check_password_change_needed(user, self.request.params.get('password'),
@@ -260,7 +260,7 @@ class AuthenticationProvider:
             self.session['expired-reason'] = expire_reason
         else:
             self.session['username'] = user.username
-            h.auditlog_user(auditlog_msg, user=user)
+            h.auditlog_user(auditlog_msg, user=user, event_type='auth.login.succeeded')
 
         if not skip_after_login:
             self.after_login(user, self.request)
@@ -315,7 +315,7 @@ class AuthenticationProvider:
             if trusted:
                 # current user must change password
                 h.auditlog_user(f'Successful login but {reason}, '
-                                f'from trusted source (reason: {trusted})', user=user)
+                                f'from trusted source (reason: {trusted})', user=user, event_type='auth.login.succeeded')
                 return reason_code
             else:
                 # current user may not continue, must reset password via email
@@ -668,19 +668,19 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         user.disabled = True
         session(user).flush(user)
         if kw.get('audit', True):
-            h.auditlog_user('Account disabled', user=user)
+            h.auditlog_user('Account disabled', user=user, event_type='account.disabled')
 
     def enable_user(self, user, **kw):
         user.disabled = False
         session(user).flush(user)
         if kw.get('audit', True):
-            h.auditlog_user('Account enabled', user=user)
+            h.auditlog_user('Account enabled', user=user, event_type='account.enabled')
 
     def activate_user(self, user, **kw):
         user.pending = False
         session(user).flush(user)
         if kw.get('audit', True):
-            h.auditlog_user('Account activated', user=user)
+            h.auditlog_user('Account activated', user=user, event_type='account.activated')
 
     def deactivate_user(self, user, **kw):
         user.pending = True
@@ -1095,7 +1095,7 @@ class ProjectRegistrationProvider:
         if res.get('status') == 'ok':
             user.set_tool_data('phone_verification', number_hash=number_hash)
             msg = f'Phone verification succeeded. Hash: {number_hash}'
-            h.auditlog_user(msg, user=user)
+            h.auditlog_user(msg, user=user, event_type='account.phone.verified')
         else:
             msg = f'Phone verification failed. Hash: {number_hash}'
             h.auditlog_user(msg, user=user)
@@ -1374,7 +1374,7 @@ class ProjectRegistrationProvider:
                 project.neighborhood.url_prefix,
                 project.shortname,
                 reason)
-            auditlog = h.auditlog_user(msg, user=user)
+            auditlog = h.auditlog_user(msg, user=user, event_type='account.disabled')
             if auditlog:
                 session(auditlog).flush(auditlog)
             else:
