@@ -151,12 +151,13 @@ class patch_middleware_config:
 
 
 @contextlib.contextmanager
-def audits(*messages, user=False, actor=r'.*', ip_addr=r'.*', user_agent=r'.*'):
+def audits(*messages, user=False, actor=r'.*', ip_addr=r'.*', user_agent=r'.*', event_type=None):
     """
     Asserts all the messages exist in audit log
 
     :param messages: regex strings
     :param bool user: if this is a user log
+    :param event_type: optionally require this event type for each matching message
 
     """
     M.AuditLog.query.remove()
@@ -167,7 +168,10 @@ def audits(*messages, user=False, actor=r'.*', ip_addr=r'.*', user_agent=r'.*'):
         preamble = ''
 
     for message in messages:
-        found = M.AuditLog.query.find(dict(message=re.compile(preamble + message))).count()
+        query = dict(message=re.compile(preamble + message))
+        if event_type is not None:
+            query['event_type'] = event_type
+        found = M.AuditLog.query.find(query).count()
         if not found:
             hints = ''
             all = M.AuditLog.query.find().all()

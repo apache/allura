@@ -106,7 +106,9 @@ class TestDeleteProjects(TestController):
         req.user_agent = 'MozFoo'
         req2.url = None
         self.run_script(['u/test-user'])
-        assert M.User.by_username('test-user').disabled
+        user = M.User.by_username('test-user')
+        assert user.disabled
+        assert M.AuditLog.for_user(user, event_type='account.disabled').count() == 1
 
     @patch.object(plugin.g, 'post_event', autospec=True)
     def test_event_is_fired(self, post_event):
@@ -144,6 +146,9 @@ class TestDeleteProjects(TestController):
         dev = M.User.by_username('test-user')
         assert admin.disabled is disable
         assert dev.disabled is disable
+        if disable:
+            for user in (admin, dev):
+                assert M.AuditLog.for_user(user, event_type='account.disabled').count() == 1
 
     @patch('allura.model.auth.request')
     @patch('allura.lib.helpers.request')

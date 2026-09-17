@@ -721,14 +721,14 @@ class TestProjectAdmin(TestController):
             'table', {'id': 'usergroup_admin'}).find_all('tr')[1]
         admin_id = admin_holder['data-group']
         # test that subroles are intact after user added
-        with audits('add user test-user to Admin'):
+        with audits('add user test-user to Admin', event_type='project.member.added'):
             r = self.app.post('/admin/groups/add_user', params={
                 'role_id': admin_id,
                 'username': 'test-user'})
         r = self.app.get('/admin/groups/')
         check_roles(r)
         # test that subroles are intact after user deleted
-        with audits('remove user test-user from Admin'):
+        with audits('remove user test-user from Admin', event_type='project.member.removed'):
             r = self.app.post('/admin/groups/remove_user', params={
                 'role_id': admin_id,
                 'username': 'test-user'})

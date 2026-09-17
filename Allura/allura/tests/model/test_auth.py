@@ -19,7 +19,6 @@
 Model tests for auth
 """
 
-import re
 import textwrap
 from datetime import datetime, timedelta
 
@@ -737,52 +736,47 @@ class TestAuditLog:
         setup_basic_test()
         setup_global_objects()
 
-    @pytest.mark.parametrize('message', ['IP Address: 192.0.2.1\nName: Carlos', '', None])
-    def test_dual_write_on_insert(self, message):
-        entry = M.AuditLog(message=message)
-        session(entry).flush(entry)
-
-        raw = M.main_doc_session.db.audit_log.find_one({'_id': entry._id})
-        assert raw['message'] == message
-        assert raw['message_encrypted'] == M.AuditLog.encr(message)
-        assert M.AuditLog.decr(raw['message_encrypted']) == message
-        if message is not None:
+    def test_message_dual_write(self):
+        entry = M.AuditLog(message='Account disabled', event_type='account.disabled')
+        for message in ['Account disabled', 'Account disabled by admin']:
+            entry.message = message
+            session(entry).flush(entry)
+            raw = M.main_doc_session.db.audit_log.find_one({'_id': entry._id})
+            assert raw['message'] == message
             assert isinstance(raw['message_encrypted'], Binary)
-        assert M.AuditLog.query.get(_id=entry._id, message=message) is entry
+            assert M.AuditLog.decr(raw['message_encrypted']) == message
+            assert raw['event_type'] == 'account.disabled'
 
-    def test_dual_write_on_update(self):
-        entry = M.AuditLog(message='add user alice to Admin')
+    @pytest.mark.parametrize('message, arg, project_scoped, event_type, expected', [
+        ('About user %s here', 'alice', True, None, 'project.user_mention.unclassified'),
+        ('Comment: %s', 'Account disabled', False, None, 'account.event.unclassified'),
+        ('Updated %s', 'description', True, None, None),
+        ('Successful login %s', 'via password', False, 'auth.login.succeeded', 'auth.login.succeeded'),
+    ])
+    def test_log_event_type(self, message, arg, project_scoped, event_type, expected):
+        entry = M.AuditLog.log(message, arg, user=c.user,
+                              project=c.project if project_scoped else None,
+                              event_type=event_type, url='/test')
+        assert entry.event_type == expected
         session(entry).flush(entry)
-        original_ciphertext = entry.message_encrypted
-
-        entry.message = 'add user <REDACTED> to Admin'
-        session(entry).flush(entry)
-        entry_id = entry._id
-        session(entry).expunge(entry)
-
-        entry = M.AuditLog.query.get(_id=entry_id)
-        assert entry.message == 'add user <REDACTED> to Admin'
-        assert entry.message_encrypted != original_ciphertext
-        assert M.AuditLog.decr(entry.message_encrypted) == entry.message
-        assert M.AuditLog.query.find({
-            '_id': entry_id, 'message': re.compile(r'user <REDACTED>'),
-        }).count() == 1
+        raw = M.main_doc_session.db.audit_log.find_one({'_id': entry._id})
+        assert raw['event_type'] == expected
+        assert raw['message'] == message % arg
+        assert M.AuditLog.decr(raw['message_encrypted']) == raw['message']
 
     def test_legacy_message_read_and_update(self):
         entry_id = ObjectId()
-        collection = M.main_doc_session.db.audit_log
-        collection.insert_one({'_id': entry_id, 'message': 'Legacy message'})
-
+        M.main_doc_session.db.audit_log.insert_one({'_id': entry_id, 'message': 'Comment: Account disabled'})
         entry = M.AuditLog.query.get(_id=entry_id)
-        assert entry.message == 'Legacy message'
+        assert entry.message == 'Comment: Account disabled'
         assert entry.message_encrypted is None
-        assert 'message_encrypted' not in collection.find_one({'_id': entry_id})
-
+        assert entry.event_type is None
         entry.url = '/updated'
         session(entry).flush(entry)
-        raw = collection.find_one({'_id': entry_id})
-        assert raw['message'] == 'Legacy message'
-        assert M.AuditLog.decr(raw['message_encrypted']) == 'Legacy message'
+        raw = M.main_doc_session.db.audit_log.find_one({'_id': entry_id})
+        assert raw['message'] == 'Comment: Account disabled'
+        assert M.AuditLog.decr(raw['message_encrypted']) == raw['message']
+        assert raw['event_type'] == 'account.event.unclassified'
 
     def test_message_html(self):
         al = h.auditlog_user('our message <script>alert(1)</script>')

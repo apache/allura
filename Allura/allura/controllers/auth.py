@@ -232,7 +232,7 @@ class AuthController(BaseController):
         user.set_password(pw)
         user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')  # Clear password reset token
         user.set_tool_data('allura', pwd_reset_preserve_session=session.id)
-        h.auditlog_user('Password changed (through recovery process)', user=user)
+        h.auditlog_user('Password changed (through recovery process)', user=user, event_type='account.password.changed')
         email_body = g.jinja2_env.get_template('allura:templates/mail/password_changed.md.jinja2').render(dict(
             user=user,
             config=config
@@ -365,7 +365,7 @@ class AuthController(BaseController):
             addr.confirmed = True
             addr.confirmed_date = datetime.utcnow()
             flash('Email address confirmed')
-            h.auditlog_user('Email address verified: %s',  addr.email, user=user)
+            h.auditlog_user('Email address verified: %s', addr.email, user=user, event_type='account.email.verified')
             if user.get_pref('email_address') is None:
                 user.set_pref('email_address', addr.email)
             if user.pending:
@@ -740,7 +740,8 @@ class PreferencesController(BaseController):
                         user.set_pref('email_address', None)
                         primary_addr = None
                         user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
-                h.auditlog_user('Email address deleted: %s', user.email_addresses[i], user=user)
+                h.auditlog_user('Email address deleted: %s', user.email_addresses[i], user=user,
+                                event_type='account.email.removed')
                 if not admin:
                     email_body = g.jinja2_env.get_template('allura:templates/mail/email_removed.md.jinja2').render(dict(
                         user=user,
@@ -785,7 +786,8 @@ class PreferencesController(BaseController):
                         user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
                         flash('A verification email has been sent.  Please check your email and click to confirm.')
 
-                    h.auditlog_user('New email address: %s', new_addr['addr'], user=user)
+                    h.auditlog_user('New email address: %s', new_addr['addr'], user=user,
+                                    event_type='account.email.added')
                 else:
                     flash('Email address %s is invalid' % new_addr['addr'], 'error')
             else:
@@ -801,7 +803,7 @@ class PreferencesController(BaseController):
                     'Primary email changed: %s => %s',
                     user.get_pref('email_address'),
                     primary_addr,
-                    user=user)
+                    user=user, event_type='account.email.primary_changed')
                 if not admin:
                     email_body = g.jinja2_env.get_template('allura:templates/mail/primary_email_changed.md.jinja2').render(
                         dict(user=user, config=config, addr=primary_addr))
@@ -834,7 +836,8 @@ class PreferencesController(BaseController):
             old = c.user.get_pref('display_name')
             c.user.set_pref('display_name', preferences['display_name'])
             if old != preferences['display_name']:
-                h.auditlog_user('Display Name changed %s => %s', old, preferences['display_name'])
+                h.auditlog_user('Display Name changed %s => %s', old, preferences['display_name'],
+                                event_type='account.display_name.changed')
 
             for k, v in preferences.items():
                 if k == 'results_per_page':
@@ -860,7 +863,7 @@ class PreferencesController(BaseController):
             flash('Incorrect password', 'error')
             redirect('.')
         flash('Password changed')
-        h.auditlog_user('Password changed')
+        h.auditlog_user('Password changed', event_type='account.password.changed')
         email_body = g.jinja2_env.get_template('allura:templates/mail/password_changed.md.jinja2').render(dict(
             user=c.user,
             config=config,
@@ -907,7 +910,7 @@ class PreferencesController(BaseController):
 
         qr = totp_service.get_qr_code(totp, c.user)
         key_b32 = b32encode(totp.key).decode('ascii')
-        h.auditlog_user('Visited multifactor new TOTP page')
+        h.auditlog_user('Visited multifactor new TOTP page', event_type='account.mfa.setup_viewed')
         provider = plugin.AuthenticationProvider.get(request)
 
         return dict(
@@ -928,7 +931,7 @@ class PreferencesController(BaseController):
         totp = totp_service.get_totp(c.user)
         qr = totp_service.get_qr_code(totp, c.user)
         key_b32 = b32encode(totp.key).decode('ascii')
-        h.auditlog_user('Viewed multifactor TOTP config page')
+        h.auditlog_user('Viewed multifactor TOTP config page', event_type='account.mfa.config_viewed')
         provider = plugin.AuthenticationProvider.get(request)
 
         return dict(
@@ -956,7 +959,7 @@ class PreferencesController(BaseController):
             request.validation.errors['code'] = 'Invalid code, please try again.'
             return self.totp_new(**kw)
         else:
-            h.auditlog_user('Set up multifactor TOTP')
+            h.auditlog_user('Set up multifactor TOTP', event_type='account.mfa.enabled')
             totp_service.set_secret_key(c.user, key)
             c.user.set_pref('multifactor', True)
             c.user.set_tool_data('allura', multifactor_date=datetime.utcnow())
@@ -1016,7 +1019,7 @@ class PreferencesController(BaseController):
         codes = recovery.get_codes(c.user)
         if not codes:
             codes = recovery.regenerate_codes(c.user)
-        h.auditlog_user('Viewed multifactor recovery codes')
+        h.auditlog_user('Viewed multifactor recovery codes', event_type='account.mfa.recovery_codes_viewed')
         provider = plugin.AuthenticationProvider.get(request)
 
         windows_line_endings = "WINDOWS" in request.headers.get('USER_AGENT', '').upper()
@@ -1040,7 +1043,7 @@ class PreferencesController(BaseController):
             user=c.user,
             config=config,
         ))
-        h.auditlog_user('Regenerated multifactor recovery codes')
+        h.auditlog_user('Regenerated multifactor recovery codes', event_type='account.mfa.recovery_codes_regenerated')
         send_system_mail_to_user(c.user, 'Two-Factor Recovery Codes Regenerated', email_body)
         tg.flash('Your recovery codes have been regenerated.  Save the new codes!')
         redirect('/auth/preferences/multifactor_recovery')
