@@ -1129,10 +1129,12 @@ class AuditLogMapperExtension(MapperExtension):
     """Dual-write encrypted messages while plaintext remains the source of truth."""
 
     def before_insert(self, instance, state, sess):
+        if instance.event_type is None and instance.project_id is not None:
+            instance.event_type = instance.unclassified_event_type(instance.message, instance.project_id)
         instance.message_encrypted = instance.encr(instance.message)
 
     def before_update(self, instance, state, sess):
-        instance.message_encrypted = instance.encr(instance.message)
+        self.before_insert(instance, state, sess)
 
 
 class AuditLog(MappedClass):
@@ -1143,6 +1145,7 @@ class AuditLog(MappedClass):
         indexes = [
             'project_id',
             'user_id',
+            'event_type',
         ]
 
     query: Query[AuditLog]
@@ -1156,6 +1159,14 @@ class AuditLog(MappedClass):
     url = FieldProperty(str)
     message = FieldProperty(str)
     message_encrypted = FieldProperty(S.Binary, if_missing=None)
+    event_type = FieldProperty(str, if_missing=None)
+
+    @staticmethod
+    def unclassified_event_type(message: str | None, project_id: ObjectId | None) -> str | None:
+        """Mark possible username mentions for later target-specific redaction."""
+        if project_id is not None and message and re.search(r' user \S+ ', message):
+            return 'project.user_mention.unclassified'
+        return None
 
     @property
     def timestamp_str(self):
@@ -1193,6 +1204,7 @@ class AuditLog(MappedClass):
         project = kwargs.pop('project') if 'project' in kwargs else c.project
         user = kwargs.pop('user', c.user)
         url = kwargs.pop('url', '')
+        event_type = kwargs.pop('event_type', None)
         if not url:
             try:
                 url = request.url
@@ -1205,7 +1217,7 @@ class AuditLog(MappedClass):
         pid = project._id if project is not None else None
         if pid is None and user is None or user.is_anonymous():
             return
-        return cls(project_id=pid, user_id=user._id, url=url, message=message)
+        return cls(project_id=pid, user_id=user._id, url=url, message=message, event_type=event_type)
 
     @classmethod
     def for_user(cls, user, **kwargs):

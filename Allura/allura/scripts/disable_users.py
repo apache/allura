@@ -58,7 +58,7 @@ class DisableUsers(ScriptTask):
                 auth_provider.disable_user(user)
                 session(user).flush(user)
                 if message:
-                    log_entry = h.auditlog_user(message, user=user)
+                    log_entry = h.auditlog_user(message, user=user, event_type='account.disabled')
                     session(log_entry).flush(log_entry)
 
     @classmethod

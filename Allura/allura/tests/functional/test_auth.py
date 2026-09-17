@@ -82,10 +82,11 @@ class TestAuth(TestController):
         r = self.app.get('/auth/verify_addr', params=dict(a='foo'))
         assert json.loads(self.webflash(r))['status'] == 'error', self.webflash(r)
         ea = M.EmailAddress.find({'email': email}).first()
-        r = self.app.get('/auth/verify_addr', params=dict(a=ea.nonce))
-        assert json.loads(self.webflash(r))['status'] == 'ok', self.webflash(r)
+        with audits('Email address verified:', user=True, event_type='account.email.verified'):
+            r = self.app.get('/auth/verify_addr', params=dict(a=ea.nonce))
+            assert json.loads(self.webflash(r))['status'] == 'ok', self.webflash(r)
 
-        with audits('Successful login', user=True):
+        with audits('Successful login', user=True, event_type='auth.login.succeeded'):
             r = self.app.post('/auth/do_login', params=dict(
                 username='test-user', password='foo',
                 _csrf_token=self.app.cookies['_csrf_token']),
@@ -197,7 +198,7 @@ class TestAuth(TestController):
             f[encoded['password']] = 'foo'
 
             with audits(r'Successful login but password in HIBP breach database, from trusted source '
-                        r'\(reason: exact ip\)', user=True):
+                        r'\(reason: exact ip\)', user=True, event_type='auth.login.succeeded'):
                 r = f.submit(status=302)
 
             assert r.session.get('pwd-expired')
@@ -732,7 +733,7 @@ class TestAuth(TestController):
         old_pass = user.get_pref('password')
 
         # Change password
-        with audits('Password changed', user=True):
+        with audits('Password changed', user=True, event_type='account.password.changed'):
             self.app.post('/auth/preferences/change_password',
                           extra_environ=dict(username='test-admin'),
                           params={
@@ -802,7 +803,7 @@ class TestAuth(TestController):
                 'test-admin@users.localhost')
 
         # add test@example
-        with td.audits('New email address: test@example.com', user=True):
+        with td.audits('New email address: test@example.com', user=True, event_type='account.email.added'):
             r = self.app.post('/auth/preferences/update_emails',
                               extra_environ=dict(username='test-admin'),
                               params={
@@ -819,7 +820,8 @@ class TestAuth(TestController):
         assert user.get_pref('email_address') == 'test-admin@users.localhost'
 
         # remove test-admin@users.localhost
-        with td.audits('Email address deleted: test-admin@users.localhost', user=True):
+        with td.audits('Email address deleted: test-admin@users.localhost', user=True,
+                       event_type='account.email.removed'):
             r = self.app.post('/auth/preferences/update_emails',
                               extra_environ=dict(username='test-admin'),
                               params={
@@ -844,7 +846,7 @@ class TestAuth(TestController):
         user = M.User.query.get(username='test-admin')
         assert user.get_pref('email_address') is None
 
-        with td.audits('Display Name changed Test Admin => Admin', user=True):
+        with td.audits('Display Name changed Test Admin => Admin', user=True, event_type='account.display_name.changed'):
             r = self.app.post('/auth/preferences/update',
                               params={'preferences.display_name': 'Admin',
                                       '_csrf_token': self.app.cookies['_csrf_token'],
@@ -1943,7 +1945,7 @@ To update your password on {}, please visit the following URL:
         # fill it out correctly
         form = r.forms[0]
         form['pw'] = form['pw2'] = new_password = '154321'
-        with td.audits(r'Password changed \(through recovery process\)', user=True):
+        with td.audits(r'Password changed \(through recovery process\)', user=True, event_type='account.password.changed'):
             # escape parentheses, so they would not be treated as regex group
             r = form.submit()
 
@@ -3179,7 +3181,7 @@ class TestTwoFactor(TestController):
             r = self.app.get('/auth/preferences/totp_new')
             assert 'Password Confirmation' in r
 
-        with audits('Visited multifactor new TOTP page', user=True):
+        with audits('Visited multifactor new TOTP page', user=True, event_type='account.mfa.setup_viewed'):
             r.form['password'] = 'foo'
             r = r.form.submit()
             assert 'Scan this' in r
@@ -3199,7 +3201,7 @@ class TestTwoFactor(TestController):
         code = new_totp.generate(time_time())
         form = r.forms['totp_set']
         form['code'] = code
-        with audits('Set up multifactor TOTP', user=True):
+        with audits('Set up multifactor TOTP', user=True, event_type='account.mfa.enabled'):
             r = form.submit()
             msg = 'Two factor authentication has now been set up.'
             assert msg == json.loads(self.webflash(r))['message'], self.webflash(r)
@@ -3582,7 +3584,7 @@ class TestTwoFactor(TestController):
             r = self.app.get('/auth/preferences/totp_view')
             assert 'Password Confirmation' in r
 
-        with audits('Viewed multifactor TOTP config page', user=True):
+        with audits('Viewed multifactor TOTP config page', user=True, event_type='account.mfa.config_viewed'):
             r.form['password'] = 'foo'
             r = r.form.submit()
             assert 'Scan this' in r
@@ -3597,14 +3599,15 @@ class TestTwoFactor(TestController):
             assert 'Password Confirmation' in r
 
         # actual visit
-        with audits('Viewed multifactor recovery codes', user=True):
+        with audits('Viewed multifactor recovery codes', user=True, event_type='account.mfa.recovery_codes_viewed'):
             r.form['password'] = 'foo'
             r = r.form.submit()
             assert 'Download' in r
             assert 'Print' in r
 
         # regenerate codes
-        with audits('Regenerated multifactor recovery codes', user=True):
+        with audits('Regenerated multifactor recovery codes', user=True,
+                    event_type='account.mfa.recovery_codes_regenerated'):
             r = r.forms['multifactor_recovery_regen'].submit()
 
         # email confirmation
