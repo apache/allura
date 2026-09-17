@@ -74,15 +74,7 @@ __all__ = ['make_app']
 
 class _BoundedResourceCache(dict):
     """A byte-budgeted replacement for easywidgets' unbounded resource cache.
-
-    ew 0.4.x keeps ResourceManager.resource_cache -- a plain class-level dict shared by every
-    instance and every request -- forever, keyed on the raw href query string and with no eviction.
-    WidgetMiddleware answers /_ew_resources/ before the wrapped app, so anyone at all can grow the
-    worker's heap until it dies.  It only ever does ``cache[href]`` and ``cache[href] = content``,
-    so evicting on insert is enough to bound it without touching the library's code.
-
-    Oldest-first rather than true LRU: eviction only happens under abuse, where the recency of what
-    gets dropped does not matter.  easywidgets 0.5 bounds this itself; drop once the pin moves.
+    drop this once requirements pin easywidgets >= 0.5.
     """
 
     def __init__(self, max_bytes):
@@ -112,12 +104,7 @@ def _bound_ew_resource_cache(max_bytes):
 
 def _mark_ew_script_bodies_safe():
     """Keep inline <script>/<style> bodies out of easywidgets' autoescaping.
-
-    easywidgets 0.4.x renders JSScript/CSSScript through a bare ``{{widget.text}}``.  That was
-    harmless while its jinja env had autoescaping off, but _make_core_app turns it on, which would
-    escape every inline script and style body in the site (``&&`` -> ``&amp;&amp;`` and so on).
-    Script bodies are developer-supplied markup by definition, so mark them safe.  0.5 does this
-    itself; drop this once requirements pin easywidgets >= 0.5.
+    drop this once requirements pin easywidgets >= 0.5.
     """
     ew.jinja2_ew.JSScript.WidgetClass.template = ew.jinja2_ew.Snippet(
         '<script type="text/javascript">{{widget.text|safe}}</script>', 'jinja2')
@@ -225,16 +212,10 @@ def _make_core_app(root, global_conf: dict, **app_conf):
         extra_headers=ast.literal_eval(app_conf.get('ew.extra_headers', '[]')),
         cache_max_age=asint(app_conf.get('ew.cache_header_seconds', 60*60*24*365)),
 
-        # settings to pass through to jinja Environment for EW core widgets
+        # settings to pass through to a second jinja Environment for EW core widgets
         # these are for the easywidgets' own [easy_widgets.engines] entry point
         # (the Allura [easy_widgets.engines] entry point is named "jinja" (not jinja2) but it doesn't need
         #  any settings since it is a class that uses the same jinja env as the rest of allura)
-        # NB: this is a *second* jinja environment, separate from the one in
-        # AlluraJinjaRenderer.  Widgets render through this one and their output
-        # is spliced into our own templates as Markup, so it does not inherit
-        # their autoescaping -- it has to be turned on here too.  Recent
-        # easywidgets defaults it on; set it explicitly so an older pin can't
-        # silently render widgets unescaped.
         **{
             'jinja2.auto_reload': asbool(config['auto_reload_templates']),
             'jinja2.autoescape': True,

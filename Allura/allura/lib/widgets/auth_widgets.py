@@ -29,16 +29,12 @@ from tg import tmpl_context as c, app_globals as g
 from allura.lib import plugin
 
 
-# Emits already-rendered markup as-is.  The antispam honeypot fields arrive as
-# Markup, so passing them as *template source* is both pointless and risky --
-# a '$' in the content would be read as a core-ew substitution.  Render them as
-# data instead.
-_raw_html = ew.Snippet('{{widget.text|safe}}', 'jinja2')
-
-
 class LoginForm(ForgeForm):
     submit_text = 'Login'
     style = 'wide'
+    # The antispam honeypot fields arrive as Markup but it's better to
+    # render them as data.
+    _raw_html = ew.Snippet('{{widget.text|safe}}', 'jinja2')
 
     @property
     def fields(self):
@@ -69,7 +65,7 @@ class LoginForm(ForgeForm):
 
         for fld in g.antispam.extra_fields():
             fields.append(
-                ew_core.Widget(template=_raw_html, text=fld))
+                ew_core.Widget(template=self._raw_html, text=fld))
 
         return fields
 
