@@ -871,25 +871,13 @@ class _OpenedGitBlob:
 
     def __iter__(self):
         '''
-        Yields one line at a time, reading from the stream
+        Yields fixed-size chunks, reading from the stream.
         '''
-        buffer = b''
         while True:
-            # Replenish buffer until we have a line break
-            while b'\n' not in buffer:
-                chars = self._stream.read(self.CHUNK_SIZE)
-                if not chars:
-                    break
-                buffer += chars
-            if not buffer:
+            chars = self._stream.read(self.CHUNK_SIZE)
+            if not chars:
                 break
-            eol = buffer.find(b'\n')
-            if eol == -1:
-                # end without \n
-                yield buffer
-                break
-            yield buffer[:eol + 1]
-            buffer = buffer[eol + 1:]
+            yield chars
         self._proc.wait()  # reached naturally, not via close()/abandonment: reap now
 
     def close(self):

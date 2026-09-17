@@ -971,9 +971,10 @@ class FileBrowser(BaseController):
             diff = 'File too large to view diff'
             return dict(a=a, b=b, diff=diff)
 
-        # could consider making Blob.__iter__ do unicode conversion?
-        la = [h.really_unicode(line) for line in a]
-        lb = [h.really_unicode(line) for line in b]
+        # Blob.__iter__ yields fixed-size chunks (not lines), so read the full
+        # content and split into lines ourselves; bounded by the size check above.
+        la = [h.really_unicode(line) for line in b''.join(a).splitlines(keepends=True)]
+        lb = [h.really_unicode(line) for line in b''.join(b).splitlines(keepends=True)]
         adesc = 'a' + h.really_unicode(apath)
         bdesc = 'b' + h.really_unicode(b.path())
 
