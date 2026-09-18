@@ -230,6 +230,13 @@ body''')
             'untrusted.example; dmarc=pass header.from=example.com',
         ]
 
+        assert msg['raw_headers'] == [
+            ('From', 'first@example.com'),
+            ('From', 'second@example.com'),
+            ('Authentication-Results', msg['authentication_results'][0]),
+            ('Authentication-Results', msg['authentication_results'][1]),
+        ]
+
 
 class TestHeader:
 
@@ -410,7 +417,8 @@ class TestAuthenticatedIdentifySender:
         'allura.lib.mail_util._authenticated_sender',
         side_effect=RuntimeError('shadow verifier failed'))
     def test_monitor_mode_preserves_legacy_sender_on_unexpected_error(
-            self, authenticated_sender):
+            self, authenticated_sender, caplog):
+        caplog.set_level('INFO', logger='allura.lib.mail_util')
         config = dict(self.AUTH_CONFIG)
         config['forgemail.sender_authentication.mode'] = 'monitor'
 
@@ -418,6 +426,9 @@ class TestAuthenticatedIdentifySender:
 
         assert user.username == 'test-admin'
         authenticated_sender.assert_called_once()
+        assert 'raw_headers=' in caplog.text
+        assert 'reported_authentication_results=' in caplog.text
+        assert 'Unexpected inbound sender authentication monitor error peer=127.0.0.1' in caplog.text
 
     def test_enforce_accepts_unique_confirmed_from_with_trusted_dmarc_pass(self):
         user = self._identify(mailfrom='attacker@example.net')

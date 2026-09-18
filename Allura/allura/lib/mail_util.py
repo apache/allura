@@ -57,6 +57,7 @@ MAX_AUTHENTICATION_RESULTS_OCTETS = 16 * 1024
 MAX_FROM_HEADER_OCTETS = 2 * 1024
 MAX_AUTHENTICATION_RESULTS_CLAUSES = 64
 MAX_AUTHENTICATION_RESULTS_COMMENT_DEPTH = 8
+MAX_SENDER_AUTHENTICATION_LOG_CHARS = 16 * 1024
 
 RE_TARGET_AUTHENTICATION_METHOD = re.compile(
     r'(?ai)\A(dmarc|spf)(?=[^a-z0-9-]|\Z)')
@@ -167,6 +168,7 @@ def parse_message(data):
     # used by message handlers.  Sender authentication needs multiplicity so
     # that duplicate From or Authentication-Results fields fail closed.
     raw_headers = list(msg.raw_items())
+    result['raw_headers'] = raw_headers
     result['from_headers'] = [
         value for name, value in raw_headers if name.casefold() == 'from']
     result['authentication_results'] = [
@@ -484,6 +486,44 @@ def _legacy_identify_sender(email_address, headers):
     return M.User.anonymous()
 
 
+def _sender_authentication_log_value(value) -> str:
+    value = ascii(value)
+    if len(value) > MAX_SENDER_AUTHENTICATION_LOG_CHARS:
+        return value[:MAX_SENDER_AUTHENTICATION_LOG_CHARS] + '...[truncated]'
+    return value
+
+
+def _log_sender_authentication_headers(peer, msg) -> None:
+    if not isinstance(msg, dict):
+        msg = {}
+    reported_results = []
+    for value in msg.get('authentication_results', []):
+        reported = {}
+        try:
+            unfolded = _unfold_sender_authentication_header(
+                value, MAX_AUTHENTICATION_RESULTS_OCTETS)
+            clauses = _split_authentication_results(unfolded)
+            reported = dict(authserv_id=clauses[0], spf=[], dkim=[], dmarc=[])
+            for clause in clauses[1:]:
+                match = re.match(r'(?ai)(spf|dkim|dmarc)=', clause)
+                if match:
+                    reported[match.group(1).lower()].append(clause)
+        except SenderAuthenticationError as error:
+            reported['parse_error'] = error.reason
+        reported_results.append(reported)
+
+    # Reported clauses are diagnostics, not trusted verification outcomes.
+    # Escape control characters and cap each field; never include the body.
+    log.info(
+        'Inbound sender authentication mode=monitor headers peer=%s message_id=%s '
+        'raw_headers=%s reported_authentication_results=%s',
+        peer[0] if isinstance(peer, (tuple, list)) and peer else 'invalid',
+        _sender_authentication_log_value(msg.get('message_id')),
+        _sender_authentication_log_value(msg.get('raw_headers', [])),
+        _sender_authentication_log_value(reported_results),
+    )
+
+
 def identify_sender(peer, email_address, headers, msg):
     from allura import model as M
 
@@ -504,6 +544,7 @@ def identify_sender(peer, email_address, headers, msg):
     if mode == 'monitor':
         legacy_user = _legacy_identify_sender(email_address, headers)
         try:
+            _log_sender_authentication_headers(peer, msg)
             verified_user, reason = _authenticated_sender(peer, msg)
             log.info(
                 'Inbound sender authentication mode=monitor result=%s reason=%s '
