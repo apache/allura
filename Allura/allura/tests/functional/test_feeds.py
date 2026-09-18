@@ -123,6 +123,12 @@ class TestFeeds(TestController):
         ThreadLocalODMSession.flush_all()
         assert 'spammy comment' in self.app.get('/wiki/feed.rss', extra_environ=ANON)
 
+        # undoing again is a no-op; it must not file a second entry
+        h.set_context('test', 'wiki', neighborhood='Projects')
+        M.Post.query.get(text='spammy comment').undo('ok')
+        ThreadLocalODMSession.flush_all()
+        assert self.app.get('/wiki/feed.rss', extra_environ=ANON).text.count('spammy comment') == 1
+
     @td.with_wiki
     def test_wiki_feed_drops_hard_deleted_comment(self):
         h.set_context('test', 'wiki', neighborhood='Projects')

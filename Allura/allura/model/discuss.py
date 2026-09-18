@@ -854,7 +854,7 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
         self.thread.update_stats()
 
     def undo(self, prev_status):
-        if prev_status in ('ok', 'pending'):
+        if prev_status in ('ok', 'pending') and self.status != prev_status:
             self.status = prev_status
             self.thread.post_to_feed(self)  # spam() revoked it
             session(self).flush(self)
