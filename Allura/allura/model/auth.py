@@ -457,20 +457,6 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         except DuplicateKeyError:
             session(detail).expunge(detail)
 
-    def backfill_login_details(self, auth_provider):
-        # ".*" at start of regex and the DOTALL flag is needed only for the test, which uses mim
-        # Fixed in ming f9f69d3c, so once we upgrade to 0.6.1+ we can remove it
-        msg_regex = re.compile(r'.*^({})'.format('|'.join([re.escape(line_prefix)
-                                                           for line_prefix
-                                                           in auth_provider.trusted_auditlog_line_prefixes])),
-                               re.MULTILINE | re.DOTALL)
-        for auditlog in AuditLog.for_user(self, message=msg_regex):
-            if not msg_regex.search(auditlog.message):
-                continue
-            login_detail = auth_provider.login_details_from_auditlog(auditlog)
-            if login_detail:
-                self.add_login_detail(login_detail)
-
     def send_password_reset_email(self, email_address=None, subject_tmpl='{site_name} Password recovery'):
         if email_address is None:
             email_address = self.get_pref('email_address')
@@ -1126,12 +1112,11 @@ class ProjectRole(MappedClass):
 
 
 class AuditLogMapperExtension(MapperExtension):
-    """Dual-write encrypted messages while plaintext remains the source of truth."""
+    """Classify untyped audit messages on inserts and updates."""
 
     def before_insert(self, instance, state, sess):
         if instance.event_type is None and instance.project_id is not None:
             instance.event_type = instance.unclassified_event_type(instance.message, instance.project_id)
-        instance.message_encrypted = instance.encr(instance.message)
 
     def before_update(self, instance, state, sess):
         self.before_insert(instance, state, sess)
@@ -1157,7 +1142,7 @@ class AuditLog(MappedClass):
     user = RelationProperty('User')
     timestamp = FieldProperty(datetime, if_missing=datetime.utcnow)
     url = FieldProperty(str)
-    message = FieldProperty(str)
+    message = DecryptedProperty(str, 'message_encrypted')
     message_encrypted = FieldProperty(S.Binary, if_missing=None)
     event_type = FieldProperty(str, if_missing=None)
 

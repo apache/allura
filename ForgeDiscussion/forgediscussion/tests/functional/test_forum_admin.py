@@ -17,7 +17,6 @@
 
 import logging
 
-import re
 from ming.odm import ThreadLocalODMSession
 from tg import tmpl_context as c
 from alluratest.controller import TestController
@@ -55,7 +54,7 @@ class TestForumAdmin(TestController):
                                   'forum-0.shortname': 'NewTestForum',
                                   'forum-0.description': 'My desc',
                                   'forum-0.monitoring_email': ''})
-        audit_logs = M.AuditLog.query.find({'project_id': project._id, 'message': re.compile(' set option ')}).all()
+        audit_logs = td.matching_audits(' set option ', project_id=project._id)
         assert len(audit_logs) == 4
         r = self.app.get('/admin/discussion/forums')
         assert 'New Test Forum' in r

@@ -97,7 +97,7 @@ class TestNeighborhood(TestController):
     def test_admin_overview_audit_log(self):
 
         def check_log(message):
-            return M.AuditLog.query.find({'message': message}).count() == 1
+            return M.AuditLog.query.find({'message_encrypted': M.AuditLog.encr(message)}).count() == 1
 
         nbhd = M.Neighborhood.query.get(name='Projects')
         nbhd.features['css'] = 'custom'
