@@ -464,8 +464,9 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
                                                            for line_prefix
                                                            in auth_provider.trusted_auditlog_line_prefixes])),
                                re.MULTILINE | re.DOTALL)
-        for auditlog in AuditLog.for_user(self, message=msg_regex):
-            if not msg_regex.search(auditlog.message):
+        candidate_types = auth_provider.trusted_auditlog_event_types + ['account.event.unclassified']
+        for auditlog in AuditLog.for_user(self, event_type={'$in': candidate_types}):
+            if not msg_regex.search(auditlog.message or ''):
                 continue
             login_detail = auth_provider.login_details_from_auditlog(auditlog)
             if login_detail:
@@ -1167,17 +1168,15 @@ ACCOUNT_EVENT_CANDIDATE = re.compile(
 
 
 class AuditLogMapperExtension(MapperExtension):
-    """Dual-write encrypted messages while plaintext remains the source of truth."""
+    """Classify untyped audit messages on inserts and updates."""
 
     def before_insert(self, instance, state, sess):
         if instance.event_type is None:
             instance.event_type = instance.unclassified_event_type(instance.message, instance.project_id)
-        instance.message_encrypted = instance.encr(instance.message)
 
     def before_update(self, instance, state, sess):
         if instance.event_type is None:
             instance.event_type = instance.unclassified_event_type(instance.message, instance.project_id)
-        instance.message_encrypted = instance.encr(instance.message)
 
 
 class AuditLog(MappedClass):
@@ -1199,7 +1198,7 @@ class AuditLog(MappedClass):
     user = RelationProperty('User')
     timestamp = FieldProperty(datetime, if_missing=datetime.utcnow)
     url = FieldProperty(str)
-    message = FieldProperty(str)
+    message = DecryptedProperty(str, 'message_encrypted')
     message_encrypted = FieldProperty(S.Binary, if_missing=None)
     event_type = FieldProperty(str, if_missing=None)
 

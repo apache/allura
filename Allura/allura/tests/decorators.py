@@ -168,10 +168,11 @@ def audits(*messages, user=False, actor=r'.*', ip_addr=r'.*', user_agent=r'.*', 
         preamble = ''
 
     for message in messages:
-        query = dict(message=re.compile(preamble + message))
+        query = {}
+        pattern = re.compile(preamble + message)
         if event_type is not None:
             query['event_type'] = event_type
-        found = M.AuditLog.query.find(query).count()
+        found = any(pattern.search(entry.message or '') for entry in M.AuditLog.query.find(query))
         if not found:
             hints = ''
             all = M.AuditLog.query.find().all()
@@ -198,8 +199,9 @@ def out_audits(*messages, user=False, actor=r'.*', ip_addr=r'.*'):
     else:
         preamble = ''
     for message in messages:
-        assert not M.AuditLog.query.find(dict(
-            message=re.compile(preamble + message))).count(), 'Found unexpected: "%s"' % message
+        pattern = re.compile(preamble + message)
+        assert not any(pattern.search(entry.message or '') for entry in M.AuditLog.query.find()), (
+            'Found unexpected: "%s"' % message)
 
 
 # not a decorator but use it with LogCapture() context manager

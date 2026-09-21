@@ -526,6 +526,25 @@ class AuthenticationProvider:
         return asbool(tg.config.get('auth.hibp_password_check', False))
 
     @property
+    def trusted_auditlog_event_types(self):
+        return [
+            'auth.login.succeeded',
+            'account.email.primary_changed',
+            'account.email.added',
+            'account.display_name.changed',
+            'account.email.verified',
+            'account.password.changed',
+            'account.email.removed',
+            'account.activated',
+            'account.phone.verified',
+            'account.mfa.setup_viewed',
+            'account.mfa.enabled',
+            'account.mfa.config_viewed',
+            'account.mfa.recovery_codes_viewed',
+            'account.mfa.recovery_codes_regenerated',
+        ]
+
+    @property
     def trusted_auditlog_line_prefixes(self):
         return [
             "Successful login",  # this is the main one
