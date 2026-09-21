@@ -555,12 +555,12 @@ class TestRootController(_TestCase):
             self.app.post('/p/test/admin/src-git/force_push', params={'allowed': 'on'})
             assert GM.Repository.query.get(_id=c.app.repo._id).force_push_allowed is True
             assert M.AuditLog.query.find(
-                {'message': 'src-git: set "force_push_allowed" False => True'}).count() == 1
+                {'message_encrypted': M.AuditLog.encr('src-git: set "force_push_allowed" False => True')}).count() == 1
 
             self.app.post('/p/test/admin/src-git/force_push', params={})
             assert GM.Repository.query.get(_id=c.app.repo._id).force_push_allowed is False
             assert M.AuditLog.query.find(
-                {'message': 'src-git: set "force_push_allowed" True => False'}).count() == 1
+                {'message_encrypted': M.AuditLog.encr('src-git: set "force_push_allowed" True => False')}).count() == 1
 
     def test_force_push_menu_entry(self):
         with h.push_config(tg.config, **{'scm.force_push.git.enabled': 'true'}):
@@ -583,7 +583,7 @@ class TestRootController(_TestCase):
             assert GM.Repository.query.get(_id=c.app.repo._id).force_push_allowed is False
             post.assert_called_once_with(c.app.repo.full_fs_path, False)
             assert M.AuditLog.query.find(
-                {'message': 'src-git: set "force_push_allowed" False => False'}).count() == 0
+                {'message_encrypted': M.AuditLog.encr('src-git: set "force_push_allowed" False => False')}).count() == 0
 
     def test_force_push_hidden_until_repo_ready(self):
         with h.push_config(tg.config, **{'scm.force_push.git.enabled': 'true'}):

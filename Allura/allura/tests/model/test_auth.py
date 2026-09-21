@@ -708,10 +708,11 @@ class TestAuth:
             # these shouldn't match
             h.auditlog_user('something happened')
             h.auditlog_user('blah blah Password changed')
+            h.auditlog_user('Comment: Account disabled', event_type='account.event.unclassified')
         with h.push_config(r, user_agent='TestBrowser/56'):
             # these should all match, but only one entry created for this ip/ua
             h.auditlog_user('Account activated')
-            h.auditlog_user('Successful login')
+            h.auditlog_user('Successful login', event_type='auth.login.succeeded')
             h.auditlog_user('Password changed')
         with h.push_config(r, user_agent='TestBrowser/57'):
             # this should match too
@@ -736,13 +737,14 @@ class TestAuditLog:
         setup_basic_test()
         setup_global_objects()
 
-    def test_message_dual_write(self):
+    def test_message_encrypted_storage(self):
         entry = M.AuditLog(message='Account disabled', event_type='account.disabled')
         for message in ['Account disabled', 'Account disabled by admin']:
             entry.message = message
             session(entry).flush(entry)
             raw = M.main_doc_session.db.audit_log.find_one({'_id': entry._id})
-            assert raw['message'] == message
+            assert 'message' not in raw
+            assert entry.message == message
             assert isinstance(raw['message_encrypted'], Binary)
             assert M.AuditLog.decr(raw['message_encrypted']) == message
             assert raw['event_type'] == 'account.disabled'
@@ -760,17 +762,17 @@ class TestAuditLog:
         session(entry).flush(entry)
         assert M.main_doc_session.db.audit_log.find_one({'_id': entry._id})['event_type'] == expected
 
-    def test_legacy_message_read_and_update(self):
+    def test_encrypted_message_read_and_update(self):
         entry_id = ObjectId()
         M.main_doc_session.db.audit_log.insert_one({'_id': entry_id, 'project_id': ObjectId(),
-                                                    'message': 'add user alice to Developer'})
+                                                    'message_encrypted': M.AuditLog.encr('add user alice to Developer')})
         entry = M.AuditLog.query.get(_id=entry_id)
         assert entry.message == 'add user alice to Developer'
         entry.url = '/updated'
         session(entry).flush(entry)
         raw = M.main_doc_session.db.audit_log.find_one({'_id': entry_id})
-        assert raw['message'] == 'add user alice to Developer'
-        assert M.AuditLog.decr(raw['message_encrypted']) == raw['message']
+        assert 'message' not in raw
+        assert M.AuditLog.decr(raw['message_encrypted']) == 'add user alice to Developer'
         assert raw['event_type'] == 'project.user_mention.unclassified'
 
     def test_message_html(self):

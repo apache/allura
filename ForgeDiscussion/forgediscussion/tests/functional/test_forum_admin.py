@@ -55,7 +55,8 @@ class TestForumAdmin(TestController):
                                   'forum-0.shortname': 'NewTestForum',
                                   'forum-0.description': 'My desc',
                                   'forum-0.monitoring_email': ''})
-        audit_logs = M.AuditLog.query.find({'project_id': project._id, 'message': re.compile(' set option ')}).all()
+        audit_logs = [entry for entry in M.AuditLog.query.find({'project_id': project._id})
+                      if ' set option ' in (entry.message or '')]
         assert len(audit_logs) == 4
         r = self.app.get('/admin/discussion/forums')
         assert 'New Test Forum' in r
