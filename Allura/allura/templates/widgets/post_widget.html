@@ -98,7 +98,7 @@
             <div class='reactions{% if not c.user.is_anonymous() %} reactions-active{% endif %}' style='user-select: none; cursor: default'>
               {% for reaction in value.react_counts %}<div class="reaction{% if current_reaction == reaction %} reaction-current{% endif %}" data-react="{{ reaction }}"><div class="emoj">{{ h.emojize(reaction) }}</div><div class="emoj-count">{{ value.react_counts[reaction] }}</div></div>{% endfor %}
             </div>
-            {{lib.related_artifacts(value)}}
+            {{lib.related_artifacts(value, c.user)}}
             {% if value.edit_count %}
                 <br><small>Last edit: {{value.last_edit_by().display_name}} {{h.ago(value.last_edit_date)}}</small>
             {% endif %}
