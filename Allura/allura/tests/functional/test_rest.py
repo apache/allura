@@ -463,6 +463,25 @@ class TestRestHome(TestRestApiBase):
 
     @td.with_wiki
     @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_token_of_disabled_user(self):
+        self.api_get('/rest/p/test/wiki/Home')
+        user = M.User.by_username('test-admin')
+        oauth2_token = M.OAuth2AccessToken(
+            client_id='client_12345',
+            access_token='ULy1kNFFSCYCscfcoS2oF5Z8i61Mx8',
+            scopes=[],
+            expires_at=datetime.utcnow() + timedelta(days=1),
+            user_id=user._id
+        )
+        user.disabled = True
+        ThreadLocalODMSession.flush_all()
+
+        self.api_get('/rest/p/test/wiki/Home', status=401)
+        self.set_api_token(oauth2_token)
+        self.api_get('/rest/p/test/wiki/Home', status=401)
+
+    @td.with_wiki
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
     def test_oauth2_expired_token_authentication(self):
         # Create an expired access token
         user = M.User.by_username('test-admin')

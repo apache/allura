@@ -122,6 +122,7 @@ class OAuthRequestToken(OAuthToken):
     validation_pin = FieldProperty(str)
 
     consumer_token: OAuthConsumerToken = RelationProperty('OAuthConsumerToken')
+    user = RelationProperty('User')
 
 
 # how far a request timestamp may be from our clock, and how long a nonce is kept

@@ -2235,7 +2235,7 @@ class TestOAuth(TestController):
         assert (
             M.OAuthAccessToken.for_user(M.User.by_username('test-admin')) == [])
 
-    def test_interactive(self):
+    def _oauth1_authorize(self):
         user = M.User.by_username('test-admin')
         M.OAuthConsumerToken(
             api_key='api_key_api_key_12345',
@@ -2261,14 +2261,24 @@ class TestOAuth(TestController):
         assert r.location.startswith('https://my.domain.com/callback')
         pin = parse_qs(urlparse(r.location).query)['oauth_verifier'][0]
         assert pin
-
-        oauth_params = dict(
+        return dict(
             client_key='api_key_api_key_12345',
             client_secret='test-client-secret',
             resource_owner_key=rtok,
             resource_owner_secret=rsecr,
             verifier=pin,
         )
+
+    def test_access_token_of_disabled_user(self):
+        oauth_params = self._oauth1_authorize()
+        M.User.by_username('test-admin').disabled = True
+        ThreadLocalODMSession.flush_all()
+        num_tokens = M.OAuthAccessToken.query.find().count()
+        self.app.get(*oauth1_webtest('/rest/oauth/access_token', oauth_params), status=401)
+        assert M.OAuthAccessToken.query.find().count() == num_tokens
+
+    def test_interactive(self):
+        oauth_params = self._oauth1_authorize()
         r = self.app.get(*oauth1_webtest('/rest/oauth/access_token', oauth_params))
         atok = parse_qs(r.text)
         assert len(atok['oauth_token']) == 1
@@ -2737,6 +2747,26 @@ class TestOAuth2(TestController):
         assert r.status_int == 200
         assert r.json['access_token'] != token.access_token
         assert r.json['refresh_token'] != token.refresh_token
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_refresh_token_of_disabled_user(self, mock_client, mock_valid_token):
+        token = M.OAuth2AccessToken.query.get(client_id='client_12345')
+        M.User.by_username('test-admin').disabled = True
+        ThreadLocalODMSession.flush_all()
+        body = dict(client_id='client_12345', client_secret='98765', grant_type='refresh_token',
+                    refresh_token=token.refresh_token)
+        r = self.app.post_json('/rest/oauth2/token', body, extra_environ={'username': '*anonymous'}, status=400)
+        assert r.json['error'] == 'invalid_grant'
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_access_token_with_code_of_disabled_user(self, mock_client, mock_valid_authorization_code):
+        ac = M.OAuth2AuthorizationCode.query.get(client_id='client_12345')
+        M.User.by_username('test-admin').pending = True
+        ThreadLocalODMSession.flush_all()
+        body = dict(client_id='client_12345', client_secret='98765', grant_type='authorization_code',
+                    code=ac.authorization_code, redirect_uri='https://localhost/')
+        r = self.app.post_json('/rest/oauth2/token', body, extra_environ={'username': '*anonymous'}, status=400)
+        assert r.json['error'] == 'invalid_grant'
 
     @mock.patch.dict(config, {'auth.oauth2.enabled': True})
     def test_invalid_refresh_token(self, mock_client, mock_valid_token):

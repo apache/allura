@@ -65,7 +65,10 @@ class RestController:
         if not request.path.startswith(('/rest/oauth/', '/rest/oauth2/')):  # everything but OAuthNegotiators
             c.api_token = self._authenticate_request()
             if c.api_token:
-                c.user = c.api_token.user
+                user = c.api_token.user
+                if not is_active_user(user):
+                    raise exc.HTTPUnauthorized
+                c.user = user
 
     def _authenticate_request(self):
         'Based on request.params or oauth, authenticate the request'
@@ -141,6 +144,10 @@ class RestController:
         return NeighborhoodRestController(neighborhood), remainder
 
 
+def is_active_user(user: M.User | None) -> bool:
+    return bool(user) and not user.disabled and not user.pending
+
+
 def valid_redirect_uri(redirect_uri: str, registered_uris: list[str]) -> bool:
     """Shared by OAuth1 & OAuth2: the URI must exactly match one the app owner registered, and not be plain http"""
     return not redirect_uri.startswith('http:') and redirect_uri in registered_uris
@@ -179,7 +186,8 @@ class Oauth1Validator(oauthlib.oauth1.RequestValidator):
 
     def validate_verifier(self, client_key: str, token: str, verifier: str, request: oauthlib.common.Request) -> bool:
         req_tok = M.OAuthRequestToken.query.get(api_key=token)
-        return oauthlib.common.safe_string_equals(req_tok.validation_pin, verifier)  # NoneType error? you need dummy_oauths()
+        # NoneType error? you need dummy_oauths()
+        return oauthlib.common.safe_string_equals(req_tok.validation_pin, verifier) and is_active_user(req_tok.user)
 
     def save_verifier(self, token: str, verifier: dict, request: oauthlib.common.Request) -> None:
         req_tok = M.OAuthRequestToken.query.get(api_key=token)
@@ -326,7 +334,9 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
     def validate_code(self, client_id: str, code: str, client: oauthlib.oauth2.Client,
                       request: oauthlib.common.Request, *args, **kwargs) -> bool:
         authorization = M.OAuth2AuthorizationCode.query.get(client_id=client_id, authorization_code=code)
-        return authorization.expires_at >= datetime.utcnow() if authorization else False
+        if not authorization:
+            return False
+        return authorization.expires_at >= datetime.utcnow() and is_active_user(authorization.user)
 
     def validate_bearer_token(self, token: str, scopes: list[str], request: oauthlib.common.Request) -> bool:
         access_token = M.OAuth2AccessToken.query.get(access_token=token)
@@ -338,7 +348,8 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
 
     def validate_refresh_token(self, refresh_token: str, client: oauthlib.oauth2.Client,
                                request: oauthlib.common.Request, *args, **kwargs) -> bool:
-        return M.OAuth2AccessToken.query.get(refresh_token=refresh_token, client_id=client.client_id) is not None
+        token = M.OAuth2AccessToken.query.get(refresh_token=refresh_token, client_id=client.client_id)
+        return token is not None and is_active_user(token.user)
 
     def confirm_redirect_uri(self, client_id: str, code: str, redirect_uri: str, client: oauthlib.oauth2.Client,
                              request: oauthlib.common.Request, *args, **kwargs) -> bool:
