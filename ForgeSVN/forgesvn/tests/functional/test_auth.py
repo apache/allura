@@ -17,6 +17,9 @@
 
 import json
 
+import mock
+import tg
+
 from allura.tests import TestController
 from forgesvn.tests import with_svn
 
@@ -42,6 +45,7 @@ class TestSVNAuth(TestController):
                 '<Repository /tmp/svn/p/test/src> refresh queued.\n')
 
 
+@mock.patch.dict(tg.config, {'ip_address_header': 'X-Forwarded-For'})
 class TestSVNUserPermissions(TestController):
     allow = dict(allow_read=True, allow_write=True, allow_create=True)
     read = dict(allow_read=True, allow_write=False, allow_create=False)

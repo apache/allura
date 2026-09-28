@@ -593,7 +593,13 @@ class AuthController(BaseController):
 
         Returns JSON describing this user's permissions on that repo.
         """
-        ip = ipaddress.ip_address(utils.ip_address(request))
+        # behind a proxy every request looks internal, unless the proxy's client IP header is used
+        if not config.get('ip_address_header'):
+            raise wexc.HTTPForbidden("Repo permissions requires the ip_address_header config setting")
+        try:
+            ip = ipaddress.ip_address(utils.ip_address(request))
+        except ValueError:  # e.g. a spoofed & appended "10.0.0.1, 1.2.3.4" header
+            ip = None
         if not ip or not ip.is_private:
             raise wexc.HTTPForbidden("Access to repo permissions is restricted to internal network connections")
 
@@ -601,7 +607,7 @@ class AuthController(BaseController):
                         allow_create=False)
         # Find the user
         user = M.User.by_username(username)
-        if not user:
+        if not user or user.disabled or user.pending:
             response.status = 404
             return dict(disallow, error='unknown user')
         if not repo_path:
