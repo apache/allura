@@ -1894,6 +1894,25 @@ class TestPasswordReset(TestController):
 
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
+    def test_reset_for_confirmed_owner_not_earlier_unconfirmed_claim(self, gen_message_id, sendmail):
+        self.app.get('/').follow()  # establish session
+        other = M.User.query.get(username='test-user')
+        user = M.User.query.get(username='test-admin')
+        M.EmailAddress(email=self.test_primary_email, claimed_by_user_id=other._id, confirmed=False)
+        ThreadLocalODMSession.flush_all()
+        M.EmailAddress(email=self.test_primary_email, claimed_by_user_id=user._id, confirmed=True)
+        ThreadLocalODMSession.flush_all()
+
+        self.app.post('/auth/password_recovery_hash', {'email': self.test_primary_email,
+                                                       '_csrf_token': self.app.cookies['_csrf_token'],
+                                                       })
+        assert user.get_tool_data('AuthPasswordReset', 'hash')
+        assert not other.get_tool_data('AuthPasswordReset', 'hash')
+        args, kwargs = sendmail.post.call_args
+        assert kwargs['toaddr'] == self.test_primary_email
+
+    @patch('allura.tasks.mail_tasks.sendsimplemail')
+    @patch('allura.lib.helpers.gen_message_id')
     def test_password_reset(self, gen_message_id, sendsimplemail):
         self.app.get('/').follow()  # establish session
         user = M.User.query.get(username='test-admin')
