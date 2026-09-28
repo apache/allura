@@ -115,10 +115,11 @@ class TransientActor(NodeBase, ActivityObjectBase):
 
     """
 
-    def __init__(self, activity_name):
+    def __init__(self, activity_name, activity_extras: dict | None = None):
         NodeBase.__init__(self)
         ActivityObjectBase.__init__(self)
         self.activity_name = activity_name
+        self.activity_extras = activity_extras or {}
 
 
 def get_allura_id(activity_object_dict):
@@ -160,6 +161,10 @@ def perm_check(user: M.User):
     """
     def _perm_check(activity: Activity):
         if not get_allura_id(activity.obj):
+            # no allura object (e.g. a deleted file), but it may still belong to a tool
+            app_config_id = (activity.obj.activity_extras or {}).get('app_config_id')
+            if app_config_id:
+                return security.has_access(get_object_from_id(f'AppConfig:{app_config_id}'), 'read', user)
             # include activity records that do not have an allura object
             return True
         obj = get_activity_object(activity.obj)
