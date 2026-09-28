@@ -254,11 +254,16 @@ class AuthController(BaseController):
         if not email:
             redirect('/')
 
-        user_record = M.User.by_email_address(email, only_confirmed=False)
+        def find_user(addr):
+            # a confirmed owner wins over others' unconfirmed claims; unconfirmed still finds pending users
+            return M.User.by_email_address(addr) or M.User.by_email_address(addr, only_confirmed=False)
+
+        user_record = find_user(email)
         if not user_record and email != email.lower():
             # try again lowercase
             email = email.lower()
-            user_record = M.User.by_email_address(email, only_confirmed=False)
+            user_record = find_user(email)
+        user_id = user_record._id if user_record else None
 
         allow_non_primary_email_reset = asbool(config.get('auth.allow_non_primary_email_password_reset', True))
 
@@ -270,17 +275,17 @@ class AuthController(BaseController):
             message = 'If the given email address is on record, '\
                       'an email has been sent to the account\'s primary email address.'
             email_record = M.EmailAddress.get(email=provider.get_primary_email_address(user_record=user_record),
-                                              confirmed=False)
+                                              confirmed=False, claimed_by_user_id=user_id)
             provider.resend_verification_link(user_record, email_record)
 
         elif not allow_non_primary_email_reset:
             message = 'If the given email address is on record, '\
                       'a password reset email has been sent to the account\'s primary email address.'
             email_record = M.EmailAddress.get(email=provider.get_primary_email_address(user_record=user_record),
-                                              confirmed=True)
+                                              confirmed=True, claimed_by_user_id=user_id)
         else:
             message = 'A password reset email has been sent, if the given email address is on record in our system.'
-            email_record = M.EmailAddress.get(email=email, confirmed=True)
+            email_record = M.EmailAddress.get(email=email, confirmed=True, claimed_by_user_id=user_id)
 
         if user_record and email_record:
             if email_record.confirmed:

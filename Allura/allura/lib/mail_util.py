@@ -480,7 +480,7 @@ def _legacy_identify_sender(email_address, headers):
     from_address = headers.get('From', '').strip()
     if not from_address:
         return M.User.anonymous()
-    addr = M.EmailAddress.get(email=from_address)
+    addr = M.EmailAddress.get(email=from_address, confirmed=True)
     if addr and addr.claimed_by_user_id:
         return addr.claimed_by_user() or M.User.anonymous()
     return M.User.anonymous()

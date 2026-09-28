@@ -322,7 +322,7 @@ class TestIdentifySender:
         assert (
             identify_sender(None, 'arg', {'From': 'from'}, None) == 'user')
         assert (EA.get.call_args_list ==
-                [mock.call(email='arg', confirmed=True), mock.call(email='from')])
+                [mock.call(email='arg', confirmed=True), mock.call(email='from', confirmed=True)])
 
     @mock.patch('allura.model.User')
     @mock.patch('allura.model.EmailAddress')
@@ -343,7 +343,7 @@ class TestIdentifySender:
         assert (
             identify_sender(None, 'arg', {'From': 'from'}, None) == anon)
         assert (EA.get.call_args_list ==
-                [mock.call(email='arg', confirmed=True), mock.call(email='from')])
+                [mock.call(email='arg', confirmed=True), mock.call(email='from', confirmed=True)])
 
 
 @pytest.mark.parametrize('domain', ['BÜCHER.example', 'xn--bcher-kva.example'])
