@@ -914,6 +914,22 @@ class TestFork(_TestCase):
             },
             status=403, extra_environ=dict(username='test-user'))
 
+    def test_request_merge_requires_upstream_read(self):
+        # test-user admins the fork, but can't read the (now private) upstream
+        test2 = M.Project.query.get(shortname='test2')
+        M.ProjectRole.by_user(M.User.by_username('test-user'), project=test2, upsert=True).roles = [
+            M.ProjectRole.by_name('Admin', project=test2)._id]
+        M.Project.query.get(shortname='test').private = True
+        ThreadLocalODMSession.flush_all()
+        self.app.get('/p/test2/code/request_merge', status=403, extra_environ=dict(username='test-user'))
+        self.app.post('/p/test2/code/do_request_merge', params={
+            'source_branch': 'master',
+            'target_branch': 'master',
+            'summary': 'summary',
+            'description': 'description',
+        }, status=403, extra_environ=dict(username='test-user'))
+        assert M.MergeRequest.query.find().count() == 0
+
     def test_merge_request_detail_view(self):
         r, mr_num = self._request_merge()
         assert 'wants to merge' in r
