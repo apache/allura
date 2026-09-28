@@ -127,12 +127,10 @@ class SVNRepoAdminController(RepoAdminController):
     @require_post()
     @validate({'external_checkout_url': v.NonHttpUrl})
     def set_checkout_url(self, **post_data):
-        checkout_url = (post_data.get('checkout_url') or '').strip()
+        impl = self.app.repo._impl
+        checkout_url = '/'.join(impl._clean_path_parts((post_data.get('checkout_url') or '').strip()))
         external_checkout_url = (post_data.get('external_checkout_url') or '').strip()
-        if not checkout_url or svn_path_exists("file://%s%s/%s" %
-                                               (self.app.repo.fs_path,
-                                                self.app.repo.name,
-                                                checkout_url)):
+        if not checkout_url or svn_path_exists(impl._path_url(checkout_url)):
             if (self.app.config.options.get('checkout_url') or '') != checkout_url:
                 M.AuditLog.log('{}: set "{}" {} => {}'.format(
                     self.app.config.options['mount_point'], "checkout_url",
