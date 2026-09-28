@@ -206,6 +206,11 @@ class TestRootController(SVNTestController):
                       {"checkout_url": "a"})
         r = self.app.get('/p/test/admin/src/checkout_url')
         assert 'value="a"' in r
+        # can't probe paths in the sibling testsvn-rename repo
+        for url in ['../testsvn-rename/dir/b.txt', '%2E%2E/testsvn-rename/dir/b.txt']:
+            self.app.post('/p/test/admin/src/set_checkout_url', {"checkout_url": url})
+            r = self.app.get('/p/test/admin/src/checkout_url')
+            assert 'value="a"' in r
 
     def test_log(self):
         r = self.app.get('/src/1/log/')

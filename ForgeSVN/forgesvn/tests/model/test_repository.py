@@ -27,6 +27,7 @@ from collections import defaultdict
 import pytest
 from tg import tmpl_context as c, app_globals as g
 import mock
+import pysvn
 import tg
 import ming
 from ming.base import Object
@@ -348,6 +349,21 @@ class TestSVNRepo(RepoImplTestBase):
     def test_is_file(self):
         assert self.repo.is_file('/README')
         assert not self.repo.is_file('/a')
+        assert not self.repo.is_file('../testsvn-rename/dir/b.txt', 3)
+        assert not self.repo.is_file('%2E%2E/testsvn-rename/dir/b.txt', 3)
+
+    def test_tree_paths_stay_in_repo(self):
+        # a committed dir can be named like this, and svn decodes %2F too, so it must not reach the sibling repo
+        impl = self.repo._impl
+        evil = '/%2E%2E%2Ftestsvn-rename%2Fdir'
+        ci = self.repo.commit(3)
+        assert impl.compute_tree_new(ci, evil) is None
+        assert impl.last_commit_ids(ci, [evil + '/b.txt']) is None
+        blob = mock.Mock(commit=ci)
+        blob.path.return_value = evil + '/b.txt'
+        assert impl.blob_size(blob) == 0
+        with pytest.raises(pysvn.ClientError):
+            impl.open_blob(blob)
 
     def test_paged_diffs(self):
         entry = self.repo.commit(next(self.repo.log(2, id_only=True, limit=1)))
@@ -499,6 +515,36 @@ class TestSVNRepo(RepoImplTestBase):
         assert clean('..') == ''
         assert clean('trunk//sub') == 'trunk/sub'
         assert clean('trunk/sub') == 'trunk/sub'
+        # svn decodes %XX, so the url must keep an encoded .. literal
+        assert self.repo._impl._path_url('%2E%2E/x') == self.repo._impl._url + '/%252E%252E/x'
+
+    def test_path_cleaning_is_idempotent(self):
+        impl = self.repo._impl
+        # tarball() cleans the path, then names the zip and builds the export url from the cleaned path,
+        # but tarball_url() and the status check name the zip from the raw path
+        for path in ['trunk/a%2541', 'trunk/100%', 'trunk/a b', 'trunk/\u00fc', '%2E%2E/x']:
+            cleaned = impl._tarball_path_clean(path)
+            assert impl._tarball_path_clean(cleaned) == cleaned
+            assert self.repo.tarball_filename('1', cleaned) == self.repo.tarball_filename('1', path)
+            assert impl._path_url(cleaned) == impl._path_url(path)
+        # paths are already decoded, so a % in a name is literal
+        assert impl._path_url('trunk/a%41') == impl._url + '/trunk/a%2541'
+        # paths that clean to nothing fall back to trunk, the same as no path
+        with h.push_context('test', 'svn-tags', neighborhood='Projects'):
+            tags = self.svn_tags._impl
+            for path in ['.', './', '..', '/', '']:
+                cleaned = tags._tarball_path_clean(path, '19')
+                assert cleaned == 'trunk'
+                assert self.svn_tags.tarball_filename('19', cleaned) == self.svn_tags.tarball_filename('19', path)
+
+    def test_tarball_no_escape_to_sibling_repo(self):
+        # encoded '..' must not let export escape into the sibling testsvn-rename repo's files (e.g. b.txt)
+        try:
+            for path in ['%2E%2E/testsvn-rename/dir', '%2E%2E%2Ftestsvn-rename%2Fdir']:
+                with pytest.raises(pysvn.ClientError):
+                    self.repo.tarball('3', path)
+        finally:
+            shutil.rmtree(self.repo.tarball_path.encode('utf-8'), ignore_errors=True)
 
     def test_is_empty(self):
         assert not self.repo.is_empty()
@@ -622,6 +668,9 @@ class TestSVNRev:
         assert commits == [2]
         assert (
             list(self.repo.log(self.repo.head, 'does/not/exist', id_only=True, limit=25)) == [])
+        # no escaping into a sibling repo
+        for path in ['../testsvn-rename', '%2E%2E/testsvn-rename', '/.%2e/testsvn-rename/dir/']:
+            assert list(self.repo.log(3, path, id_only=True, limit=25)) == []
 
     def test_notification_email(self):
         setup_global_objects()

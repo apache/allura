@@ -302,8 +302,7 @@ class SVNImplementation(M.RepositoryImplementation):
 
         """
         opts = self._repo.app.config.options
-        if not svn_path_exists('file://{}{}/{}'.format(self._repo.fs_path,
-                                                       self._repo.name, opts['checkout_url'])):
+        if not svn_path_exists(self._path_url(opts['checkout_url'] or '')):
             opts['checkout_url'] = ''
 
         if (not opts['checkout_url'] and
@@ -413,7 +412,7 @@ class SVNImplementation(M.RepositoryImplementation):
         rev = self._revision(commit._id)
         try:
             infos = self._svn.info2(
-                self._url + tree_path,
+                self._path_url(tree_path),
                 revision=rev,
                 depth=pysvn.depth.immediates)
         except pysvn.ClientError:
@@ -504,7 +503,7 @@ class SVNImplementation(M.RepositoryImplementation):
         if path is None:
             url = self._url
         else:
-            url = '/'.join([self._url, path.strip('/')])
+            url = self._path_url(path)
         while revno > exclude:
             rev = pysvn.Revision(pysvn.opt_revision_kind.number, revno)
             try:
@@ -579,7 +578,7 @@ class SVNImplementation(M.RepositoryImplementation):
 
     def open_blob(self, blob):
         data = self._svn.cat(
-            self._url + h.urlquote(blob.path()),
+            self._path_url(blob.path()),
             revision=self._revision(blob.commit._id))
         return BytesIO(data)
 
@@ -587,7 +586,7 @@ class SVNImplementation(M.RepositoryImplementation):
         try:
             rev = self._revision(blob.commit._id)
             data = self._svn.list(
-                self._url + blob.path(),
+                self._path_url(blob.path()),
                 revision=rev,
                 peg_revision=rev,
                 dirent_fields=pysvn.SVN_DIRENT_SIZE)
@@ -651,7 +650,7 @@ class SVNImplementation(M.RepositoryImplementation):
         rev = self._revision(commit._id)
         try:
             infos = self._svn.info2(
-                self._url + tree_path,
+                self._path_url(tree_path),
                 revision=rev,
                 depth=pysvn.depth.immediates)
         except pysvn.ClientError:
@@ -680,14 +679,13 @@ class SVNImplementation(M.RepositoryImplementation):
         return [p.path for p in log_entry.changed_paths]
 
     def _tarball_path_clean(self, path, rev=None):
-        if path:
-            parts = [p for p in path.strip('/').split('/') if p and p != '..']
+        parts = self._clean_path_parts(path or '')
+        if parts:
             return '/'.join(parts)
-        else:
-            trunk_exists = svn_path_exists('file://{}{}/{}'.format(self._repo.fs_path, self._repo.name, 'trunk'), rev)
-            if trunk_exists:
-                return 'trunk'
-            return ''
+        trunk_exists = svn_path_exists('file://{}{}/{}'.format(self._repo.fs_path, self._repo.name, 'trunk'), rev)
+        if trunk_exists:
+            return 'trunk'
+        return ''
 
     def tarball(self, commit, path=None):
         """
@@ -707,7 +705,7 @@ class SVNImplementation(M.RepositoryImplementation):
         tmpfilename = os.path.join(self._repo.tarball_path, '{}{}'.format(archive_name, '.tmp')).encode('utf-8')
         rmtree(dest.encode('utf8'), ignore_errors=True)  # must encode into bytes or it'll fail on non-ascii filenames
         rmtree(tmpdest.encode('utf8'), ignore_errors=True)
-        path = os.path.join(self._url, path)
+        path = self._path_url(path)
         try:
             # need to set system locale to handle all symbols in filename
             # NOTE: we will assume the system is configured with a utf8 capable locale
@@ -729,8 +727,15 @@ class SVNImplementation(M.RepositoryImplementation):
     def is_empty(self):
         return self.head == 0
 
+    def _clean_path_parts(self, path: str) -> list[str]:
+        return [p for p in path.split('/') if p not in ('', '.', '..')]
+
+    def _path_url(self, path: str) -> str:
+        # svn decodes %XX, so quote every part (including %) or %2E%2E would become .. and escape the repo
+        return '/'.join([self._url] + [h.urlquote(p, safe='') for p in self._clean_path_parts(path)])
+
     def is_file(self, path, rev=None):
-        url = '/'.join([self._url, path.strip('/')])
+        url = self._path_url(path)
         rev = pysvn.Revision(pysvn.opt_revision_kind.number,
                              self._revno(self.rev_parse(rev)))
         try:

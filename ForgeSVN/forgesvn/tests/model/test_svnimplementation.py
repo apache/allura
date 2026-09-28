@@ -114,3 +114,8 @@ class TestSVNImplementation:
         opts['checkout_url'] = ''
         impl.update_checkout_url()
         assert opts['checkout_url'] == 'trunk'
+
+        svn_path_exists.side_effect = lambda path: False
+        opts['checkout_url'] = '../other/%2E%2E'
+        impl.update_checkout_url()
+        svn_path_exists.assert_any_call(impl._url + '/other/%252E%252E')
