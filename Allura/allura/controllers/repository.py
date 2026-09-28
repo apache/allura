@@ -165,6 +165,7 @@ class RepoRootController(BaseController, FeedController):
             b.name
             for b in c.app.repo.get_branches() + c.app.repo.get_tags(for_merge_request=True)]
         with c.app.repo.push_upstream_context():
+            require_access(c.app, 'read')
             target_branches = [b.name for b in c.app.repo.get_branches()]
             subscribed_to_upstream = M.Mailbox.subscribed()
         return SCMMergeRequestWidget(
