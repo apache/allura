@@ -512,7 +512,7 @@ class TestAuth(TestController):
                           params={
                               'new_addr.addr': email_address,
                               'new_addr.claim': 'Claim Address',
-                              'primary_addr': 'test-user-1@users.localhost',
+                              'primary_addr': 'test-user-1@allura.local',
                               'preferences.email_format': 'plain',
                               'password': 'foo',
                               '_csrf_token': self.app.cookies['_csrf_token'],
@@ -536,7 +536,7 @@ class TestAuth(TestController):
                               params={
                                   'new_addr.addr': 'test_abcd_1@domain.net',
                                   'new_addr.claim': 'Claim Address',
-                                  'primary_addr': 'test-user-1@users.localhost',
+                                  'primary_addr': 'test-user-1@allura.local',
                                   'preferences.email_format': 'plain',
                                   'password': 'foo',
                                   '_csrf_token': self.app.cookies['_csrf_token'],
@@ -548,7 +548,7 @@ class TestAuth(TestController):
                               params={
                                   'new_addr.addr': 'test_abcd_2@domain.net',
                                   'new_addr.claim': 'Claim Address',
-                                  'primary_addr': 'test-user-1@users.localhost',
+                                  'primary_addr': 'test-user-1@allura.local',
                                   'preferences.email_format': 'plain',
                                   'password': 'foo',
                                   '_csrf_token': self.app.cookies['_csrf_token'],
@@ -918,6 +918,17 @@ class TestAuth(TestController):
         assert 'You must provide your current password to change primary address' in self.webflash(r)
         assert M.User.by_username('test-admin').get_pref('email_address') == 'test-admin@users.localhost'
         change_primary_params['password'] = 'foo'  # valid password
+
+        # must be a confirmed address of this user
+        for addr in ['someone-else@example.com', 'test@example.com']:
+            self.app.get('/auth/preferences/')  # let previous 'flash' message cookie get used up
+            r = self.app.post('/auth/preferences/update_emails',
+                              params=dict(change_primary_params, primary_addr=addr),
+                              extra_environ=dict(username='test-admin'))
+            assert 'Primary address must be one of your confirmed email addresses' in self.webflash(r)
+            assert M.User.by_username('test-admin').get_pref('email_address') == 'test-admin@users.localhost'
+        M.User.by_username('test-admin').address_object('test@example.com').confirmed = True
+        ThreadLocalODMSession.flush_all()
 
         self.app.get('/auth/preferences/')  # let previous 'flash' message cookie get used up
         r = self.app.post('/auth/preferences/update_emails',

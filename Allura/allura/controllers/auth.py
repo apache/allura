@@ -811,6 +811,10 @@ class PreferencesController(BaseController):
                 if not admin and (not kw.get('password') or not provider.validate_password(user, kw.get('password'))):
                     flash('You must provide your current password to change primary address', 'error')
                     return
+                addr_obj = user.address_object(primary_addr)
+                if not admin and (not addr_obj or not addr_obj.confirmed):
+                    flash('Primary address must be one of your confirmed email addresses', 'error')
+                    return
                 h.auditlog_user(
                     'Primary email changed: %s => %s',
                     user.get_pref('email_address'),
