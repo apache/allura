@@ -232,6 +232,10 @@ Remove the `<Location>` block and `SetEnv REMOTE_USER=git-allura` from earlier.
 
     sudo service apache2 reload
 
+Allura only answers :file:`/auth/repo_permissions` when ``ip_address_header`` is set in your :file:`.ini`
+(e.g. ``ip_address_header = X-Forwarded-For``), and your proxy must set that header on every request it forwards
+to Allura.  Requests without it must come from a private IP address, like the one above.
+
 To test that it's working, run: :command:`git ls-remote
 http://localhost/git/p/test/git/`. If there is no output, that is fine (it's an empty
 repo). If it errors, look in :file:`/var/log/apache2/error.log` for the error

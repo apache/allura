@@ -17,11 +17,16 @@
 
 import json
 
+import mock
+import tg
+
+from allura import model as M
 from allura.tests import TestController
 from allura.tests.decorators import with_tool
 from forgegit.tests import with_git
 
 
+@mock.patch.dict(tg.config, {'ip_address_header': 'X-Forwarded-For'})
 class TestGitUserPermissions(TestController):
     allow = dict(allow_read=True, allow_write=True, allow_create=True)
     read = dict(allow_read=True, allow_write=False, allow_create=False)
@@ -66,10 +71,27 @@ class TestGitUserPermissions(TestController):
             username='test-usera',
             status=404)
 
+    @with_git
+    def test_disabled_or_pending_user(self):
+        for flag in ('disabled', 'pending'):
+            M.User.query.update({'username': 'test-admin'}, {'$set': {flag: True}})
+            self._check_repo('/git/test/src-git.git', status=404)
+            self.app.get('/auth/repo_permissions', params=dict(username='test-admin'), status=404)
+            M.User.query.update({'username': 'test-admin'}, {'$set': {flag: False}})
+        assert self._check_repo('/git/test/src-git.git') == self.allow
+
     @with_tool('test', 'Git', 'src.c++.git', 'Git', type='git')
     def test_dot_and_plus(self):
         r = self._check_repo('/git/test.p/src.c++.git')
         assert r == self.allow, r
+
+    @with_git
+    def test_ip_address_checks(self):
+        path = '/git/test/src-git.git'
+        with mock.patch.dict(tg.config, {'ip_address_header': ''}):
+            self._check_repo(path, status=403)
+        self._check_repo(path, headers={'X-Forwarded-For': '8.8.8.8'}, status=403)
+        self._check_repo(path, headers={'X-Forwarded-For': '10.0.0.1, 8.8.8.8'}, status=403)
 
     def _check_repo(self, path, username='test-admin', **kw):
         url = '/auth/repo_permissions'
