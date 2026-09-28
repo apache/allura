@@ -16,9 +16,6 @@
     specific language governing permissions and limitations
     under the License.
 -->
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## What this is
 
