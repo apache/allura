@@ -280,7 +280,9 @@ class OAuth2AccessToken(MappedClass):
             ('access_token')
         ]
         custom_indexes = [
-            dict(fields=('refresh_token',), partialFilterExpression={'refresh_token': {'$gt': None}}, unique=True),
+            dict(fields=('refresh_token',),
+                 partialFilterExpression={'refresh_token': {'$type': ['string', 'binData']}},  # ignoring the Nones
+                 unique=True),
         ]
         indexes = [
             ('user_id'),
