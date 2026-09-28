@@ -212,7 +212,8 @@ class FilesController(BaseController):
         file_object = UploadFiles.query.get(_id=ObjectId(file_id), app_config_id=c.app.config._id)
         upload_object = Upload.query.get(_id=file_object.artifact_id, app_config_id=c.app.config._id)
         file_name = file_object.filename
-        transient_actor = TransientActor(activity_name=file_name)
+        transient_actor = TransientActor(activity_name=file_name,
+                                         activity_extras={'app_config_id': c.app.config._id})
         url = c.app.url
         if file_id is not None:
             require_access(upload_object, 'delete')
@@ -254,7 +255,8 @@ class FilesController(BaseController):
 
         folder_object = UploadFolder.query.get(_id=ObjectId(folder_id), app_config_id=c.app.config._id)
         folder_name = folder_object.folder_name
-        transient_actor = TransientActor(activity_name=folder_name)
+        transient_actor = TransientActor(activity_name=folder_name,
+                                         activity_extras={'app_config_id': c.app.config._id})
         url = c.app.url
         if folder_id is not None:
             require_access(folder_object, 'delete')

@@ -14,11 +14,14 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+import mock
+from ming.base import Object
 from ming.odm import ThreadLocalODMSession
 from tg import tmpl_context as c
 
 from allura import model as M
 from allura.lib import helpers as h
+from allura.model.timeline import perm_check
 from allura.tests import decorators as td
 from alluratest.controller import TestController
 
@@ -117,6 +120,24 @@ class TestFiles(TestController):
         self.app.post('/p/test/files/delete_file', data1)
         new_file_object = UploadFiles.query.get(_id=db_file_object._id)
         assert new_file_object is None
+
+    @mock.patch('forgefiles.files_main.g.director')
+    def test_delete_activities_hidden_without_read(self, director):
+        create_folder(self)
+        folder_object = UploadFolder.query.get(folder_name='TestFolder')
+        self.app.post('/p/test/files/delete_folder', {'folder_id': str(folder_object._id)})
+        folder_activity_obj = director.create_activity.call_args[0][2]
+        file_object = upload_file(self)
+        db_file_object = UploadFiles.query.get(filename=file_object.filename)
+        self.app.post('/p/test/files/delete_file', {'file_id': str(db_file_object._id)})
+        file_activity_obj = director.create_activity.call_args[0][2]
+
+        M.Project.query.get(shortname='test').private = True
+        ThreadLocalODMSession.flush_all()
+        for obj in (folder_activity_obj, file_activity_obj):
+            activity = Object(obj=Object(activity_extras=obj.activity_extras))
+            assert perm_check(M.User.by_username('test-admin'))(activity)
+            assert not perm_check(M.User.anonymous())(activity)
 
 
 class TestFolderBreadcrumbs(TestController):
