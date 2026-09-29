@@ -590,7 +590,7 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
         not have access to a 'comment' activity unless he also has access to
         the artifact on which it was posted (if there is one).
         """
-        if self.project is None or self.deleted or self.status != 'ok':
+        if self.project is None or self.project.deleted or self.deleted or self.status != 'ok':
             return False
         artifact_access = True
         if self.thread.artifact:

@@ -94,6 +94,25 @@ class TestSearch(TestController):
         resp.mustcontain(no='pagesecretmarker')
 
     @with_tool('test', 'Wiki', 'wiki')
+    def test_global_search_hides_artifacts_of_deleted_project(self):
+        with h.push_context('test', 'wiki', neighborhood='Projects'):
+            page = Page.upsert('DeletedProjectPage')
+            page.text = 'projdelquery projdelmarker'
+            page.commit()
+        ThreadLocalODMSession.flush_all()
+        M.MonQTask.run_ready()
+
+        resp = self.app.get('/search/', params=dict(q='projdelquery'))
+        resp.mustcontain('projdelmarker')
+
+        with h.push_context('test', neighborhood='Projects'):
+            c.project.deleted = True
+        ThreadLocalODMSession.flush_all()
+
+        resp = self.app.get('/search/', params=dict(q='projdelquery'))
+        resp.mustcontain(no='projdelmarker')
+
+    @with_tool('test', 'Wiki', 'wiki')
     def test_history_search_hides_unmoderated_comment_snapshots(self):
         # a Post Snapshot carries a copy of the comment's text but is type_s 'Post Snapshot',
         # so a filter keyed on the snapshot's own indexed fields misses it entirely

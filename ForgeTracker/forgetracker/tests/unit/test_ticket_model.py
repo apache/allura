@@ -93,6 +93,15 @@ class TestTicketModel(TrackerTestWithModel):
         t.deleted = True
         assert not t.has_activity_access('read', c.user, 'activity')
 
+    def test_has_activity_access_deleted_project(self):
+        t = Ticket(summary='ticket', ticket_num=666)
+        p = t.discussion_thread.add_post(text='test post')
+        assert t.has_activity_access('read', c.user, 'activity')
+        assert p.has_activity_access('read', c.user, 'activity')
+        c.project.deleted = True
+        assert not t.has_activity_access('read', c.user, 'activity')
+        assert not p.has_activity_access('read', c.user, 'activity')
+
     def test_comment_has_activity_access(self):
         t = Ticket(summary='ticket', ticket_num=666, deleted=True)
         p = t.discussion_thread.add_post(text='test post')

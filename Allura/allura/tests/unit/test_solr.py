@@ -250,7 +250,7 @@ class TestSearch_app:
         # something resolvable to check (real ArtifactReference lookups would return None
         # and, since neither doc is a Project/User, now correctly fail closed).
         # deleted=False is required -- a bare Mock attribute is truthy and would be filtered.
-        fake_artifact = mock.Mock(deleted=False)
+        fake_artifact = mock.Mock(deleted=False, project=mock.Mock(deleted=False))
         fake_artifact.primary.return_value = fake_artifact
         aref_get.return_value = mock.Mock(artifact=fake_artifact)
         results = mock.Mock(hits=2, docs=[
@@ -336,6 +336,31 @@ class TestSearch_app:
             resp = search_app(q='test', app=False)
         assert [d['id'] for d in resp['results']] == [doc['id']]
         assert resp['count'] == 1
+
+    @mock.patch('allura.lib.search.g.solr.search')
+    @mock.patch('allura.lib.search.url')
+    @mock.patch('allura.lib.search.request')
+    def test_hides_deleted_project_even_from_admin(self, req, url_fn, solr_search):
+        req.GET = dict()
+        req.path = '/search'
+        url_fn.side_effect = ['s', 'd']
+        p = M.Project.query.get(shortname='test')
+        p.deleted = True
+        doc = {
+            'id': p.index_id(),
+            'type_s': 'Project',
+            'shortname_s': p.shortname,
+            'neighborhood_id_s': str(p.neighborhood_id),
+        }
+        results = mock.Mock(hits=1, docs=[doc], highlighting={})
+        results.__iter__ = lambda self: iter(results.docs)
+        results.__len__ = lambda self: len(results.docs)
+        solr_search.return_value = results
+
+        with h.push_config(c, user=M.User.query.get(username='test-admin')):
+            resp = search_app(q='test', app=False)
+        assert resp['results'] == []
+        assert resp['count'] == 0
 
     @mock.patch('allura.lib.search.g.solr.search')
     @mock.patch('allura.lib.search.url')

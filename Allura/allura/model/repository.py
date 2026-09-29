@@ -55,13 +55,12 @@ from ming.base import Object
 from allura.lib import helpers as h
 from allura.lib import utils
 from allura.lib import validators as v
-from allura.lib.security import has_access
 
 from .artifact import Artifact, VersionedArtifact
 from .auth import User
-from .timeline import ActivityObject
+from .timeline import ActivityObject, has_app_config_access
 from .monq_model import MonQTask
-from .project import AppConfig, Project
+from .project import Project
 from .session import main_doc_session
 from .session import repository_orm_session
 
@@ -1181,8 +1180,7 @@ class Commit(MappedClass, RepoObject, ActivityObject):
         """
         app_config_id = activity.obj.activity_extras.get('app_config_id')
         if app_config_id:
-            app_config = AppConfig.query.get(_id=app_config_id)
-            return has_access(app_config, perm, user)
+            return has_app_config_access(app_config_id, perm, user)
         return True
 
     def set_context(self, repo):

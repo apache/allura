@@ -234,6 +234,19 @@ class Test():
                 r = g.markdown_wiki.convert('[[neighborhood_blog_posts]]')
             assert 'test content' in r
 
+    def test_macro_neighborhood_feeds_hides_deleted_project(self):
+        p_nbhd = M.Neighborhood.query.get(name='Projects')
+        p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
+        with h.push_context('--init--', 'wiki', neighborhood='Projects'):
+            # note: '/p/test/' alone would also match the 'test/sub1' subproject's feed
+            # entries, so match on the tool path too
+            r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=wiki]]')
+            assert '/p/test/wiki/' in r, r
+            p_test.deleted = True
+            ThreadLocalODMSession.flush_all()
+            r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=wiki]]')
+            assert '/p/test/wiki/' not in r, r
+
     def test_macro_members(self):
         p_nbhd = M.Neighborhood.query.get(name='Projects')
         p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)

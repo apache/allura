@@ -1001,8 +1001,9 @@ class Feed(MappedClass):
         can_read = {}
         for item in items:
             if item.app_config_id not in can_read:
-                can_read[item.app_config_id] = security.has_access(
-                    AppConfig.query.get(_id=item.app_config_id), 'read')
+                app_config = AppConfig.query.get(_id=item.app_config_id)
+                project_deleted = app_config and getattr(app_config.project, 'deleted', False)
+                can_read[item.app_config_id] = not project_deleted and security.has_access(app_config, 'read')
             if can_read[item.app_config_id]:
                 yield item
 

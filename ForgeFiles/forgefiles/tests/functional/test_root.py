@@ -139,6 +139,12 @@ class TestFiles(TestController):
             assert perm_check(M.User.by_username('test-admin'))(activity)
             assert not perm_check(M.User.anonymous())(activity)
 
+        M.Project.query.get(shortname='test').deleted = True
+        ThreadLocalODMSession.flush_all()
+        for obj in (folder_activity_obj, file_activity_obj):
+            activity = Object(obj=Object(activity_extras=obj.activity_extras))
+            assert not perm_check(M.User.by_username('test-admin'))(activity)
+
 
 class TestFolderBreadcrumbs(TestController):
 

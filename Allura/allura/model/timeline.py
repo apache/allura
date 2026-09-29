@@ -105,7 +105,7 @@ class ActivityObject(ActivityObjectBase):
         """Return True if user has perm access to this object, otherwise
         return False.
         """
-        if self.project is None or getattr(self, 'deleted', False):
+        if self.project is None or self.project.deleted or getattr(self, 'deleted', False):
             return False
         return security.has_access(self, perm, user, self.project)
 
@@ -154,6 +154,13 @@ def get_object_from_id(node_id):
     return obj
 
 
+def has_app_config_access(app_config_id, perm: str, user: M.User) -> bool:
+    app_config = get_object_from_id(f'AppConfig:{app_config_id}')
+    if app_config is None or app_config.project is None or app_config.project.deleted:
+        return False
+    return security.has_access(app_config, perm, user)
+
+
 def perm_check(user: M.User):
     """
     Return a function that returns True if ``user`` has 'read' access to a given activity,
@@ -164,7 +171,7 @@ def perm_check(user: M.User):
             # no allura object (e.g. a deleted file), but it may still belong to a tool
             app_config_id = (activity.obj.activity_extras or {}).get('app_config_id')
             if app_config_id:
-                return security.has_access(get_object_from_id(f'AppConfig:{app_config_id}'), 'read', user)
+                return has_app_config_access(app_config_id, 'read', user)
             # include activity records that do not have an allura object
             return True
         obj = get_activity_object(activity.obj)
