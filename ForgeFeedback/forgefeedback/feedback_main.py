@@ -142,8 +142,13 @@ class RootController(BaseController, FeedController):
     def create_feedback(self, description=None, rating=None, **kw):
         """saving the review for the first time """
         require_access(c.app, 'create')
+        existing = Feedback.query.find(
+            {'reported_by_id': c.user._id, 'project_id': c.project._id}).first()
+        if existing:
+            flash('You have already submitted feedback for this project', 'error')
+            redirect(c.app.url)
         p = Feedback(description=description, rating=rating,
-                     user_id=c.user._id, project_id=c.project._id)
+                     reported_by_id=c.user._id, project_id=c.project._id)
         session(p).flush()
         flash('Feedback successfully added')
         M.main_orm_session.flush()
