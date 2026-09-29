@@ -129,8 +129,9 @@ class TestApp:
         Tests that app.handle_artifact_message can accept utf strings
         """
         ticket = mock.MagicMock()
-        ticket.get_discussion_thread.return_value = (mock.MagicMock(), mock.MagicMock())
-        post = mock.MagicMock()
+        thd = mock.MagicMock()
+        ticket.get_discussion_thread.return_value = (thd, mock.MagicMock())
+        post = mock.MagicMock(thread_id=thd._id)
         qg.return_value = post
 
         a = app.Application(c.project, c.app.config)

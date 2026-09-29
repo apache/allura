@@ -723,8 +723,14 @@ class Application(ActivityObject):
         """
         # Find ancestor comment and thread
         thd, parent_id = artifact.get_discussion_thread(message)
-        # Handle attachments
+        # thd.post() checks this too, but attachments and alternates below don't go through it
+        thd.require_post_access()
         message_id = message['message_id']
+        post = self.PostClass.query.get(_id=message_id)
+        if post and post.thread_id != thd._id:
+            log.warning('Ignoring message %s: that id is a post in a different thread', message_id)
+            return
+        # Handle attachments
         if message.get('filename'):
             # Special case - the actual post may not have been created yet
             log.info('Saving attachment %s', message['filename'])
@@ -739,7 +745,6 @@ class Application(ActivityObject):
                 artifact_id=message_id)
             return
         # Handle duplicates (from multipart mail messages)
-        post = self.PostClass.query.get(_id=message_id)
         if post:
             log.info(
                 'Existing message_id %s found - saving this as text attachment' %

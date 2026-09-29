@@ -118,11 +118,11 @@ class Forum(M.Discussion):
             for msg_id in in_reply_to + list(reversed(references)):
                 parent_id = msg_id.split('/')[-1]
                 parent = self.post_class().query.get(_id=parent_id)
-                if parent:
+                if parent and parent.app_config_id == self.app_config_id:
                     return parent.thread, parent_id
         if message_id:
             post = self.post_class().query.get(_id=message_id)
-            if post:
+            if post and post.app_config_id == self.app_config_id:
                 return post.thread, None
         # Otherwise it's a new thread
         return self.thread_class()(discussion_id=self._id, subject=subject), None

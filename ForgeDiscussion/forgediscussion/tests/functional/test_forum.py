@@ -30,6 +30,7 @@ from tg import tmpl_context as c
 from tg import config
 
 import feedparser
+from webob import exc, Request
 
 from allura import model as M
 from allura.lib.mail_util import email_policy
@@ -208,6 +209,76 @@ class TestForumMessageHandling(TestController):
                    references=refs)
         assert FM.ForumThread.query.find().count() == 1
         assert FM.ForumPost.query.find().count() == 3
+
+    def _post_in_other_tool(self, message_id):
+        # a second Discussion tool, in the same project, with its own forum
+        with h.push_config(c, user=self.user):
+            c.project.install_app('Discussion', 'discussion2')
+        h.set_context('test', 'discussion2', neighborhood='Projects')
+        r = self.app.get('/admin/discussion2/forums')
+        form = r.forms['add-forum']
+        form['add_forum.shortname'] = 'otherforum'
+        form['add_forum.name'] = 'Other Forum'
+        form.submit()
+        self._post('otherforum', 'Other Tool Thread', 'Nothing here', message_id=message_id)
+        h.set_context('test', 'discussion', neighborhood='Projects')
+
+    def test_reply_ignores_post_from_other_tool(self):
+        self._post_in_other_tool('other-tool-msg@domain.net')
+        other_thread = FM.ForumThread.query.get(first_post_id='other-tool-msg@domain.net')
+        assert other_thread.num_replies == 1
+
+        # reply to a message-id that only exists in the other tool
+        self._post('testforum', 'Test Thread', 'Nothing here',
+                   message_id='reply-msg@domain.net',
+                   in_reply_to=['other-tool-msg@domain.net'])
+
+        # the reply must not land in the other tool's thread...
+        other_thread = FM.ForumThread.query.get(_id=other_thread._id)
+        assert other_thread.num_replies == 1
+        # ...it should start a new thread in testforum instead
+        testforum = FM.Forum.query.get(shortname='testforum')
+        new_thread = FM.ForumThread.query.get(first_post_id='reply-msg@domain.net')
+        assert new_thread.discussion_id == testforum._id
+
+    def test_message_id_of_post_in_other_tool(self):
+        self._post_in_other_tool('other-tool-msg@domain.net')
+        other_post = FM.ForumPost.query.get(_id='other-tool-msg@domain.net')
+
+        # reusing that id must not add an "alternate" attachment to the other tool's post
+        self._post('testforum', 'Test Thread', 'injected', message_id='other-tool-msg@domain.net')
+        ThreadLocalODMSession.flush_all()
+        assert FM.ForumPost.query.find().count() == 1
+        assert FM.ForumAttachment.query.find({'post_id': other_post._id}).count() == 0
+
+    def test_attachment_to_thread_in_forum_without_post_access(self):
+        test1 = FM.Forum.query.get(shortname='test1')
+        test1.acl = [M.ACE.allow(M.ProjectRole.by_name('Developer')._id, M.ALL_PERMISSIONS), M.DENY_ALL]
+        self._post('test1', 'Members Only', 'Nothing here', message_id='members-msg@domain.net')
+
+        # a non-member can post to testforum, but not attach a file to test1's thread by replying to it
+        self.user = M.User.by_username('test-user')
+        with mock.patch('allura.lib.security.request', Request.blank('/')), pytest.raises(exc.HTTPForbidden):
+            self._post('testforum', 'Test Reply', 'evil', message_id='evil-msg@domain.net',
+                       in_reply_to=['members-msg@domain.net'], filename='evil.txt', content_type='text/plain')
+        assert FM.ForumAttachment.query.find().count() == 0
+
+    def test_reply_to_post_in_thread_moved_to_another_forum(self):
+        # same tool, different forum: simulates a thread that was moved to another forum
+        self._post('testforum', 'Test Thread', 'Nothing here', message_id='moved-msg@domain.net')
+        thread = FM.ForumThread.query.get(first_post_id='moved-msg@domain.net')
+        test1 = FM.Forum.query.get(shortname='test1')
+        thread.discussion_id = test1._id
+        ThreadLocalODMSession.flush_all()
+
+        # reply sent to the old forum's address should still land in the (moved) thread
+        self._post('testforum', 'Test Reply', 'Nothing here, either',
+                   message_id='moved-reply@domain.net',
+                   in_reply_to=['moved-msg@domain.net'])
+        assert FM.ForumThread.query.find().count() == 1
+        assert FM.ForumPost.query.find().count() == 2
+        thread = FM.ForumThread.query.get(_id=thread._id)
+        assert thread.num_replies == 2
 
     def test_attach(self):
         # runs handle_artifact_message() with filename field
