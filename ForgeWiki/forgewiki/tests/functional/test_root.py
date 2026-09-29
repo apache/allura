@@ -92,6 +92,32 @@ class TestRootController(TestController):
         for ext in ['', '.rss', '.atom']:
             self.app.get('/wiki/feed%s' % ext, status=200)
 
+    def test_project_feed_omits_restricted_tool(self):
+        self.app.post('/wiki/SecretRoadmap/update', params={'title': 'SecretRoadmap', 'text': 'x', 'labels': ''})
+        anon = {'username': '*anonymous'}
+        assert 'SecretRoadmap' in self.app.get('/p/test/feed.rss', extra_environ=anon)
+
+        project = M.Project.query.get(shortname='test')
+        wiki_config = project.app_instance('wiki').config
+        developer = M.ProjectRole.by_name('Developer', project=project)
+        wiki_config.acl = [ace for ace in wiki_config.acl if ace.permission != 'read'] + [
+            M.ACE.allow(developer._id, 'read')]
+        ThreadLocalODMSession.flush_all()
+        assert 'SecretRoadmap' not in self.app.get('/p/test/feed.rss', extra_environ=anon)
+        assert 'SecretRoadmap' in self.app.get('/p/test/feed.rss')
+
+    def test_neighborhood_feeds_macro_omits_private_project(self):
+        self.app.post('/wiki/SecretRoadmap/update', params={'title': 'SecretRoadmap', 'text': 'x', 'labels': ''})
+        project = M.Project.query.get(shortname='test')
+        params = {'markdown': '[[neighborhood_feeds tool_name=wiki max_number=20]]',
+                  'neighborhood': str(project.neighborhood_id), 'project': '--init--', 'app': 'wiki'}
+        anon = {'username': '*anonymous'}
+        assert 'SecretRoadmap' in self.app.get('/nf/markdown_to_html', params=params, extra_environ=anon)
+
+        M.Project.query.get(shortname='test').private = True
+        ThreadLocalODMSession.flush_all()
+        assert 'SecretRoadmap' not in self.app.get('/nf/markdown_to_html', params=params, extra_environ=anon)
+
     @patch('allura.lib.helpers.ceil',  MagicMock(return_value=1))
     @patch('allura.lib.search.search')
     def test_search(self, search):

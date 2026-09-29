@@ -136,7 +136,7 @@ def neighborhood_feeds(tool_name, max_number=5, sort='pubdate'):
         dict(
             tool_name=tool_name,
             neighborhood_id=c.project.neighborhood._id))
-    feed = feed.sort(sort, pymongo.DESCENDING).limit(int(max_number)).all()
+    feed = M.Feed.readable(feed.sort(sort, pymongo.DESCENDING).limit(int(max_number)))
     output = ((dict(
         href=item.link,
         title=item.title,
