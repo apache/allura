@@ -996,6 +996,17 @@ class Feed(MappedClass):
         return True
 
     @classmethod
+    def readable(cls, items: typing.Iterable[Feed]) -> typing.Iterator[Feed]:
+        # entries are only created for anonymously readable content, but the tool or project may be restricted since
+        can_read = {}
+        for item in items:
+            if item.app_config_id not in can_read:
+                can_read[item.app_config_id] = security.has_access(
+                    AppConfig.query.get(_id=item.app_config_id), 'read')
+            if can_read[item.app_config_id]:
+                yield item
+
+    @classmethod
     def post(cls, artifact, title=None, description=None, author=None,
              author_link=None, author_name=None, pubdate=None, link=None, **kw):
         """
@@ -1060,7 +1071,7 @@ class Feed(MappedClass):
         cur = cur.sort('pubdate', pymongo.DESCENDING)
         cur = cur.limit(limit)
         cur = cur.skip(limit * page)
-        for r in cur:
+        for r in cls.readable(cur):
             feed.add_item(title=r.title,
                           link=h.absurl(h.urlquote_path_only(r.link)),
                           pubdate=r.pubdate,

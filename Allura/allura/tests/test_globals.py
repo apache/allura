@@ -209,9 +209,8 @@ class Test():
         with h.push_context('--init--', 'wiki', neighborhood='Projects'):
             r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=wiki]]')
             assert 'Home modified by' in r, r
-            r = re.sub(r'<small>.*? ago</small>', '', r)  # remove "less than 1 second ago" etc
-            orig_len = len(r)
-            # Make project private & verify we don't see its new feed items
+            assert '/p/test/' in r
+            # Make project private & verify we don't see its feed items, old or new
             anon = M.User.anonymous()
             p_test.acl.insert(0, M.ACE.deny(
                 M.ProjectRole.anonymous(p_test)._id, 'read'))
@@ -221,9 +220,8 @@ class Test():
             with h.push_config(c, user=M.User.by_username('test-admin')):
                 pg.commit()
             r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=wiki]]')
-            r = re.sub(r'<small>.*? ago</small>', '', r)  # remove "less than 1 second ago" etc
-            new_len = len(r)
-            assert new_len == orig_len
+            assert 'Home modified by' in r, r
+            assert '/p/test/' not in r
             p = BM.BlogPost(title='test me',
                             neighborhood_id=p_test.neighborhood_id)
             p.text = 'test content'
