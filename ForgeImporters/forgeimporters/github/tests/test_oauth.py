@@ -20,6 +20,7 @@ from alluratest.controller import setup_unit_test
 from mock import Mock, patch, MagicMock
 from tg import tmpl_context as c, config
 
+from allura import model as M
 from allura.tests import TestController
 from forgeimporters.github import GitHubOAuthMixin
 
@@ -79,3 +80,34 @@ class TestGitHubOAuthMixin(TestController):
             self.mix.handle_oauth_callback()
         assert _mock.call_count == 1
         assert tg_redir.call_count == 1
+
+    @patch.dict(config, {'github_importer.client_id': '123456',
+                         'github_importer.client_secret': 'deadbeef'})
+    @patch('forgeimporters.github.OAuth2Session')
+    @patch('forgeimporters.github.session')
+    @patch('forgeimporters.github.request', MagicMock())
+    def test_oauth_callback_no_saved_state_refused(self, session, oauth):
+        # attacker calls back with their own code/state but nothing was ever saved
+        session.pop.return_value = None
+        session.get.return_value = '/'
+        with patch.object(self.mix, 'oauth_callback_complete') as complete, \
+                patch('forgeimporters.github.redirect') as tg_redir:
+            self.mix.handle_oauth_callback()
+        assert oauth.call_count == 0
+        assert complete.call_count == 0
+        assert c.user.set_tool_data.call_count == 0
+        assert tg_redir.call_count == 1
+
+    @patch.dict(config, {'github_importer.client_id': '123456',
+                         'github_importer.client_secret': 'deadbeef'})
+    @patch('forgeimporters.github.OAuth2Session')
+    @patch('forgeimporters.github.session')
+    @patch('forgeimporters.github.request', MagicMock())
+    def test_oauth_callback_state_is_single_use(self, session, oauth):
+        session.pop.return_value = 'saved-state'
+        oauth.return_value.fetch_token.return_value = {'access_token': 'abc'}
+        with patch.object(self.mix, 'oauth_callback_complete'), \
+                patch('forgeimporters.github.redirect'):
+            self.mix.handle_oauth_callback()
+        session.pop.assert_called_once_with('github.oauth.state', None)
+        oauth.assert_called_once_with('123456', state='saved-state')

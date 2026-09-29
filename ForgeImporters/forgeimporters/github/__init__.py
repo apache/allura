@@ -269,15 +269,20 @@ class GitHubOAuthMixin:
         secret = config.get('github_importer.client_secret')
         if not client_id or not secret:
             return  # GitHub app is not configured
-        oauth = OAuth2Session(
-            client_id, state=session.get('github.oauth.state'))
+        # single-use: remove it so a replayed callback can't be accepted again
+        state = session.pop('github.oauth.state', None)
+        session.save()
+        if not state:
+            log.warning('GitHub oauth callback with no saved state in session; refusing')
+            redirect(session.get('github.oauth.redirect', '/'))
+            return
+        oauth = OAuth2Session(client_id, state=state)
         token = oauth.fetch_token(
             'https://github.com/login/oauth/access_token',
             client_secret=secret,
             authorization_response=request.url
         )
-        c.user.set_tool_data('GitHubProjectImport',
-                             token=token['access_token'])
+        c.user.set_tool_data('GitHubProjectImport', token=token['access_token'])
         self.oauth_callback_complete()
         redirect(session.get('github.oauth.redirect', '/'))
 

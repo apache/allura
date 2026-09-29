@@ -72,8 +72,10 @@ class TestGitHubOAuth(TestController):
         assert session.save.call_count == 1
 
         r = self.app.get(redirect)
+        session.pop.assert_has_calls([
+            call('github.oauth.state', None),
+        ])
         session.get.assert_has_calls([
-            call('github.oauth.state'),
             call('github.oauth.redirect', '/')
         ])
         user = M.User.by_username('test-admin')
