@@ -328,14 +328,17 @@ class Thread(Artifact, ActivityObject):
         else:
             return spammy
 
+    def require_post_access(self):
+        require_access(self, 'post')
+        # check app-level for Blocked Users, in addition to the standard `self` check above
+        if is_denied(self.app, 'post', c.user, self.project):
+            raise exc.HTTPForbidden
+
     def post(self, text, message_id=None, parent_id=None, notify=True,
              notification_text=None, timestamp=None, ignore_security=False,
              is_meta=False, subscribe=False, **kw):
         if not ignore_security:
-            require_access(self, 'post')
-            # check app-level for Blocked Users, in addition to the standard `self` check above
-            if is_denied(self.app, 'post', c.user, self.project):
-                raise exc.HTTPForbidden
+            self.require_post_access()
         if subscribe:
             self.primary().subscribe()
         if message_id is None:
