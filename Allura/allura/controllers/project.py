@@ -363,6 +363,8 @@ class ProjectController(FeedController):
             shortname=c.project.shortname + '/' + name,
             neighborhood_id=c.project.neighborhood_id)
         if subproject:
+            if subproject.deleted and not h.has_access(subproject, 'update'):
+                raise exc.HTTPNotFound(name)
             c.project = subproject
             c.app = None
             return ProjectController(), remainder

@@ -549,6 +549,21 @@ class TestProjectAdmin(TestController):
             else:
                 config['allow_project_delete'] = old_allow_project_delete
 
+    def test_deleted_subproject_hidden_from_anon(self):
+        # a deleted subproject should 404 for anon just like a deleted top-level project does,
+        # even though the parent 'test' project itself is not deleted
+        sub = M.Project.query.get(shortname='test/sub1')
+        sub.deleted = True
+        ThreadLocalODMSession.flush_all()
+
+        anon = dict(username='*anonymous')
+        self.app.get('/p/test/sub1/', extra_environ=anon, status=404)
+        self.app.get('/p/test/sub1/users', extra_environ=anon, status=404)
+        self.app.get('/p/test/sub1/_nav.json', extra_environ=anon, status=404)
+
+        # an admin who can still manage the subproject may still reach it
+        self.app.get('/p/test/sub1/users', status=200)
+
     def test_add_remove_trove_cat(self):
         setup_trove_categories()
 
