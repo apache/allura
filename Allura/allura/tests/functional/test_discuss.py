@@ -491,6 +491,16 @@ class TestAttachment(TestDiscussBase):
                           upload_files=[('file_info', 'test.o12', b'HiThere!')])
         r = self.app.post(alink, params=dict(delete='on'))
 
+    def test_attachment_cache_headers(self):
+        self.app.post(self.post_link + 'attach', upload_files=[('file_info', 'test.txt', b'HiThere!')])
+        alink = self.attach_link()
+        r = self.app.get(alink)
+        assert r.cache_control.private
+        assert r.cache_control.max_age
+        r = self.app.get(alink, extra_environ={'username': '*anonymous'})
+        assert not r.cache_control.private
+        assert r.cache_control.max_age
+
     def test_attach_svg(self):
         r = self.app.post(self.post_link + 'attach',
                           upload_files=[('file_info', 'test.svg', b'<svg onclick="prompt(document.domain)"></svg>')])

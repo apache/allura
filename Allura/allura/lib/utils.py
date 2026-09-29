@@ -532,15 +532,18 @@ def serve_file(fp, filename, content_type, last_modified=None,
         etag_cache(etag)
     tg.response.headers['Content-Type'] = ''
     tg.response.content_type = content_type.split('\n', 1)[0].split('\r', 1)[0]  # enforce single line, no header splitting
-    tg.response.cache_expires = cache_expires or asint(
-        tg.config.get('files_expires_header_secs', 60 * 60))
-    tg.response.last_modified = last_modified
-    if size:
-        tg.response.content_length = size
     if 'Pragma' in tg.response.headers:
         del tg.response.headers['Pragma']
     if 'Cache-Control' in tg.response.headers:
         del tg.response.headers['Cache-Control']
+    tg.response.cache_expires = cache_expires or asint(
+        tg.config.get('files_expires_header_secs', 60 * 60))
+    if not tg.tmpl_context.user.is_anonymous():
+        # may not be public, so shared caches (CDNs, proxies) must not keep it
+        tg.response.cache_control.private = True
+    tg.response.last_modified = last_modified
+    if size:
+        tg.response.content_length = size
     if not embed:
         from allura.lib import helpers as h
         tg.response.headers.add(
