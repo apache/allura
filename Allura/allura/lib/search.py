@@ -431,6 +431,9 @@ def search_app(q='', fq=None, app: bool = True, history: bool = False, project: 
                     # parent (e.g. a deleted ticket's comments)
                     if getattr(live, 'deleted', False) or getattr(primary, 'deleted', False):
                         return None
+                    # a soft-deleted project's artifacts stay indexed but shouldn't surface
+                    if getattr(getattr(primary, 'project', None), 'deleted', False):
+                        return None
                     # unmoderated (pending/spam) comment; hide until approved.  isinstance, not a
                     # `status` attribute check -- Ticket.status is open/closed and would wrongly
                     # hide most tickets.
@@ -450,7 +453,7 @@ def search_app(q='', fq=None, app: bool = True, history: bool = False, project: 
                                     doc.get('id'), doc['neighborhood_id_s'])
                         return None
                     project = Project.query.get(shortname=doc['shortname_s'], neighborhood_id=nbhd_id)
-                    if project is None or not has_access(project, 'read', c.user):
+                    if project is None or project.deleted or not has_access(project, 'read', c.user):
                         return None
                     return doc
                 if doc.get('type_s') == 'User':
