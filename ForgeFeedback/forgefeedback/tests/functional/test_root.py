@@ -18,6 +18,7 @@ from tg import tmpl_context as c
 
 from allura import model as M
 from alluratest.controller import TestController
+from forgefeedback.model import Feedback
 
 
 class TestFeedback(TestController):
@@ -40,6 +41,20 @@ class TestFeedback(TestController):
         resp = post_feedback(self)
         resp = resp.follow()
         assert 'Good tool' in resp
+
+    def test_create_feedback_twice_by_same_user(self):
+        post_feedback(self)
+        data = {'rating': '1', 'description': 'Duplicate review'}
+        resp = self.app.post('/p/test/feedback/create_feedback/', data)
+        resp = resp.follow()
+        assert 'You have already submitted feedback for this project' in resp
+        user = M.User.by_username('test-admin')
+        project = M.Project.query.get(shortname='test')
+        feedbacks = Feedback.query.find(
+            {'reported_by_id': user._id, 'project_id': project._id}).all()
+        assert len(feedbacks) == 1
+        assert feedbacks[0].description == 'Good tool'
+        assert project.rating == 4.0
 
     def test_edit_feedback(self):
         post_feedback(self)
