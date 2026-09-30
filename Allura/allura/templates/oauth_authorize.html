@@ -42,6 +42,11 @@
   {% endif %}
 </h3>
 
+{% if redirect_host %}
+<p>After you approve, you will be sent to <strong>{{ redirect_host }}</strong>.  Only continue if you
+   recognize that address as belonging to the application you are authorizing.</p>
+{% endif %}
+
 <p>
   If you grant them access, they will be able to perform any actions on
   the site as though they were logged in as you.  Do you wish to grant

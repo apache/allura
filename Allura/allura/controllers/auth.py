@@ -1766,7 +1766,9 @@ class OAuth2AuthorizationController(BaseController):
         # so we remove it because we don't need it for the rest of the authorization workflow
         del credentials['request']
 
-        return dict(client=client, credentials=json.dumps(credentials))
+        redirect_uri = credentials['redirect_uri']
+        return dict(client=client, credentials=json.dumps(credentials),
+                    redirect_host=urlparse(redirect_uri).netloc or redirect_uri)
 
     @expose()
     @require_post()

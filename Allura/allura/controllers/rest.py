@@ -20,7 +20,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import datetime, timedelta
-from urllib.parse import unquote, parse_qs
+from urllib.parse import unquote, parse_qs, urlparse, quote
 
 import oauthlib.oauth1
 import oauthlib.oauth2
@@ -151,6 +151,18 @@ def is_active_user(user: M.User | None) -> bool:
 def valid_redirect_uri(redirect_uri: str, registered_uris: list[str]) -> bool:
     """Shared by OAuth1 & OAuth2: the URI must exactly match one the app owner registered, and not be plain http"""
     return not redirect_uri.startswith('http:') and redirect_uri in registered_uris
+
+
+def display_host(uri: str) -> str:
+    # OAuth1 apps with no registered redirect URLs skip callback validation, so hide any user:pass@ and
+    # show unicode lookalike hosts as punycode
+    netloc = urlparse(uri).netloc.rpartition('@')[2]
+    if not netloc:
+        return uri
+    try:
+        return netloc.encode('idna').decode()
+    except UnicodeError:
+        return quote(netloc, safe=':[]')
 
 
 class Oauth1Validator(oauthlib.oauth1.RequestValidator):
@@ -504,7 +516,8 @@ class OAuthNegotiator:
         rtok.user_id = c.user._id
         return dict(
             oauth_token=oauth_token,
-            consumer=rtok.consumer_token)
+            consumer=rtok.consumer_token,
+            redirect_host=None if rtok.callback == 'oob' else display_host(rtok.callback))
 
     @expose('jinja:allura:templates/oauth_authorize_ok.html')
     @require_post()

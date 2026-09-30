@@ -34,8 +34,10 @@ from mock import patch, Mock
 import mock
 import pytest
 import webtest
+from oauthlib.oauth2.rfc6749.errors import InvalidRedirectURIError
 from tg import tmpl_context as c
 
+from allura.controllers.auth import OAuth2AuthorizationController
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura.tests.decorators import audits, out_audits
@@ -2351,6 +2353,30 @@ class TestOAuth(TestController):
         r = self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok_12345'})
         assert 'ctok_desc' in r.text
         assert 'api_key_reqtok_12345' in r.text
+        assert 'you will be sent to' not in r.text
+
+    def test_authorize_redirect_host(self):
+        user = M.User.by_username('test-admin')
+        ctok = M.OAuthConsumerToken(
+            api_key='api_key_api_key_12345',
+            user_id=user._id,
+            description='ctok_desc',
+        )
+        expected = {
+            'https://my.domain.com:8443/callback': 'my.domain.com:8443',
+            'https://my.domain.com:pass@evil.com/cb': 'evil.com',
+            'https://\u0430pple.com/cb': 'xn--pple-43d.com',
+        }
+        for i, (callback, host) in enumerate(expected.items()):
+            M.OAuthRequestToken(
+                api_key=f'api_key_reqtok_{i}',
+                consumer_token_id=ctok._id,
+                callback=callback,
+                user_id=user._id,
+            )
+            ThreadLocalODMSession.flush_all()
+            r = self.app.post('/rest/oauth/authorize', params={'oauth_token': f'api_key_reqtok_{i}'})
+            assert f'you will be sent to <strong>{host}</strong>' in r.text
 
     def test_authorize_invalid(self):
         resp = self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok_12345'}, status=400)
@@ -2584,6 +2610,52 @@ class TestOAuth2(TestController):
         })
         assert 'testoauth2' in r.text
         assert 'client_12345' in r.text
+        assert 'you will be sent to <strong>localhost</strong>' in r.text
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_authorize_redirect_host_port(self):
+        expected = {
+            'https://localhost:443/cb': 'localhost:443',
+            'https://localhost:8443/cb': 'localhost:8443',
+        }
+        M.OAuth2ClientApp(
+            client_id='client_12345',
+            client_secret='98765',
+            user_id=M.User.by_username('test-admin')._id,
+            name='testoauth2',
+            response_type='code',
+            redirect_uris=list(expected)
+        )
+        ThreadLocalODMSession.flush_all()
+        for redirect_uri, host in expected.items():
+            r = self.app.get('/auth/oauth2/authorize', params={
+                'client_id': 'client_12345',
+                'response_type': 'code',
+                'redirect_uri': redirect_uri,
+            })
+            assert f'you will be sent to <strong>{host}</strong>' in r.text
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_authorize_rejects_misleading_redirect_uri(self):
+        # the consent page shows the redirect uri's netloc as-is, so a lookalike domain must only be possible as
+        # punycode, and there can't be a user:pass@ in front of the real host
+        redirect_uri = 'https://\u0430pple.com/cb'  # with a Cyrillic а
+        M.OAuth2ClientApp(
+            client_id='client_12345',
+            client_secret='98765',
+            user_id=M.User.by_username('test-admin')._id,
+            name='testoauth2',
+            response_type='code',
+            redirect_uris=[redirect_uri]
+        )
+        ThreadLocalODMSession.flush_all()
+        server = OAuth2AuthorizationController().server
+        authorize_url = 'https://localhost/auth/oauth2/authorize?client_id=client_12345&response_type=code'
+        given = [authorize_url + '&' + urlencode({'redirect_uri': u})
+                 for u in [redirect_uri, 'https://apple.com:pass@localhost/cb']]
+        for uri in given + [authorize_url]:  # and the registered default
+            with pytest.raises(InvalidRedirectURIError):
+                server.validate_authorization_request(uri=uri, http_method='GET')
 
     @mock.patch.dict(config, {'auth.oauth2.enabled': True})
     def test_do_authorize_no(self):
