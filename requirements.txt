@@ -166,7 +166,7 @@ nh3==0.3.6
     # via textile
 nodeenv==1.10.0
     # via pre-commit
-oauthlib==3.3.1
+oauthlib==4.0.0
     # via
     #   -r requirements.in
     #   requests-oauthlib
