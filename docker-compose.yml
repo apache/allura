@@ -59,7 +59,7 @@ services:
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8983/solr/allura/admin/ping"]
       start_interval: 1s
-      start_period: 30s
+      start_period: 90s
 
   mongo:
     image: mongo:4.2
