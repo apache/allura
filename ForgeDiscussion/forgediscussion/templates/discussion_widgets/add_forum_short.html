@@ -54,7 +54,7 @@
   {% for field in widget.fields %}
     {% set ctx=widget.context_for(field) %}
     {% if ctx.errors and field.show_errors -%}
-      window.onload = function(){$('#messages').notify("{{ctx.errors}}", {
+      window.onload = function(){$('#messages').notify({{ ctx.errors|string|tojson }}, {
         title: 'Error',
         status: 'error'
       });};

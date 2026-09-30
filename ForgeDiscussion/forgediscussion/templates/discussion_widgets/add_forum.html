@@ -68,7 +68,7 @@
     {% if ctx.errors and field.show_errors -%}
         has_form_errors = true;
         addLoadEvent(function() {
-            $('#messages').notify("{{ctx.errors}}", {
+            $('#messages').notify({{ ctx.errors|string|tojson }}, {
                 title: 'Error',
                 status: 'error'
             });

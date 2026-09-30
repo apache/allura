@@ -32,20 +32,20 @@ Commit <a href="{{commit.url()}}" rel="nofollow">{{commit.shorthand_id()}}</a> {
     {% if status == 'complete' %}
         {% if 'no-redirect' not in request.params %}
             $(document).ready(function() {
-                window.location.href = '{{c.app.repo.tarball_url(revision, path)}}';
+                window.location.href = {{ c.app.repo.tarball_url(revision, path)|tojson }};
             });
         {% endif %}
     {% elif status in ('ready', 'busy') %}
         $('.spinner').show()
         var delay = 500;
         function check_status() {
-            $.get('{{commit.url()}}tarball_status?path={{path}}', function(data) {
+            $.get({{ (commit.url() ~ 'tarball_status?path=' ~ path|urlencode)|tojson }}, function(data) {
                 if (data.status === 'complete') {
                     $('.spinner').hide()
                     $('#snapshot_status h2').hide();
                     $('#snapshot_status h2.complete').show();
                     {% if 'no-redirect' not in request.params %}
-                        window.location.href = '{{c.app.repo.tarball_url(revision, path)}}';
+                        window.location.href = {{ c.app.repo.tarball_url(revision, path)|tojson }};
                     {% endif %}
                 } else {
                     if (data.status === 'ready' || data.status === 'busy') {

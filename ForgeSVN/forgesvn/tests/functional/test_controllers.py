@@ -245,6 +245,11 @@ class TestRootController(SVNTestController):
         r = self.app.get('/src/3/tarball')
         assert 'Your download will begin shortly' in r
 
+    def test_tarball_status_url_in_js(self):
+        r = self.app.post('/src/3/tarball', params={'path': 'a&b\\'}).follow()
+        assert 'Generating snapshot...' in r
+        assert '$.get("/p/test/src/3/tarball_status?path=a%26b%5C",' in r.text
+
     @skipUnless(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
     def test_tarball_cyrillic(self):
         r = self.app.get('/src/6/tree/')

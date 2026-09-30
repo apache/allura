@@ -79,6 +79,12 @@ class TestRootController(TestController):
         r = self.app.get('/url/')
         assert 'http://www.google.com/' in r
 
+    def test_shorturl_values_in_js(self):
+        self.app.post('/admin/url/add', dict(short_url='test', full_url='http://www.google.com/',
+                                             description='a\\\nb'))
+        r = self.app.get('/url/')
+        assert r'.val("a\\\nb")' in r.text
+
     def test_shorturl_private(self):
         self.app.post('/admin/url/add',
                       dict(short_url='test_private',
