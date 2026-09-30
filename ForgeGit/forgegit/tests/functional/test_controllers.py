@@ -774,7 +774,7 @@ class TestFork(_TestCase):
             project_id=str(to_project._id),
             mount_point='code',
             mount_label='Test forked repository'))
-        assert "{status: 'error'}" not in str(r.follow())
+        assert '{status: "error"}' not in str(r.follow())
         cloned_from = c.app.repo
         with h.push_context('test2', 'code', neighborhood='Projects'):
             c.app.repo.init_as_clone(
@@ -865,7 +865,7 @@ class TestFork(_TestCase):
             project_id=str(to_project._id),
             mount_point='code_force_test',
             mount_label='Test fork for force_push'))
-        assert "{status: 'error'}" not in str(r.follow())
+        assert '{status: "error"}' not in str(r.follow())
 
         # Initialize the forked repo and verify force_push_allowed was not inherited
         cloned_from = parent_repo

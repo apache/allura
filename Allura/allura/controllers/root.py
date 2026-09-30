@@ -24,6 +24,7 @@ from tg.decorators import with_trailing_slash
 from tg import tmpl_context as c
 from tg import response
 from tg import TGController
+from jinja2.utils import htmlsafe_json_dumps
 from webob import exc
 
 from allura.app import SitemapEntry
@@ -44,7 +45,14 @@ __all__ = ['RootController']
 
 log = logging.getLogger(__name__)
 
-flash.static_template = Template("$$('#messages').notify('$message', {status: '$status'});")
+
+class JSValuesTemplate(Template):
+    # substitutes each value as a JS string literal, so a backslash or newline in a message can't break the script
+    def substitute(self, mapping=None, /, **kws):
+        return super().substitute({k: htmlsafe_json_dumps(str(v)) for k, v in {**(mapping or {}), **kws}.items()})
+
+
+flash.static_template = JSValuesTemplate("$$('#messages').notify($message, {status: $status});")
 
 
 class W:

@@ -72,7 +72,7 @@
   $(function() {
     $('#authorize-ok').click(function() {
       $(this).attr('disabled', 'disabled');
-      $(this).attr('value', 'Authorizing {{ client.name }}...');
+      $(this).attr('value', 'Authorizing ' + {{ client.name|tojson }} + '...');
       $(this).closest('form').submit();
     });
   })

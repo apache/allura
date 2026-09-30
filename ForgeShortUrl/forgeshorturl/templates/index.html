@@ -74,8 +74,8 @@
                   modal.find('#short-url-form-action-label').text('Update');
                   modal.find('input[name="update"]').val('True');
                   modal.find('input[name="short_url"]').val('{{ su.short_name }}').prop('readonly', true).trigger('keyup');
-                  modal.find('input[name="full_url"]').val('{{ su.full_url }}');
-                  modal.find('textarea[name="description"]').val('{{su.description|replace("\n", "\\n")|replace("\r", "\\r")}}');
+                  modal.find('input[name="full_url"]').val({{ su.full_url|tojson }});
+                  modal.find('textarea[name="description"]').val({{ su.description|tojson }});
                   if ('{{ su.private }}' == 'True') {
                     modal.find('input[name="private"]').prop('checked', true);
                   } else {

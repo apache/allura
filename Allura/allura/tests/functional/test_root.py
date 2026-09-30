@@ -111,6 +111,12 @@ class TestRootController(TestController):
         assert '<script>alert' not in content, content
         assert '&lt;script&gt;alert' in content
 
+    def test_flash_js(self):
+        js = tg.flash.static_template.substitute(message='a\\\n</script>', status='error')
+        assert js.startswith(r'''$('#messages').notify("a\\\n''')
+        assert '</script>' not in js
+        assert js.endswith('", {status: "error"});')
+
     def test_strange_accept_headers(self):
         hdrs = [
             'text/plain;text/html;text/*',

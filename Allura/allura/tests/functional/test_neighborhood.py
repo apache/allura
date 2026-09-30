@@ -310,8 +310,8 @@ class TestNeighborhood(TestController):
                           extra_environ=dict(username='root'), status=302)
         r = self.app.get('/adobe/adobe-1/admin/overview',
                          extra_environ=dict(username='root'))
-        r.mustcontain("_add_tracking('nbhd', 'U-123456');")
-        r.mustcontain("_add_tracking('proj', 'U-654321');")
+        r.mustcontain('''_add_tracking('nbhd', "U-123456");''')
+        r.mustcontain('''_add_tracking('proj', "U-654321");''')
         # analytics not allowed
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.features['google_analytics'] = False

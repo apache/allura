@@ -50,7 +50,8 @@ from allura.lib.multifactor import TotpService, RecoveryCodeService, EmailCodeAu
 
 
 def unentity(s):
-    return s.replace('&quot;', '"').replace('&#34;', '"')
+    # flash messages are html-escaped, then json-encoded (which escapes the & too)
+    return s.replace('\\u0026', '&').replace('&quot;', '"').replace('&#34;', '"')
 
 
 def login(app, username='test-user', pwd='foo', query_string=''):
