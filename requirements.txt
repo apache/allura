@@ -242,7 +242,7 @@ python-dateutil==2.9.0.post0
     #   -r requirements.in
     #   botocore
     #   easywidgets
-python-discovery==1.4.4
+python-discovery==1.6.1
     # via virtualenv
 python-magic==0.4.27
     # via -r requirements.in
