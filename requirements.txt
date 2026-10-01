@@ -326,7 +326,7 @@ urllib3==2.8.0
     # via
     #   botocore
     #   requests
-virtualenv==21.6.1
+virtualenv==21.14.2
     # via pre-commit
 waitress==3.0.2
     # via webtest
