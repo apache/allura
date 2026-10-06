@@ -20,8 +20,6 @@ beautifulsoup4==4.15.0
     # via
     #   -r requirements.in
     #   webtest
-bleach==6.4.0
-    # via pypeline
 boto3==1.43.52
     # via pymongo-auth-aws
 botocore==1.43.52
@@ -105,9 +103,7 @@ gunicorn==26.0.0
 h11==0.16.0
     # via httpcore
 html5lib==1.1
-    # via
-    #   -r requirements.in
-    #   pypeline
+    # via -r requirements.in
 httpcore==1.0.9
     # via httpx
 httpx==0.27.2
@@ -175,6 +171,7 @@ packaging==26.2
     #   gunicorn
     #   pymongocrypt
     #   pytest
+    #   virtualenv
 paginate==0.5.7
     # via -r requirements.in
 passlib==1.7.4
@@ -193,9 +190,7 @@ pastescript==3.7.0
 pillow==12.3.0
     # via -r requirements.in
 platformdirs==4.10.1
-    # via
-    #   python-discovery
-    #   virtualenv
+    # via virtualenv
 pluggy==1.6.0
     # via pytest
 pockets==0.9.1
@@ -312,12 +307,12 @@ textile==4.0.4
     # via pypeline
 timermiddleware==0.6.3
     # via -r requirements.in
-tinycss2==1.1.1
-    # via bleach
 translationstring==1.4
     # via colander
 turbogears2==2.5.0
     # via -r requirements.in
+turbohtml==1.13.1
+    # via pypeline
 typing-extensions==4.16.0
     # via beautifulsoup4
 tzdata==2025.2 ; sys_platform == 'win32'
@@ -331,10 +326,7 @@ virtualenv==21.14.2
 waitress==3.0.2
     # via webtest
 webencodings==0.5.1
-    # via
-    #   bleach
-    #   html5lib
-    #   tinycss2
+    # via html5lib
 webhelpers2==2.1
     # via -r requirements.in
 webob==1.8.11
