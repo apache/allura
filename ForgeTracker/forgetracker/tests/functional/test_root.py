@@ -90,6 +90,80 @@ class TrackerTestController(TestController):
         return resp
 
 
+# Typed into a select field's "Options" box; shlex unescapes \" so a bare " reaches value="..."
+OPTIONS_PAYLOAD = r'"x\" onmouseover=alert(document.domain) autofocus onfocus=alert(1) y"'
+
+# Same breakout, closing the element instead of the attribute
+ELEMENT_PAYLOAD = r'"x\"><script>alert(document.domain)</script>"'
+
+# Milestone names only get .replace("/", "-"), so a quote reaches the same sink
+MILESTONE_PAYLOAD = r'1.0" onmouseover=alert(document.domain) x'
+
+FIELD_NAME = '_testselect'
+MILESTONE_FIELD_NAME = '_releases'
+
+
+def event_handler_attrs(tag):
+    """Every on*= attribute a browser would parse out of this subtree."""
+    found = set()
+    for el in [tag, *tag.find_all()]:
+        found.update(name for name in el.attrs if name.startswith('on'))
+    return found
+
+
+class TestSelectOptionsStoredXss(TrackerTestController):
+    """End-to-end test for stored XSS via select custom-field options: a tracker admin
+    POSTs the payload to the custom-fields admin endpoint and a different user's ticket
+    form renders it.  Library-level cases are unit-tested upstream, in easywidgets'
+    ew/tests/test_security.py.
+
+    Assertions are structural: the page may still contain the payload text inside an
+    attribute value, but must not contain an on* attribute or a <script> the browser
+    would parse out.
+    """
+
+    def _post_field(self, **field):
+        params = dict(
+            custom_fields=[field],
+            open_status_names='aa bb',
+            closed_status_names='cc',
+        )
+        self.app.post('/admin/bugs/set_custom_fields', params=variable_encode(params))
+
+    def _select_for(self, resp, field_name):
+        """The custom field's <select>, matched by name suffix (rendered names carry a form prefix)."""
+        selects = [s for s in resp.html.find_all('select')
+                   if (s.get('name') or '').endswith(field_name)]
+        assert len(selects) == 1
+        return selects[0]
+
+    @pytest.mark.parametrize('payload', [OPTIONS_PAYLOAD, ELEMENT_PAYLOAD])
+    def test_option_value_cannot_break_out_of_the_select(self, payload):
+        """Pre-fix, OPTIONS_PAYLOAD rendered onmouseover/autofocus/onfocus attributes and
+        ELEMENT_PAYLOAD closed the option and injected a <script> tag."""
+        self._post_field(name=FIELD_NAME, label='Test', type='select', options=payload)
+        select = self._select_for(self.app.get('/bugs/new/'), FIELD_NAME)
+        assert event_handler_attrs(select) == set()
+        assert select.find('script') is None
+
+    def test_field_label_is_not_a_second_hole(self):
+        """The label is escaped by ticket_custom_fields.html; moving it into the widget would reopen this."""
+        self._post_field(name=FIELD_NAME, label=r'<img src=x onerror=alert(document.domain)>',
+                          type='select', options='one two')
+        resp = self.app.get('/bugs/new/')
+        label = resp.html.find('label', attrs={'for': lambda v: bool(v) and v.endswith(FIELD_NAME)})
+        assert label is not None
+        assert label.find('img') is None
+
+    def test_milestone_name_cannot_break_out_of_the_value_attribute(self):
+        """MilestoneField has its own value= sink.  Names are escaped, not stripped, to round-trip."""
+        self._post_field(label='releases', show_in_search='on', type='milestone',
+                          milestones=[dict(name=MILESTONE_PAYLOAD)])
+        select = self._select_for(self.app.get('/bugs/new/'), MILESTONE_FIELD_NAME)
+        assert event_handler_attrs(select) == set()
+        assert '"' in select.find('option')['value']
+
+
 class TestMilestones(TrackerTestController):
     def test_milestone_list(self):
         r = self.app.get('/bugs/milestones')
