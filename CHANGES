@@ -1,18 +1,44 @@
-Next Version
+Version 1.22.0  (October 2026)
 
 Upgrade Instructions
 
-  Run: `paster ensure_index development.ini` in Allura dir.  Replace your .ini file path.
-  This creates the oauth_nonce collection's indexes.  Without them, OAuth1 replay protection
-  silently accepts every nonce.
+  Stop any running Allura services while upgrading.
 
-  OAuth1 applications must now register at least one https:// Redirect URL, and their callback
-  must match one exactly.  Applications registered before this release keep working with any
-  callback until their owner edits them to add a URL, so let your users know to do that.
+  Install updated dependencies by running:
+    pip install -r requirements.txt --no-deps --upgrade --upgrade-strategy=only-if-needed
+
+  Run in mongo: `db.getSiblingDB('allura').oauth2_access_token.dropIndex('refresh_token_1')`
+  Run: `paster ensure_index development.ini` in Allura dir.  Replace your .ini file path.
 
 Major Changes
  * edit support for OAuth1 and OAuth2 app configurations
+ * OAuth1 applications must now register at least one https:// Redirect URL, and their callback
+   must match one exactly.  Applications registered before this release keep working with any
+   callback until their owner edits them to add a URL.
  * ForgeChat deprecated and scheduled to be removed in next release.  Join the Allura dev team if you would like to support and maintain this tool.
+ * drop inline SVG tag support
+
+Security Improvements
+ * [#8617] Implement field level encryption for User tool data fields
+ * [#8619] html sanitization fixes
+ * [#8621] drop other urllib handlers
+ * [#8626] Log raw email headers and SPF/DMARC/DKIM verification results for monitor mode
+ * OAuth consent pages: show where the user will be redirected
+ * RSS/Atom feed consistency with visibility
+ * Package Upgrades
+ * update SECURITY.md
+
+Code Repos
+ * [#8618] fix git thread-safety issues
+
+General
+ * error handling around "magic" lib
+ * optimize _get_site_notification in case of users with many projects
+
+For Developers
+ * fix partialFilterExpression: can't do $gt a different type.  NEEDS INDEX DROP AND RECREATE
+ * docker-compose: try giving solr a longer start period to get healthy (has been unhealthy in CI sometimes)
+ * rename CLAUDE.md => AGENTS.md
 
 
 Version 1.21.0  (September 2026)
