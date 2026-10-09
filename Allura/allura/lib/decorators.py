@@ -18,6 +18,7 @@
 import inspect
 import json
 import logging
+import types
 from http.cookies import SimpleCookie as Cookie
 from collections import defaultdict
 from urllib.parse import unquote
@@ -194,6 +195,13 @@ def memoize_cleanup(obj):
     """
     Remove any _memoize_dic_* keys that were created by @memoize on methods
     """
+    if isinstance(obj, types.MethodType):
+        # @classmethod on top of @memoize caches on the class before py3.13, on the function after
+        try:
+            delattr(obj.__self__, f"_memoize_dic__{obj.__func__.__name__}")
+        except AttributeError:
+            pass
+        obj = obj.__func__
     attrs = obj.keys() if hasattr(obj, 'keys') else obj.__dir__()
     for k in list(attrs):
         if k.startswith('_memoize_dic'):

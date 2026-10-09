@@ -19,7 +19,7 @@ from mock import patch
 import random
 import gc
 
-from allura.lib.decorators import task, memoize
+from allura.lib.decorators import task, memoize, memoize_cleanup
 from alluratest.controller import setup_basic_test
 
 
@@ -120,6 +120,37 @@ class TestMemoize:
         assert r2rand1 == r2rand2
         assert r2other1 != other1
         assert r2other1 == r2other2
+
+    def test_cleanup_method(self):
+
+        class Randomy:
+            @memoize
+            def randomy(self):
+                return random.random()
+
+            @memoize
+            def other(self):
+                return random.random()
+
+        r = Randomy()
+        rand1 = r.randomy()
+        other1 = r.other()
+        memoize_cleanup(r.randomy)
+        assert r.randomy() != rand1
+        assert r.other() == other1
+
+    def test_cleanup_classmethod(self):
+
+        class Randomy:
+            @classmethod
+            @memoize
+            def randomy(cls):
+                return random.random()
+
+        rand1 = Randomy.randomy()
+        assert Randomy.randomy() == rand1
+        memoize_cleanup(Randomy.randomy)
+        assert Randomy.randomy() != rand1
 
     def test_methods_garbage_collection(self):
 
