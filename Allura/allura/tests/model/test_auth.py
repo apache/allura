@@ -749,7 +749,7 @@ class TestAuditLog:
 
     @pytest.mark.parametrize('message, arg, project_scoped, event_type, expected', [
         ('About user %s here', 'alice', True, None, 'project.user_mention.unclassified'),
-        ('Comment: %s', 'Account disabled', False, None, 'account.event.unclassified'),
+        ('Comment: %s', 'Account disabled', False, None, None),
         ('Updated %s', 'description', True, None, None),
         ('Successful login %s', 'via password', False, 'auth.login.succeeded', 'auth.login.succeeded'),
     ])
@@ -766,17 +766,18 @@ class TestAuditLog:
 
     def test_legacy_message_read_and_update(self):
         entry_id = ObjectId()
-        M.main_doc_session.db.audit_log.insert_one({'_id': entry_id, 'message': 'Comment: Account disabled'})
+        M.main_doc_session.db.audit_log.insert_one({'_id': entry_id, 'project_id': ObjectId(),
+                                                    'message': 'add user alice to Developer'})
         entry = M.AuditLog.query.get(_id=entry_id)
-        assert entry.message == 'Comment: Account disabled'
+        assert entry.message == 'add user alice to Developer'
         assert entry.message_encrypted is None
         assert entry.event_type is None
         entry.url = '/updated'
         session(entry).flush(entry)
         raw = M.main_doc_session.db.audit_log.find_one({'_id': entry_id})
-        assert raw['message'] == 'Comment: Account disabled'
+        assert raw['message'] == 'add user alice to Developer'
         assert M.AuditLog.decr(raw['message_encrypted']) == raw['message']
-        assert raw['event_type'] == 'account.event.unclassified'
+        assert raw['event_type'] == 'project.user_mention.unclassified'
 
     def test_message_html(self):
         al = h.auditlog_user('our message <script>alert(1)</script>')

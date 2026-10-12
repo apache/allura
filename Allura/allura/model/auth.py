@@ -1125,47 +1125,6 @@ class ProjectRole(MappedClass):
                                     user_id={'$ne': None}, roles=self._id)).all()
 
 
-# Keep this candidate pattern in sync between the Allura and sfpy AuditLog models.
-ACCOUNT_EVENT_CANDIDATE = re.compile(
-    r'^(?:' + '|'.join(re.escape(prefix) for prefix in (
-        'Successful login',
-        'Primary email changed',
-        'New email address:',
-        'Email address verified:',
-        'Email address deleted:',
-        'Display Name changed',
-        'Password changed',
-        'Account activated',
-        'User account activated',
-        'Phone verification succeeded.',
-        'Visited multifactor new TOTP page',
-        'Set up multifactor TOTP',
-        'Viewed multifactor TOTP config page',
-        'Viewed multifactor recovery codes',
-        'Regenerated multifactor recovery codes',
-        'Set True Identity',
-        'Submitted project registration',
-        'Donation:',
-        'Pending user account created',
-        'User verified account registration e-mail with confirm hash.',
-        'Created new project',
-        'Email address change initiated.',
-        'Email address change completed.',
-        'SSH key data changed',
-        'SSH keys are set to:',
-        'Email optout type is set to',
-        'api key for releases (re-)set',
-        'SourceForge account email changed:',
-        'Account disabled',
-        'Disabling user',
-        'User status changed.\nD',
-        'Automatically detected spam',
-        'Account enabled',
-    )) + r')|Account disabled|Disabling user|User status changed.\nD|Automatically detected spam',
-    re.MULTILINE,
-)
-
-
 class AuditLogMapperExtension(MapperExtension):
     """Dual-write encrypted messages while plaintext remains the source of truth."""
 
@@ -1203,17 +1162,8 @@ class AuditLog(MappedClass):
     message_encrypted = FieldProperty(S.Binary, if_missing=None)
     event_type = FieldProperty(str, if_missing=None)
 
-    @classmethod
-    def unclassified_event_type(cls, message: str | None, project_id: ObjectId | None) -> str | None:
-        """Mark legacy reader candidates when the caller has not supplied a type."""
-        if project_id is not None:
-            return cls.user_mention_event_type(message, project_id)
-        if isinstance(message, str) and ACCOUNT_EVENT_CANDIDATE.search(message):
-            return 'account.event.unclassified'
-        return None
-
     @staticmethod
-    def user_mention_event_type(message: str | None, project_id: ObjectId | None) -> str | None:
+    def unclassified_event_type(message: str | None, project_id: ObjectId | None) -> str | None:
         """Mark possible username mentions for later target-specific redaction."""
         if project_id is not None and isinstance(message, str) and re.search(r' user \S+ ', message):
             return 'project.user_mention.unclassified'
