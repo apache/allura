@@ -31,6 +31,7 @@ import typing
 import tg
 import git
 import gitdb
+from git.diff import decode_path
 from tg import tmpl_context as c
 from pymongo.errors import DuplicateKeyError
 from paste.deploy.converters import asbool
@@ -521,8 +522,8 @@ class GitImplementation(M.RepositoryImplementation):
                     if len(commit_lines) > 1:
                         name_stat_parts = commit_lines[1].split('\t')
                         if name_stat_parts[0] == 'R100':
-                            renamed['from'] = name_stat_parts[1]
-                            renamed['to'] = name_stat_parts[2]
+                            renamed['from'], renamed['to'] = (
+                                decode_path(p.encode(), has_ab_prefix=False).decode() for p in name_stat_parts[1:3])
                     yield (git.Commit(self._git, gitdb.util.hex_to_bin(hexsha)), refs, renamed)
                 if not (len(line)):
                     # if all lines have been read
@@ -730,11 +731,11 @@ class GitImplementation(M.RepositoryImplementation):
                 '--end-of-options', commit_id, '--', *[p for p in paths],
                 pretty='format:%H',
                 name_only=True,
+                z=True,  # raw filenames (no quoting), \0-separated
                 max_count=1,
                 skip=skip)
-            lines = output.split('\n')
-            commit_id = lines[0]
-            files = prefix_paths_union(paths, set(lines[1:]))
+            commit_id, _, names = output.partition('\n')
+            files = prefix_paths_union(paths, set(names.split('\0')))
             # *do* skip subsequent merge commits or we'll get stuck on an infinite
             # loop matching and then diregarding the merge commit over and over
             skip = 1
@@ -747,8 +748,9 @@ class GitImplementation(M.RepositoryImplementation):
         return self._git.git.log(
             '--end-of-options', commit_id,
             name_only=True,
+            z=True,  # raw filenames (no quoting), \0-separated
             pretty='format:%H',
-            max_count=1).splitlines()[1:]
+            max_count=1).partition('\n')[2].split('\0')[:-1]
 
     def paged_diffs(self, commit_id, start=0, end=None, onlyChangedFiles=False):
         result = {'added': [], 'removed': [], 'changed': [], 'copied': [], 'renamed': []}

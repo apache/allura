@@ -1276,6 +1276,38 @@ class TestGitImplementation:
         with h.push_config(tg.config, lcd_thread_chunk_size=1):
             self.test_last_commit_ids()
 
+    def test_last_commit_ids_weird_chars(self):
+        repo_dir = pkg_file('forgegit', 'tests/data/weird-chars.git')
+        impl = GM.git_repo.GitImplementation(mock.Mock(full_fs_path=repo_dir))
+        lcds = impl.last_commit_ids(mock.Mock(_id='bc79c9fcfe31ed77d1ef45f5dcf4abf9917dac5d'), [
+            'привіт.txt', 'with"&:specials.txt', 'with space.txt', 'foo.txt',
+        ])
+        assert lcds == {
+            'привіт.txt': 'f3de6a0e7601cdde326054a1cc708afdc1dbe70b',
+            'with"&:specials.txt': 'bc79c9fcfe31ed77d1ef45f5dcf4abf9917dac5d',
+            'with space.txt': '407950e8fba4dbc108ffbce0128ed1085c52cfd7',
+            'foo.txt': 'b85dfbec3a5d08677bdd402fc0338934f623a234',
+        }
+
+    def test_get_changes_weird_chars(self):
+        repo_dir = pkg_file('forgegit', 'tests/data/weird-chars.git')
+        impl = GM.git_repo.GitImplementation(mock.Mock(full_fs_path=repo_dir))
+        assert impl.get_changes('407950e8fba4dbc108ffbce0128ed1085c52cfd7') == ['with space.txt', 'привіт.txt']
+        assert impl.get_changes('bc79c9fcfe31ed77d1ef45f5dcf4abf9917dac5d') == [
+            'with"&:specials.txt', 'with%2Furlquote-literal.txt']
+
+    def test_log_rename_weird_chars(self, tmp_path):
+        repo = git.Repo.init(tmp_path)
+        (tmp_path / 'привіт.txt').write_text('hello\n')
+        repo.index.add(['привіт.txt'])
+        first = repo.index.commit('add')
+        repo.index.move(['привіт.txt', 'with"quote.txt'])
+        repo.index.commit('rename')
+        impl = GM.git_repo.GitImplementation(mock.Mock(full_fs_path=str(tmp_path)))
+        impl._repo.url_for_commit = lambda ci: ci
+        commits = list(impl.log(['HEAD'], path='with"quote.txt', id_only=False))
+        assert commits[0]['rename_details'] == {'path': '/привіт.txt', 'commit_url': first.hexsha}
+
     @mock.patch('forgegit.model.git_repo.GitImplementation._git', new_callable=mock.PropertyMock)
     def test_last_commit_ids_threaded_error(self, _git):
         with h.push_config(tg.config, lcd_thread_chunk_size=1, lcd_timeout=2):
