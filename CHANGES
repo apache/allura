@@ -16,9 +16,12 @@ Major Changes
    must match one exactly.  Applications registered before this release keep working with any
    callback until their owner edits them to add a URL.
  * ForgeChat deprecated and scheduled to be removed in next release.  Join the Allura dev team if you would like to support and maintain this tool.
- * drop inline SVG tag support
 
 Security Improvements
+ * fix CVE-2026-92116: OAuth1 missing callback validation
+ * fix CVE-2026-92119: REST API Mass Assignment
+ * fix CVE-2026-92120: Apache Allura: Oauth1 Replay Attack
+ * [#8627] additional security related improvements
  * [#8617] Implement field level encryption for User tool data fields
  * [#8619] html sanitization fixes
  * [#8621] drop other urllib handlers
