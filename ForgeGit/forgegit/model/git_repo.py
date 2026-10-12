@@ -425,7 +425,7 @@ class GitImplementation(M.RepositoryImplementation):
                 rename_details = {}
                 if path:
                     if renamed and renamed['to'] == path:
-                        rename_details['path'] = '/' + renamed['from']
+                        rename_details['path'] = '/' + h.really_unicode(renamed['from'].encode(errors='surrogateescape'))
                         # get first rev **before** rename
                         _iter = self._git.iter_commits(
                             revs, renamed['from'], max_count=2)
@@ -440,7 +440,7 @@ class GitImplementation(M.RepositoryImplementation):
                     except KeyError as e:
                         size = None
                     if rename_details:
-                        path = rename_details['path'].strip('/')
+                        path = renamed['from']
                 yield {
                     'id': ci.hexsha,
                     'message': h.really_unicode(ci.message or '--none--'),
@@ -523,7 +523,9 @@ class GitImplementation(M.RepositoryImplementation):
                         name_stat_parts = commit_lines[1].split('\t')
                         if name_stat_parts[0] == 'R100':
                             renamed['from'], renamed['to'] = (
-                                decode_path(p.encode(), has_ab_prefix=False).decode() for p in name_stat_parts[1:3])
+                                # surrogateescape keeps non-utf8 bytes intact for later git calls
+                                decode_path(p.encode(), has_ab_prefix=False).decode(errors='surrogateescape')
+                                for p in name_stat_parts[1:3])
                     yield (git.Commit(self._git, gitdb.util.hex_to_bin(hexsha)), refs, renamed)
                 if not (len(line)):
                     # if all lines have been read

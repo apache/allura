@@ -1308,6 +1308,27 @@ class TestGitImplementation:
         commits = list(impl.log(['HEAD'], path='with"quote.txt', id_only=False))
         assert commits[0]['rename_details'] == {'path': '/привіт.txt', 'commit_url': first.hexsha}
 
+    def test_log_rename_invalid_utf8(self, tmp_path):
+        # build via index only, since some filesystems (macOS) reject non-utf8 filenames
+        repo = git.Repo.init(tmp_path)
+        with repo.config_writer() as cw:
+            cw.set_value('user', 'name', 'test')
+            cw.set_value('user', 'email', 'test@example.com')
+        (tmp_path / 'hello.txt').write_text('hello\n')
+        blob = repo.git.hash_object('-w', 'hello.txt')
+        latin1_name = b'caf\xe9.txt'.decode(errors='surrogateescape')
+        repo.git.update_index('--add', '--cacheinfo', f'100644,{blob},{latin1_name}')
+        repo.git.commit('-m', 'add')
+        first = repo.head.commit.hexsha
+        repo.git.rm('--cached', latin1_name)
+        repo.git.update_index('--add', '--cacheinfo', f'100644,{blob},renamed.txt')
+        repo.git.commit('-m', 'rename')
+        impl = GM.git_repo.GitImplementation(mock.Mock(full_fs_path=str(tmp_path)))
+        impl._repo.url_for_commit = lambda ci: ci
+        commits = list(impl.log(['HEAD'], path='renamed.txt', id_only=False))
+        assert commits[0]['rename_details'] == {'path': '/café.txt', 'commit_url': first}
+        assert len(commits) == 2
+
     @mock.patch('forgegit.model.git_repo.GitImplementation._git', new_callable=mock.PropertyMock)
     def test_last_commit_ids_threaded_error(self, _git):
         with h.push_config(tg.config, lcd_thread_chunk_size=1, lcd_timeout=2):
