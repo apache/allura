@@ -49,7 +49,7 @@ def parse_args():
     parser.add_argument('--debug-html', action='store_true', default=False,
                         help='Save HTML responses as local files')
     parser.add_argument(
-        '--data-file', default='call_counts.csv', type=argparse.FileType('a'),
+        '--data-file', default='call_counts.csv',
         help='CSV file that is appended to')
     parser.add_argument('--id', default='',
                         help='An identifier for this run.  Examples:\n'
@@ -141,11 +141,11 @@ def write_csv(counts, id, data_file):
     if id:
         cols = ['id'] + cols
         row = dict(counts, id=id)
-    csv_out = csv.DictWriter(data_file, cols)
-    if data_file.tell() == 0:
-        csv_out.writeheader()
-    csv_out.writerow(row)
-    data_file.close()
+    with open(data_file, 'a', newline='') as f:
+        csv_out = csv.DictWriter(f, cols)
+        if f.tell() == 0:
+            csv_out.writeheader()
+        csv_out.writerow(row)
 
 
 if __name__ == '__main__':
