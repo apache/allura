@@ -28,12 +28,13 @@ parser.add_argument('-f', '--filter-category', type=str, nargs='+', metavar='CAT
                     help='e.g. tickets, or discussion, etc')
 parser.add_argument('-t', '--timings', type=str, nargs='+', metavar='TIMING', required=True,
                     help='e.g. total ming mongo sidebar jinja ...')
-parser.add_argument('-i', '--input-file', type=argparse.FileType('r'), nargs='?', default=sys.stdin,
+parser.add_argument('-i', '--input-file', nargs='?', default='-',
                     help='Filename, or use stdin by default')
 args = parser.parse_args()
 
 timings = []
-for line in args.input_file:
+input_file = sys.stdin if args.input_file in (None, '-') else open(args.input_file)
+for line in input_file:
     data = json.loads(line)
     try:
         typ = data['message']['request_category']
