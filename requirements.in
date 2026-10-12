@@ -9,7 +9,6 @@ decorator
 defopt
 EasyWidgets
 emoji
-faust-cchardet
 feedgenerator
 feedparser
 FormEncode
@@ -53,6 +52,7 @@ six
 sxsdiff
 TimerMiddleware
 TurboGears2
+turbohtml
 WebHelpers2
 WebOb
 werkzeug

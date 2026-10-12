@@ -78,8 +78,6 @@ emoji==2.15.0
     # via -r requirements.in
 execnet==2.1.2
     # via pytest-xdist
-faust-cchardet==2.2.1
-    # via -r requirements.in
 feedgenerator==2.2.1
     # via -r requirements.in
 feedparser==6.0.12
@@ -312,7 +310,9 @@ translationstring==1.4
 turbogears2==2.5.0
     # via -r requirements.in
 turbohtml==1.13.1
-    # via pypeline
+    # via
+    #   -r requirements.in
+    #   pypeline
 typing-extensions==4.16.0
     # via beautifulsoup4
 tzdata==2025.2 ; sys_platform == 'win32'

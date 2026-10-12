@@ -111,6 +111,23 @@ def test_really_unicode():
     assert isinstance(s, str)
     # try non-ascii string in legacy 8bit encoding
     h.really_unicode('\u0410\u0401'.encode('cp1251'))
+    text = 'The vendor\u2019s \u201cfinal\u201d quote is \u20ac1,250\u2026 we\u2019ll review it Monday. ' * 3
+    assert h.really_unicode(text.encode('cp1252')) == text
+    text = '\ub620\ubc29\uac01\ud558 \ud55c\uad6d\uc5b4 \ud14d\uc2a4\ud2b8\uc785\ub2c8\ub2e4. \uc624\ud508 \uc18c\uc2a4 \uc18c\ud504\ud2b8\uc6e8\uc5b4\ub294 \uc804 \uc138\uacc4 \uc790\uc6d0 \ubd09\uc0ac\uc790\ub4e4\uc774 \uac1c\ubc1c\ud569\ub2c8\ub2e4. ' * 5
+    assert h.really_unicode(text.encode('cp949')) == text
+    text = '\u2460\u756a\u76ee\u306e\u9805\u76ee\u3067\u3059\u3002\u30aa\u30fc\u30d7\u30f3\u30bd\u30fc\u30b9\u30bd\u30d5\u30c8\u30a6\u30a7\u30a2\u306f\u4e16\u754c\u4e2d\u3067\u958b\u767a\u3055\u308c\u3066\u3044\u307e\u3059\u3002' * 5
+    assert h.really_unicode(text.encode('cp932')) == text
+    text = '我哋今日冇時間，佢話啲嘢未搞掂。開源軟體由世界各地的志願者共同開發。歡迎提交錯誤報告。' * 5
+    assert h.really_unicode(text.encode('big5hkscs')) == text
+    # BOM is stripped from utf-16
+    assert h.really_unicode('\ufeffhello'.encode('utf-16-le')) == 'hello'
+    assert h.really_unicode('\ufeffhello'.encode('utf-16-be')) == 'hello'
+    assert h.really_unicode('\ufeffhello'.encode('utf-32-le')) == 'hello'
+    assert h.really_unicode('\ufeffhello'.encode('utf-32-be')) == 'hello'
+    # undecodable bytes fall back to latin-1 rather than being replaced
+    s = h.really_unicode(b'caf\xc3\xa9 \x81 end')
+    assert '\ufffd' not in s
+    assert s.encode('latin-1') == b'caf\xc3\xa9 \x81 end'
     # ensure invalid encodings are handled gracefully
     s = h._attempt_encodings(b'foo', ['LKDJFLDK'])
     assert isinstance(s, str)

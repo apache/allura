@@ -42,11 +42,12 @@ import html
 import http.client
 import importlib.resources
 import importlib.metadata
+import codecs
 
 import emoji
 import tg
 import six
-import cchardet as chardet
+from turbohtml.detect import detect as detect_encoding
 import webob
 from formencode.validators import FancyValidator
 from dateutil.parser import parse
@@ -257,6 +258,30 @@ def _attempt_encodings(s, encodings):
     return str(repr(str(s)))[1:-1]
 
 
+# WHATWG encoding names mapped to the Python codec closest to what they decode (same-named ones are stricter)
+_WHATWG_TO_PYTHON_CODEC = {
+    'EUC-KR': 'cp949',
+    'Shift_JIS': 'cp932',
+    'GBK': 'gb18030',
+    'Big5': 'big5hkscs',
+    'x-mac-cyrillic': 'mac-cyrillic',
+}
+
+
+def _guess_encoding(s: bytes) -> str | None:
+    # Returns a strict Python codec name, so bad bytes raise and really_unicode() tries its next guess.
+    # To decode leniently instead (bad bytes become U+FFFD, latin-1 fallback never reached), return match.codec:
+    # turbohtml registers those "whatwg-*" codecs and they never raise.
+    if s.startswith((codecs.BOM_UTF32_LE, codecs.BOM_UTF32_BE)):
+        return 'utf-32'  # turbohtml >= 1.14 follows HTML, which has no UTF-32
+    match = detect_encoding(s)
+    if match.encoding is None:
+        return None
+    if match.bom and match.encoding.startswith('UTF-16'):
+        return 'utf-16'  # generic codec strips the BOM
+    return _WHATWG_TO_PYTHON_CODEC.get(match.encoding, match.encoding)
+
+
 def really_unicode(s):
     if isinstance(s, str):
         # default case.  Also lets Markup() instances be preserved
@@ -266,8 +291,8 @@ def really_unicode(s):
     def encodings():
         yield None
         yield 'utf-8'
-        yield chardet.detect(s[:1024])['encoding']
-        yield chardet.detect(s)['encoding']
+        yield _guess_encoding(s[:1024])
+        yield _guess_encoding(s)
         yield 'latin-1'
     return _attempt_encodings(s, encodings())
 
