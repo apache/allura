@@ -1147,6 +1147,7 @@ class AuditLog(MappedClass):
         indexes = [
             'project_id',
             'user_id',
+            'event_type',
         ]
 
     query: Query[AuditLog]
