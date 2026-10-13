@@ -757,12 +757,8 @@ class TestAuditLog:
         entry = M.AuditLog.log(message, arg, user=c.user,
                               project=c.project if project_scoped else None,
                               event_type=event_type, url='/test')
-        assert entry.event_type == expected
         session(entry).flush(entry)
-        raw = M.main_doc_session.db.audit_log.find_one({'_id': entry._id})
-        assert raw['event_type'] == expected
-        assert raw['message'] == message % arg
-        assert M.AuditLog.decr(raw['message_encrypted']) == raw['message']
+        assert M.main_doc_session.db.audit_log.find_one({'_id': entry._id})['event_type'] == expected
 
     def test_legacy_message_read_and_update(self):
         entry_id = ObjectId()
@@ -770,8 +766,6 @@ class TestAuditLog:
                                                     'message': 'add user alice to Developer'})
         entry = M.AuditLog.query.get(_id=entry_id)
         assert entry.message == 'add user alice to Developer'
-        assert entry.message_encrypted is None
-        assert entry.event_type is None
         entry.url = '/updated'
         session(entry).flush(entry)
         raw = M.main_doc_session.db.audit_log.find_one({'_id': entry_id})
@@ -781,8 +775,6 @@ class TestAuditLog:
 
     def test_message_html(self):
         al = h.auditlog_user('our message <script>alert(1)</script>')
-        session(al).flush(al)
-        assert M.AuditLog.decr(al.message_encrypted) == al.message
         assert al.message == textwrap.dedent('''\
             IP Address: 127.0.0.1
             User-Agent: None

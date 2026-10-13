@@ -1129,14 +1129,12 @@ class AuditLogMapperExtension(MapperExtension):
     """Dual-write encrypted messages while plaintext remains the source of truth."""
 
     def before_insert(self, instance, state, sess):
-        if instance.event_type is None:
+        if instance.event_type is None and instance.project_id is not None:
             instance.event_type = instance.unclassified_event_type(instance.message, instance.project_id)
         instance.message_encrypted = instance.encr(instance.message)
 
     def before_update(self, instance, state, sess):
-        if instance.event_type is None:
-            instance.event_type = instance.unclassified_event_type(instance.message, instance.project_id)
-        instance.message_encrypted = instance.encr(instance.message)
+        self.before_insert(instance, state, sess)
 
 
 class AuditLog(MappedClass):
@@ -1166,7 +1164,7 @@ class AuditLog(MappedClass):
     @staticmethod
     def unclassified_event_type(message: str | None, project_id: ObjectId | None) -> str | None:
         """Mark possible username mentions for later target-specific redaction."""
-        if project_id is not None and isinstance(message, str) and re.search(r' user \S+ ', message):
+        if project_id is not None and message and re.search(r' user \S+ ', message):
             return 'project.user_mention.unclassified'
         return None
 
@@ -1217,8 +1215,6 @@ class AuditLog(MappedClass):
         elif kwargs:
             message = message % kwargs
         pid = project._id if project is not None else None
-        if event_type is None:
-            event_type = cls.unclassified_event_type(message, pid)
         if pid is None and user is None or user.is_anonymous():
             return
         return cls(project_id=pid, user_id=user._id, url=url, message=message, event_type=event_type)

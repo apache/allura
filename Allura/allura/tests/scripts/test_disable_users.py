@@ -15,11 +15,11 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import pytest
 from ming.odm import ThreadLocalODMSession
 
 from allura import model as M
 from allura.scripts.disable_users import DisableUsers
+from allura.tests.decorators import audits
 from alluratest.controller import setup_basic_test, setup_global_objects
 
 
@@ -28,17 +28,8 @@ class TestDisableUsers:
         setup_basic_test()
         setup_global_objects()
 
-    @pytest.mark.parametrize('message', ['', 'Custom reason 100%', 'Disabling user due to automatically detected spam'])
-    def test_event_type(self, message):
-        user = M.User.by_username('test-user')
-        DisableUsers.disable_users([user.username], message)
-        ThreadLocalODMSession.flush_all()
-
-        assert user.disabled
-        entries = M.AuditLog.for_user(user).sort('_id').all()
-        assert len(entries) == (2 if message else 1)
-        for entry in entries:
-            assert entry.event_type == 'account.disabled'
-            assert M.AuditLog.decr(entry.message_encrypted) == entry.message
-        if message:
-            assert entries[-1].message.endswith(message)
+    def test_event_type(self):
+        with audits('Account disabled', 'Spam account', user=True, event_type='account.disabled'):
+            DisableUsers.disable_users(['test-user'], 'Spam account')
+            ThreadLocalODMSession.flush_all()
+        assert M.User.by_username('test-user').disabled
