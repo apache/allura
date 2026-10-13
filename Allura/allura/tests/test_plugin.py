@@ -784,35 +784,6 @@ class TestLocalAuthenticationProvider:
             ThreadLocalODMSession.flush_all()
         assert user.disabled is True
 
-    def test_login_details_from_auditlog(self):
-        user = M.User(username='asfdasdf')
-
-        assert (self.provider.login_details_from_auditlog(M.AuditLog(message='')) is
-                None)
-
-        detail = self.provider.login_details_from_auditlog(M.AuditLog(message='IP Address: 1.2.3.4\nFoo', user=user))
-        assert detail.user_id == user._id
-        assert detail.ip == '1.2.3.4'
-        assert detail.ua is None
-
-        detail = self.provider.login_details_from_auditlog(M.AuditLog(message='Foo\nIP Address: 1.2.3.4\nFoo', user=user))
-        assert detail.ip == '1.2.3.4'
-        assert detail.ua is None
-
-        assert (self.provider.login_details_from_auditlog(M.AuditLog(
-            message='blah blah IP Address: 1.2.3.4\nFoo', user=user)) is
-            None)
-
-        detail = self.provider.login_details_from_auditlog(M.AuditLog(
-            message='User-Agent: Mozilla/Firefox\nFoo', user=user))
-        assert detail.ip is None
-        assert detail.ua == 'Mozilla/Firefox'
-
-        detail = self.provider.login_details_from_auditlog(M.AuditLog(
-            message='IP Address: 1.2.3.4\nUser-Agent: Mozilla/Firefox\nFoo', user=user))
-        assert detail.ip == '1.2.3.4'
-        assert detail.ua == 'Mozilla/Firefox'
-
     def test_get_login_detail(self):
         user = M.User(username='foobarbaz')
         detail = self.provider.get_login_detail(Request.blank('/'), user)

@@ -525,61 +525,6 @@ class AuthenticationProvider:
     def hibp_password_check_enabled(self):
         return asbool(tg.config.get('auth.hibp_password_check', False))
 
-    @property
-    def trusted_auditlog_event_types(self):
-        return [
-            'auth.login.succeeded',
-            'account.email.primary_changed',
-            'account.email.added',
-            'account.display_name.changed',
-            'account.email.verified',
-            'account.password.changed',
-            'account.email.removed',
-            'account.activated',
-            'account.phone.verified',
-            'account.mfa.setup_viewed',
-            'account.mfa.enabled',
-            'account.mfa.config_viewed',
-            'account.mfa.recovery_codes_viewed',
-            'account.mfa.recovery_codes_regenerated',
-        ]
-
-    @property
-    def trusted_auditlog_line_prefixes(self):
-        return [
-            "Successful login",  # this is the main one
-            # all others are to include login activity before mid-2017 when "Successful login" logs were introduced:
-            "Primary email changed",
-            "New email address:",
-            "Display Name changed",
-            "Email address verified:",
-            "Password changed",
-            "Email address deleted:",
-            "Account activated",
-            "Phone verification succeeded.",
-            "Visited multifactor new TOTP page",
-            "Set up multifactor TOTP",
-            "Viewed multifactor TOTP config page",
-            "Viewed multifactor recovery codes",
-            "Regenerated multifactor recovery codes",
-        ]
-
-    def login_details_from_auditlog(self, auditlog):
-        from allura import model as M
-        ip = ua = None
-        matches = re.search(r'^IP Address: (.+)\n', auditlog.message, re.MULTILINE)
-        if matches:
-            ip = matches.group(1)
-        matches = re.search(r'^User-Agent: (.+)\n', auditlog.message, re.MULTILINE)
-        if matches:
-            ua = matches.group(1)
-        if ua or ip:
-            return M.UserLoginDetails(
-                user_id=auditlog.user_id,
-                ip=ip,
-                ua=ua,
-            )
-
     def get_login_detail(self, request, user):
         from allura import model as M
         return M.UserLoginDetails(

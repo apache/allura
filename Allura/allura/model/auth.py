@@ -457,21 +457,6 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         except DuplicateKeyError:
             session(detail).expunge(detail)
 
-    def backfill_login_details(self, auth_provider):
-        # ".*" at start of regex and the DOTALL flag is needed only for the test, which uses mim
-        # Fixed in ming f9f69d3c, so once we upgrade to 0.6.1+ we can remove it
-        msg_regex = re.compile(r'.*^({})'.format('|'.join([re.escape(line_prefix)
-                                                           for line_prefix
-                                                           in auth_provider.trusted_auditlog_line_prefixes])),
-                               re.MULTILINE | re.DOTALL)
-        candidate_types = auth_provider.trusted_auditlog_event_types + ['account.event.unclassified']
-        for auditlog in AuditLog.for_user(self, event_type={'$in': candidate_types}):
-            if not msg_regex.search(auditlog.message or ''):
-                continue
-            login_detail = auth_provider.login_details_from_auditlog(auditlog)
-            if login_detail:
-                self.add_login_detail(login_detail)
-
     def send_password_reset_email(self, email_address=None, subject_tmpl='{site_name} Password recovery'):
         if email_address is None:
             email_address = self.get_pref('email_address')

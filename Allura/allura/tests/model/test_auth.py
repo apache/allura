@@ -24,7 +24,7 @@ from datetime import datetime, timedelta
 
 import pytest
 from bson import Binary, ObjectId
-from tg import tmpl_context as c, app_globals as g, request as r
+from tg import tmpl_context as c, app_globals as g
 from webob import Request
 from mock import patch, Mock
 
@@ -702,32 +702,6 @@ class TestAuth:
         assert idx['email_addresses_t'] == ''
         assert idx['telnumbers_t'] == ''
         assert idx['webpages_t'] == ''
-
-    def test_user_backfill_login_details(self):
-        with h.push_config(r, user_agent='TestBrowser/55'):
-            # these shouldn't match
-            h.auditlog_user('something happened')
-            h.auditlog_user('blah blah Password changed')
-            h.auditlog_user('Comment: Account disabled', event_type='account.event.unclassified')
-        with h.push_config(r, user_agent='TestBrowser/56'):
-            # these should all match, but only one entry created for this ip/ua
-            h.auditlog_user('Account activated')
-            h.auditlog_user('Successful login', event_type='auth.login.succeeded')
-            h.auditlog_user('Password changed')
-        with h.push_config(r, user_agent='TestBrowser/57'):
-            # this should match too
-            h.auditlog_user('Set up multifactor TOTP')
-        ThreadLocalODMSession.flush_all()
-
-        auth_provider = plugin.AuthenticationProvider.get(None)
-        c.user.backfill_login_details(auth_provider)
-
-        details = M.UserLoginDetails.query.find({'user_id': c.user._id}).sort('ua').all()
-        assert len(details) == 2, details
-        assert details[0].ip == '127.0.0.1'
-        assert details[0].ua == 'TestBrowser/56'
-        assert details[1].ip == '127.0.0.1'
-        assert details[1].ua == 'TestBrowser/57'
 
 
 class TestAuditLog:
