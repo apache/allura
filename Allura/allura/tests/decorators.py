@@ -150,6 +150,12 @@ class patch_middleware_config:
         allura.config.middleware.make_app = self._make_app
 
 
+def matching_audits(pattern, **query):
+    """AuditLog entries matching ``query`` whose decrypted message matches the ``pattern`` regex"""
+    pattern = re.compile(pattern)
+    return [entry for entry in M.AuditLog.query.find(query) if pattern.search(entry.message or '')]
+
+
 @contextlib.contextmanager
 def audits(*messages, user=False, actor=r'.*', ip_addr=r'.*', user_agent=r'.*', event_type=None):
     """
@@ -168,12 +174,8 @@ def audits(*messages, user=False, actor=r'.*', ip_addr=r'.*', user_agent=r'.*', 
         preamble = ''
 
     for message in messages:
-        query = {}
-        pattern = re.compile(preamble + message)
-        if event_type is not None:
-            query['event_type'] = event_type
-        found = any(pattern.search(entry.message or '') for entry in M.AuditLog.query.find(query))
-        if not found:
+        query = {'event_type': event_type} if event_type is not None else {}
+        if not matching_audits(preamble + message, **query):
             hints = ''
             all = M.AuditLog.query.find().all()
             if len(all) < 10:
@@ -199,9 +201,7 @@ def out_audits(*messages, user=False, actor=r'.*', ip_addr=r'.*'):
     else:
         preamble = ''
     for message in messages:
-        pattern = re.compile(preamble + message)
-        assert not any(pattern.search(entry.message or '') for entry in M.AuditLog.query.find()), (
-            'Found unexpected: "%s"' % message)
+        assert not matching_audits(preamble + message), 'Found unexpected: "%s"' % message
 
 
 # not a decorator but use it with LogCapture() context manager

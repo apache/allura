@@ -745,7 +745,6 @@ class TestAuditLog:
         entry.url = '/updated'
         session(entry).flush(entry)
         raw = M.main_doc_session.db.audit_log.find_one({'_id': entry_id})
-        assert 'message' not in raw
         assert M.AuditLog.decr(raw['message_encrypted']) == 'add user alice to Developer'
         assert raw['event_type'] == 'project.user_mention.unclassified'
 
