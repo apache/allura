@@ -23,7 +23,7 @@
 {% block header %}{{h.really_unicode(discussion.name)}}{% endblock %}
 
 {% block actions %}
-  {% if discussion.email_address and c.app.config.options.get('AllowEmailPosting', True) %}
+  {% if discussion.email_address and not c.user.is_anonymous() and c.app.config.options.get('AllowEmailPosting', True) %}
     {{ g.icons['send'].render(
           extra_css='email',
           title='Send Email to Create a New Topic',

@@ -452,6 +452,12 @@ class TestForum(TestController):
         self.app.get('/discussion/testforum/')
         self.app.get('/discussion/testforum/childforum/')
 
+    def test_forum_index_email_button(self):
+        r = self.app.get('/discussion/testforum/')
+        assert r.html.find('a', class_='email')
+        r = self.app.get('/discussion/testforum/', extra_environ=dict(username='*anonymous'))
+        assert not r.html.find('a', class_='email')
+
     def test_threads_with_zero_posts(self):
         # Make sure that threads with zero posts (b/c all posts have been
         # deleted or marked as spam) don't show in the UI.
