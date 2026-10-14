@@ -303,6 +303,27 @@ class TestIsAutoreply:
         self.msg['headers']['Return-Path'] = '<>'
         assert is_autoreply(self.msg)
 
+    def test_header_name_case_insensitive(self):
+        self.msg['headers']['auto-submitted'] = 'auto-replied'
+        assert is_autoreply(self.msg)
+
+    def test_auto_submitted_auto_generated(self):
+        self.msg['headers']['auto-submitted'] = 'auto-generated'
+        assert is_autoreply(self.msg)
+
+    def test_auto_submitted_keyword_with_params(self):
+        self.msg['headers']['Auto-Submitted'] = 'Auto-Replied; owner-email="a@b.com"'
+        assert is_autoreply(self.msg)
+
+    def test_auto_submitted_no(self):
+        self.msg['headers']['Auto-Submitted'] = 'No'
+        assert not is_autoreply(self.msg)
+
+    def test_parsed_message_lowercase_header(self):
+        msg = parse_message(
+            'From: <a@b.com>\nMessage-ID: <a@b.com>\nauto-submitted: auto-generated\n\nbody')
+        assert is_autoreply(msg)
+
 
 class TestIdentifySender:
 
