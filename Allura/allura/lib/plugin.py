@@ -20,7 +20,6 @@ Allura plugins for authentication and project registration
 '''
 from __future__ import annotations
 import re
-import os
 import hmac
 import logging
 import subprocess
@@ -208,7 +207,8 @@ class AuthenticationProvider:
         '''
         pass
 
-    def login(self, user: M.User = None, multifactor_success: bool = False, email_verified: bool = False) -> M.User | None:
+    def login(self, user: M.User = None, multifactor_success: bool = False,
+              email_verified: bool = False) -> M.User | None:
         from allura import model as M
         if user is None:
             try:
@@ -230,7 +230,9 @@ class AuthenticationProvider:
             return None
 
         # Stage: email link — any user logging in from an untrusted location (after TOTP if applicable)
-        if asbool(config.get('auth.email_auth_code.enabled', False)) and not self.trusted_login_source(user, login_details) and not email_verified:
+        if (asbool(config.get('auth.email_auth_code.enabled', False))
+                and not self.trusted_login_source(user, login_details)
+                and not email_verified):
             h.auditlog_user('Attempted login from untrusted location, sending email verification link', user=user)
             self.session['multifactor-username'] = user.username
             self.session['mode'] = 'email_code'
@@ -239,7 +241,8 @@ class AuthenticationProvider:
             return None
 
         # All stages complete — clean up and proceed to login
-        skip_after_login = self.session.get('mode') == 'email_code'  # if we used an email link we'll skip `after_login` which sends a foreign login email
+        # if we used an email link we'll skip `after_login` which sends a foreign login email
+        skip_after_login = self.session.get('mode') == 'email_code'
         self.session.pop('multifactor-username', None)
         self.session.pop('mode', None)
 
@@ -277,7 +280,8 @@ class AuthenticationProvider:
         user.track_session(self.session.id)
         return user
 
-    def login_check_password_change_needed(self, user: M.User, password: str | None, login_details: M.UserLoginDetails) -> str | None:
+    def login_check_password_change_needed(self, user: M.User, password: str | None,
+                                           login_details: M.UserLoginDetails) -> str | None:
         reason = reason_code = None
 
         # check setting to force pwd changes after date
@@ -315,7 +319,8 @@ class AuthenticationProvider:
             if trusted:
                 # current user must change password
                 h.auditlog_user(f'Successful login but {reason}, '
-                                f'from trusted source (reason: {trusted})', user=user, event_type='auth.login.succeeded')
+                                f'from trusted source (reason: {trusted})', user=user,
+                                event_type='auth.login.succeeded')
                 return reason_code
             else:
                 # current user may not continue, must reset password via email
@@ -573,7 +578,8 @@ class AuthenticationProvider:
         # TODO: could also factor in User-Agent but hard to know what parts of the UA are meaningful to check here
         from allura import model as M
 
-        if asbool(config['debug']) and (not user.has_active_sessions() or user.username in self.auth_code_bypass_users):
+        if asbool(config['debug']) and (not user.has_active_sessions()
+                                        or user.username in self.auth_code_bypass_users):
             # make it easier for dev: if never logged-in, or certain test users, allow.
             return 'dev access'
 

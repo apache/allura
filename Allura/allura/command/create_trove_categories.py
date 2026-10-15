@@ -1426,7 +1426,8 @@ class CreateTroveCategoriesCommand(base.Command):
         self.create_trove_cat(
             (596, 125, "codec", "Codec", "Topic :: Multimedia :: Video :: Codec", True))
         self.create_trove_cat(
-            (127, 125, "video-conversion", "Video Conversion", "Topic :: Multimedia :: Video :: Video Conversion", True))
+            (127, 125, "video-conversion", "Video Conversion", "Topic :: Multimedia :: Video :: Video Conversion",
+             True))
         self.create_trove_cat(
             (128, 125, "display", "Display", "Topic :: Multimedia :: Video :: Display", True))
         self.create_trove_cat(

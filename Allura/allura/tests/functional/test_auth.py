@@ -282,7 +282,7 @@ class TestAuth(TestController):
             "https://evil.com", "http://evil.com",  # standard bad
             "//evil.com", "///evil.com", "////evil.com",  # no protocol
             "http:evil.com", "http:///evil.com", "http:////evil.com",  # http non-standard # of slashes
-            "https:evil.com", "https:///evil.com", "https:////evil.com", # https non-standard # of slashes
+            "https:evil.com", "https:///evil.com", "https:////evil.com",  # https non-standard # of slashes
             # browsers treat "\\" as "/" and strip tab/CR/LF before parsing, so these reach evil.com too
             "/\\evil.com", "\\\\evil.com", "http:/\\evil.com",
             "/\t/evil.com", "http:/\t/evil.com", " //evil.com",

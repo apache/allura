@@ -224,7 +224,7 @@ class TestRootController(_TestCase):
         assert 'url_commit="/p/test/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/">' not in r
 
     def test_ci_missing(self):
-        r = self.app.get('/src-git/ci/', status=404)
+        self.app.get('/src-git/ci/', status=404)
 
     def test_tags(self):
         self.app.get('/src-git/ref/master~/tags/')
@@ -292,8 +292,8 @@ class TestRootController(_TestCase):
 
     def test_tree_invalid(self):
         ci = self._get_ci()
-        resp = self.app.get(ci + 'tree/foo', status=404)
-        resp = self.app.get(ci + 'tree/foo/bar', status=404)
+        self.app.get(ci + 'tree/foo', status=404)
+        self.app.get(ci + 'tree/foo/bar', status=404)
 
     def test_file(self):
         ci = self._get_ci()
@@ -410,7 +410,8 @@ class TestRootController(_TestCase):
                     <span class="gi">+Which means Hello!</span>''') in
                 diffhtml)
 
-        resp = self.app.get(h.urlquote(ci + 'tree/привіт.txt') + '?diff=407950e8fba4dbc108ffbce0128ed1085c52cfd7&diformat=sidebyside')
+        resp = self.app.get(h.urlquote(ci + 'tree/привіт.txt') +
+                            '?diff=407950e8fba4dbc108ffbce0128ed1085c52cfd7&diformat=sidebyside')
         diffhtml = str(resp.html.select_one('.diffbrowser'))
         assert (textwrap.dedent('''\
                     <thead>
@@ -609,13 +610,13 @@ class TestRootController(_TestCase):
 
     def test_force_push_menu_entry(self):
         with h.push_config(tg.config, **{'scm.force_push.git.enabled': 'true'}):
-            assert any(l.label == 'Force push' for l in c.app.admin_menu())
+            assert any(item.label == 'Force push' for item in c.app.admin_menu())
             c.app.repo.force_push_allowed = True
-            assert any(l.label == 'Force push (enabled)' for l in c.app.admin_menu())
+            assert any(item.label == 'Force push (enabled)' for item in c.app.admin_menu())
 
     def test_force_push_hidden_when_flag_off(self):
         with h.push_config(tg.config, **{'scm.force_push.git.enabled': 'false'}):
-            assert not any(l.label.startswith('Force push') for l in c.app.admin_menu())
+            assert not any(item.label.startswith('Force push') for item in c.app.admin_menu())
             self.app.get('/p/test/admin/src-git/force_push', status=404)
             self.app.post('/p/test/admin/src-git/force_push',
                           params={'allowed': 'on'}, status=404)
@@ -640,8 +641,8 @@ class TestRootController(_TestCase):
                 repo.status = status
                 ThreadLocalODMSession.flush_all()
                 c.app.repo.status = status  # the in-process copy admin_menu() reads
-                assert any(l.label.startswith('Force push')
-                           for l in c.app.admin_menu()) is ready
+                assert any(item.label.startswith('Force push')
+                           for item in c.app.admin_menu()) is ready
                 self.app.get('/p/test/admin/src-git/force_push', status=200 if ready else 404)
                 if not ready:
                     self.app.post('/p/test/admin/src-git/force_push',
@@ -1252,8 +1253,10 @@ class TestGitRename(TestController):
 
         # the diff portion of the output
         resp_no_ws = re.sub(r'\s+', '', str(resp))
-        assert ('<a href="/p/test/src-git/ci/fbb0644603bb6ecee3ebb62efe8c86efc9b84ee6/tree/f.txt" rel="nofollow">f.txt</a>'
-                'to<a href="/p/test/src-git/ci/b120505a61225e6c14bee3e5b5862db81628c35c/tree/f2.txt" rel="nofollow">f2.txt</a>'
+        assert ('<a href="/p/test/src-git/ci/fbb0644603bb6ecee3ebb62efe8c86efc9b84ee6/tree/f.txt" '
+                'rel="nofollow">f.txt</a>'
+                'to<a href="/p/test/src-git/ci/b120505a61225e6c14bee3e5b5862db81628c35c/tree/f2.txt" '
+                'rel="nofollow">f2.txt</a>'
                 .replace(' ', '') in resp_no_ws)
         assert '<span class="empty-diff">File was renamed.</span>' in resp
 
@@ -1262,7 +1265,8 @@ class TestGitRename(TestController):
         resp = self.app.get('/src-git/ci/7b1c9ef214eb0ef8c06bada0966dd941f442beec/')
 
         resp_no_ws = re.sub(r'\s+', '', str(resp))
-        assert ('<a href="/p/test/src-git/ci/7b1c9ef214eb0ef8c06bada0966dd941f442beec/tree/b_dir" rel="nofollow">b_dir</a>'
+        assert ('<a href="/p/test/src-git/ci/7b1c9ef214eb0ef8c06bada0966dd941f442beec/tree/b_dir" '
+                'rel="nofollow">b_dir</a>'
                 '</h6>'
                 '<div id="diff-3" class="inline-diff-body">'
                 '<span class="empty-diff">Symlink.</span>'
@@ -1272,7 +1276,8 @@ class TestGitRename(TestController):
         # change a_dir to a file; b_dir to a symlink
         resp = self.app.get('/src-git/ci/7b1c9ef214eb0ef8c06bada0966dd941f442beec/tree/')
 
-        resp.mustcontain('<a class="icon" href="b_dir" rel="nofollow" title="b_dir"><i class="fa fa-star"></i>&nbsp;b_dir</a>')
+        resp.mustcontain('<a class="icon" href="b_dir" rel="nofollow" title="b_dir">'
+                         '<i class="fa fa-star"></i>&nbsp;b_dir</a>')
 
 
 class TestGitBranch(TestController):

@@ -149,7 +149,7 @@ class TestSelectOptionsStoredXss(TrackerTestController):
     def test_field_label_is_not_a_second_hole(self):
         """The label is escaped by ticket_custom_fields.html; moving it into the widget would reopen this."""
         self._post_field(name=FIELD_NAME, label=r'<img src=x onerror=alert(document.domain)>',
-                          type='select', options='one two')
+                         type='select', options='one two')
         resp = self.app.get('/bugs/new/')
         label = resp.html.find('label', attrs={'for': lambda v: bool(v) and v.endswith(FIELD_NAME)})
         assert label is not None
@@ -158,7 +158,7 @@ class TestSelectOptionsStoredXss(TrackerTestController):
     def test_milestone_name_cannot_break_out_of_the_value_attribute(self):
         """MilestoneField has its own value= sink.  Names are escaped, not stripped, to round-trip."""
         self._post_field(label='releases', show_in_search='on', type='milestone',
-                          milestones=[dict(name=MILESTONE_PAYLOAD)])
+                         milestones=[dict(name=MILESTONE_PAYLOAD)])
         select = self._select_for(self.app.get('/bugs/new/'), MILESTONE_FIELD_NAME)
         assert event_handler_attrs(select) == set()
         assert '"' in select.find('option')['value']

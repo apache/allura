@@ -755,8 +755,8 @@ class TestAuditLog:
     ])
     def test_log_event_type(self, message, arg, project_scoped, event_type, expected):
         entry = M.AuditLog.log(message, arg, user=c.user,
-                              project=c.project if project_scoped else None,
-                              event_type=event_type, url='/test')
+                               project=c.project if project_scoped else None,
+                               event_type=event_type, url='/test')
         session(entry).flush(entry)
         assert M.main_doc_session.db.audit_log.find_one({'_id': entry._id})['event_type'] == expected
 

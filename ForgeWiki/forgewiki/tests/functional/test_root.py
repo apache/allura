@@ -315,7 +315,9 @@ class TestRootController(TestController):
         self.app.post(h.urlquote('/wiki/tést/revert'), params=dict(version='1'))
         response = self.app.get(h.urlquote('/wiki/tést/diff') + '?v1=0&v2=0')
         assert 'tést' in response
-        d = dict(title='testdiff', text="""**Optionally**, you may also want to remove all the unused accounts that have accumulated (one was created for *every* logged in SF-user who has visited your MediaWiki hosted app):
+        d = dict(title='testdiff', text="""**Optionally**, you may also want to remove all the unused accounts that """
+            """have accumulated (one was created for *every* logged in SF-user who has visited your MediaWiki """
+            """hosted app):
 
                                             ~~~~~
                                             php removeUnusedAccounts.php --delete
@@ -329,7 +331,9 @@ class TestRootController(TestController):
                                             scp projectname_mediawiki_files.tar.gz USERNAME@web.domain.net:
                                             ~~~~~
 
-                                            In the project web shell, unpack the files to the images directory of you wiki installation. In the backup, the images are in a subfolder *projectname*, so follow these steps:
+                                            In the project web shell, unpack the files to the images directory of """
+            """you wiki installation. In the backup, the images are in a subfolder *projectname*, so follow these """
+            """steps:
 
                                             ~~~~~
                                             cd wiki
@@ -346,11 +350,17 @@ class TestRootController(TestController):
 
                                             **TODO: FIXME:** The following can't be quite correct:
 
-                                            Now hit your wiki a few times from a browser. Initially, it will be dead slow, as it is trying to build thumbnails for the images. And it will time out, a lot. Keep hitting reload, until it works.
+                                            Now hit your wiki a few times from a browser. Initially, it will be """
+            """dead slow, as it is trying to build thumbnails for the images. And it will time out, a lot. Keep """
+            """hitting reload, until it works.
 
-                                            **Note:** The logo shown in the sidebar is no longer stored as an object in the wiki (as it was in the Hosted App installation). Rather save it as a regular file, then edit LocalSettings.php, adding""")
+                                            **Note:** The logo shown in the sidebar is no longer stored as an """
+            """object in the wiki (as it was in the Hosted App installation). Rather save it as a regular file, """
+            """then edit LocalSettings.php, adding""")
         self.app.post('/wiki/testdiff/update', params=d)
-        d = dict(title='testdiff', text="""**Optionally**, you may also want to remove all the unused accounts that have accumulated (one was created for *every* logged in SF-user who has visited your MediaWiki hosted app):
+        d = dict(title='testdiff', text="""**Optionally**, you may also want to remove all the unused accounts that """
+            """have accumulated (one was created for *every* logged in SF-user who has visited your MediaWiki """
+            """hosted app):
 
                                             ~~~~~
                                             php removeUnusedAccounts.php --delete
@@ -364,7 +374,9 @@ class TestRootController(TestController):
                                             scp projectname_mediawiki_files.tar.gz USERNAME@web.domain.net:
                                             ~~~~~
 
-                                            In the project web shell, unpack the files to the images directory of you wiki installation. In the backup, the images are in a subfolder *projectname*, so follow these steps:
+                                            In the project web shell, unpack the files to the images directory of """
+            """you wiki installation. In the backup, the images are in a subfolder *projectname*, so follow these """
+            """steps:
 
                                             ~~~~~
                                             cd wiki
@@ -381,9 +393,13 @@ class TestRootController(TestController):
 
                                             **TODO: FIXME:** The following can't be quite correct:
 
-                                            Now hit your wiki a few times from a browser. Initially, it will be dead slow, as it is trying to build thumbnails for the images. And it will time out, a lot. Keep hitting reload, until it works.
+                                            Now hit your wiki a few times from a browser. Initially, it will be """
+            """dead slow, as it is trying to build thumbnails for the images. And it will time out, a lot. Keep """
+            """hitting reload, until it works.
 
-                                            **Note:** The logo shown in the sidebar is no longer stored as an object in the wiki (as it was in the Hosted App installation). Rather save it as a regular file, then edit LocalSettings.php, adding
+                                            **Note:** The logo shown in the sidebar is no longer stored as an """
+            """object in the wiki (as it was in the Hosted App installation). Rather save it as a regular file, """
+            """then edit LocalSettings.php, adding
 
                                             <script>alert(1)</script>""")
         self.app.post('/wiki/testdiff/update', params=d)

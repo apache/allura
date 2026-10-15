@@ -410,16 +410,16 @@ class Test():
         # <math> on reparse, where it's not rawtext, so a "text" body would run as live markup
         r = g.markdown.convert('<math><ms><iframe src="https://www.youtube.com/embed/y"><img src=x onerror=alert(1)>')
         assert r == ('<div class="markdown_content"><math>&lt;ms&gt;'
-                      '<iframe src="https://www.youtube.com/embed/y"></iframe>&lt;/ms&gt;</math></div>')
+                     '<iframe src="https://www.youtube.com/embed/y"></iframe>&lt;/ms&gt;</math></div>')
 
         r = g.markdown.convert('<svg><foreignObject><iframe src="https://www.youtube.com/embed/y"><p><script>alert(1)</script>')
         assert r == ('<div class="markdown_content"><p>&lt;svg&gt;&lt;foreignObject&gt;'
-                      '<iframe src="https://www.youtube.com/embed/y"></iframe>&lt;/foreignObject&gt;&lt;/svg&gt;</p></div>')
+                     '<iframe src="https://www.youtube.com/embed/y"></iframe>&lt;/foreignObject&gt;&lt;/svg&gt;</p></div>')
 
     def test_class_id_sanitized_on_void_element(self):
         r = g.markdown.convert('<img src="http://x/y.png" class="evilclass btn" id="page-body">')
         assert r == ('<div class="markdown_content"><p>'
-                      '<img class="" id="user-content-page-body" rel="nofollow" src="http://x/y.png"/></p></div>')
+                     '<img class="" id="user-content-page-body" rel="nofollow" src="http://x/y.png"/></p></div>')
 
         r = g.markdown.convert('<br class="pwn" id="pwn2">')
         assert r == '<div class="markdown_content"><p><br class="" id="user-content-pwn2"/></p></div>'
@@ -427,22 +427,25 @@ class Test():
     def test_svg_blocked(self):
         # SVG's <animate>/<set> can set an ancestor's href to an unchecked javascript: URI
         r = g.markdown.convert('<svg><circle cx="5" cy="5" r="3"/></svg>')
-        assert r == '<div class="markdown_content"><p>&lt;svg&gt;&lt;circle cx="5" cy="5" r="3"&gt;&lt;/circle&gt;&lt;/svg&gt;</p></div>'
+        assert r == ('<div class="markdown_content"><p>&lt;svg&gt;&lt;circle cx="5" cy="5" r="3"&gt;'
+                     '&lt;/circle&gt;&lt;/svg&gt;</p></div>')
 
         r = g.markdown.convert(
             '<svg><a><animate attributeName="href" values="javascript:alert(1)"/>'
             '<text x="20" y="20">CLICK ME</text></a></svg>')
         assert r == ('<div class="markdown_content"><p>&lt;svg&gt;&lt;a&gt;'
-                      '&lt;animate attributeName="href" values="javascript:alert(1)"&gt;&lt;/animate&gt;'
-                      '&lt;text x="20" y="20"&gt;CLICK ME&lt;/text&gt;&lt;/a&gt;&lt;/svg&gt;</p></div>')
+                     '&lt;animate attributeName="href" values="javascript:alert(1)"&gt;&lt;/animate&gt;'
+                     '&lt;text x="20" y="20"&gt;CLICK ME&lt;/text&gt;&lt;/a&gt;&lt;/svg&gt;</p></div>')
 
     def test_mathml_allowed(self):
         r = g.markdown.convert('<math><mi>x</mi><mo>+</mo><mn>1</mn></math>')
         assert r == '<div class="markdown_content"><math><mi>x</mi><mo>+</mo><mn>1</mn></math>\n</div>'
 
         # xlink:href is still URI-scheme-checked, e.g. the old maction statusline XSS
-        r = g.markdown.convert('<math><maction actiontype="statusline" xlink:href="javascript:alert(1)">click</maction></math>')
-        assert r == '<div class="markdown_content"><math><maction actiontype="statusline">click</maction></math>\n</div>'
+        r = g.markdown.convert('<math><maction actiontype="statusline" xlink:href="javascript:alert(1)">'
+                               'click</maction></math>')
+        assert r == ('<div class="markdown_content"><math><maction actiontype="statusline">click</maction></math>\n'
+                     '</div>')
 
     def test_macro_embed_notsupported(self):
         r = g.markdown_wiki.convert('[[embed url=http://vimeo.com/46163090]]')
@@ -696,7 +699,8 @@ class Test():
         assert r == '<div class="markdown_content"><h1 id="h-test-message">Test message</h1></div>'
 
         r = g.markdown.convert('<p class="markdown-class notice" id="markdown-id">This is a test</p>')
-        assert r == '<div class="markdown_content"><p class="notice" id="user-content-markdown-id">This is a test</p>\n</div>'
+        assert r == ('<div class="markdown_content"><p class="notice" id="user-content-markdown-id">'
+                     'This is a test</p>\n</div>')
 
         r = g.markdown.convert('<i class="fa fa-cog">gear icon</i>')
         assert r == '<div class="markdown_content"><p><i class="fa fa-cog">gear icon</i></p></div>'
@@ -724,7 +728,9 @@ class Test():
             t1 = time.perf_counter()
             r = g.markdown.convert(text)
             t2 = time.perf_counter()
-            assert r.startswith('<div class="markdown_content"><p><span>[abc]</span>(https://example.com/airboot.  <a href="https://example.com/" rel="nofollow">foo</a> <a href="https://example.com/" rel="nofollow">foo</a>')
+            assert r.startswith('<div class="markdown_content"><p><span>[abc]</span>(https://example.com/airboot.  '
+                                '<a href="https://example.com/" rel="nofollow">foo</a> '
+                                '<a href="https://example.com/" rel="nofollow">foo</a>')
             return t2 - t1
 
         # timing can be noisy under load, so retry a few times before failing
@@ -734,7 +740,8 @@ class Test():
             slowness = long_time / short_time
             if slowness < 10:
                 break
-        assert slowness < 10, f"Long markdown took {slowness:.1f}x longer ({long_time:.4f}s vs short text ({short_time:.4f}s)"
+        assert slowness < 10, (f"Long markdown took {slowness:.1f}x longer "
+                               f"({long_time:.4f}s vs short text ({short_time:.4f}s)")
 
     def test_macro_include(self):
         r = g.markdown.convert('[[include ref=Home id=foo class=modal data-a=b]]')
@@ -1059,12 +1066,12 @@ class TestUserMentions:
     def test_markdown_user_mention_default(self):
         output = g.markdown.convert('Hello.. @nouser1, how are you?')
         assert 'Hello.. @nouser1, how are you?' in output
-        u1 = M.User.register(dict(username='admin1'), make_project=True)
+        M.User.register(dict(username='admin1'), make_project=True)
         ThreadLocalODMSession.flush_all()
         output = g.markdown.convert('Hello.. @admin1, how are you?')
         assert 'class="user-mention"' in output
         assert 'href="/u/admin1/profile/"' in output
-        u2 = M.User.register(dict(username='admin-2'), make_project=True)
+        M.User.register(dict(username='admin-2'), make_project=True)
         ThreadLocalODMSession.flush_all()
         output = g.markdown.convert('Do you know @ab? @admin-2 has solved it!')
         assert 'Do you know @ab?' in output
@@ -1089,7 +1096,7 @@ class TestUserMentions:
     def test_markdown_user_mention_underscores(self, NeighborhoodProjectShortNameValidator):
         username = 'r_808__'
         NeighborhoodProjectShortNameValidator.to_python.return_value = username
-        u1 = M.User.register(dict(username=username), make_project=True)
+        M.User.register(dict(username=username), make_project=True)
         ThreadLocalODMSession.flush_all()
         output = g.markdown.convert(f'Hello.. @{username}, how are you?')
         assert 'class="user-mention"' in output
