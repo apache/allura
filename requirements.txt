@@ -325,7 +325,7 @@ virtualenv==21.14.2
     # via pre-commit
 waitress==3.0.2
     # via webtest
-webencodings==0.5.1
+webencodings==0.6.1
     # via html5lib
 webhelpers2==2.1
     # via -r requirements.in
