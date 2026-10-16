@@ -74,7 +74,7 @@ docutils==0.23
     #   pypeline
 easywidgets==0.5.0
     # via -r requirements.in
-emoji==2.15.0
+emoji==2.16.0
     # via -r requirements.in
 execnet==2.1.2
     # via pytest-xdist
