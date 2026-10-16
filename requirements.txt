@@ -80,8 +80,10 @@ execnet==2.1.2
     # via pytest-xdist
 feedgenerator==2.2.1
     # via -r requirements.in
-feedparser==6.0.12
+feedparser==6.0.14
     # via -r requirements.in
+feedparser-sgmllib==2.1.0
+    # via feedparser
 filelock==3.31.1
     # via
     #   python-discovery
@@ -273,8 +275,6 @@ setuptools==81.0.0
     #   paste
     #   pastescript
     #   pysolr
-sgmllib3k==1.0.0
-    # via feedparser
 six==1.17.0
     # via
     #   -r requirements.in
