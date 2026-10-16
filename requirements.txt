@@ -299,7 +299,7 @@ sxsdiff==0.3.0
     # via -r requirements.in
 termcolor==3.3.0
     # via pytest-sugar
-testfixtures==10.0.0
+testfixtures==12.4.0
     # via -r requirements.in
 textile==4.0.4
     # via pypeline
@@ -314,7 +314,9 @@ turbohtml==1.13.1
     #   -r requirements.in
     #   pypeline
 typing-extensions==4.16.0
-    # via beautifulsoup4
+    # via
+    #   beautifulsoup4
+    #   testfixtures
 tzdata==2025.2 ; sys_platform == 'win32'
     # via feedgenerator
 urllib3==2.8.0
