@@ -33,7 +33,7 @@ certifi==2026.6.17
     #   httpx
     #   pymongo
     #   requests
-cffi==2.1.0
+cffi==2.1.1
     # via
     #   cryptography
     #   pymongocrypt
@@ -52,7 +52,7 @@ crank==0.8.1
     # via turbogears2
 creoleparser==0.7.5
     # via pypeline
-cryptography==50.0.0
+cryptography==50.0.2
     # via
     #   -r requirements.in
     #   joserfc
@@ -126,7 +126,7 @@ jmespath==1.1.0
     # via
     #   boto3
     #   botocore
-joserfc==1.7.4
+joserfc==1.7.5
     # via beaker-session-jwt
 legacy-cgi==2.6.2 ; python_full_version >= '3.13'
     # via
@@ -201,7 +201,7 @@ pyasynchat==1.0.5
     # via -r requirements.in
 pyasyncore==1.0.5
     # via pyasynchat
-pycparser==3.0 ; implementation_name != 'PyPy'
+pycparser==3.11 ; implementation_name != 'PyPy'
     # via cffi
 pygments==2.20.0
     # via
