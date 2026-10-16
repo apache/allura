@@ -154,7 +154,7 @@ markupsafe==3.0.4
     #   werkzeug
 mdx-breakless-lists==1.0.1
     # via -r requirements.in
-ming==0.17.2
+ming==0.17.3
     # via -r requirements.in
 mock==5.2.0
     # via -r requirements.in
@@ -243,7 +243,7 @@ python-magic==0.4.27
     # via -r requirements.in
 python-oembed==0.2.4
     # via -r requirements.in
-pytz==2026.2
+pytz==2026.5
     # via
     #   -r requirements.in
     #   ming
