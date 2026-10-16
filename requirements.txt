@@ -303,7 +303,7 @@ testfixtures==10.0.0
     # via -r requirements.in
 textile==4.0.4
     # via pypeline
-timermiddleware==0.6.3
+timermiddleware==0.7.0
     # via -r requirements.in
 translationstring==1.4
     # via colander
