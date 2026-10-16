@@ -6,9 +6,9 @@ aiosmtpd==1.4.6
     # via -r requirements.in
 anyio==4.6.0
     # via httpx
-atpublic==7.0.0
+atpublic==8.0.1
     # via aiosmtpd
-attrs==25.4.0
+attrs==26.1.0
     # via aiosmtpd
 beaker==1.14.1
     # via
