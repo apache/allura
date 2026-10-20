@@ -145,7 +145,7 @@ class TestEventTasks:
 
     def test_compound_error(self):
         t = raise_compound_exception.post()
-        with LogCapture(level=logging.ERROR) as lc, \
+        with LogCapture('allura.model.monq_model', level=logging.ERROR) as lc, \
                 mock.patch.dict(tg.config, {'monq.raise_errors': False}):  # match normal non-test behavior
             t()
         # lc.check() would be nice, but string is too detailed to check
