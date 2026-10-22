@@ -17,7 +17,8 @@
 
 import os
 from mock import patch
-from ming.odm import session
+from ming.odm import session, ThreadLocalODMSession
+import tg
 
 from allura.tests import TestController
 from allura import model as M
@@ -81,6 +82,23 @@ class TestDiscuss(TestDiscussBase):
         params = {'threads-0._id': thread_id}
         r = self.app.post('/wiki/_discuss/subscribe', params=params)
         assert not self._is_subscribed(user, thread)
+
+    def test_head_thread_flushes_within_request(self):
+        self._make_post('This is a post')
+        thread = M.Thread.query.get(_id=self._thread_id())
+        num_views = thread.num_views
+        thread_link = self._thread_link()
+        flushed_during = []
+        orig_flush_all = ThreadLocalODMSession.flush_all
+
+        def flush_all():
+            flushed_during.append(tg.request.method)
+            orig_flush_all()
+
+        with patch.object(ThreadLocalODMSession, 'flush_all', flush_all):
+            self.app.head(thread_link)
+        assert flushed_during == ['HEAD']
+        assert M.Thread.query.get(_id=thread._id).num_views == num_views + 1
 
     @patch('allura.controllers.discuss.has_access')
     def test_subscribe_requires_read_access(self, has_access_mock):

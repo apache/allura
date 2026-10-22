@@ -643,8 +643,13 @@ class StatusCodeRedirect:
         status, headers, app_iter, exc_info = _call_wsgi_application(self.app, environ)
         if status[:3] in self.errors and \
                 'tg.status_code_redirect' not in environ and self.error_path:
-            # Create a response object
-            environ['tg.original_response'] = Response(status=status, headerlist=headers, app_iter=app_iter)
+            # finish the first response so its registry cleanup and Ming flush run before the next request
+            try:
+                body = list(app_iter)
+            finally:
+                if hasattr(app_iter, 'close'):
+                    app_iter.close()
+            environ['tg.original_response'] = Response(status=status, headerlist=headers, app_iter=body)
             environ['tg.original_request'] = Request(environ)
 
             environ['pylons.original_response'] = environ['tg.original_response']

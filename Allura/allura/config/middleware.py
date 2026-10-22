@@ -185,8 +185,8 @@ def _make_core_app(root, global_conf: dict, **app_conf):
     app = MingMiddleware(app)
     # Set up the registry for stacked object proxies (SOPs).
     app = RegistryManager(app,
-                          # streaming=True causes cleanup problems when StatusCodeRedirect does an extra request
-                          streaming=False,
+                          # keep SOPs until the response is fully iterated, since MingMiddleware flushes then
+                          streaming=True,
                           preserve_exceptions=asbool(config['debug']),  # allow inspecting them when debugging errors
                           )
 

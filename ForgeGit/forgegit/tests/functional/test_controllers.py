@@ -356,11 +356,15 @@ class TestRootController(_TestCase):
         ci_zz = '/p/test/src-git/ci/5c47243c8e424136fd5cdd18cd94d34c66d1955c/'
 
         with patch.object(GM.git_repo._OpenedGitBlob, 'CHUNK_SIZE', 5):
-            # hold _abandoned_download on `self` so it doesn't get garbage collected
-            self._abandoned_download = self._start_raw_download(ci_master + 'tree/README?format=raw')
+            app_iter, it = self._start_raw_download(ci_master + 'tree/README?format=raw')
 
             resp = self.app.get(ci_zz + 'tree/bad?format=raw')
             assert resp.body == b'Not root\n'
+
+            # close it only now; until then it holds this thread's TG request globals, which would leak to later tests
+            it.close()
+            if hasattr(app_iter, 'close'):
+                app_iter.close()
 
     def test_closed_raw_download_does_not_corrupt_next_request(self):
         # Same as above, but the first download's iterator is properly closed.  Control case.
