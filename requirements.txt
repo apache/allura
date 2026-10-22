@@ -20,9 +20,9 @@ beautifulsoup4==4.15.0
     # via
     #   -r requirements.in
     #   webtest
-boto3==1.43.110
+boto3==1.43.114
     # via pymongo-auth-aws
-botocore==1.43.110
+botocore==1.43.114
     # via
     #   boto3
     #   pymongo-auth-aws
