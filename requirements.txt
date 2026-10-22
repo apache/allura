@@ -84,7 +84,7 @@ feedparser==6.0.14
     # via -r requirements.in
 feedparser-sgmllib==2.1.0
     # via feedparser
-filelock==4.0.12
+filelock==4.2.0
     # via
     #   python-discovery
     #   virtualenv
@@ -188,13 +188,13 @@ pastescript==3.7.0
     # via -r requirements.in
 pillow==13.0.0
     # via -r requirements.in
-platformdirs==4.12.4
+platformdirs==4.13.0
     # via virtualenv
 pluggy==1.7.0
     # via pytest
 pockets==0.9.1
     # via sphinxcontrib-napoleon
-pre-commit==4.6.2
+pre-commit==4.7.0
     # via -r requirements.in
 profanityfilter==2.1.0
     # via -r requirements.in
@@ -236,7 +236,7 @@ python-dateutil==2.9.0.post0
     #   -r requirements.in
     #   botocore
     #   easywidgets
-python-discovery==1.6.1
+python-discovery==1.6.2
     # via virtualenv
 python-magic==0.4.27
     # via -r requirements.in
@@ -324,7 +324,7 @@ urllib3==2.8.0
     # via
     #   botocore
     #   requests
-virtualenv==21.14.6
+virtualenv==21.14.7
     # via pre-commit
 waitress==3.0.2
     # via webtest
