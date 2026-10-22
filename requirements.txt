@@ -190,7 +190,7 @@ pillow==13.0.0
     # via -r requirements.in
 platformdirs==4.12.4
     # via virtualenv
-pluggy==1.6.0
+pluggy==1.7.0
     # via pytest
 pockets==0.9.1
     # via sphinxcontrib-napoleon
