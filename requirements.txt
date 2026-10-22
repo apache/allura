@@ -310,7 +310,7 @@ translationstring==1.4
     # via colander
 turbogears2==2.5.0
     # via -r requirements.in
-turbohtml==1.13.1
+turbohtml==1.15.2
     # via
     #   -r requirements.in
     #   pypeline
