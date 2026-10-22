@@ -343,5 +343,5 @@ webtest==3.0.7
     # via -r requirements.in
 werkzeug==3.1.9
     # via -r requirements.in
-wrapt==2.5.0
+wrapt==2.5.1
     # via -r requirements.in
