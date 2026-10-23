@@ -84,7 +84,7 @@ feedparser==6.0.14
     # via -r requirements.in
 feedparser-sgmllib==2.1.0
     # via feedparser
-filelock==4.2.0
+filelock==4.2.4
     # via
     #   python-discovery
     #   virtualenv
