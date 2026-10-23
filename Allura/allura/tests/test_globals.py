@@ -545,7 +545,7 @@ class Test():
 
         # should not raise an exception:
         assert g.markdown.convert("<class 'foo'>") == \
-            '''<div class="markdown_content"><p>&lt;class 'foo'=""&gt;&lt;/class&gt;</p></div>'''
+            '''<div class="markdown_content"><p>&lt;class 'foo'&gt;</p></div>'''
 
         assert g.markdown.convert(dedent('''\
             # Header
