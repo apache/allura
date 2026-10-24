@@ -56,7 +56,7 @@ You can learn about using Allura, configuring neighborhoods, managing projects a
 
 Apache Allura is an effort _for_ the community: an open source platform for sharing development.  We think it should be _of_ the community as well. We want to encourage community involvement in development, testing and design.  We do that with a public git repo, a bug tracker, a discussion list and an IRC channel.
 
-Developers interested in hacking on Allura or its components should see `Allura/docs/docs/development/contributing.rst` or <https://forge-allura.apache.org/docs/development/contributing.html>.
+Developers interested in hacking on Allura or its components should see `Allura/docs/development/contributing.rst` or <https://forge-allura.apache.org/docs/development/contributing.html>.
 
 You can get in touch with other Allura developers on the developer mailing list ([dev@allura.apache.org](https://mail-archives.apache.org/mod_mbox/allura-dev/)).
 
