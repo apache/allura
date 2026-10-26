@@ -2392,6 +2392,26 @@ class TestOAuth(TestController):
         self.app.get('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok_12345'},
                      headers={'Sec-Fetch-Dest': 'document'}, status=400)
 
+    def test_authorize_expired(self):
+        user = M.User.by_username('test-admin')
+        ctok = M.OAuthConsumerToken(
+            api_key='api_key_api_key_12345',
+            user_id=user._id,
+            description='ctok_desc',
+        )
+        M.OAuthRequestToken(
+            _id=ObjectId.from_datetime(datetime.utcnow() - timedelta(minutes=11)),
+            api_key='api_key_reqtok_12345',
+            consumer_token_id=ctok._id,
+            callback='oob',
+            user_id=None,
+        )
+        ThreadLocalODMSession.flush_all()
+        resp = self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok_12345'}, status=400)
+        resp.mustcontain('error=invalid_client')
+        self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key_reqtok_12345'},
+                      status=400)
+
     def test_do_authorize_no(self):
         user = M.User.by_username('test-admin')
         ctok = M.OAuthConsumerToken(
@@ -2409,6 +2429,24 @@ class TestOAuth(TestController):
         self.app.post('/rest/oauth/do_authorize',
                       params={'no': '1', 'oauth_token': 'api_key_reqtok_12345'})
         assert M.OAuthRequestToken.query.get(api_key='api_key_reqtok_12345') is None
+
+    def test_do_authorize_no_other_users_token(self):
+        user = M.User.by_username('test-admin')
+        ctok = M.OAuthConsumerToken(
+            api_key='api_key_api_key_12345',
+            user_id=user._id,
+            description='ctok_desc',
+        )
+        M.OAuthRequestToken(
+            api_key='api_key_reqtok_12345',
+            consumer_token_id=ctok._id,
+            callback='oob',
+            user_id=user._id,
+        )
+        ThreadLocalODMSession.flush_all()
+        self.app.post('/rest/oauth/do_authorize', params={'no': '1', 'oauth_token': 'api_key_reqtok_12345'},
+                      extra_environ={'username': 'test-user'})
+        assert M.OAuthRequestToken.query.get(api_key='api_key_reqtok_12345') is not None
 
     def test_do_authorize_oob(self):
         user = M.User.by_username('test-admin')
@@ -2461,6 +2499,62 @@ class TestOAuth(TestController):
         r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key_reqtok_12345'})
         url = 'http://my.domain.com/callback?myparam=foo&oauth_token=api_key_reqtok_12345&oauth_verifier='
         assert r.location.startswith(url)
+
+    def test_authorize_binds_approving_user(self):
+        attacker = M.User.by_username('test-user')
+        ctok = M.OAuthConsumerToken(
+            api_key='api_key_api_key_12345',
+            user_id=attacker._id,
+            description='ctok_desc',
+        )
+        M.OAuthRequestToken(
+            api_key='api_key_reqtok_12345',
+            consumer_token_id=ctok._id,
+            callback='oob',
+            user_id=None,
+        )
+        ThreadLocalODMSession.flush_all()
+        # victim only views the consent page
+        self.app.get('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok_12345'},
+                     extra_environ={'username': 'test-admin'})
+        ThreadLocalODMSession.close_all()
+        assert M.OAuthRequestToken.query.get(api_key='api_key_reqtok_12345').user_id is None
+        # attacker approves from their own session
+        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key_reqtok_12345'},
+                          extra_environ={'username': 'test-user'})
+        assert r.html.find(string=re.compile('^PIN: ')) is not None
+        ThreadLocalODMSession.close_all()
+        assert M.OAuthRequestToken.query.get(api_key='api_key_reqtok_12345').user_id == attacker._id
+
+    def test_do_authorize_already_approved_by_other_user(self):
+        user = M.User.by_username('test-admin')
+        ctok = M.OAuthConsumerToken(
+            api_key='api_key_api_key_12345',
+            user_id=user._id,
+            description='ctok_desc',
+        )
+        M.OAuthRequestToken(
+            api_key='api_key_reqtok_12345',
+            consumer_token_id=ctok._id,
+            callback='oob',
+            user_id=None,
+        )
+        ThreadLocalODMSession.flush_all()
+        params = {'yes': '1', 'oauth_token': 'api_key_reqtok_12345'}
+        self.app.post('/rest/oauth/do_authorize', params=params)
+        # same user again (e.g. double-click) is ok
+        self.app.post('/rest/oauth/do_authorize', params=params)
+        ThreadLocalODMSession.close_all()
+        pin = M.OAuthRequestToken.query.get(api_key='api_key_reqtok_12345').validation_pin
+
+        self.app.post('/rest/oauth/do_authorize', params=params, extra_environ={'username': 'test-user'}, status=400)
+        ThreadLocalODMSession.close_all()
+        rtok = M.OAuthRequestToken.query.get(api_key='api_key_reqtok_12345')
+        assert rtok.user_id == user._id
+        assert rtok.validation_pin == pin
+
+    def test_do_authorize_invalid_token(self):
+        self.app.post('/rest/oauth/do_authorize', params={'no': '1', 'oauth_token': 'nonexistent'}, status=401)
 
 
 class TestOAuth2(TestController):
@@ -2689,6 +2783,23 @@ class TestOAuth2(TestController):
         assert M.OAuth2AuthorizationCode.query.get(client_id='client_12345') is None
 
     @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_authorize_rejects_operator_injection(self, mock_client):
+        self.app.request('/auth/oauth2/authorize?client_id=client_12345&response_type=code',
+                         method='GET', body=json.dumps({'client_id': {'$ne': ''}}).encode(),
+                         content_type='application/json', status=400)
+
+        r = self.app.get('/auth/oauth2/authorize', params={
+            'client_id': 'client_12345',
+            'response_type': 'code',
+            'redirect_uri': 'https://localhost/',
+        })
+        form = r.forms[0]
+        form['credentials'].force_value(json.dumps({'client_id': {'$ne': ''}, 'redirect_uri': 'https://localhost/',
+                                                    'response_type': 'code', 'state': None}))
+        form.submit('yes', status=400)
+        assert M.OAuth2AuthorizationCode.query.get(client_id='client_12345') is None
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
     def test_authorize_and_create_access_token(self):
         # client owned by someone other than the test-admin user that self.app.get/post use
         app_owner = M.User.by_username('test-user')
@@ -2859,6 +2970,20 @@ class TestOAuth2(TestController):
         assert r.status_int == 200
         assert r.json['access_token'] != token.access_token
         assert r.json['refresh_token'] != token.refresh_token
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_token_rejects_operator_injection(self, mock_client, mock_valid_token, mock_valid_authorization_code):
+        bodies = [
+            dict(client_id='client_12345', client_secret={'$ne': ''}, grant_type='refresh_token',
+                 refresh_token={'$ne': ''}),
+            dict(client_id='client_12345', client_secret={'$ne': ''}, grant_type='authorization_code',
+                 code={'$ne': ''}, redirect_uri='https://localhost/'),
+            [['client_id', 'client_12345'], ['client_secret', {'$ne': ''}], ['grant_type', 'refresh_token'],
+             ['refresh_token', {'$ne': ''}]],
+        ]
+        for body in bodies:
+            self.app.post_json('/rest/oauth2/token', body, extra_environ={'username': '*anonymous'}, status=400)
+        assert M.OAuth2AccessToken.query.find().count() == 1
 
     @mock.patch.dict(config, {'auth.oauth2.enabled': True})
     def test_refresh_token_of_disabled_user(self, mock_client, mock_valid_token):
@@ -3156,6 +3281,26 @@ class TestOAuthAccessToken(TestController):
 
     def test_access_token_ok_by_query(self):
         self.test_access_token_ok(signature_type='query')
+
+    def test_access_token_expired_request_token(self):
+        user = M.User.by_username('test-admin')
+        ctok = M.OAuthConsumerToken(
+            api_key='api_key_api_key_12345',
+            secret_key='test-client-secret',
+            user_id=user._id,
+            description='ctok_desc',
+        )
+        M.OAuthRequestToken(
+            _id=ObjectId.from_datetime(datetime.utcnow() - timedelta(minutes=11)),
+            api_key='api_key_reqtok_12345',
+            secret_key='test-token-secret',
+            consumer_token_id=ctok._id,
+            callback='http://my.domain.com/callback?myparam=foo',
+            user_id=user._id,
+            validation_pin='good_verifier_123456',
+        )
+        ThreadLocalODMSession.flush_all()
+        self.app.get(*oauth1_webtest('/rest/oauth/access_token', self.oauth_params), status=401)
 
 
 class TestDisableAccount(TestController):
