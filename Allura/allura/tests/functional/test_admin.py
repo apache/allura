@@ -389,7 +389,7 @@ class TestProjectAdmin(TestController):
         image = PIL.Image.open(BytesIO(r.body))
         assert image.size == (48, 48)
 
-        r = self.app.get('/p/test/icon?foo=bar')
+        r = self.app.get('/p/test/icon?foo=bar', headers={'Sec-Fetch-Dest': 'image'})
         r = self.app.get('/p/test/icon?w=96&w=100&w=10')
         image = PIL.Image.open(BytesIO(r.body))
         assert image.size == (96, 96)
@@ -414,11 +414,11 @@ class TestProjectAdmin(TestController):
         project = M.Project.query.get(
             shortname='test', neighborhood_id=p_nbhd._id)
         filename = project.get_screenshots()[0].filename
-        r = self.app.get('/p/test/screenshot/' + filename)
+        r = self.app.get('/p/test/screenshot/' + filename, headers={'Sec-Fetch-Dest': 'image'})
         uploaded = PIL.Image.open(file_path)
         screenshot = PIL.Image.open(BytesIO(r.body))
         assert uploaded.size == screenshot.size
-        r = self.app.get('/p/test/screenshot/' + filename + '/thumb')
+        r = self.app.get('/p/test/screenshot/' + filename + '/thumb', headers={'Sec-Fetch-Dest': 'image'})
         thumb = PIL.Image.open(BytesIO(r.body))
         assert thumb.size == (150, 150)
         # FIX: home pages don't currently support screenshots (now that they're a wiki);

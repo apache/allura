@@ -2385,6 +2385,13 @@ class TestOAuth(TestController):
         resp = self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok_12345'}, status=400)
         resp.mustcontain('error=invalid_client')
 
+    def test_authorize_subresource_rejected(self):
+        for dest in ('image', 'iframe'):
+            self.app.get('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok_12345'},
+                         headers={'Sec-Fetch-Dest': dest}, status=403)
+        self.app.get('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok_12345'},
+                     headers={'Sec-Fetch-Dest': 'document'}, status=400)
+
     def test_do_authorize_no(self):
         user = M.User.by_username('test-admin')
         ctok = M.OAuthConsumerToken(
