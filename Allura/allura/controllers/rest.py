@@ -33,9 +33,10 @@ from tg import tmpl_context as c, app_globals as g
 from tg import request, response
 import colander
 from ming.odm import session
+from bson import ObjectId
 
 from allura import model as M
-from allura.controllers.auth import AuthRestController
+from allura.controllers.auth import AuthRestController, oauth2_json_params
 from allura.lib import helpers as h
 from allura.lib import security
 from allura.lib import plugin
@@ -184,11 +185,16 @@ class Oauth1Validator(oauthlib.oauth1.RequestValidator):
         session(req_token).flush()
         log.info('Saving new request token with key: %s', req_token.api_key[:(len(req_token.api_key) // 2)])
 
+    def _unexpired_request_token(self, token: str) -> M.OAuthRequestToken | None:
+        # only needed for the few minutes it takes the user to approve the app
+        created_after = ObjectId.from_datetime(datetime.utcnow() - timedelta(minutes=10))
+        return M.OAuthRequestToken.query.get(api_key=token, _id={'$gt': created_after})
+
     def verify_request_token(self, token: str, request: oauthlib.common.Request) -> bool:
-        return M.OAuthRequestToken.query.get(api_key=token) is not None
+        return self._unexpired_request_token(token) is not None
 
     def validate_request_token(self, client_key: str, token: str, request: oauthlib.common.Request) -> bool:
-        req_tok = M.OAuthRequestToken.query.get(api_key=token)
+        req_tok = self._unexpired_request_token(token)
         if not req_tok:
             return False
         return oauthlib.common.safe_string_equals(req_tok.consumer_token.api_key, client_key)
@@ -512,8 +518,6 @@ class OAuthNegotiator:
         if rtok is None:
             log.error('Invalid token %s', oauth_token[:(len(oauth_token) // 2)])
             raise exc.HTTPUnauthorized
-        # store what user this is, so later use of the token can act as them
-        rtok.user_id = c.user._id
         return dict(
             oauth_token=oauth_token,
             consumer=rtok.consumer_token,
@@ -525,17 +529,29 @@ class OAuthNegotiator:
         security.require_authenticated()
 
         rtok = M.OAuthRequestToken.query.get(api_key=oauth_token)
+        if rtok is None:
+            raise exc.HTTPUnauthorized
         if no:
-            rtok.delete()
+            if rtok.user_id == c.user._id:
+                rtok.delete()
             flash('%s NOT AUTHORIZED' % rtok.consumer_token.name, 'error')
             redirect('/auth/oauth/')
+        if rtok.validation_pin and rtok.user_id != c.user._id:
+            raise exc.HTTPBadRequest
 
-        headers, body, status = self.server.create_authorization_response(
-            request.url,
-            http_method=request.method,
-            body=request.body,
-            headers=request.headers,
-            realms=[])
+        rtok.user_id = c.user._id
+        try:
+            headers, body, status = self.server.create_authorization_response(
+                request.url,
+                http_method=request.method,
+                body=request.body,
+                headers=request.headers,
+                realms=[])
+        except oauthlib.oauth1.OAuth1Error as oae:
+            log.info(f'oauth1 do_authorize error: {oae!r}')
+            response.headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+            response.status_int = oae.status_code
+            return oae.urlencoded
 
         if status == 200:
             verifier = str(parse_qs(body)['oauth_verifier'][0])
@@ -585,7 +601,7 @@ class Oauth2Negotiator:
         # We try to parse the request body as JSON, if it fails we just use the body as is
         # so it's treated as x-www-form-urlencoded
         try:
-            request_body = json.loads(decoded_body)
+            request_body = oauth2_json_params(decoded_body)
         except json.decoder.JSONDecodeError:
             request_body = decoded_body
 

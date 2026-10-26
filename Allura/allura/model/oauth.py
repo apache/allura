@@ -57,7 +57,8 @@ class OAuthToken(MappedClass):
 
     _id = FieldProperty(S.ObjectId)
     type = FieldProperty(str)
-    api_key = FieldProperty(str, if_missing=lambda: h.nonce(20))
+    # 30 chars, oauthlib's max length for keys
+    api_key = FieldProperty(str, if_missing=lambda: h.cryptographic_nonce(15))
     secret_key = FieldProperty(str, if_missing=h.cryptographic_nonce)
     last_access = FieldProperty(datetime)
 

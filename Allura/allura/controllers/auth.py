@@ -70,6 +70,14 @@ import oauthlib.oauth2
 log = logging.getLogger(__name__)
 
 
+def oauth2_json_params(raw: str, allow_none: bool = False) -> dict:
+    params = json.loads(raw)
+    allowed = (str, type(None)) if allow_none else str
+    if not isinstance(params, dict) or not all(isinstance(v, allowed) for v in params.values()):
+        raise wexc.HTTPBadRequest('JSON must be an object with string values')
+    return params
+
+
 class F:
     login_form = LoginForm()
     password_change_form = forms.PasswordChangeForm(action='/auth/preferences/change_password')
@@ -1666,7 +1674,7 @@ class OAuthController(BaseController):
             consumer_token_id=consumer_token._id,
             user_id=c.user._id,
             callback='manual',
-            validation_pin=h.nonce(20),
+            validation_pin=h.cryptographic_nonce(15),
             is_bearer=True,
         )
         M.OAuthAccessToken(
@@ -1696,7 +1704,7 @@ class OAuthController(BaseController):
         M.OAuth2AccessToken(
             client_id=client_id,
             user_id=c.user._id,
-            access_token=h.nonce(40),
+            access_token=h.cryptographic_nonce(20),
             is_bearer=True,
             expires_at=datetime.max
         )
@@ -1758,7 +1766,7 @@ class OAuth2AuthorizationController(BaseController):
             # We need to decode the request body and convert it to a dict because Turbogears creates it as bytes
             # and oauthlib will treat it as x-www-form-urlencoded format.
             decoded_body = str(request.body, 'utf-8')
-            json_body = json.loads(decoded_body)
+            json_body = oauth2_json_params(decoded_body)
 
         scopes, credentials = self.server.validate_authorization_request(uri=request.url, http_method=request.method, headers=request.headers, body=json_body)
 
@@ -1783,7 +1791,8 @@ class OAuth2AuthorizationController(BaseController):
             flash(f'{client.name} NOT AUTHORIZED', 'error')
             redirect('/auth/oauth/')
 
-        credentials = json.loads(request.params['credentials'])
+        # values like state may be null
+        credentials = oauth2_json_params(request.params['credentials'], allow_none=True)
         headers, body, status = self.server.create_authorization_response(
             uri=request.url, http_method=request.method, body=request.body, headers=request.headers, scopes=[], credentials=credentials
         )
