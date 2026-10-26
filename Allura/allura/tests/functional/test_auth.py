@@ -2290,8 +2290,8 @@ class TestOAuth(TestController):
         rsecr = parse_qs(r.text)['oauth_token_secret'][0]
         assert rtok
         assert rsecr
-        r = self.app.post('/rest/oauth/authorize',
-                          params={'oauth_token': rtok})
+        r = self.app.get('/rest/oauth/authorize',
+                         params={'oauth_token': rtok})
         r = r.forms[0].submit('yes')
         assert r.location.startswith('https://my.domain.com/callback')
         pin = parse_qs(urlparse(r.location).query)['oauth_verifier'][0]
@@ -2309,12 +2309,12 @@ class TestOAuth(TestController):
         M.User.by_username('test-admin').disabled = True
         ThreadLocalODMSession.flush_all()
         num_tokens = M.OAuthAccessToken.query.find().count()
-        self.app.get(*oauth1_webtest('/rest/oauth/access_token', oauth_params), status=401)
+        self.app.post(*oauth1_webtest('/rest/oauth/access_token', oauth_params, method='POST'), status=401)
         assert M.OAuthAccessToken.query.find().count() == num_tokens
 
     def test_interactive(self):
         oauth_params = self._oauth1_authorize()
-        r = self.app.get(*oauth1_webtest('/rest/oauth/access_token', oauth_params))
+        r = self.app.post(*oauth1_webtest('/rest/oauth/access_token', oauth_params, method='POST'))
         atok = parse_qs(r.text)
         assert len(atok['oauth_token']) == 1
         assert len(atok['oauth_token_secret']) == 1
@@ -2353,7 +2353,7 @@ class TestOAuth(TestController):
             user_id=user._id,
         )
         ThreadLocalODMSession.flush_all()
-        r = self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok_12345'})
+        r = self.app.get('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok_12345'})
         assert 'ctok_desc' in r.text
         assert 'api_key_reqtok_12345' in r.text
         assert 'you will be sent to' not in r.text
@@ -2378,11 +2378,11 @@ class TestOAuth(TestController):
                 user_id=user._id,
             )
             ThreadLocalODMSession.flush_all()
-            r = self.app.post('/rest/oauth/authorize', params={'oauth_token': f'api_key_reqtok_{i}'})
+            r = self.app.get('/rest/oauth/authorize', params={'oauth_token': f'api_key_reqtok_{i}'})
             assert f'you will be sent to <strong>{host}</strong>' in r.text
 
     def test_authorize_invalid(self):
-        resp = self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok_12345'}, status=400)
+        resp = self.app.get('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok_12345'}, status=400)
         resp.mustcontain('error=invalid_client')
 
     def test_authorize_subresource_rejected(self):
@@ -2407,7 +2407,7 @@ class TestOAuth(TestController):
             user_id=None,
         )
         ThreadLocalODMSession.flush_all()
-        resp = self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok_12345'}, status=400)
+        resp = self.app.get('/rest/oauth/authorize', params={'oauth_token': 'api_key_reqtok_12345'}, status=400)
         resp.mustcontain('error=invalid_client')
         self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key_reqtok_12345'},
                       status=400)
@@ -3167,12 +3167,12 @@ class TestOAuthRequestToken(TestController):
         assert request_token.callback == 'https://example.com/cb'
 
     def test_request_token_no_consumer_token_matching(self):
-        self.app.post(*oauth1_webtest('/rest/oauth/request_token', self.oauth_params), status=401)
+        self.app.post(*oauth1_webtest('/rest/oauth/request_token', self.oauth_params, method='POST'), status=401)
 
     def test_request_token_no_consumer_token_given(self):
         oauth_params = self.oauth_params.copy()
         oauth_params['signature_type'] = 'query'  # so we can more easily remove a param next
-        url, params, hdrs, extraenv = oauth1_webtest('/rest/oauth/request_token', oauth_params)
+        url, params, hdrs, extraenv = oauth1_webtest('/rest/oauth/request_token', oauth_params, method='POST')
         url = url.replace('oauth_consumer_key', 'gone')
         resp = self.app.post(url, params, hdrs, extraenv, status=400)
         resp.mustcontain('error_description=Missing+mandatory+OAuth+parameters')
@@ -3204,7 +3204,7 @@ class TestOAuthAccessToken(TestController):
         dummy_oauths()
 
     def test_access_token_no_consumer(self):
-        self.app.get(*oauth1_webtest('/rest/oauth/access_token', self.oauth_params), status=401)
+        self.app.post(*oauth1_webtest('/rest/oauth/access_token', self.oauth_params, method='POST'), status=401)
 
     def test_access_token_no_request(self):
         user = M.User.by_username('test-admin')
@@ -3214,7 +3214,7 @@ class TestOAuthAccessToken(TestController):
             description='ctok_desc',
         )
         ThreadLocalODMSession.flush_all()
-        self.app.get(*oauth1_webtest('/rest/oauth/access_token', self.oauth_params), status=401)
+        self.app.post(*oauth1_webtest('/rest/oauth/access_token', self.oauth_params, method='POST'), status=401)
 
     def test_access_token_bad_pin(self):
         user = M.User.by_username('test-admin')
@@ -3233,7 +3233,7 @@ class TestOAuthAccessToken(TestController):
         ThreadLocalODMSession.flush_all()
         oauth_params = self.oauth_params.copy()
         oauth_params['verifier'] = 'bad_verifier_1234567'
-        self.app.get(*oauth1_webtest('/rest/oauth/access_token', oauth_params),
+        self.app.post(*oauth1_webtest('/rest/oauth/access_token', oauth_params, method='POST'),
                      status=401)
 
     def test_access_token_bad_sig(self):
@@ -3253,7 +3253,7 @@ class TestOAuthAccessToken(TestController):
             secret_key='test-token-secret--INVALID',
         )
         ThreadLocalODMSession.flush_all()
-        self.app.get(*oauth1_webtest('/rest/oauth/access_token', self.oauth_params), status=401)
+        self.app.post(*oauth1_webtest('/rest/oauth/access_token', self.oauth_params, method='POST'), status=401)
 
     def test_access_token_ok(self, signature_type='auth_header'):
         user = M.User.by_username('test-admin')
@@ -3274,7 +3274,7 @@ class TestOAuthAccessToken(TestController):
         ThreadLocalODMSession.flush_all()
 
         oauth_params = dict(self.oauth_params, signature_type=signature_type)
-        r = self.app.get(*oauth1_webtest('/rest/oauth/access_token', self.oauth_params))
+        r = self.app.post(*oauth1_webtest('/rest/oauth/access_token', self.oauth_params, method='POST'))
         atok = parse_qs(r.text)
         assert len(atok['oauth_token']) == 1
         assert len(atok['oauth_token_secret']) == 1
@@ -3300,7 +3300,7 @@ class TestOAuthAccessToken(TestController):
             validation_pin='good_verifier_123456',
         )
         ThreadLocalODMSession.flush_all()
-        self.app.get(*oauth1_webtest('/rest/oauth/access_token', self.oauth_params), status=401)
+        self.app.post(*oauth1_webtest('/rest/oauth/access_token', self.oauth_params, method='POST'), status=401)
 
 
 class TestDisableAccount(TestController):
