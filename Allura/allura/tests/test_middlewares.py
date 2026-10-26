@@ -160,3 +160,20 @@ class TestAutoescapeViaRealMiddleware(TestController):
 
     def test_widget_middleware_autoescapes(self):
         assert TemplateEngine.get_engine('jinja2')._environ.autoescape is True
+
+
+class TestSecFetchDestMiddleware(TestController):
+
+    def test_subresource_blocked(self):
+        for path in ('/rest/foo/', '/auth/set_something_important'):
+            for dest in ('image', 'iframe', 'script'):
+                self.app.get(path, headers={'Sec-Fetch-Dest': dest}, status=403)
+
+    def test_allowed(self):
+        for dest in ('document', 'empty'):
+            self.app.get('/rest/', headers={'Sec-Fetch-Dest': dest})
+        self.app.get('/rest/')
+        self.app.get('/', headers={'Sec-Fetch-Dest': 'document'})
+        self.app.get('/auth/login_fragment/', headers={'Sec-Fetch-Dest': 'iframe'},
+                     extra_environ={'username': '*anonymous'}, status=200)
+

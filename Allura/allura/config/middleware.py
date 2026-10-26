@@ -53,7 +53,7 @@ from allura.config.app_cfg import ForgeConfig
 from allura.lib.custom_middleware import AlluraTimerMiddleware
 from allura.lib.custom_middleware import SSLMiddleware
 from allura.lib.custom_middleware import StaticFilesMiddleware
-from allura.lib.custom_middleware import CSRFMiddleware
+from allura.lib.custom_middleware import CSRFMiddleware, SecFetchDestMiddleware
 from allura.lib.custom_middleware import CORSMiddleware
 from allura.lib.custom_middleware import LoginRedirectMiddleware
 from allura.lib.custom_middleware import RememberLoginMiddleware
@@ -144,6 +144,7 @@ def _make_core_app(root, global_conf: dict, **app_conf):
     # Clear cookies when the CSRF field isn't posted
     if not app_conf.get('disable_csrf_protection'):
         app = CSRFMiddleware(app, '_csrf_token')
+    app = SecFetchDestMiddleware(app)
     if asbool(config.get('cors.enabled', False)):
         # Handle CORS requests
         allowed_methods = aslist(config.get('cors.methods'))

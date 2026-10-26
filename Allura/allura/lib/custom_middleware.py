@@ -456,6 +456,28 @@ class MingTaskSessionSetupMiddleware:
         return self.app(environ, start_response)
 
 
+class SecFetchDestMiddleware:
+    '''
+    Rejects /auth/ and /rest/ requests made as subresources (<img>, <iframe>, <script> etc), since those can be
+    embedded in user content and would carry the user's session.  Navigations and fetch/XHR are allowed.
+    Browsers that don't send Sec-Fetch-Dest are allowed through.
+    '''
+    PATHS_ENFORCED = ('/auth/', '/rest/')
+    ALLOWED_VALS = ('document', 'empty', None)
+    PATHS_EXEMPT = ('/auth/login_fragment/',)  # login overlay iframe
+
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        dest = environ.get('HTTP_SEC_FETCH_DEST')
+        path = environ.get('PATH_INFO', '')
+        if (dest not in self.ALLOWED_VALS and path.startswith(self.PATHS_ENFORCED)
+                and not path.startswith(self.PATHS_EXEMPT)):
+            return exc.HTTPForbidden()(environ, start_response)
+        return self.app(environ, start_response)
+
+
 class ContentSecurityPolicyMiddleware:
     ''' Sets Content-Security-Policy headers '''
 
