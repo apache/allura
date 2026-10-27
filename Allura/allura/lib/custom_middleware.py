@@ -464,13 +464,16 @@ class SecFetchDestMiddleware:
     '''
     PATHS_ENFORCED = ('/auth/', '/rest/')
     ALLOWED_VALS = ('document', 'empty', None)
+    PATHS_EXEMPT = ('/auth/login_fragment/',)  # login overlay iframe
 
     def __init__(self, app):
         self.app = app
 
     def __call__(self, environ, start_response):
         dest = environ.get('HTTP_SEC_FETCH_DEST')
-        if dest not in self.ALLOWED_VALS and environ.get('PATH_INFO', '').startswith(self.PATHS_ENFORCED):
+        path = environ.get('PATH_INFO', '')
+        if (dest not in self.ALLOWED_VALS and path.startswith(self.PATHS_ENFORCED)
+                and not path.startswith(self.PATHS_EXEMPT)):
             return exc.HTTPForbidden()(environ, start_response)
         return self.app(environ, start_response)
 

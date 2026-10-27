@@ -174,4 +174,6 @@ class TestSecFetchDestMiddleware(TestController):
             self.app.get('/rest/', headers={'Sec-Fetch-Dest': dest})
         self.app.get('/rest/')
         self.app.get('/', headers={'Sec-Fetch-Dest': 'document'})
+        self.app.get('/auth/login_fragment/', headers={'Sec-Fetch-Dest': 'iframe'},
+                     extra_environ={'username': '*anonymous'}, status=200)
 
