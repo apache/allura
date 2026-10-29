@@ -188,7 +188,7 @@ pastescript==3.7.0
     # via -r requirements.in
 pillow==13.0.0
     # via -r requirements.in
-platformdirs==4.13.0
+platformdirs==4.14.0
     # via virtualenv
 pluggy==1.7.0
     # via pytest
