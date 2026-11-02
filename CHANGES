@@ -1,3 +1,49 @@
+Version 1.22.1  (November 2026)
+
+Upgrade Instructions
+
+  Stop any running Allura services while upgrading.
+
+  Install updated dependencies by running:
+    pip install -r requirements.txt --no-deps --upgrade --upgrade-strategy=only-if-needed
+
+  Run scripts/migrations/039-field-encryption.sh
+  If using docker, this is the full command (replace your .ini file path):
+    docker compose run -e INI=docker-dev.ini --rm taskd ../scripts/migrations/039-field-encryption.sh
+
+  Run: `paster ensure_index development.ini --clean` in Allura dir.  Replace your .ini file path
+
+  After the new version of Allura is up and running, delete the plaintext versions of the encrypted fields by running
+    scripts/migrations/040-field-encryption-cleanup.sh
+
+Security Improvements
+ * [#8625] Implement field level encryption for audit log
+ * [#8626] Log raw email headers and SPF/DMARC/DKIM verification results for monitor mode
+ * reject /auth/ and /rest/ requests made as subresources
+ * Python packages upgrades
+ * update security content for 1.22.0 changes
+
+Forums
+ * [#8631] thread error on forum thread pages
+ * Hide button to send an email to create a new topic for unauthenticated users
+
+Code Repos
+ * git: handle renames from non-utf8 filenames in file history
+ * git: handle filenames git quotes (non-ASCII, ") in last-commit and rename logic
+
+Other
+ * update mongo version in docker compose to go with pymongo upgrades
+ * catch timezone errors on profile page
+
+For Developers
+ * replace faust-cchardet with turbohtml charset detection, check BOM
+ * make memoize_cleanup work for instance methods and class methods on different python versions
+ * run check-merge-conflict pre-commit hook all the time
+ * deal with argparse.FileType deprecation
+ * Correct the contributor guide path in README
+ * clean up lint warnings in tests and lib/plugin
+
+
 Version 1.22.0  (October 2026)
 
 Upgrade Instructions
