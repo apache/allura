@@ -36,7 +36,7 @@ Pillow
 profanityfilter
 pyasynchat
 Pygments
-pymongo
+pymongo[encryption]
 Pypeline[creole,markdown,textile,rst]
 pysolr
 python-dateutil
