@@ -22,7 +22,7 @@ import six
 from formencode import validators
 from tg import request
 from tg import tmpl_context as c, app_globals as g
-from pytz import timezone
+from pytz import timezone, UnknownTimeZoneError, InvalidTimeError
 from tg import expose, redirect, validate, flash
 from tg.decorators import without_trailing_slash
 from webob import exc
@@ -294,8 +294,12 @@ class PersonalDataSection(ProfileSectionBase):
     def prepare_context(self, context):
         context['timezone'] = self.user.get_pref('timezone')
         if context['timezone']:
-            tz = timezone(context['timezone'])
-            context['timezone'] = tz.tzname(datetime.utcnow())
+            try:
+                tz = timezone(context['timezone'])
+                context['timezone'] = tz.tzname(datetime.utcnow())
+            except (UnknownTimeZoneError, InvalidTimeError) as e:
+                log.warning(f"Timezone error {e!r}: using {context['timezone']!r} from user {self.user._id}")
+
         return context
 
     def __json__(self):
