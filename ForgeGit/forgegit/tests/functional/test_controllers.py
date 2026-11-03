@@ -538,7 +538,7 @@ class TestRootController(_TestCase):
         ci = self._get_ci()
         r = self.app.get('/src-git/commit_browser')
         assert '<div id="access_urls"' not in r
-        r = self.app.get('/src-git/fork')
+        r = self.app.get('/src-git/fork/')
         assert '<div id="access_urls"' not in r
         r = self.app.get(ci + 'tree/README?diff=df30427c488aeab84b2352bdf88a3b19223f9d7a')
         assert '<div id="access_urls"' not in r
@@ -775,7 +775,7 @@ class TestFork(_TestCase):
         super().setup_method(method)
         to_project = M.Project.query.get(
             shortname='test2', neighborhood_id=c.project.neighborhood_id)
-        r = self.app.post('/src-git/fork', params=dict(
+        r = self.app.post('/src-git/fork/', params=dict(
             project_id=str(to_project._id),
             mount_point='code',
             mount_label='Test forked repository'))
@@ -866,7 +866,7 @@ class TestFork(_TestCase):
         # Create a new fork with parent now having force_push_allowed = True
         to_project = M.Project.query.get(
             shortname='test2', neighborhood_id=c.project.neighborhood_id)
-        r = self.app.post('/src-git/fork', params=dict(
+        r = self.app.post('/src-git/fork/', params=dict(
             project_id=str(to_project._id),
             mount_point='code_force_test',
             mount_label='Test fork for force_push'))

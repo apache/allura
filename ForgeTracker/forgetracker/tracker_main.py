@@ -1168,7 +1168,7 @@ class BinController(BaseController, AdminControllerMixin):
         count = len(self.app.bins)
         return dict(bins=self.app.bins, count=count, app=self.app)
 
-    @with_trailing_slash
+    @without_trailing_slash
     @h.vardec
     @expose('jinja:forgetracker:templates/tracker/bin.html')
     @require_post()

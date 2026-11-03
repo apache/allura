@@ -72,27 +72,39 @@ def apply():
     @h.monkeypatch(tg, tg.decorators)
     @decorator
     def without_trailing_slash(func, *args, **kwargs):
-        '''Monkey-patched to use 301 redirects for SEO, and handle query strings, and HEAD'''
+        '''Monkey-patched to use 301 redirects for SEO, and handle query strings, and other methods (308 keeps POST)'''
         __traceback_hide__ = 'before_and_this'  # for paste/werkzeug shorter traces
         response_type = getattr(request, 'response_type', None)
-        if (request.method in ('GET', 'HEAD') and request.path.endswith('/') and not response_type):
+        # no redirects during error validation re-display, base form controller might use decorator but shouldn't apply
+        validation = getattr(request, 'validation', None)
+        validation_failed = validation and (validation.exception or validation.errors)
+        if request.path.endswith('/') and not response_type and not validation_failed:
             location = request.path_url[:-1]
             if request.query_string:
                 location += '?' + request.query_string
-            raise webob.exc.HTTPMovedPermanently(location=location)
+            if request.method in ('GET', 'HEAD'):
+                raise webob.exc.HTTPMovedPermanently(location=location)
+            else:
+                raise webob.exc.HTTPPermanentRedirect(location=location)
         return func(*args, **kwargs)
 
     @h.monkeypatch(tg, tg.decorators)
     @decorator
     def with_trailing_slash(func, *args, **kwargs):
-        '''Monkey-patched to use 301 redirects for SEO, and handle query strings, and HEAD'''
+        '''Monkey-patched to use 301 redirects for SEO, and handle query strings, and other methods (308 keeps POST)'''
         __traceback_hide__ = 'before_and_this'  # for paste/werkzeug shorter traces
         response_type = getattr(request, 'response_type', None)
-        if (request.method in ('GET', 'HEAD') and not request.path.endswith('/') and not response_type):
+        # no redirects during error validation re-display, base form controller might use decorator but shouldn't apply
+        validation = getattr(request, 'validation', None)
+        validation_failed = validation and (validation.exception or validation.errors)
+        if not request.path.endswith('/') and not response_type and not validation_failed:
             location = request.path_url + '/'
             if request.query_string:
                 location += '?' + request.query_string
-            raise webob.exc.HTTPMovedPermanently(location=location)
+            if request.method in ('GET', 'HEAD'):
+                raise webob.exc.HTTPMovedPermanently(location=location)
+            else:
+                raise webob.exc.HTTPPermanentRedirect(location=location)
         return func(*args, **kwargs)
 
     orig_Supplement_extraData = paste.exceptions.errormiddleware.Supplement.extraData
