@@ -156,6 +156,14 @@ def matching_audits(pattern, **query):
     return [entry for entry in M.AuditLog.query.find(query) if pattern.search(entry.message or '')]
 
 
+def matching_tasks(task_name, **kwargs):
+    """Tasks named ``task_name`` whose decrypted kwargs match ``kwargs``, like a ``kwargs.<key>`` Mongo query"""
+    def matches(actual, expected):
+        return expected in actual if isinstance(actual, list) else actual == expected
+    return [task for task in M.MonQTask.query.find({'task_name': task_name})
+            if all(matches(task.kwargs.get(k), v) for k, v in kwargs.items())]
+
+
 @contextlib.contextmanager
 def audits(*messages, user=False, actor=r'.*', ip_addr=r'.*', user_agent=r'.*', event_type=None):
     """

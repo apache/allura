@@ -34,7 +34,7 @@ from tg import app_globals as g
 from tg import config
 
 from allura.lib.mail_util import email_policy
-from allura.tests.decorators import assert_equivalent_urls
+from allura.tests.decorators import assert_equivalent_urls, matching_tasks
 from allura.tests.test_globals import squish_spaces
 from alluratest.controller import TestController, setup_basic_test
 from allura import model as M
@@ -1917,22 +1917,13 @@ class TestFunctionalController(TrackerTestController):
         assert len(emails) == 3
         for email in emails:
             assert email.kwargs.subject == '[test:bugs] Mass edit changes by Test Admin'
-        first_user_email = M.MonQTask.query.find({
-            'task_name': 'allura.tasks.mail_tasks.sendmail',
-            'kwargs.destinations': str(first_user._id)
-        }).all()
+        first_user_email = matching_tasks('allura.tasks.mail_tasks.sendmail', destinations=str(first_user._id))
         assert len(first_user_email) == 1
         first_user_email = first_user_email[0]
-        second_user_email = M.MonQTask.query.find({
-            'task_name': 'allura.tasks.mail_tasks.sendmail',
-            'kwargs.destinations': str(second_user._id)
-        }).all()
+        second_user_email = matching_tasks('allura.tasks.mail_tasks.sendmail', destinations=str(second_user._id))
         assert len(second_user_email) == 1
         second_user_email = second_user_email[0]
-        admin_email = M.MonQTask.query.find({
-            'task_name': 'allura.tasks.mail_tasks.sendmail',
-            'kwargs.destinations': str(admin._id)
-        }).all()
+        admin_email = matching_tasks('allura.tasks.mail_tasks.sendmail', destinations=str(admin._id))
         assert len(admin_email) == 1
         admin_email = admin_email[0]
 
@@ -1992,14 +1983,8 @@ class TestFunctionalController(TrackerTestController):
         for email in emails:
             assert email.kwargs.subject == '[test:bugs] Mass edit changes by Test Admin'
         admin = M.User.by_username('test-admin')
-        admin_email = M.MonQTask.query.find({
-            'task_name': 'allura.tasks.mail_tasks.sendmail',
-            'kwargs.destinations': str(admin._id)
-        }).all()
-        monitoring_email = M.MonQTask.query.find({
-            'task_name': 'allura.tasks.mail_tasks.sendmail',
-            'kwargs.destinations': 'monitoring@email.com'
-        }).all()
+        admin_email = matching_tasks('allura.tasks.mail_tasks.sendmail', destinations=str(admin._id))
+        monitoring_email = matching_tasks('allura.tasks.mail_tasks.sendmail', destinations='monitoring@email.com')
         assert len(admin_email) == 1
         assert len(monitoring_email) == 1
         admin_email_text = admin_email[0].kwargs.text
@@ -2032,14 +2017,8 @@ class TestFunctionalController(TrackerTestController):
         for email in emails:
             assert email.kwargs.subject == '[test:bugs] Mass edit changes by Test Admin'
         admin = M.User.by_username('test-admin')
-        admin_email = M.MonQTask.query.find({
-            'task_name': 'allura.tasks.mail_tasks.sendmail',
-            'kwargs.destinations': str(admin._id)
-        }).all()
-        monitoring_email = M.MonQTask.query.find({
-            'task_name': 'allura.tasks.mail_tasks.sendmail',
-            'kwargs.destinations': 'monitoring@email.com'
-        }).all()
+        admin_email = matching_tasks('allura.tasks.mail_tasks.sendmail', destinations=str(admin._id))
+        monitoring_email = matching_tasks('allura.tasks.mail_tasks.sendmail', destinations='monitoring@email.com')
         assert len(admin_email) == 1
         assert len(monitoring_email) == 1
         admin_email_text = admin_email[0].kwargs.text
@@ -2072,14 +2051,8 @@ class TestFunctionalController(TrackerTestController):
         for email in emails:
             assert email.kwargs.subject == '[test:bugs] Mass edit changes by Test Admin'
         admin = M.User.by_username('test-admin')
-        admin_email = M.MonQTask.query.find({
-            'task_name': 'allura.tasks.mail_tasks.sendmail',
-            'kwargs.destinations': str(admin._id)
-        }).all()
-        monitoring_email = M.MonQTask.query.find({
-            'task_name': 'allura.tasks.mail_tasks.sendmail',
-            'kwargs.destinations': 'monitoring@email.com'
-        }).all()
+        admin_email = matching_tasks('allura.tasks.mail_tasks.sendmail', destinations=str(admin._id))
+        monitoring_email = matching_tasks('allura.tasks.mail_tasks.sendmail', destinations='monitoring@email.com')
         assert len(admin_email) == 1
         assert len(monitoring_email) == 0
 
@@ -3276,22 +3249,13 @@ class TestBulkMove(TrackerTestController):
         for email in emails:
             assert (email.kwargs.subject ==
                     '[test:bugs] Mass ticket moving by Test Admin')
-        first_user_email = M.MonQTask.query.find({
-            'task_name': 'allura.tasks.mail_tasks.sendmail',
-            'kwargs.destinations': str(first_user._id)
-        }).all()
+        first_user_email = matching_tasks('allura.tasks.mail_tasks.sendmail', destinations=str(first_user._id))
         assert len(first_user_email) == 1
         first_user_email = first_user_email[0]
-        second_user_email = M.MonQTask.query.find({
-            'task_name': 'allura.tasks.mail_tasks.sendmail',
-            'kwargs.destinations': str(second_user._id)
-        }).all()
+        second_user_email = matching_tasks('allura.tasks.mail_tasks.sendmail', destinations=str(second_user._id))
         assert len(second_user_email) == 1
         second_user_email = second_user_email[0]
-        admin_email = M.MonQTask.query.find({
-            'task_name': 'allura.tasks.mail_tasks.sendmail',
-            'kwargs.destinations': str(admin._id)
-        }).all()
+        admin_email = matching_tasks('allura.tasks.mail_tasks.sendmail', destinations=str(admin._id))
         assert len(admin_email) == 1
         admin_email = admin_email[0]
 
@@ -3339,14 +3303,8 @@ class TestBulkMove(TrackerTestController):
         for email in emails:
             assert (email.kwargs.subject ==
                     '[test:bugs] Mass ticket moving by Test Admin')
-        admin_email = M.MonQTask.query.find({
-            'task_name': 'allura.tasks.mail_tasks.sendmail',
-            'kwargs.destinations': str(M.User.by_username('test-admin')._id)
-        }).all()
-        monitoring_email = M.MonQTask.query.find({
-            'task_name': 'allura.tasks.mail_tasks.sendmail',
-            'kwargs.destinations': 'monitoring@email.com'
-        }).all()
+        admin_email = matching_tasks('allura.tasks.mail_tasks.sendmail', destinations=str(M.User.by_username('test-admin')._id))
+        monitoring_email = matching_tasks('allura.tasks.mail_tasks.sendmail', destinations='monitoring@email.com')
         assert len(admin_email) == 1
         assert len(monitoring_email) == 1
         admin_email_text = admin_email[0].kwargs.text
@@ -3397,14 +3355,8 @@ class TestBulkMove(TrackerTestController):
             assert (email.kwargs.subject ==
                     '[test:bugs] Mass ticket moving by Test Admin')
         admin = M.User.by_username('test-admin')
-        admin_email = M.MonQTask.query.find({
-            'task_name': 'allura.tasks.mail_tasks.sendmail',
-            'kwargs.destinations': str(admin._id)
-        }).all()
-        monitoring_email = M.MonQTask.query.find({
-            'task_name': 'allura.tasks.mail_tasks.sendmail',
-            'kwargs.destinations': 'monitoring@email.com'
-        }).all()
+        admin_email = matching_tasks('allura.tasks.mail_tasks.sendmail', destinations=str(admin._id))
+        monitoring_email = matching_tasks('allura.tasks.mail_tasks.sendmail', destinations='monitoring@email.com')
         assert len(admin_email) == 1
         assert len(monitoring_email) == 1
         admin_email_text = admin_email[0].kwargs.text
@@ -3444,14 +3396,8 @@ class TestBulkMove(TrackerTestController):
             assert (email.kwargs.subject ==
                     '[test:bugs] Mass ticket moving by Test Admin')
         admin = M.User.by_username('test-admin')
-        admin_email = M.MonQTask.query.find({
-            'task_name': 'allura.tasks.mail_tasks.sendmail',
-            'kwargs.destinations': str(admin._id)
-        }).all()
-        monitoring_email = M.MonQTask.query.find({
-            'task_name': 'allura.tasks.mail_tasks.sendmail',
-            'kwargs.destinations': 'monitoring@email.com'
-        }).all()
+        admin_email = matching_tasks('allura.tasks.mail_tasks.sendmail', destinations=str(admin._id))
+        monitoring_email = matching_tasks('allura.tasks.mail_tasks.sendmail', destinations='monitoring@email.com')
         assert len(admin_email) == 1
         assert len(monitoring_email) == 0
 
