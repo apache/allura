@@ -179,8 +179,12 @@ class TaskCommand(base.Command):
                       help='timeout (in seconds) for busy tasks (only applies to "timeout" command)')
     parser.add_option('--filter-name-prefix', dest='filter_name_prefix', default=None,
                       help='limit to task names starting with this.  Example allura.tasks.index_tasks.')
+    parser.add_option('--filter-exclude-name-prefix', dest='exclude_name_prefixes', action='append', default=[],
+                      help='skip task names starting with this.  Can be repeated.  '
+                           'Example forgesf.commercial.rename_commercial_project')
     parser.add_option('--filter-result-regex', dest='filter_result_regex', default=None,
-                      help='limit to tasks with result matching this regex.  Example "pysolr"')
+                      help='limit to tasks with result matching this regex.  Example "pysolr".  '
+                           'Encrypted results are decrypted and checked one by one')
     parser.add_option('--filter-queued-days-ago', dest='days_ago', type=float, default=None,
                       help='limit to tasks queued more than NUM days ago.  Example "180"')
     parser.add_option('--filter-queued-less-than-days', dest='less_than_days', type=float, default=None,
@@ -228,8 +232,14 @@ class TaskCommand(base.Command):
     def _add_filters(self, q):
         if self.options.filter_name_prefix:
             q['task_name'] = {'$regex': fr'^{re.escape(self.options.filter_name_prefix)}.*'}
+        if self.options.exclude_name_prefixes:
+            q.setdefault('task_name', {})['$nin'] = [
+                re.compile(fr'^{re.escape(prefix)}') for prefix in self.options.exclude_name_prefixes]
         if self.options.filter_result_regex:
-            q['result'] = {'$regex': self.options.filter_result_regex}
+            q['$or'] = [
+                {'result': {'$regex': self.options.filter_result_regex}},
+                {'encrypted': True},  # checked below
+            ]
         if self.options.days_ago:
             q['time_queue'] = {'$lt': datetime.utcnow() - timedelta(days=self.options.days_ago)}
         if self.options.less_than_days:
@@ -237,7 +247,22 @@ class TaskCommand(base.Command):
             q['time_queue']['$gt'] = datetime.utcnow() - timedelta(days=self.options.less_than_days)
         if self.verbose:
             print(q)
+        if self.options.filter_result_regex:
+            q = self._match_encrypted_results(q)
         return q
+
+    def _match_encrypted_results(self, q):
+        '''Mongo can't regex-match encrypted results, so match them here and narrow the query to those tasks'''
+        from allura import model as M
+        regex = re.compile(self.options.filter_result_regex)
+        ids = []
+        for t in M.MonQTask.query.find(q):
+            if t.encrypted:
+                result = t.result
+                if not (isinstance(result, str) and regex.search(result)):
+                    continue
+            ids.append(t._id)
+        return {**q, '_id': {'$in': ids}}
 
     def _print_query(self, cmd, *args):
         print(f'running mongod cmd: {cmd}, {args}')
