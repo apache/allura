@@ -645,7 +645,7 @@ class SVNImplementation(M.RepositoryImplementation):
             tree_path = '/' + os.path.dirname(paths[0].strip('/'))
         else:
             # always leading slash, never trailing
-            tree_path = '/' + os.path.commonprefix(paths).strip('/')
+            tree_path = '/' + os.path.commonpath(paths).strip('/')
         paths = [path.strip('/') for path in paths]
         rev = self._revision(commit._id)
         try:
