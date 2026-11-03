@@ -30,7 +30,7 @@ from paste.deploy.converters import asbool
 import ming
 from ming.utils import LazyProperty
 from ming import schema as S
-from ming.odm import session, FieldProperty
+from ming.odm import session, FieldProperty, FieldPropertyWithMissingNone, EncryptableFieldProperty
 from ming.odm.declarative import MappedClass
 
 from allura.lib.helpers import log_output, null_contextmanager, notifications_disabled
@@ -63,6 +63,8 @@ class MonQTask(MappedClass):
         - args - ``*args`` to be sent to the task function
         - kwargs - ``**kwargs`` to be sent to the task function
         - result - if the task is complete, the return value. If in error, the traceback.
+        - encrypted - if True, args, kwargs and result are stored only in their ``_encrypted`` fields, so they
+          can't be queried
     '''
     states = ('ready', 'busy', 'error', 'complete', 'skipped')
     result_types = ('keep', 'forget')
@@ -101,14 +103,25 @@ class MonQTask(MappedClass):
         app_config_id=S.ObjectId,
         user_id=S.ObjectId,
         notifications_disabled=bool))
-    args = FieldProperty([])
-    kwargs = FieldProperty({None: None})
-    result = FieldProperty(None, if_missing=None)
+    # these are left out of plaintext tasks, since code without them can't load tasks that have them
+    encrypted = FieldPropertyWithMissingNone(bool, if_missing=S.Missing)
+    args = EncryptableFieldProperty([], encrypted_field='args_encrypted', enabled_by='encrypted')
+    args_encrypted = FieldPropertyWithMissingNone(S.Binary, if_missing=S.Missing)
+    kwargs = EncryptableFieldProperty({None: None}, encrypted_field='kwargs_encrypted', enabled_by='encrypted')
+    kwargs_encrypted = FieldPropertyWithMissingNone(S.Binary, if_missing=S.Missing)
+    result = EncryptableFieldProperty(None, if_missing=None, encrypted_field='result_encrypted', enabled_by='encrypted')
+    result_encrypted = FieldPropertyWithMissingNone(S.Binary, if_missing=S.Missing)
 
     sort = [
         ('priority', ming.DESCENDING),
         ('time_queue', ming.ASCENDING),
     ]
+
+    def __init__(self, encrypted=False, **kwargs):
+        if encrypted:
+            self.encrypted = True  # first, encryptable fields read it when assigned
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
     def __repr__(self):
         from allura import model as M
@@ -149,8 +162,12 @@ class MonQTask(MappedClass):
              priority=10,
              delay=0,
              flush_immediately=True,
+             encrypt=False,
              ):
-        '''Create a new task object based on the current context.'''
+        '''Create a new task object based on the current context.
+
+        Use ``encrypt=True`` for tasks whose args, kwargs or result hold PII or secrets.
+        '''
         if args is None:
             args = ()
         if kwargs is None:
@@ -171,6 +188,7 @@ class MonQTask(MappedClass):
         if getattr(c, 'user', None):
             context['user_id'] = c.user._id
         obj = cls(
+            encrypted=encrypt,
             state='ready',
             priority=priority,
             result_type=result_type,

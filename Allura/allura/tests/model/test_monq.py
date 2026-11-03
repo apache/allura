@@ -17,10 +17,12 @@
 
 import pprint
 
+from bson import ObjectId
 from ming.odm import ThreadLocalODMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
+from allura.model.session import task_doc_session
 
 
 def setup_module():
@@ -38,3 +40,35 @@ def test_basic_task():
     assert task
     task()
     assert task.result == 'I[5, 6]', task.result
+
+
+def test_encrypted_task():
+    oid = ObjectId()
+    task = M.MonQTask.post(pprint.pformat, ([5, oid],), {'width': 40}, encrypt=True)
+    ThreadLocalODMSession.flush_all()
+    ThreadLocalODMSession.close_all()
+    task = M.MonQTask.query.get(_id=task._id)
+    assert task.args == [[5, oid]]
+    assert task.kwargs.width == 40
+    task()
+
+    raw = task_doc_session.db.monq_task.find_one({'_id': task._id})
+    assert raw['encrypted'] is True
+    assert not raw.get('args') and not raw.get('kwargs') and raw.get('result') is None
+    assert M.MonQTask.decr_value(raw['args_encrypted']) == [[5, oid]]
+    assert M.MonQTask.decr_value(raw['result_encrypted']) == pprint.pformat([5, oid], width=40)
+    assert M.MonQTask.query.get(_id=task._id).result == pprint.pformat([5, oid], width=40)
+
+
+def test_unencrypted_task_has_no_encryption_fields():
+    task = M.MonQTask.post(pprint.pformat, ([5, 6],))
+    ThreadLocalODMSession.flush_all()
+    ThreadLocalODMSession.close_all()
+    task = M.MonQTask.query.get(_id=task._id)
+    task()
+
+    assert not task.encrypted
+    raw = task_doc_session.db.monq_task.find_one({'_id': task._id})
+    assert not {'encrypted', 'args_encrypted', 'kwargs_encrypted', 'result_encrypted'} & raw.keys()
+    assert raw['args'] == [[5, 6]]
+    assert '[5, 6]' in raw['result']

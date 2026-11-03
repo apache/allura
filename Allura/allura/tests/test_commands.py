@@ -17,6 +17,7 @@
 
 
 import datetime
+import pprint
 
 from testfixtures import OutputCapture
 
@@ -328,6 +329,32 @@ class TestTaskCommand:
         ])
         assert exit_code == 0
         assert M.MonQTask.query.find().count() == 0
+
+    def test_retry_encrypted_result(self):
+        plain = M.MonQTask.post(pprint.pformat, ('x',))
+        encrypted = M.MonQTask.post(pprint.pformat, ('x',), encrypt=True)
+        other = M.MonQTask.post(pprint.pformat, ('x',), encrypt=True)
+        for task, result in [(plain, 'pysolr error'), (encrypted, 'pysolr error'), (other, 'SMTP error')]:
+            task.state = 'error'
+            task.result = result
+        ThreadLocalODMSession.flush_all()
+
+        exit_code = taskd.TaskCommand('task').run([test_config, 'retry', '--filter-result-regex', 'pysolr'])
+        assert exit_code == 0
+        ThreadLocalODMSession.close_all()
+        states = {t._id: t.state for t in M.MonQTask.query.find()}
+        assert states == {plain._id: 'ready', encrypted._id: 'ready', other._id: 'error'}
+
+    def test_purge_exclude_name_prefix(self):
+        self.test_commit()
+        kept = M.MonQTask.post(pprint.pformat, ('x',))
+        M.MonQTask.query.update({}, {'$set': {'state': 'complete'}}, multi=True)
+
+        exit_code = taskd.TaskCommand('task').run([
+            test_config, 'purge', '--filter-exclude-name-prefix', 'pprint.',
+        ])
+        assert exit_code == 0
+        assert [t._id for t in M.MonQTask.query.find()] == [kept._id]
 
 
 class TestTaskdCleanupCommand:

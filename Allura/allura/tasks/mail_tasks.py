@@ -51,7 +51,7 @@ def mail_meta_content(metalink):
     </div>""") % metalink
 
 
-@task
+@task(encrypt=True)
 def route_email(
         peer, mailfrom, rcpttos, data):
     '''
@@ -137,7 +137,7 @@ def create_multipart_msg(text, metalink=None):
     return multi_msg, plain_msg
 
 
-@task
+@task(encrypt=True)
 def sendmail(fromaddr, destinations, text, reply_to, subject,
              message_id, in_reply_to=None, sender=None, references=None, metalink=None):
     '''
@@ -198,7 +198,7 @@ def sendmail(fromaddr, destinations, text, reply_to, subject,
         in_reply_to, plain_msg, sender=sender, references=references)
 
 
-@task
+@task(encrypt=True)
 def sendsimplemail(
         fromaddr,
         toaddr,

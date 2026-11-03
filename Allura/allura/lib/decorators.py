@@ -42,7 +42,7 @@ from allura.lib import helpers as h
 log = logging.getLogger(__name__)
 
 
-def task(*args, notifications_disabled=False):
+def task(*args, notifications_disabled=False, encrypt=False):
     """Decorator that adds a ``.post()`` function to the decorated callable.
 
     Calling ``<original_callable>.post(*args, **kw)`` queues the callable for
@@ -64,6 +64,11 @@ def task(*args, notifications_disabled=False):
             # No email notifications will be sent for c.project during this task
             pass
 
+        @task(encrypt=True)
+        def send_to(email):
+            # args, kwargs and result are stored encrypted, since they hold PII
+            pass
+
         myfunc.post(foo=bar, __task_delay=10)
 
     """
@@ -76,6 +81,7 @@ def task(*args, notifications_disabled=False):
                     task_kwargs[k[7:]] = kwargs.pop(k)
                 if k in ('delay', 'flush_immediately'):  # backwards compatibility for no __task_ prefix
                     task_kwargs[k] = kwargs.pop(k)
+            task_kwargs.setdefault('encrypt', encrypt)
             project = getattr(c, 'project', None)
             cm = h.notifications_disabled if project and notifications_disabled else h.null_contextmanager
             with cm(project):

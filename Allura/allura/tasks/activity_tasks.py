@@ -26,7 +26,7 @@ def create_timelines(node_id):
     g.director.create_timelines(node_id)
 
 
-@task
+@task(encrypt=True)
 def change_user_name(user_id, new_name):
     Activity.query.update(
         {'actor.node_id': f"User:{user_id}"},
