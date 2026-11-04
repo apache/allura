@@ -65,7 +65,7 @@ diff-match-patch==20230430
     # via sxsdiff
 distlib==0.4.3
     # via virtualenv
-dnspython==2.9.0
+dnspython==2.9.2
     # via pymongo
 docutils==0.23
     # via
