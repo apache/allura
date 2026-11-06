@@ -17,6 +17,7 @@ Upgrade Instructions
     scripts/migrations/040-field-encryption-cleanup.sh
 
 Security Improvements
+ * fix CVE-2026-118196: OAuth1 rebinding
  * [#8625] Implement field level encryption for audit log
  * [#8626] Log raw email headers and SPF/DMARC/DKIM verification results for monitor mode
  * reject /auth/ and /rest/ requests made as subresources
