@@ -34,7 +34,6 @@ PasteScript
 Pillow
 # profanity filter for feedback
 profanityfilter
-pyasynchat
 Pygments
 pymongo[encryption]
 Pypeline[creole,markdown,textile,rst]
