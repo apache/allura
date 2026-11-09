@@ -152,12 +152,6 @@ ensure_index
 .. program-output:: paster ensure_index development.ini --help
 
 
-ircbot
-------
-
-.. program-output:: paster ircbot development.ini --help
-
-
 reindex
 -------
 

@@ -31,7 +31,7 @@ This is a multi-package monorepo. Each top-level directory is an independently `
 - `Allura/` — the core platform: web framework glue, models, auth, permissions, task/event bus, base
   controllers, templates. Everything else depends on this.
 - `AlluraTest/` — shared test harness/fixtures (`alluratest.controller`) used by every other package's tests.
-- `Forge*/` (ForgeTracker, ForgeWiki, ForgeDiscussion, ForgeGit, ForgeSVN, ForgeBlog, ForgeChat, ForgeActivity,
+- `Forge*/` (ForgeTracker, ForgeWiki, ForgeDiscussion, ForgeGit, ForgeSVN, ForgeBlog, ForgeActivity,
   ForgeLink, ForgeShortUrl, ForgeFiles, ForgeFeedback, ForgeUserStats, ForgeImporters) — individual "tools"
   (plugins) that plug into the core platform. Each has its own `setup.py`/`pyproject.toml`, own package dir
   (lowercase, e.g. `forgetracker/`) and its own tests.
