@@ -100,7 +100,7 @@ def check_ming_config(config: dict):
 def configure_ming(conf):
     conf = clean_ming_config(conf)
     check_ming_config(conf)
-    ming.configure(**conf)
+    ming.configure(share_engines=True, **conf)
 
 
 def permanent_redirect(url):
