@@ -285,7 +285,7 @@ six==1.17.0
     #   webhelpers2
 smmap==5.0.3
     # via gitdb
-soupsieve==4.0.1
+soupsieve==4.1
     # via beautifulsoup4
 sphinxcontrib-napoleon==0.7
     # via defopt
