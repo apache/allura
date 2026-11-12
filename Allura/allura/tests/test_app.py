@@ -123,8 +123,9 @@ class TestApp:
             app.SitemapEntry('d', 'd/')]])
         assert len(sm.children) == 3
 
+    @mock.patch('allura.app.has_access', return_value=True)
     @mock.patch('allura.app.Application.PostClass.query.get')
-    def test_handle_artifact_unicode(self, qg):
+    def test_handle_artifact_unicode(self, qg, has_access):
         """
         Tests that app.handle_artifact_message can accept utf strings
         """
