@@ -19,7 +19,12 @@
 
 PIP=$(command -v uv >/dev/null 2>&1 && echo "uv pip" || echo "pip")
 
-APPS=(Allura* *Forge*)
+#APPS=(Allura* *Forge*)
+APPS=()
+# skip directories that are not python projects
+for d in Allura* *Forge*; do
+    [ -f "$d/pyproject.toml" ] || [ -f "$d/setup.py" ] && APPS+=("$d")
+done
 
 # the "${...-e}" magic is inspired by this stack exchange and turns a list into a oneline
 # https://unix.stackexchange.com/a/445522
