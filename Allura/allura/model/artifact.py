@@ -46,6 +46,7 @@ from .index import ArtifactReference, Shortlink
 from .types import ACL, MarkdownCache
 from .project import AppConfig
 from .notification import MailFooter
+from .timeline import has_app_config_access
 
 from .filesystem import File
 
@@ -195,21 +196,18 @@ class Artifact(MappedClass, SearchIndexable):
             # don't link to artifacts in deleted tools
             if hasattr(artifact, 'app_config') and artifact.app_config is None:
                 continue
-            try:
-                if user and not h.has_access(artifact, 'read', user):
-                    continue
-            except Exception:
-                log.debug('Error doing permission check on related artifacts of {}, '
-                          'probably because the "artifact" is a Commit not a real artifact'.format(self.index_id()),
-                          exc_info=True)
-
             # TODO: This should be refactored. We shouldn't be checking
             # artifact type strings in platform code.
-            if artifact.type_s == 'Commit' and not artifact.repo:
+            if artifact.type_s == 'Commit':
                 ac = AppConfig.query.get(_id=ref.artifact_reference['app_config_id'])
-                app = ac.project.app_instance(ac) if ac else None
-                if app:
-                    artifact.set_context(app.repo)
+                if ac is None or (user and not has_app_config_access(ac._id, 'read', user)):
+                    continue
+                if not artifact.repo:
+                    app = ac.project.app_instance(ac)
+                    if app:
+                        artifact.set_context(app.repo)
+            elif user and not h.has_access(artifact, 'read', user):
+                continue
             if artifact not in related_artifacts and (getattr(artifact, 'deleted', False) is False):
                 related_artifacts.append(artifact)
         return sorted(related_artifacts, key=lambda a: a.url())

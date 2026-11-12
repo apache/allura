@@ -34,10 +34,11 @@ from allura.lib import helpers as h
 from allura.lib import macro
 from allura.lib.utils import pkg_file
 from alluratest.controller import TestController, TestRestApiBase
-from allura.tests.decorators import with_tool
+from allura.tests.decorators import with_tool, with_wiki
 from allura.tests.test_globals import squish_spaces
 from forgegit.tests import with_git
 from forgegit import model as GM
+from forgewiki import model as WM
 import six
 
 
@@ -120,6 +121,28 @@ class TestRootController(_TestCase):
         c.app.repo.name = 'weird-chars.git'
         ThreadLocalODMSession.flush_all()
         c.app.repo.refresh()
+
+    @with_wiki
+    def test_related_commit_access(self):
+        self.app.get('/wiki/Home/')
+        h.set_context('test', 'src-git', neighborhood='Projects')
+        oid = c.app.repo.commit('HEAD')._id
+        h.set_context('test', 'wiki', neighborhood='Projects')
+        page = WM.Page.query.get(title='Home', app_config_id=c.app.config._id)
+        commit_ref = M.ArtifactReference.query.get(_id=f'allura.model.repository.Commit#{oid}')
+        page_ref = M.ArtifactReference.query.get(_id=page.index_id())
+        page_ref.references.append(commit_ref._id)
+        ThreadLocalODMSession.flush_all()
+        commit_url = f'/p/test/src-git/ci/{oid}/'
+
+        assert commit_url in self.app.get('/wiki/Home/', extra_environ=dict(username='*anonymous'))
+
+        h.set_context('test', 'src-git', neighborhood='Projects')
+        c.app.config.acl = [M.ACE.allow(M.ProjectRole.by_name('Admin')._id, 'read')]
+        ThreadLocalODMSession.flush_all()
+
+        assert commit_url not in self.app.get('/wiki/Home/', extra_environ=dict(username='*anonymous'))
+        assert commit_url in self.app.get('/wiki/Home/')
 
     def test_status(self):
         resp = self.app.get('/src-git/status')
