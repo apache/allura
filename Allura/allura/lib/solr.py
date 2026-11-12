@@ -62,6 +62,11 @@ def escape_solr_arg(term):
     return term
 
 
+def quote_solr_arg(term: str) -> str:
+    """ Wrap a term in quotes, so the whole thing (spaces and symbols too) is one exact value """
+    return '"' + term.replace('\\', r'\\').replace('"', r'\"') + '"'
+
+
 def make_solr_from_config(push_servers: Iterable[str], query_server: str | None = None,
                           push_servers_auths: Iterable[tuple[str, str] | None] = (),
                           query_server_auth: tuple[str, str] | None = None,

@@ -240,8 +240,25 @@ class TestIndexTasks:
         M.main_orm_session.clear()
         new_shortlinks = M.Shortlink.query.find().count()
         assert old_shortlinks == new_shortlinks, 'Shortlinks not deleted'
-        solr_query = 'id:({})'.format(' || '.join(ref_ids))
+        solr_query = 'id:({})'.format(' || '.join(f'"{ref_id}"' for ref_id in ref_ids))
         solr.delete.assert_called_once_with(q=solr_query)
+
+    def test_del_artifacts_escapes_ids(self):
+        odd_id = 'allura/model/discuss/Post#x) || *:* || (y'
+        quoted_id = 'allura/model/discuss/Post#a"b\\c'
+        normal_id = 'allura/model/discuss/Post#abc123'
+        g.solr.db.clear()
+        g.solr.add([{'id': i, 'text': ''} for i in (odd_id, quoted_id, normal_id, 'other#1', 'other#2')])
+
+        with mock.patch('allura.tasks.index_tasks.g.solr') as solr:
+            index_tasks.del_artifacts([odd_id, quoted_id])
+            assert solr.delete.call_args[1]['q'] == (
+                'id:("allura/model/discuss/Post#x) || *:* || (y" || "allura/model/discuss/Post#a\\"b\\\\c")')
+
+        index_tasks.del_artifacts([odd_id])
+        assert sorted(g.solr.db) == sorted([quoted_id, normal_id, 'other#1', 'other#2'])
+        index_tasks.del_artifacts([normal_id])
+        assert sorted(g.solr.db) == sorted([quoted_id, 'other#1', 'other#2'])
 
 
 class TestMailTasks:
