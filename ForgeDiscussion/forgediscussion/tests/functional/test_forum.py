@@ -585,6 +585,28 @@ class TestForum(TestController):
         assert '5 posts marked as spam' in self.webflash(r)
         assert 5 == FM.ForumPost.query.find({'status': 'spam'}).count()
 
+    def test_site_search_checks_forum_access(self):
+        forum = FM.Forum.query.get(shortname='testforum')
+        self.app.post('/admin/discussion/update_forums', params={
+            'forum-0.id': str(forum._id),
+            'forum-0.name': 'Test Forum',
+            'forum-0.shortname': 'testforum',
+            'forum-0.description': '',
+            'forum-0.monitoring_email': '',
+            'forum-0.members_only': 'on'})
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
+        params = {field['name']: field.get('value') or '' for field in f.find_all('input') if field.has_attr('name')}
+        params[f.find('textarea')['name']] = 'sfquery sfmarker'
+        params[f.find('select')['name']] = 'testforum'
+        params[f.find('input', {'style': 'width: 90%'})['name']] = 'members topic'
+        self.app.post('/discussion/save_new_topic', params=params)
+        M.MonQTask.run_ready()
+        assert 'sfmarker' in self.app.get('/search/', params=dict(q='sfquery'))
+        for username in ('test-user', '*anonymous'):
+            r = self.app.get('/search/', params=dict(q='sfquery'), extra_environ=dict(username=username))
+            assert 'sfmarker' not in r
+
     def test_bulk_user_moderation_per_forum(self):
         for shortname in ('secret', 'pub'):
             r = self.app.get('/admin/discussion/forums')

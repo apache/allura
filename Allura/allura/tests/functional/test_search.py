@@ -170,6 +170,13 @@ class TestSearch(TestController):
                             extra_environ=dict(username='*anonymous'))
         resp.mustcontain('lsnapsecret')
 
+    def test_global_search_has_no_users(self):
+        g.solr.add([M.User.by_username('test-admin').solarize()])
+        params = dict(q='username_s:test-admin', history='1')
+        assert g.solr.search(params['q']).hits == 1
+        r = self.app.get('/search/', params=params)
+        assert '/u/test-admin/' not in r.html.find('div', id='content_base').decode()
+
     # use test2 project since 'test' project has a subproject and MockSOLR can't handle "OR" (caused by subproject)
     @with_tool('test2', 'Wiki', 'wiki')
     # include a wiki on 'test' project too though, for testing that searches are limited to correct project

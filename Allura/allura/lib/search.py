@@ -429,6 +429,9 @@ def search_app(q='', fq=None, app: bool = True, history: bool = False, project: 
                     primary = live.primary()
                     if not has_access(primary, 'read', c.user):
                         return None
+                    # a post's own ACL check skips its thread (and so its forum)
+                    if isinstance(live, Post) and live.thread and not has_access(live.thread, 'read', c.user):
+                        return None
                     # hide soft-deleted content, including anything hanging off a soft-deleted
                     # parent (e.g. a deleted ticket's comments)
                     if getattr(live, 'deleted', False) or getattr(primary, 'deleted', False):
@@ -437,6 +440,10 @@ def search_app(q='', fq=None, app: bool = True, history: bool = False, project: 
                     if getattr(getattr(primary, 'project', None), 'deleted', False):
                         return None
                     if getattr(primary, 'state', None) == 'draft' and not has_access(primary, 'write', c.user):
+                        return None
+                    # tools with their own 'view_private' permission, e.g. ForgeShortUrl
+                    if getattr(primary, 'private', False) is True and 'view_private' in primary.app.permissions \
+                            and not has_access(primary.app_config, 'view_private', c.user):
                         return None
                     # unmoderated (pending/spam) comment; hide until approved.  isinstance, not a
                     # `status` attribute check -- Ticket.status is open/closed and would wrongly
@@ -460,9 +467,7 @@ def search_app(q='', fq=None, app: bool = True, history: bool = False, project: 
                     if project is None or project.deleted or not has_access(project, 'read', c.user):
                         return None
                     return doc
-                if doc.get('type_s') == 'User':
-                    return doc  # no ACL concept for User docs
-                # any other non-artifact doc type we don't explicitly know how to check:
+                # any other doc type (e.g. User) we don't explicitly know how to check:
                 # fail closed rather than returning it unchecked
                 return None
 
