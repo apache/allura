@@ -20,6 +20,7 @@ import pytest
 import random
 import logging
 from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 
@@ -122,9 +123,44 @@ class TestForumEmail(TestController):
         assert 'alternate' in str(r)
         assert 'python-logo.png' in str(r)
 
+    def _multipart_with_file(self) -> MIMEMultipart:
+        msg = MIMEMultipart(_subparts=[MIMEText('some text', policy=email_policy)], policy=email_policy)
+        att = MIMEApplication(b'payload', Name='update.exe', policy=email_policy)
+        att.add_header('Content-Disposition', 'attachment', filename='update.exe')
+        msg.attach(att)
+        return msg
+
+    def _create_topic(self) -> FM.ForumPost:
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
+        params = {i['name']: i.get('value') or '' for i in f.find_all('input') if i.has_attr('name')}
+        params[f.find('textarea')['name']] = 'Admin topic'
+        params[f.find('select')['name']] = self.forum.shortname
+        params[f.find('input', {'style': 'width: 90%'})['name']] = 'Admin topic'
+        self.app.post('/discussion/save_new_topic', params=params)
+        return FM.ForumPost.query.find().first()
+
+    def test_email_attachment_to_own_new_post(self):
+        user_email = M.User.by_username('test-user').email_addresses[0]
+        msg = self._multipart_with_file()
+        msg['Message-ID'] = '<newpost@example.com>'
+        self._post_email(user_email, [self.forum.email_address], 'From user', msg)
+        post = FM.ForumPost.query.get(_id='newpost@example.com')
+        assert post.author().username == 'test-user'
+        assert [a.filename for a in FM.ForumAttachment.query.find(dict(post_id=post._id))] == ['update.exe']
+
+    def test_email_attachment_to_existing_post(self):
+        admin_post = self._create_topic()
+        user_email = M.User.by_username('test-user').email_addresses[0]
+        msg = self._multipart_with_file()
+        msg['Message-ID'] = f'<{admin_post._id}>'
+        self._post_email(user_email, [self.forum.email_address], 'From user', msg)
+        assert FM.ForumAttachment.query.find(dict(post_id=admin_post._id)).count() == 0
+
     def _post_email(self, mailfrom, rcpttos, subject, msg):
         '''msg is MIME message object'''
-        msg['Message-ID'] = '<' + h.gen_message_id() + '>'
+        if not msg['Message-ID']:
+            msg['Message-ID'] = '<' + h.gen_message_id() + '>'
         msg['From'] = mailfrom
         msg['To'] = ', '.join(rcpttos)
         msg['Subject'] = subject
@@ -134,6 +170,7 @@ class TestForumEmail(TestController):
             rcpttos=rcpttos,
             data=msg.as_string())
         M.artifact_orm_session.flush()
+        ThreadLocalODMSession.flush_all()
 
 
 class TestForumMessageHandling(TestController):

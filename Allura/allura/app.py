@@ -730,6 +730,10 @@ class Application(ActivityObject):
         if post and post.thread_id != thd._id:
             log.warning('Ignoring message %s: that id is a post in a different thread', message_id)
             return
+        if post and not has_access(post, 'moderate') \
+                and (c.user.is_anonymous() or post.author_id != c.user._id):
+            log.warning('Ignoring message %s: %s may not modify that post', message_id, c.user.username)
+            return
         # Handle attachments
         if message.get('filename'):
             # Special case - the actual post may not have been created yet
