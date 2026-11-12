@@ -357,6 +357,21 @@ class Test():
             assert "[[include: you don't have a read permission for wiki2:CanNotRead]]" in html
 
     @td.with_wiki
+    @td.with_tool('test2', 'Wiki', 'wiki')
+    def test_macro_include_other_project_context(self):
+        for shortname in ('test', 'test2'):
+            with h.push_context(M.Project.query.get(shortname=shortname)._id, mount_point='wiki'):
+                p = WM.Page.upsert(title='Download')
+                p.text = 'See [Home]'
+                p.commit()
+        ThreadLocalODMSession.flush_all()
+        with h.push_context(M.Project.query.get(shortname='test')._id, mount_point='wiki'):
+            html = g.markdown_wiki.convert('[[include ref=test2:wiki:Download]]')
+            assert c.project.shortname == 'test'
+        assert 'href="/p/test2/wiki/Home/"' in html
+        assert 'href="/p/test/wiki/Home/"' not in html
+
+    @td.with_wiki
     def test_macro_include_deleted_project(self):
         p_test = M.Project.query.get(shortname='test')
         with h.push_context(p_test._id, mount_point='wiki'):
