@@ -59,7 +59,6 @@ from allura.eventslistener import PostEvent
 
 from allura.lib import gravatar, plugin, utils
 from allura.lib import helpers as h
-from allura.lib.macro import uncacheable_macros_names
 from allura.lib.widgets import analytics
 from allura.lib.security import Credentials
 from allura.lib.solr import MockSOLR, make_solr_from_config
@@ -120,11 +119,6 @@ class ForgeMarkdown:
             return Markup("""<p><strong>ERROR!</strong> The markdown supplied could not be parsed correctly.
             Did you forget to surround a code snippet with "~~~~"?</p><pre>%s</pre>""") % h.really_unicode(source)
 
-    @LazyProperty
-    def uncacheable_macro_regex(self):
-        regex_names = '|'.join(uncacheable_macros_names())
-        return re.compile(rf"\[\[\s*({regex_names})\b")
-
     def cached_convert(self, artifact: MappedClass, field_name: str) -> Markup:
         """
         Convert ``artifact.field_name`` markdown source to html, caching
@@ -141,7 +135,7 @@ class ForgeMarkdown:
                 field_name, artifact.__class__.__name__)
             return self.convert(source_text)
 
-        bugfix_rev = 9  # increment this if we need all caches to invalidated (e.g. xss in markdown rendering fixed)
+        bugfix_rev = 10  # increment this if we need all caches to invalidated (e.g. xss in markdown rendering fixed)
         md5 = None
         # If a cached version exists and it is valid, return it.
         if cache.md5 is not None:
@@ -152,7 +146,11 @@ class ForgeMarkdown:
         # Convert the markdown and time the result.
         start = time.time()
         cached_max_length = asint(config.get('markdown_render_max_length.cached', self.base_render_limit() * 2))
+        outer_ran_uncacheable = getattr(c, 'uncacheable_macro_ran', False)
+        c.uncacheable_macro_ran = False
         html = self.convert(source_text, max_length=cached_max_length)
+        ran_uncacheable = c.uncacheable_macro_ran
+        c.uncacheable_macro_ran = outer_ran_uncacheable or ran_uncacheable  # for an enclosing cached_convert
         render_time = time.time() - start
 
         threshold = config.get('markdown_cache_threshold')
@@ -163,8 +161,7 @@ class ForgeMarkdown:
             log.warning('Skipping Markdown caching - The value for config param '
                         '"markdown_cache_threshold" must be a float.')
 
-        # Check if contains macro and never cache
-        if self.uncacheable_macro_regex.search(source_text):
+        if ran_uncacheable:
             if render_time > float(config.get('markdown_cache_threshold.nocache', 0.5)):
                 try:
                     details = artifact.index_id()
