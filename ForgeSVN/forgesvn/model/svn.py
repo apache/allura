@@ -313,6 +313,8 @@ class SVNImplementation(M.RepositoryImplementation):
 
     def commit(self, rev):
         oid = self.rev_parse(rev)
+        if not oid.startswith(self._oid('')):
+            return None
         result = M.repository.Commit.query.get(_id=oid)
         if result:
             result.set_context(self._repo)

@@ -177,6 +177,15 @@ class TestRootController(SVNTestController):
         resp = self.app.get('/src/3/tree/a/')
         assert len(resp.html.find_all('tr')) == 2
 
+    def test_commit_from_other_repo(self):
+        h.set_context('test', 'src', neighborhood='Projects')
+        src_id = str(c.app.repo._id)
+        ThreadLocalODMSession.close_all()
+        self.app.get(f'/p/test/svn-tags/{src_id}:3/', status=404)
+        self.app.get(f'/p/test/svn-tags/{src_id}:4/tree/', status=404)
+        resp = self.app.get('/p/test/src/4/tree/')
+        assert 'trunk' not in resp.text
+
     def test_file(self):
         resp = self.app.get('/src/1/tree/README')
         assert 'README' in resp.html.find('h2', {'class': 'dark title'}).find('span').contents[4]
