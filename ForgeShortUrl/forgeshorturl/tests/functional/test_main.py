@@ -19,6 +19,7 @@ from tg import tmpl_context as c
 from tg import config
 import mock
 
+from allura import model as M
 from allura.lib import helpers as h
 from allura.tests import decorators as td
 from alluratest.controller import TestController
@@ -99,6 +100,18 @@ class TestRootController(TestController):
                      status=404)
         self.app.get('/url/test_private',
                      status=302)
+
+    def test_shorturl_private_in_site_search(self):
+        response = self.app.get('/admin/url/add')
+        response.form['short_url'] = 'secretone'
+        response.form['full_url'] = 'http://example.com/secrettarget'
+        response.form['private'] = 'on'
+        response.form.submit()
+        M.MonQTask.run_ready()
+        params = dict(q='short_name_s:secretone')
+        assert 'secrettarget' in self.app.get('/search/', params=params)
+        assert 'secrettarget' not in self.app.get('/search/', params=params, extra_environ=dict(username='test-user'))
+        assert 'secrettarget' not in self.app.get('/search/', params=params, extra_environ=dict(username='*anonymous'))
 
     def test_shorturl_errors(self):
         d = dict(short_url='amazone',
