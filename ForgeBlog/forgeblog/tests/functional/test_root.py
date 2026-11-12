@@ -58,6 +58,15 @@ class Test(TestController):
         assert create_activity.call_count == 1
         assert create_activity.call_args[0][1] == 'renamed'
 
+    def test_feed_rendered_as_anonymous_on_edit(self):
+        self._post(state='draft', title='Secretdraft', text='draftsecrettext')
+        include = f'[[include ref={self._blog_date()}/secretdraft]]'
+        self._post(title='Pub', text=include)
+        self._post(f'/{self._blog_date()}/pub', title='Pub', text=f'{include}\n\nedited')
+        r = self.app.get('/blog/feed.rss', extra_environ=dict(username='*anonymous'))
+        assert 'edited' in r.text
+        assert 'draftsecrettext' not in r.text
+
     def test_root_index(self):
         self._post()
         d = self._blog_date()

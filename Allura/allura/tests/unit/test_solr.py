@@ -159,6 +159,17 @@ class TestSearchIndexable:
         self.obj.index = lambda: dict(text='# Header')
         assert self.obj.solarize() == dict(text='Header')
 
+    def test_solarize_renders_as_anonymous(self):
+        setup_basic_test()
+        self.obj.index = lambda: dict(text='some text')
+        users = []
+        with h.push_config(c, user=M.User.by_username('test-admin')), \
+                mock.patch('allura.lib.app_globals.ForgeMarkdown.convert',
+                           side_effect=lambda t: users.append(c.user) or t):
+            self.obj.solarize()
+            assert c.user.username == 'test-admin'
+        assert users == [M.User.anonymous()]
+
     def test_solarize_html_in_text(self):
         self.obj.index = lambda: dict(text='<script>a(1)</script>')
         assert self.obj.solarize() == dict(text='<script>a(1)</script>')

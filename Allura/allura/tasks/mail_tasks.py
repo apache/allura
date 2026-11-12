@@ -113,6 +113,7 @@ def create_multipart_msg(text, metalink=None):
     :return:
     """
     from allura.lib.app_globals import ForgeMarkdown
+    from allura import model as M
 
     def replace_html(matchobj):
         text_within_div = matchobj.group(1)
@@ -128,7 +129,9 @@ def create_multipart_msg(text, metalink=None):
                         )
     plain_text = html.unescape(plain_text)  # put literal HTML tags back into plaintext
     plain_msg = mail_util.encode_email_part(plain_text, 'plain')
-    html_text = ForgeMarkdown(email=True).convert(text)
+    # recipients vary, so render only what anyone may see, not what the task's user may see
+    with h.push_config(c, user=M.User.anonymous()):
+        html_text = ForgeMarkdown(email=True).convert(text)
     if metalink:
         html_text = html_text + mail_meta_content(metalink)
     html_msg = mail_util.encode_email_part(html_text, 'html')
