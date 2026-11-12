@@ -424,7 +424,9 @@ def include(ref=None, repo=None, **kw):
         included.add(artifact)
     sb = Include()
     g.resource_manager.register(sb)
-    response = sb.display(artifact=artifact, attrs=kw)
+    # render (and cache) the artifact's text in its own context, e.g. for relative links
+    with h.push_context(artifact.project._id, app_config_id=artifact.app_config_id):
+        response = sb.display(artifact=artifact, attrs=kw)
     return response
 
 
