@@ -421,6 +421,8 @@ class PostController(BaseController, FeedController):
     def history(self, **kw):
         c.confirmation = W.confirmation
         posts = self.post.history()
+        if not has_access(self.post, 'write'):
+            posts = [p for p in posts if p.data.get('state') != 'draft']
         return dict(title=self.post.title, posts=posts)
 
     @without_trailing_slash
@@ -520,9 +522,13 @@ class PostController(BaseController, FeedController):
         if not version:
             return self.post
         try:
-            return self.post.get_version(version)
+            post = self.post.get_version(version)
         except ValueError:
             raise exc.HTTPNotFound()
+        # versions saved while the post was a draft are only for writers
+        if post.data.get('state') == 'draft' and not has_access(self.post, 'write'):
+            raise exc.HTTPNotFound()
+        return post
 
 
 class BlogAdminController(DefaultAdminController):
