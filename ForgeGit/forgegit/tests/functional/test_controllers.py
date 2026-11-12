@@ -1045,6 +1045,25 @@ class TestFork(_TestCase):
                           params=dict(status='rejected')).follow()
         assert 'Merge Request #%s:  (rejected)' % mr_num in r, r
 
+    def test_merge_request_refresh_permission(self):
+        r, mr_num = self._request_merge()
+        url = f'/p/test/src-git/merge-requests/{mr_num}/refresh'
+        mr = M.MergeRequest.query.get(request_number=int(mr_num))
+        head_id = mr.downstream.commit_id
+        commit_id = 'a' * 40
+        mr.downstream['commit_id'] = commit_id
+        ThreadLocalODMSession.flush_all()
+
+        r = self.app.post(url, extra_environ=dict(username='*anonymous'), status=302)
+        assert '/auth/' in r.location
+        self.app.post(url, extra_environ=dict(username='test-user'), status=403)
+        mr = M.MergeRequest.query.get(request_number=int(mr_num))
+        assert mr.downstream.commit_id == commit_id
+
+        self.app.post(url, status=302)
+        mr = M.MergeRequest.query.get(request_number=int(mr_num))
+        assert mr.downstream.commit_id == head_id
+
     def test_merge_request_default_branches(self):
         def _select_val(r, n): return r.html.find('select', {'name': n}).find(selected=True).string
         r = self.app.get('/p/test2/code/request_merge')
