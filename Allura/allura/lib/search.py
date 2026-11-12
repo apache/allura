@@ -436,6 +436,8 @@ def search_app(q='', fq=None, app: bool = True, history: bool = False, project: 
                     # a soft-deleted project's artifacts stay indexed but shouldn't surface
                     if getattr(getattr(primary, 'project', None), 'deleted', False):
                         return None
+                    if getattr(primary, 'state', None) == 'draft' and not has_access(primary, 'write', c.user):
+                        return None
                     # unmoderated (pending/spam) comment; hide until approved.  isinstance, not a
                     # `status` attribute check -- Ticket.status is open/closed and would wrongly
                     # hide most tickets.

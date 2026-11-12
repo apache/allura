@@ -21,6 +21,7 @@ import json
 import tg
 from mock import patch
 
+from allura import model as M
 from allura.lib import helpers as h
 from alluratest.controller import TestController
 from forgeblog import model as BM
@@ -57,6 +58,32 @@ class Test(TestController):
         self._post(slug, title='new title')
         assert create_activity.call_count == 1
         assert create_activity.call_args[0][1] == 'renamed'
+
+    def test_draft_not_in_search_or_include(self):
+        self._post(state='draft', title='Secretdraft', text='draftqueryterm')
+        M.MonQTask.run_ready()
+        anon = dict(username='*anonymous')
+        include = dict(markdown=f'[[include ref={self._blog_date()}/secretdraft]]',
+                       neighborhood='Projects', project='test', app='blog')
+        assert 'Secretdraft' in self.app.get('/search/', params=dict(q='draftqueryterm'))
+        assert 'draftqueryterm' in self.app.get('/nf/markdown_to_html', params=include)
+        assert 'Secretdraft' not in self.app.get('/search/', params=dict(q='draftqueryterm'), extra_environ=anon)
+        assert 'draftqueryterm' not in self.app.get('/nf/markdown_to_html', params=include, extra_environ=anon)
+
+    def test_draft_versions_hidden_after_publish(self):
+        self._post(state='draft', title='Pub', text='draftversiontext')
+        slug = f'/{self._blog_date()}/pub'
+        self._post(slug, title='Pub', text='published text', state='published')
+        M.MonQTask.run_ready()
+        anon = dict(username='*anonymous')
+        assert 'draftversiontext' in self.app.get(f'/blog{slug}/?version=1')
+        assert 'draftversiontext' in self.app.get(f'/blog{slug}/diff', params=dict(v1='1', v2='2'))
+        self.app.get(f'/blog{slug}/?version=1', extra_environ=anon, status=404)
+        self.app.get(f'/blog{slug}/diff', params=dict(v1='1', v2='2'), extra_environ=anon, status=404)
+        assert 'published text' in self.app.get(f'/blog{slug}/?version=2', extra_environ=anon)
+        history = self.app.get(f'/blog{slug}/history', extra_environ=anon)
+        assert 'version=2' in history
+        assert 'version=1' not in history
 
     def test_feed_rendered_as_anonymous_on_edit(self):
         self._post(state='draft', title='Secretdraft', text='draftsecrettext')
