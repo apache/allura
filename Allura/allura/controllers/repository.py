@@ -576,7 +576,8 @@ class MergeRequestController:
     @expose()
     @require_post()
     def refresh(self, **kw):
-        require_access(self.req, 'read')
+        if self.req.creator != c.user:
+            require_access(self.req, 'write')
         with self.req.push_downstream_context():
             self.req.new_commits = None  # invalidate this cache
             self.req.downstream['commit_id'] = c.app.repo.commit(self.req.source_branch)._id
