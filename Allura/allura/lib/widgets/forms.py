@@ -76,7 +76,7 @@ class NeighborhoodProjectShortNameValidator(fev.FancyValidator):
         otherwise disallowed.
         """
         if neighborhood is None:
-            neighborhood = M.Neighborhood.query.get(name=state.full_dict['neighborhood'])
+            neighborhood = c.project.neighborhood
         value = h.really_unicode(value or '')
         self._validate_shortname(value, neighborhood, state, permit_legacy=permit_legacy)
         if check_allowed:
@@ -954,7 +954,6 @@ class NeighborhoodAddProjectForm(ForgeForm):
 
         return ew_core.NameList([
             ew.HiddenField(name='project_description', label='Public Description'),
-            ew.HiddenField(name='neighborhood', label='Neighborhood'),
             ew.Checkbox(name='private_project', label="", attrs={'class': 'unlabeled'}),
             ew.InputField(name='project_name', label='Project Name',
                           field_type='text',
@@ -984,14 +983,12 @@ class NeighborhoodAddProjectForm(ForgeForm):
     def resources(self):
         yield from super().resources()
         yield ew.CSSLink('css/add_project.css')
-        neighborhood = g.antispam.enc('neighborhood')
         project_name = g.antispam.enc('project_name')
         project_unixname = g.antispam.enc('project_unixname')
 
         yield ew.JSScript('''
             $(function(){
                 var $scms = $('input[type=checkbox].scm');
-                var $nbhd_input = $('input[name="%(neighborhood)s"]');
                 var $name_input = $('input[name="%(project_name)s"]');
                 var $unixname_input = $('input[name="%(project_unixname)s"]');
                 var $project_url = $('#project_url');
@@ -1050,7 +1047,6 @@ class NeighborhoodAddProjectForm(ForgeForm):
                 };
                 var check_names = function() {
                     var data = {
-                        'neighborhood': $nbhd_input.val(),
                         'project_name': $name_input.val(),
                         'project_unixname': $unixname_input.val()
                     };
@@ -1076,7 +1072,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
                     delay(check_names, 20);
                 });
             });
-        ''' % dict(neighborhood=neighborhood, project_name=project_name, project_unixname=project_unixname))
+        ''' % dict(project_name=project_name, project_unixname=project_unixname))
 
 
 class MoveTicketForm(ForgeForm):
