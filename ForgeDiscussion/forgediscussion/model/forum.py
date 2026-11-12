@@ -73,7 +73,7 @@ class Forum(M.Discussion):
 
     @property
     def subforums(self):
-        return Forum.query.find(dict(parent_id=self._id)).all()
+        return Forum.query.find(dict(parent_id=self._id, app_config_id=self.app_config_id)).all()
 
     @property
     def email_address(self):

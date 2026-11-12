@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 import tg
+from tg import tmpl_context as c
 from formencode import validators as fev
 from formencode import All
 import formencode
@@ -22,6 +23,7 @@ from bson import ObjectId
 
 import ew.jinja2_ew as ew
 
+from allura import model as M
 from allura.lib.widgets import forms as ff
 from allura.lib import validators as v
 from allura.lib import helpers as h
@@ -89,8 +91,8 @@ class AddForumShort(AddForum):
 class UniqueForumShortnameValidator(fev.FancyValidator):
 
     def _convert_to_python(self, value, state):
-        forums = DM.Forum.query.find(
-            dict(app_config_id=ObjectId(state.full_dict['app_id']))).all()
+        app_config = M.AppConfig.query.get(_id=ObjectId(state.full_dict['app_id']), project_id=c.project._id)
+        forums = DM.Forum.query.find(dict(app_config_id=app_config._id if app_config else None)).all()
         value = h.really_unicode(value.lower() or '')
         if value in [f.shortname for f in forums]:
             raise formencode.Invalid(
