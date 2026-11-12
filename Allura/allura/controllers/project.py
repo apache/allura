@@ -154,7 +154,6 @@ class NeighborhoodController:
         c.show_phone_verification_overlay = verify
         c.add_project = W.add_project
         form_data.setdefault('tools', W.add_project.default_tools)
-        form_data['neighborhood'] = self.neighborhood.name
         return dict(neighborhood=self.neighborhood, form_data=form_data)
 
     @expose('jinja:allura:templates/phone_verification_fragment.html')
@@ -204,18 +203,17 @@ class NeighborhoodController:
     @utils.AntiSpam.validate('Spambot protection engaged')
     @require_post()
     def register(
-            self, project_unixname=None, project_description=None, project_name=None, neighborhood=None,
+            self, project_unixname=None, project_description=None, project_name=None,
             private_project=None, tools=None, **kw):
         require_access(self.neighborhood, 'register')
         if private_project:
             require_access(self.neighborhood, 'admin')
-        neighborhood = M.Neighborhood.query.get(name=neighborhood)
 
         project_description = h.really_unicode(project_description or '')
         project_name = h.really_unicode(project_name or '')
         project_unixname = h.really_unicode(project_unixname or '').lower()
         try:
-            c.project = neighborhood.register_project(project_unixname,
+            c.project = self.neighborhood.register_project(project_unixname,
                                                       project_name=project_name, private_project=private_project)
         except exceptions.ProjectOverlimitError:
             flash(
@@ -237,8 +235,8 @@ class NeighborhoodController:
         if project_description:
             c.project.short_description = project_description
         offset = c.project.next_mount_point(include_hidden=True)
-        if tools and not neighborhood.project_template:
-            anchored_tools = neighborhood.get_anchored_tools()
+        if tools and not self.neighborhood.project_template:
+            anchored_tools = self.neighborhood.get_anchored_tools()
             install_params = []
             for i, tool in enumerate(tools):
                 if (tool.lower() not in list(anchored_tools.keys())) and (c.project.app_instance(tool) is None):

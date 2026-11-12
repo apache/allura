@@ -83,7 +83,6 @@
 
 {% block content %}
 <form id="project-import-form" method="POST" action="process" enctype="multipart/form-data">
-    <input type="hidden" id="neighborhood" name="neighborhood" value="{{importer.neighborhood.name}}"/>
 
     <fieldset id="project-fields">
       {% block project_fields %}

@@ -395,7 +395,7 @@ class TestNeighborhood(TestController):
         r = self.app.post('/p/register',
                           params=dict(
                               project_unixname='maxproject1', project_name='Max project1',
-                              project_description='', neighborhood='Projects'),
+                              project_description=''),
                           antispam=True,
                           extra_environ=dict(username='root'), status=302)
         assert '/p/maxproject1/admin' in r.location
@@ -406,12 +406,20 @@ class TestNeighborhood(TestController):
         r = self.app.post('/p/register',
                           params=dict(
                               project_unixname='maxproject2', project_name='Max project2',
-                              project_description='', neighborhood='Projects'),
+                              project_description=''),
                           antispam=True,
                           extra_environ=dict(username='root'))
         while isinstance(r.response, HTTPFound):
             r = r.follow()
         assert 'You have exceeded the maximum number of projects' in r
+
+    def test_register_uses_url_neighborhood(self):
+        self.app.post('/p/register',
+                      params=dict(project_unixname='nbhdproj', project_name='Nbhd proj',
+                                  project_description='', neighborhood='Adobe'),
+                      antispam=True,
+                      extra_environ=dict(username='test-user'), status=302)
+        assert M.Project.query.get(shortname='nbhdproj').neighborhood.name == 'Projects'
 
     def test_project_rate_limit(self):
         # Set rate limit to unlimit
@@ -419,7 +427,7 @@ class TestNeighborhood(TestController):
             r = self.app.post('/p/register',
                               params=dict(
                                   project_unixname='rateproject1', project_name='Rate project1',
-                                  project_description='', neighborhood='Projects'),
+                                  project_description=''),
                               antispam=True,
                               extra_environ=dict(username='test-user-1'), status=302)
             assert '/p/rateproject1/admin' in r.location
@@ -429,7 +437,7 @@ class TestNeighborhood(TestController):
             r = self.app.post('/p/register',
                               params=dict(
                                   project_unixname='rateproject2', project_name='Rate project2',
-                                  project_description='', neighborhood='Projects'),
+                                  project_description=''),
                               antispam=True,
                               extra_environ=dict(username='test-user-1'))
             while isinstance(r.response, HTTPFound):
@@ -442,7 +450,7 @@ class TestNeighborhood(TestController):
             r = self.app.post('/p/register',
                               params=dict(
                                   project_unixname='rateproject1', project_name='Rate project1',
-                                  project_description='', neighborhood='Projects'),
+                                  project_description=''),
                               antispam=True,
                               extra_environ=dict(username='root'), status=302)
             assert '/p/rateproject1/admin' in r.location
@@ -452,7 +460,7 @@ class TestNeighborhood(TestController):
             r = self.app.post('/p/register',
                               params=dict(
                                   project_unixname='rateproject2', project_name='Rate project2',
-                                  project_description='', neighborhood='Projects'),
+                                  project_description=''),
                               antispam=True,
                               extra_environ=dict(username='root'))
             assert '/p/rateproject2/admin' in r.location
@@ -529,7 +537,7 @@ class TestNeighborhood(TestController):
         r = self.app.post('/adobe/register',
                           params=dict(
                               project_unixname='', project_name='Nothing',
-                              project_description='', neighborhood='Adobe'),
+                              project_description=''),
                           antispam=True,
                           extra_environ=dict(username='root'))
         assert r.html.find('div', {'class': 'error'}
@@ -537,14 +545,14 @@ class TestNeighborhood(TestController):
         r = self.app.post('/adobe/register',
                           params=dict(
                               project_unixname='mymoz', project_name='My Moz',
-                              project_description='', neighborhood='Adobe'),
+                              project_description=''),
                           antispam=True,
                           extra_environ=dict(username='*anonymous'),
                           status=302)
         r = self.app.post('/adobe/register',
                           params=dict(
                               project_unixname='foo.mymoz', project_name='My Moz',
-                              project_description='', neighborhood='Adobe'),
+                              project_description=''),
                           antispam=True,
                           extra_environ=dict(username='root'))
         assert r.html.find('div', {'class': 'error'}
@@ -552,7 +560,7 @@ class TestNeighborhood(TestController):
         r = self.app.post('/p/register',
                           params=dict(
                               project_unixname='test', project_name='Tester',
-                              project_description='', neighborhood='Projects'),
+                              project_description=''),
                           antispam=True,
                           extra_environ=dict(username='root'))
         assert r.html.find('div', {'class': 'error'}
@@ -560,7 +568,7 @@ class TestNeighborhood(TestController):
         r = self.app.post('/adobe/register',
                           params=dict(
                               project_unixname='mymoz', project_name='My Moz',
-                              project_description='', neighborhood='Adobe'),
+                              project_description=''),
                           antispam=True,
                           extra_environ=dict(username='root'),
                           status=302)
@@ -572,7 +580,6 @@ class TestNeighborhood(TestController):
                 project_unixname='mymoz',
                 project_name='My Moz',
                 project_description='',
-                neighborhood='Projects',
                 private_project='on'),
             antispam=True,
             extra_environ=dict(username='*anonymous'),
@@ -586,7 +593,6 @@ class TestNeighborhood(TestController):
                 project_unixname='mymoz',
                 project_name='My Moz',
                 project_description='',
-                neighborhood='Projects',
                 private_project='on'),
             antispam=True,
             extra_environ=dict(username='test-user'),
@@ -606,7 +612,6 @@ class TestNeighborhood(TestController):
                 project_unixname='myprivate1',
                 project_name='My Priv1',
                 project_description='',
-                neighborhood='Projects',
                 private_project='on'),
             antispam=True,
             extra_environ=dict(username='root'))
@@ -631,7 +636,6 @@ class TestNeighborhood(TestController):
                 project_unixname='myprivate2',
                 project_name='My Priv2',
                 project_description='',
-                neighborhood='Projects',
                 private_project='on'),
             antispam=True,
             extra_environ=dict(username='root'))
@@ -647,7 +651,6 @@ class TestNeighborhood(TestController):
                 project_unixname='mymoz',
                 project_name='My Moz',
                 project_description='',
-                neighborhood='Projects',
                 private_project='on',
                 tools='wiki'),
             antispam=True,
@@ -736,7 +739,6 @@ class TestNeighborhood(TestController):
                     project_unixname='testtemp',
                     project_name='Test Template',
                     project_description='',
-                    neighborhood='Mozq1',
                     private_project='off'),
                 antispam=True,
                 extra_environ=dict(username='root'),
@@ -833,7 +835,6 @@ class TestNeighborhood(TestController):
                 project_unixname='testtemp',
                 project_name='Test Template',
                 project_description='',
-                neighborhood='Adobe',
                 private_project='off'),
             antispam=True,
             extra_environ=dict(username='root'))
@@ -846,15 +847,15 @@ class TestNeighborhood(TestController):
     def test_name_check(self):
         for name in ('My+Moz', 'Te%st!', 'ab', 'a' * 16):
             r = self.app.get(
-                '/p/check_names?neighborhood=Projects&project_unixname=%s' % name)
+                '/p/check_names?project_unixname=%s' % name)
             assert (
                 r.json ==
                 {'project_unixname': 'Please use 3-15 small letters, numbers, and dashes.'})
         r = self.app.get(
-            '/p/check_names?neighborhood=Projects&project_unixname=mymoz')
+            '/p/check_names?project_unixname=mymoz')
         assert r.json == {}
         r = self.app.get(
-            '/p/check_names?neighborhood=Projects&project_unixname=test')
+            '/p/check_names?project_unixname=test')
         assert (r.json ==
                 {'project_unixname': 'This project name is taken.'})
 
@@ -871,7 +872,7 @@ class TestNeighborhood(TestController):
         r = self.app.post('/adobe/register',
                           params=dict(
                               project_unixname='test', project_name='Test again',
-                              project_description='', neighborhood='Adobe', tools='wiki'),
+                              project_description='', tools='wiki'),
                           antispam=True,
                           extra_environ=dict(username='root'))
         assert r.status_int == 302, r.html.find(
@@ -1127,8 +1128,7 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
                 params=dict(
                     project_unixname='phonetest',
                     project_name='Phone Test',
-                    project_description='',
-                    neighborhood='Projects'),
+                    project_description=''),
                 extra_environ=dict(username='test-user'),
                 antispam=True)
             overlay = r.html.find('div', {'id': 'phone_verification_overlay'})
