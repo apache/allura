@@ -53,6 +53,9 @@ if typing.TYPE_CHECKING:
 
 log = logging.getLogger(__name__)
 
+# refs/replace/* in a repo must not change what we read (and store) for a commit id
+os.environ['GIT_NO_REPLACE_OBJECTS'] = '1'
+
 assert sys.getfilesystemencoding() == 'utf-8', \
     'Filesystem encoding is not set to utf-8.  You should set https://docs.python.org/3/library/os.html#utf8-mode'
 

@@ -1235,6 +1235,19 @@ By Dave Brondsema''' in text_body
 
 class TestGitImplementation:
 
+    def test_replace_refs_ignored(self):
+        with TempDirectory() as tmp:
+            repo_dir = os.path.join(tmp.path, 'testgit.git')
+            shutil.copytree(pkg_file('forgegit', 'tests/data/testgit.git'), repo_dir)
+            cmd = git.Repo(repo_dir).git
+            head = cmd.rev_parse('HEAD')
+            env = dict(GIT_AUTHOR_NAME='a', GIT_AUTHOR_EMAIL='a@example.com',
+                       GIT_COMMITTER_NAME='a', GIT_COMMITTER_EMAIL='a@example.com')
+            other = cmd.commit_tree(cmd.rev_parse('HEAD^{tree}'), '-p', cmd.rev_parse('HEAD~1'), '-m', 'replaced', env=env)
+            cmd.update_ref(f'refs/replace/{head}', other)
+            impl = GM.git_repo.GitImplementation(mock.Mock(full_fs_path=repo_dir))
+            assert impl._git.commit(head).message != 'replaced\n'
+
     def test_branches(self):
         repo_dir = pkg_file('forgegit', 'tests/data/testgit.git')
         repo = mock.Mock(full_fs_path=repo_dir)
