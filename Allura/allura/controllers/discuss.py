@@ -599,6 +599,7 @@ class ModerationController(BaseController, metaclass=h.ProxiedAttrMeta):
             # but instead want to do all discussions within this app
             'app_config_id': c.app.config._id
         })
+        posts = [p for p in posts if has_access(p.thread, 'moderate')]
         return self.save_moderation(posts, **kw)
 
 

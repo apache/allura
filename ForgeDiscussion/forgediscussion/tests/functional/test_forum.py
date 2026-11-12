@@ -548,6 +548,40 @@ class TestForum(TestController):
         assert '5 posts marked as spam' in self.webflash(r)
         assert 5 == FM.ForumPost.query.find({'status': 'spam'}).count()
 
+    def test_bulk_user_moderation_per_forum(self):
+        for shortname in ('secret', 'pub'):
+            r = self.app.get('/admin/discussion/forums')
+            form = r.forms['add-forum']
+            form['add_forum.shortname'] = shortname
+            form['add_forum.name'] = shortname.title()
+            form.submit()
+            r = self.app.get('/discussion/create_topic/')
+            f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
+            params = {field['name']: field.get('value') or '' for field in f.find_all('input') if field.has_attr('name')}
+            params[f.find('textarea')['name']] = 'Post text'
+            params[f.find('select')['name']] = shortname
+            params[f.find('input', {'style': 'width: 90%'})['name']] = 'this is my post'
+            self.app.post('/discussion/save_new_topic', params=params)
+
+        h.set_context('test', 'discussion', neighborhood='Projects')
+        c.app.config.acl.append(M.ACE.allow(M.ProjectRole.by_name('*authenticated')._id, 'moderate'))
+        ThreadLocalODMSession.flush_all()
+        secret = FM.Forum.query.get(shortname='secret')
+        self.app.post('/admin/discussion/update_forums', params={
+            'forum-0.id': str(secret._id),
+            'forum-0.name': 'Secret',
+            'forum-0.shortname': 'secret',
+            'forum-0.description': '',
+            'forum-0.monitoring_email': '',
+            'forum-0.members_only': 'on'})
+
+        r = self.app.post('/discussion/pub/moderate/save_moderation_bulk_user', params={
+            'username': 'test-admin',
+            'spam': '1'}, extra_environ=dict(username='test-user'))
+        assert '1 post marked as spam' in self.webflash(r)
+        spam_posts = FM.ForumPost.query.find({'status': 'spam'}).all()
+        assert [p.discussion_id for p in spam_posts] == [FM.Forum.query.get(shortname='pub')._id]
+
     def test_posting(self):
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
