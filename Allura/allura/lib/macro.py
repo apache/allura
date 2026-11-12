@@ -375,7 +375,7 @@ def parse_repo(repo):
 
 def include_file(repo, path=None, rev=None, **kw):
     app = parse_repo(repo)
-    if not app:
+    if not app or app.project.deleted:
         return '[[include repo %s (not found)]]' % repo
     if not h.has_access(app.repo, 'read'):
         return "[[include: you don't have a read permission for repo %s]]" % repo
@@ -412,7 +412,7 @@ def include(ref=None, repo=None, **kw):
     if not link:
         return '[[include %s (not found)]]' % ref
     artifact = link.ref.artifact
-    if artifact is None:
+    if artifact is None or artifact.project.deleted:
         return '[[include (artifact not found %s)]]' % ref
     if not h.has_access(artifact, 'read') or (
             getattr(artifact, 'state', None) == 'draft' and not h.has_access(artifact, 'write')):

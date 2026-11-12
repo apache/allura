@@ -356,6 +356,17 @@ class Test():
             assert 'Can not see this!' not in html
             assert "[[include: you don't have a read permission for wiki2:CanNotRead]]" in html
 
+    @td.with_wiki
+    def test_macro_include_deleted_project(self):
+        p_test = M.Project.query.get(shortname='test')
+        with h.push_context(p_test._id, mount_point='wiki'):
+            assert 'Welcome to your wiki' in g.markdown_wiki.convert('[[include ref=Home]]')
+        with h.push_context(p_test._id, mount_point='wiki'), h.push_config(p_test, deleted=True), \
+                patch('allura.lib.macro.parse_repo', return_value=c.app):
+            html = g.markdown_wiki.convert('[[include ref=Home]]\n[[include repo=wiki path=README]]')
+        assert '[[include (artifact not found Home)]]' in html
+        assert '[[include repo wiki (not found)]]' in html
+
     @patch('oembed.OEmbedEndpoint.fetch')
     def test_macro_embed(self, oembed_fetch):
         oembed_fetch.return_value = {
