@@ -295,7 +295,7 @@ termcolor==3.3.0
     # via pytest-sugar
 testfixtures==12.4.0
     # via -r requirements.in
-textile==4.0.4
+textile==4.0.5
     # via pypeline
 timermiddleware==0.7.0
     # via -r requirements.in
