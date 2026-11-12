@@ -338,16 +338,35 @@ $(function(){
             if($(this).data('user-url')){
                 userUrl = $(this).data('user-url');
             }
+            // class="user-mention" can be set in user-supplied HTML; only ever load a local profile's card
+            var parsed = new URL(userUrl, window.location.href);
+            var profile = /^\/u\/([^\/%]+)\/(profile\/)?$/.exec(parsed.pathname);
+            if (parsed.origin !== window.location.origin || !profile) {
+                $(instance).tooltipster('disable');
+                return;
+            }
+            userUrl = '/u/' + profile[1] + '/profile/';
             
             if(umProfileStore.hasOwnProperty(userUrl)){
                 displayUserCard(instance, umProfileStore[userUrl]);
                 // load from cache
             }
             else {
-                $.get(userUrl + 'user_card', function(data) {
-                    displayUserCard(instance, data);
-                    umProfileStore[userUrl] = data;
-                });
+                // the reply is shown as HTML, so refuse it if a redirect would take it from anywhere else
+                fetch(userUrl + 'user_card', {credentials: 'same-origin', redirect: 'error'})
+                    .then(function(resp) {
+                        if (!resp.ok) {
+                            throw new Error('user_card ' + resp.status);
+                        }
+                        return resp.text();
+                    })
+                    .then(function(data) {
+                        displayUserCard(instance, data);
+                        umProfileStore[userUrl] = data;
+                    })
+                    .catch(function() {
+                        $(instance).tooltipster('disable');
+                    });
             }
         }
     });
