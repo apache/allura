@@ -79,6 +79,48 @@ class TestForumAdmin(TestController):
         r = self.app.get('/admin/discussion/forums')
         assert 'Child Forum' in r
 
+    def test_forum_parent_same_tool(self):
+        r = self.app.get('/admin/discussion/forums')
+        form = r.forms['add-forum']
+        form['add_forum.shortname'] = 'testforum'
+        form['add_forum.name'] = 'Test Forum'
+        form.submit()
+        h.set_context('test', 'discussion', neighborhood='Projects')
+        parent = FM.Forum.query.get(shortname='testforum')
+        r = self.app.get('/admin/discussion/forums')
+        form = r.forms['add-forum']
+        form['add_forum.shortname'] = 'childforum'
+        form['add_forum.name'] = 'Child Forum'
+        form['add_forum.parent'] = str(parent._id)
+        form.submit()
+        child = FM.Forum.query.get(shortname='testforum/childforum')
+        assert child.parent_id == parent._id
+        assert [f._id for f in parent.subforums] == [child._id]
+
+    @td.with_tool('test2', 'Discussion', 'disc')
+    def test_forum_parent_other_tool(self):
+        r = self.app.get('/admin/discussion/forums')
+        form = r.forms['add-forum']
+        form['add_forum.shortname'] = 'victim'
+        form['add_forum.name'] = 'Victim'
+        form.submit()
+        h.set_context('test', 'discussion', neighborhood='Projects')
+        victim = FM.Forum.query.get(shortname='victim')
+        r = self.app.get('/p/test2/admin/disc/forums', extra_environ={'username': 'test-admin'})
+        form = r.forms['add-forum']
+        form['add_forum.shortname'] = 'other'
+        form['add_forum.name'] = 'Other'
+        form['add_forum.description'] = ''
+        form.fields['add_forum.parent'][0].force_value(str(victim._id))
+        form.submit(extra_environ={'username': 'test-admin'}).follow(extra_environ={'username': 'test-admin'})
+        ThreadLocalODMSession.close_all()
+        h.set_context('test2', 'disc', neighborhood='Projects')
+        other = FM.Forum.query.get(name='Other')
+        assert other.parent_id is None
+        assert other.shortname == 'other'
+        r = self.app.get('/admin/discussion/forums')
+        assert 'Other' not in r
+
     def test_bad_forum_names(self):
         r = self.app.get('/admin/discussion/forums')
         form = r.forms['add-forum']

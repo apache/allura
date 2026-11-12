@@ -25,10 +25,12 @@ from forgediscussion import model as DM
 
 
 def create_forum(app, new_forum):
-    if 'parent' in new_forum and new_forum['parent']:
-        parent_id = ObjectId(str(new_forum['parent']))
-        shortname = (DM.Forum.query.get(_id=parent_id).shortname + '/'
-                     + new_forum['shortname'])
+    parent = None
+    if new_forum.get('parent') and ObjectId.is_valid(str(new_forum['parent'])):
+        parent = DM.Forum.query.get(_id=ObjectId(str(new_forum['parent'])), app_config_id=app.config._id)
+    if parent:
+        parent_id = parent._id
+        shortname = parent.shortname + '/' + new_forum['shortname']
     else:
         parent_id = None
         shortname = new_forum['shortname']
