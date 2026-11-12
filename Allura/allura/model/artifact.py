@@ -1031,6 +1031,9 @@ class Feed(MappedClass):
             pubdate = datetime.utcnow()
         if link is None:
             link = artifact.url()
+        from allura import model as M
+        with h.push_config(c, user=M.User.anonymous()):  # feeds are read by everyone
+            description = g.markdown.convert(description)
         item = cls(
             ref_id=artifact.index_id(),
             neighborhood_id=artifact.app_config.project.neighborhood_id,
@@ -1038,7 +1041,7 @@ class Feed(MappedClass):
             app_config_id=artifact.app_config_id,
             tool_name=artifact.app_config.tool_name,
             title=title,
-            description=g.markdown.convert(description),
+            description=description,
             link=link,
             pubdate=pubdate,
             author_name=author_name,

@@ -273,7 +273,8 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
                 feed_item = self.feed_item()
                 if feed_item:
                     feed_item.title = self.title
-                    feed_item.description = g.markdown.convert(self.text)
+                    with h.push_config(c, user=M.User.anonymous()):  # feeds are read by everyone
+                        feed_item.description = g.markdown.convert(self.text)
                 else:
                     M.Feed.post(self, self.title, self.text, author=self.author(),
                                 pubdate=self.get_version(1).timestamp)

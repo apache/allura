@@ -279,6 +279,15 @@ class TestArtifact:
         assert 'display_name' not in raw_author
         assert 'logged_ip' not in raw_author
 
+    def test_feed_post_renders_as_anonymous(self):
+        page = WM.Page.upsert('FeedTest')
+        users = []
+        with h.push_config(c, user=M.User.by_username('test-admin')), \
+                patch('allura.lib.app_globals.ForgeMarkdown.convert', side_effect=lambda t: users.append(c.user) or t):
+            assert M.Feed.post(page, title='t', description='d')
+            assert c.user.username == 'test-admin'
+        assert users == [M.User.anonymous()]
+
     def test_feed_clear_user_data(self):
         f = M.Feed(author_name='John Doe',
                    author_link='/u/johndoe/',

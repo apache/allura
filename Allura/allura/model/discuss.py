@@ -610,8 +610,9 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
         # For activity summary, convert Post text to html,
         # strip all tags, and truncate
         LEN = 500
-        summary = markupsafe.Markup.escape(
-            g.markdown.cached_convert(self, 'text')).striptags()
+        with h.push_config(c, user=User.anonymous()):  # the summary is stored and shown to others
+            summary = markupsafe.Markup.escape(
+                g.markdown.cached_convert(self, 'text')).striptags()
         if len(summary) > LEN:
             split = max(summary.find(' ', LEN), LEN)
             summary = summary[:split] + '...'

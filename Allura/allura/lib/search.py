@@ -108,7 +108,9 @@ class SearchIndexable:
 
         # Convert text to plain text (It usually contains markdown markup).
         # To do so, we convert markdown into html, and then strip all html tags.
-        text = g.markdown.convert(text)
+        from allura.model import User
+        with h.push_config(c, user=User.anonymous()):  # the index is read by everyone
+            text = g.markdown.convert(text)
         doc['text'] = markupsafe.Markup.escape(text).striptags()
 
         # convert some date/time field types to str

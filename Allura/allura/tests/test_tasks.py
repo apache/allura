@@ -254,6 +254,27 @@ class TestMailTasks:
     # since usage is generally through the task, and not using mail_util
     # directly
 
+    @td.with_wiki
+    def test_send_email_macros_run_as_anonymous(self):
+        c.user = M.User.by_username('test-admin')
+        project = M.Project.query.get(shortname='test')
+        with h.push_context(project._id, mount_point='wiki'):
+            c.app.config.acl = [M.ACE.allow(M.ProjectRole.by_name('Admin')._id, 'read')]
+            ThreadLocalODMSession.flush_all()
+            with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
+                mail_tasks.sendmail(
+                    fromaddr=str(c.user._id),
+                    destinations=[str(c.user._id)],
+                    text='[[include ref=Home]]',
+                    reply_to=g.noreply,
+                    subject='Test subject',
+                    message_id=h.gen_message_id())
+            msg = email.parser.Parser().parsestr(_client.sendmail.call_args[0][2])
+            html = next(email.iterators.typed_subpart_iterator(msg, 'text', 'html')).get_payload(decode=True).decode()
+            assert 'Welcome to your wiki' not in html
+            assert 'read permission' in html
+            assert c.user.username == 'test-admin'
+
     def test_send_email_ascii_with_user_lookup(self):
         c.user = M.User.by_username('test-admin')
         with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
