@@ -28,7 +28,7 @@ import allura.model as M
 from allura.lib import helpers as h
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test
-from allura.lib.solr import Solr, escape_solr_arg
+from allura.lib.solr import Solr, escape_solr_arg, quote_solr_arg
 from allura.lib.search import search, search_app, SearchIndexable, strip_local_params
 
 
@@ -430,6 +430,10 @@ class TestSearch_app:
         text = 'some: weird "text" with symbols'
         escaped_text = escape_solr_arg(text)
         assert escaped_text == r'some\: weird \"text\" with symbols'
+
+    def test_quote_solr_arg(self):
+        assert quote_solr_arg('a/b#x) || *:* || (y') == '"a/b#x) || *:* || (y"'
+        assert quote_solr_arg('some "text" with \\ backslash') == r'"some \"text\" with \\ backslash"'
 
     def test_escape_solr_arg_with_backslash(self):
         text = 'some: weird "text" with \\ backslash'

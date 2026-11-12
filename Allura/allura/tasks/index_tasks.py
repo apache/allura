@@ -29,7 +29,7 @@ from webob.exc import HTTPRequestEntityTooLarge
 from allura.lib import helpers as h
 from allura.lib.decorators import task
 from allura.lib.exceptions import CompoundError
-from allura.lib.solr import make_solr_from_config
+from allura.lib.solr import make_solr_from_config, quote_solr_arg
 
 if typing.TYPE_CHECKING:
     import pysolr
@@ -60,7 +60,7 @@ def __add_objects(objects, solr_hosts=None, solr_creds=()):
 
 def __del_objects(object_solr_ids):
     solr_instance = __get_solr()
-    solr_query = 'id:({})'.format(' || '.join(object_solr_ids))
+    solr_query = f"id:({' || '.join(quote_solr_arg(i) for i in object_solr_ids)})"
     solr_instance.delete(q=solr_query)
 
 
