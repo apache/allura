@@ -1193,6 +1193,16 @@ class TestFunctionalController(TrackerTestController):
         ticket_view = self.new_ticket(summary='test select custom fields', **kw).follow()
         assert '<option selected value="test select">test select</option>' in ticket_view
 
+    def test_custom_field_name_prefix(self):
+        params = dict(
+            custom_fields=[dict(name='url', label='u', type='string')],
+            open_status_names='open',
+            closed_status_names='closed',
+        )
+        self.app.post('/admin/bugs/set_custom_fields', params=variable_encode(params))
+        app = M.Project.query.get(shortname='test').app_instance('bugs')
+        assert [f.name for f in app.globals.custom_fields] == ['_u']
+
     def test_select_custom_field_unicode(self):
         params = dict(
             custom_fields=[
