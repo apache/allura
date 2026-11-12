@@ -947,7 +947,7 @@ class TestCachedMarkdown:
     def test_valid_cache(self):
         from markupsafe import Markup
         self.md.cached_convert(self.post, 'text')
-        with patch.object(self.md, 'convert') as convert_func:
+        with patch.object(self.md, 'convert', return_value='') as convert_func:
             html = self.md.cached_convert(self.post, 'text')
             assert html == self.expected_html
             assert isinstance(html, Markup)
@@ -981,6 +981,14 @@ class TestCachedMarkdown:
         del self.post.text_cache
         self.md.cached_convert(self.post, 'text')
         assert not self.post.text_cache.html
+
+    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='-0.01')
+    def test_uncacheable_macro_other_syntax(self):
+        for text in ('[["include" ref=x]]', '> [[\n> include ref=x]]', '[[img src=y]] [[include ref=x]]'):
+            self.post.text = text
+            del self.post.text_cache
+            self.md.cached_convert(self.post, 'text')
+            assert not self.post.text_cache.html
 
     @patch.dict('allura.lib.app_globals.config', {})
     def test_no_threshold_defined(self):

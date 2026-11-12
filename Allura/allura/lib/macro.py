@@ -57,10 +57,6 @@ class RegisteredMacro:
 _macros: dict[str, RegisteredMacro] = {}
 
 
-def uncacheable_macros_names():
-    return [name for name, m in _macros.items() if not m.cacheable]
-
-
 class macro:
     """
     Decorator to declare a function is a custom markdown macro
@@ -123,6 +119,8 @@ class parse:
         if not macro:
             return None
         elif macro.context is None or macro.context == self._context:
+            if not macro.cacheable:
+                c.uncacheable_macro_ran = True  # read by cached_convert
             return macro.func
         else:
             return None
