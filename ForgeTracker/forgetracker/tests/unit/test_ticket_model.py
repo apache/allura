@@ -401,6 +401,15 @@ class TestTicketModel(TrackerTestWithModel):
         assert query.call_count == 0
         assert tsearch.query_filter_choices.call_count == 0
 
+    def test_index_ignores_custom_field_without_prefix(self):
+        c.app.globals.custom_fields.extend([
+            {'name': 'url', 'type': 'string', 'label': 'u'},
+            {'name': '_ok', 'type': 'string', 'label': 'ok'}])
+        idx = Ticket(ticket_num=2, summary='ticket2', status='open',
+                     custom_fields={'url': 'x', '_ok': 'y'}).index()
+        assert idx['url_s'] == '/p/test/bugs/2/'
+        assert idx['_ok_s'] == 'y'
+
     def test_index(self):
         idx = Ticket(
             ticket_num=2,

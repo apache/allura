@@ -746,6 +746,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             import_id_s=ImportIdConverter.get().simplify(self.import_id)
         )
         for k, v in self.custom_fields.items():
+            if not k.startswith('_'):
+                continue
             # Pre solr-4.2.1 code expects all custom fields to be indexed
             # as strings.
             if not config.get_bool('new_solr'):

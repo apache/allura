@@ -1752,7 +1752,7 @@ class TrackerAdminController(DefaultAdminController):
         self.app.globals.closed_status_names = post_data['closed_status_names']
         custom_fields = post_data.get('custom_fields', [])
         for field in custom_fields:
-            if 'name' not in field or not field['name']:
+            if not (field.get('name') or '').startswith('_'):
                 field['name'] = '_' + '_'.join([
                     w for w in NONALNUM_RE.split(field['label'].lower()) if w])
             if field['type'] == 'milestone':
