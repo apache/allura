@@ -29,7 +29,7 @@ $(function () {
         position: 'top',
         iconCloning: false,
         maxWidth: 400,
-        contentAsHTML: true,
+        contentAsHTML: true,  // I know this HTML is safe HTML (built from server-side emoji settings)
         interactive: true,
         functionReady: function (instance, helper) {
             $(helper).find('.emoji_button').click(function () {

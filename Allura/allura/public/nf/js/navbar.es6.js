@@ -148,7 +148,8 @@ var GroupingThreshold = React.createClass({
                 <div id='threshold-config'>
             <span>
               <label htmlFor='threshold-input'>Grouping Threshold</label>
-                <ToolTip targetSelector="#threshold-input" position="top" contentAsHTML/>
+                <ToolTip targetSelector="#threshold-input" position="top"
+                         contentAsHTML/>{/* I know this HTML is safe HTML */}
                 <input type='number' name='threshold-input' id="threshold-input"
                        title='When you have multiple tools of the same type,
                              <u>this number</u> determines if they will fit in the navigation

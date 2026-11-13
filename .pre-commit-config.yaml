@@ -69,6 +69,13 @@ repos:
         types: [file, scss]
         entry: '@extend [^%]((?![\/\/]\stest_scss_extend_pattern allow).)*$'
         exclude: 'node_modules'
+      # HTML in tooltips is dangerous if any of the content comes from users
+      - id: tooltip_html
+        name: tooltips with HTML content must be marked "I know this HTML is safe HTML"
+        language: pygrep
+        types_or: [html, javascript, jsx]
+        entry: '(data-allow-html=.?true|contentAsHTML:\s*true|contentAsHTML\s*/?>)(?!.*I know this HTML is safe HTML)'
+        exclude: 'node_modules|\.min\.js$'
 
 -   repo: https://github.com/aristanetworks/j2lint
     rev: cbfa056d80612e8afc9dcda7fadcf1359849dadd  # frozen: v1.3.0

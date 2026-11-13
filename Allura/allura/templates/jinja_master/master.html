@@ -196,7 +196,7 @@
                 position: $el.data('position') || 'right',
                 iconCloning: false,
                 maxWidth: 300,
-                contentAsHTML: true,
+                contentAsHTML: $el.data('allow-html') === true,  // title is plain text unless opted in
                 interactive: true
             }).focus(function () {
                 $(this).tooltipster('show');

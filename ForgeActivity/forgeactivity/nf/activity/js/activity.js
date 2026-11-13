@@ -286,7 +286,7 @@ $(function() {
         var confirmed = false;
         $('.timeline').on('mouseenter', 'li[data-can-delete]', function() {
             $(this).prepend('<input type=button value=Delete name=delete title="Permanently deletes this item from all users/projects activity records.<br>Only neighborhood admins can do this.">');
-            $('input[name=delete]', this).tooltipster({contentAsHTML: true});
+            $('input[name=delete]', this).tooltipster({contentAsHTML: true});  // I know this HTML is safe HTML (fixed text)
         });
         $('.timeline').on('mouseleave', 'li[data-can-delete]', function() {
             $('input[name=delete]', this).remove();
