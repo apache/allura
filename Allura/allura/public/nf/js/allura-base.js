@@ -330,7 +330,7 @@ $(function(){
         position: 'top',
         iconCloning: false,
         maxWidth: 400,
-        contentAsHTML: true,
+        contentAsHTML: true,  // I know this HTML is safe HTML (user_card response, restricted to local profile URLs below)
         interactive: true,
         content: 'Loading...',
         functionReady: function (instance, helper) {

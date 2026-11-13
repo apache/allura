@@ -96,6 +96,8 @@ class TestFiles(TestController):
         self.app.post('/p/test/files/disable_folder', data1)
         resp = self.app.get('/files/')
         assert str(folder_object.disabled) in resp
+        row = resp.html.find('tr', title='TestFolder is disabled')
+        assert 'class' not in row.attrs
 
     def test_disable_file(self):
         file_object = upload_file(self)

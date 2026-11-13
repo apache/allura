@@ -95,7 +95,7 @@ Files {% if folder_object %} - {{path_links(folder_path.split('/'), urls)}} {% e
                  </thead>
                  <tbody>
                  {% for folder in folder_objects %}
-                 <tr {% if not folder.disabled %} title="{{folder.folder_name}}" {% else %} class="{{folder.folder_name}}"
+                 <tr {% if not folder.disabled %} title="{{folder.folder_name}}" {% else %}
                  title="{{folder.folder_name}} is disabled" {% endif %} >
                  <td {% if folder.disabled %} class="folder_dis" {% endif %} title="Click to enter {{folder.folder_name}}">
                      {% set icon_name = 'folder' %}
