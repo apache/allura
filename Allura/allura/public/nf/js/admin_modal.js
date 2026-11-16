@@ -29,6 +29,9 @@ function startLightbox($lightbox) {
 
 $(function() {
     $('body').on('click', 'a.admin_modal', function(e) {
+        if (this.origin !== window.location.origin) {
+            return;
+        }
         e.preventDefault();
 
         $('#lightbox_admin_modal').remove();

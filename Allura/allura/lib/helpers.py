@@ -39,6 +39,8 @@ import shlex
 import socket
 from io import BytesIO
 import html
+import html5lib
+import html5lib.serializer
 import http.client
 import importlib.resources
 import importlib.metadata
@@ -859,6 +861,8 @@ def render_any_markup(name, txt, code_mode=False, linenumbers_style=TABLE):
             txt = g.markdown.convert(txt)
         else:
             txt = g.pypeline_markup.render(name, txt)
+            if fmt:
+                txt = clean_html(txt)
         if not fmt:
             if code_mode and linenumbers_style == INLINE:
                 txt = _add_inline_line_numbers_to_text(txt)
@@ -1500,8 +1504,16 @@ def parse_fediverse_address(username: str):
 
 
 def clean_html(value: str) -> Markup:
-    from allura.lib.markdown_extensions import HTMLSanitizer
-    return Markup(HTMLSanitizer().run(value))  # noqa: S704
+    parsed = html5lib.parseFragment(value)
+
+    # if we didn't have to customize our sanitization, could just do:
+    # return html5lib.serialize(parsed, sanitize=True)
+
+    # instead we do the same steps as that function,
+    # but add our ForgeHTMLSanitizerFilter instead of sanitize=True which would use the standard one
+    walker = html5lib.treewalkers.getTreeWalker("etree")(parsed)
+    walker = utils.ForgeHTMLSanitizerFilter(walker)  # this is our custom step
+    return Markup(html5lib.serializer.HTMLSerializer(quote_attr_values='always').render(walker))  # noqa: S704
 
 
 def escape_markdown(content: str) -> str:
