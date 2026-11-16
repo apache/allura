@@ -17,6 +17,7 @@
 
 """REST Controller"""
 from __future__ import annotations
+import base64
 import json
 import logging
 from datetime import datetime, timedelta
@@ -294,6 +295,21 @@ class Oauth1Validator(oauthlib.oauth1.RequestValidator):
         return 'dummy-access-token-for-oauthlib'
 
 
+def basic_auth_credentials(request: oauthlib.common.Request) -> tuple[str, str] | None:
+    """client_id and secret from an `Authorization: Basic` header (RFC 6749 section 2.3.1)"""
+    header = (request.headers or {}).get('Authorization') or ''
+    if not header.startswith('Basic '):
+        return None
+    try:
+        raw = base64.b64decode(header[len('Basic '):]).decode('utf-8')
+    except (ValueError, UnicodeDecodeError):
+        return None
+    if ':' not in raw:
+        return None
+    client_id, client_secret = raw.split(':', 1)
+    return unquote(client_id), unquote(client_secret)
+
+
 class Oauth2Validator(oauthlib.oauth2.RequestValidator):
     def __init__(self):
         super().__init__()
@@ -321,10 +337,12 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
         return grant_type in ['authorization_code', 'refresh_token']
 
     def get_default_scopes(self, client_id: str, request: oauthlib.common.Request, *args, **kwargs):
-        return []
+        client = M.OAuth2ClientApp.query.get(client_id=client_id)
+        return list(client.scopes) if client and client.scopes else []
 
     def get_original_scopes(self, refresh_token: str, request: oauthlib.common.Request, *args, **kwargs) -> list[str]:
-        return None
+        token = M.OAuth2AccessToken.query.get(refresh_token=refresh_token)
+        return list(token.scopes) if token and token.scopes else []
 
     def get_default_redirect_uri(self, client_id: str, request: oauthlib.common.Request, *args, **kwargs) -> str:
         client = M.OAuth2ClientApp.query.get(client_id=client_id)
@@ -346,15 +364,28 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
         M.OAuth2AuthorizationCode.query.remove({'client_id': client_id, 'authorization_code': code})
 
     def authenticate_client(self, request: oauthlib.common.Request, *args, **kwargs) -> bool:
-        request.client = M.OAuth2ClientApp.query.get(client_id=request.client_id, client_secret=request.client_secret)
+        client_id, client_secret = request.client_id, request.client_secret
+        if not client_secret:
+            creds = basic_auth_credentials(request)
+            if creds:
+                client_id, client_secret = creds
+        if not client_id or not client_secret:
+            return False
+        request.client = M.OAuth2ClientApp.query.get(client_id=client_id, client_secret=client_secret)
+        request.client_id = client_id
         return request.client is not None
 
     def validate_code(self, client_id: str, code: str, client: oauthlib.oauth2.Client,
                       request: oauthlib.common.Request, *args, **kwargs) -> bool:
         authorization = M.OAuth2AuthorizationCode.query.get(client_id=client_id, authorization_code=code)
-        if not authorization:
+        if not authorization or authorization.expires_at < datetime.utcnow():
             return False
-        return authorization.expires_at >= datetime.utcnow() and is_active_user(authorization.user)
+        if not is_active_user(authorization.user):
+            return False
+        # oauthlib expects these from the stored code; without scopes the token is issued scopeless
+        request.scopes = list(authorization.scopes or [])
+        request.user = authorization.user
+        return True
 
     def validate_bearer_token(self, token: str, scopes: list[str], request: oauthlib.common.Request) -> bool:
         access_token = M.OAuth2AccessToken.query.get(access_token=token)
@@ -391,6 +422,7 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
             expires_at=datetime.utcnow() + timedelta(minutes=10),
             redirect_uri=request.redirect_uri,
             user_id=c.user._id,
+            scopes=list(request.scopes or []),
             code_challenge=request.code_challenge,
             code_challenge_method=request.code_challenge_method
         )
@@ -399,15 +431,20 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
 
     def save_bearer_token(self, token, request: oauthlib.common.Request, *args, **kwargs) -> object:
         if request.grant_type == 'authorization_code':
-            user_id = M.OAuth2AuthorizationCode.query.get(
-                client_id=request.client_id,
-                authorization_code=request.code,
-            ).user_id
-        elif request.grant_type == 'refresh_token':
-            user_id = M.OAuth2AccessToken.query.get(
-                client_id=request.client_id,
-                refresh_token=request.refresh_token,
-            ).user_id
+            code = M.OAuth2AuthorizationCode.query.get(client_id=request.client_id, authorization_code=request.code)
+            user_id = code.user_id
+            scopes = list(code.scopes or [])
+        else:  # refresh_token
+            old_token = M.OAuth2AccessToken.query.get(client_id=request.client_id, refresh_token=request.refresh_token)
+            user_id = old_token.user_id
+            scopes = list(old_token.scopes or [])
+
+        # oauthlib's `scope` is space-delimited
+        scope = token.get('scope')
+        if isinstance(scope, str):
+            scopes = scope.split()
+        elif scope:
+            scopes = list(scope)
 
         current_token = M.OAuth2AccessToken.query.get(client_id=request.client_id, user_id=user_id, is_bearer=False)
 
@@ -416,7 +453,7 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
 
         bearer_token = M.OAuth2AccessToken(
             client_id=request.client_id,
-            scopes=token.get('scope', []),
+            scopes=scopes,
             access_token=token.get('access_token'),
             refresh_token=token.get('refresh_token'),
             expires_at=datetime.utcnow() + timedelta(seconds=token.get('expires_in')),
