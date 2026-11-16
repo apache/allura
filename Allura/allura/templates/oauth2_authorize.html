@@ -59,6 +59,7 @@
     <form method="POST" action="do_authorize">
       <input type="hidden" name="client_id" value="{{client.client_id}}"/>
       <input type="hidden" name="credentials" value="{{credentials}}"/>
+      <input type="hidden" name="scopes" value="{{ scopes|join(' ') }}"/>
       <input type="submit" class="submit" style="background: #ccc;color:#555" name="no" value="No, do not authorize {{ client.name }}">
       <input id="authorize-ok" type="submit" class="button" name="yes" value="Yes, authorize {{ client.name }}"><br>
       {{lib.csrf_token()}}

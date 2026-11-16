@@ -17,7 +17,7 @@
 from __future__ import annotations
 
 import calendar
-from base64 import b32encode
+from base64 import b32encode, b64encode
 from datetime import datetime, time, timedelta
 from time import time as time_time
 import json
@@ -3112,6 +3112,105 @@ class TestOAuth2(TestController):
         assert token is not None
         assert token.is_bearer is True
         assert token.user_id == user._id
+
+    @pytest.fixture
+    def scoped_client(self):
+        M.OAuth2ClientApp(
+            client_id='client_scoped',
+            client_secret='98765',
+            user_id=M.User.by_username('test-user')._id,
+            name='scopedoauth2',
+            response_type='code',
+            redirect_uris=['https://localhost/'],
+            scopes=['read', 'write'],
+        )
+        ThreadLocalODMSession.flush_all()
+
+    def _authorize(self, client_id, **params):
+        return self.app.get('/auth/oauth2/authorize', params=dict(
+            client_id=client_id, response_type='code', redirect_uri='https://localhost/', **params))
+
+    def _exchange_code(self, client_id):
+        ac = M.OAuth2AuthorizationCode.query.get(client_id=client_id)
+        body = dict(client_id=client_id, client_secret='98765', code=ac.authorization_code,
+                    grant_type='authorization_code', redirect_uri='https://localhost/')
+        return self.app.post_json('/rest/oauth2/token', body, extra_environ={'username': '*anonymous'})
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_scopes_carried_through_code_token_and_refresh(self, scoped_client):
+        r = self._authorize('client_scoped', scope='read')
+        assert r.forms[0]['scopes'].value == 'read'
+        r.forms[0].submit('yes')
+        assert M.OAuth2AuthorizationCode.query.get(client_id='client_scoped').scopes == ['read']
+
+        r = self._exchange_code('client_scoped')
+        assert r.json['scope'] == 'read'
+        token = M.OAuth2AccessToken.query.get(access_token=r.json['access_token'])
+        assert token.scopes == ['read']
+
+        body = dict(client_id='client_scoped', client_secret='98765', grant_type='refresh_token',
+                    refresh_token=r.json['refresh_token'])
+        r = self.app.post_json('/rest/oauth2/token', body, extra_environ={'username': '*anonymous'})
+        assert r.json['scope'] == 'read'
+        assert M.OAuth2AccessToken.query.get(access_token=r.json['access_token']).scopes == ['read']
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_default_scopes_are_the_clients(self, scoped_client):
+        r = self._authorize('client_scoped')
+        assert r.forms[0]['scopes'].value == 'read write'
+        r.forms[0].submit('yes')
+        assert self._exchange_code('client_scoped').json['scope'] == 'read write'
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_client_without_scopes_gets_unscoped_token(self, mock_client):
+        r = self._authorize('client_12345', scope='admin')
+        form = r.forms[0]
+        assert form['scopes'].value == ''
+        form['scopes'].force_value('admin')
+        form.submit('yes')
+        assert M.OAuth2AuthorizationCode.query.get(client_id='client_12345').scopes == []
+
+        r = self._exchange_code('client_12345')
+        assert r.json.get('scope', '') == ''
+        assert M.OAuth2AccessToken.query.get(access_token=r.json['access_token']).scopes == []
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_token_with_basic_client_auth(self, mock_client, mock_valid_authorization_code):
+        body = dict(code='XToC3m9whoA304HMMKOOUF678n6s6r', grant_type='authorization_code',
+                    redirect_uri='https://localhost/')
+
+        def basic(secret):
+            return {'Authorization': 'Basic ' + b64encode(f'client_12345:{secret}'.encode()).decode()}
+
+        r = self.app.post_json('/rest/oauth2/token', body, headers=basic('wrong'),
+                               extra_environ={'username': '*anonymous'}, status=401)
+        assert r.json['error'] == 'invalid_client'
+        r = self.app.post_json('/rest/oauth2/token', body, headers=basic('98765'),
+                               extra_environ={'username': '*anonymous'})
+        assert M.OAuth2AccessToken.query.get(access_token=r.json['access_token']).client_id == 'client_12345'
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_authorize_errors(self, mock_client):
+        self.app.get('/auth/oauth2/authorize', params=dict(
+            client_id='nonexistent', response_type='code', redirect_uri='https://localhost/'), status=400)
+        self.app.get('/auth/oauth2/authorize', params=dict(
+            client_id='client_12345', response_type='code', redirect_uri='https://evil.example/'), status=400)
+
+        # a valid client and redirect URI get the error at their redirect URI
+        r = self.app.get('/auth/oauth2/authorize', params=dict(
+            client_id='client_12345', response_type='token', redirect_uri='https://localhost/', state='xyz'),
+            status=302)
+        query = parse_qs(urlparse(r.location).query)
+        assert r.location.startswith('https://localhost/?')
+        assert query['error'] == ['unsupported_response_type']
+        assert query['state'] == ['xyz']
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_do_authorize_rejects_tampered_redirect_uri(self, mock_client, mock_credentials):
+        form = self._authorize('client_12345').forms[0]
+        form['credentials'].force_value(json.dumps(dict(mock_credentials, redirect_uri='https://evil.example/')))
+        form.submit('yes', status=400)
+        assert M.OAuth2AuthorizationCode.query.get(client_id='client_12345') is None
 
 
 class TestOAuthRequestToken(TestController):

@@ -65,6 +65,7 @@ from allura.controllers import BaseController
 from allura.tasks.mail_tasks import send_system_mail_to_user
 import six
 import oauthlib.oauth2
+from oauthlib.oauth2.rfc6749.errors import FatalClientError, OAuth2Error
 
 
 log = logging.getLogger(__name__)
@@ -1768,7 +1769,16 @@ class OAuth2AuthorizationController(BaseController):
             decoded_body = str(request.body, 'utf-8')
             json_body = oauth2_json_params(decoded_body)
 
-        scopes, credentials = self.server.validate_authorization_request(uri=request.url, http_method=request.method, headers=request.headers, body=json_body)
+        try:
+            scopes, credentials = self.server.validate_authorization_request(
+                uri=request.url, http_method=request.method, headers=request.headers, body=json_body)
+        except FatalClientError as e:
+            _bad_authorization_request(e)
+        except OAuth2Error as e:
+            # the client and redirect URI are valid by now, so the error goes back to the client (RFC 6749 4.1.2.1)
+            if not e.redirect_uri:
+                _bad_authorization_request(e)
+            redirect(e.in_uri(e.redirect_uri))
 
         client_id = request.params.get('client_id')
         client = M.OAuth2ClientApp.query.get(client_id=client_id)
@@ -1777,8 +1787,10 @@ class OAuth2AuthorizationController(BaseController):
         # so we remove it because we don't need it for the rest of the authorization workflow
         del credentials['request']
 
+        # only what do_authorize will actually grant
+        scopes = [s for s in scopes or [] if s in (client.scopes or [])]
         redirect_uri = credentials['redirect_uri']
-        return dict(client=client, credentials=json.dumps(credentials),
+        return dict(client=client, credentials=json.dumps(credentials), scopes=scopes,
                     redirect_host=urlparse(redirect_uri).netloc or redirect_uri)
 
     @expose()
@@ -1791,15 +1803,28 @@ class OAuth2AuthorizationController(BaseController):
             flash(f'{client.name} NOT AUTHORIZED', 'error')
             redirect('/auth/oauth/')
 
+        # posted back from the consent form, so only what the client may have
+        allowed = (client.scopes or []) if client else []
+        scopes = [s for s in (request.params.get('scopes') or '').split() if s in allowed]
+
         # values like state may be null
         credentials = oauth2_json_params(request.params['credentials'], allow_none=True)
-        headers, body, status = self.server.create_authorization_response(
-            uri=request.url, http_method=request.method, body=request.body, headers=request.headers, scopes=[], credentials=credentials
-        )
+        try:
+            headers, body, status = self.server.create_authorization_response(
+                uri=request.url, http_method=request.method, body=request.body, headers=request.headers,
+                scopes=scopes, credentials=credentials)
+        except FatalClientError as e:
+            _bad_authorization_request(e)
 
         response.status_int = status
         response.headers.update(headers)
         return body
+
+
+def _bad_authorization_request(error: OAuth2Error):
+    # never redirect: the client or its redirect URI is what failed validation
+    request.environ['tg.status_code_redirect'] = True
+    raise wexc.HTTPBadRequest(error.description or error.error)
 
 
 class DisableAccountController(BaseController):
