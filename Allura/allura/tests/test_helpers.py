@@ -286,6 +286,13 @@ def test_render_any_markup_empty():
     assert h.render_any_markup('foo', '') == '<p><em>Empty File</em></p>'
 
 
+def test_render_any_markup_other_formats_sanitized():
+    html = h.render_any_markup('README.textile', '"(admin_modal)click":http://localhost/x\n\np(error#messages). para\n')
+    assert 'admin_modal' not in html
+    assert '<a class="" href="http://localhost/x"' in html
+    assert '<p class="error" id="user-content-messages">para' in html
+
+
 def test_render_any_markup_plain():
     assert (
         h.render_any_markup(
@@ -328,8 +335,8 @@ def test_render_any_markup_formatting():
 
 def test_render_any_markup_rst():
     assert (str(h.render_any_markup('README.rst', 'foo\n===\n\nbar\n<script>alert(1)</script>')) ==
-            '<div class="document">\n'
-            '<div class="section" id="foo">\n'
+            '<div class="">\n'
+            '<div class="" id="user-content-foo">\n'
             '<h1>foo</h1>\n'
             '<p>bar\n'
             '&lt;script&gt;alert(1)&lt;/script&gt;</p>\n'

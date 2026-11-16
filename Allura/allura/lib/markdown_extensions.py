@@ -39,7 +39,7 @@ from markupsafe import Markup
 from . import macro
 from . import helpers as h
 from allura import model as M
-from allura.lib.utils import ForgeHTMLSanitizerFilter, is_nofollow_url
+from allura.lib.utils import is_nofollow_url
 
 log = logging.getLogger(__name__)
 
@@ -531,18 +531,7 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
 class HTMLSanitizer(markdown.postprocessors.Postprocessor):
 
     def run(self, text):
-        parsed = html5lib.parseFragment(text)
-
-        # if we didn't have to customize our sanitization, could just do:
-        # return html5lib.serialize(parsed, sanitize=True)
-
-        # instead we do the same steps as that function,
-        # but add our ForgeHTMLSanitizerFilter instead of sanitize=True which would use the standard one
-        TreeWalker = html5lib.treewalkers.getTreeWalker("etree")
-        walker = TreeWalker(parsed)
-        walker = ForgeHTMLSanitizerFilter(walker)  # this is our custom step
-        s = html5lib.serializer.HTMLSerializer()
-        return s.render(walker)
+        return str(h.clean_html(text))
 
 
 class AutolinkPattern(markdown.inlinepatterns.InlineProcessor):
