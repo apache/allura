@@ -281,7 +281,7 @@ six==1.17.0
     #   webhelpers2
 smmap==5.0.3
     # via gitdb
-soupsieve==4.1
+soupsieve==4.1.1
     # via beautifulsoup4
 sphinxcontrib-napoleon==0.7
     # via defopt
@@ -299,7 +299,7 @@ translationstring==1.4
     # via colander
 turbogears2==2.5.0
     # via -r requirements.in
-turbohtml==1.15.7
+turbohtml==1.15.11
     # via
     #   -r requirements.in
     #   pypeline
