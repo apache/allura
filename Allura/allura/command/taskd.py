@@ -181,7 +181,7 @@ class TaskCommand(base.Command):
                       help='limit to task names starting with this.  Example allura.tasks.index_tasks.')
     parser.add_option('--filter-exclude-name-prefix', dest='exclude_name_prefixes', action='append', default=[],
                       help='skip task names starting with this.  Can be repeated.  '
-                           'Example forgesf.commercial.rename_commercial_project')
+                           'Example allura.tasks.index_tasks.')
     parser.add_option('--filter-result-regex', dest='filter_result_regex', default=None,
                       help='limit to tasks with result matching this regex.  Example "pysolr".  '
                            'Encrypted results are decrypted and checked one by one')
