@@ -219,7 +219,7 @@
             $(this).trigger('editTicket');
             return false;
           });
-          var flashErrors = $('div > div.error');
+          var flashErrors = $('div > div.error').not('.markdown_content *');
           if (flashErrors.hasClass('error') && flashErrors.html().indexOf('rate limit') < 0){
             $('a.edit_ticket').click();
           }
