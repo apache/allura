@@ -377,6 +377,17 @@ class TestGitRepo(RepoImplTestBase):
         with pytest.raises(ValueError, match=r"Invalid revision or ref: '--upload-pack"):
             self.repo._impl.merge_base(mr)
 
+    def test_merge_command_quoted(self):
+        mr = mock.Mock()
+        mr.source_branch = '$(touch${IFS}/tmp/pwned)'
+        mr.target_branch = 'a;b'
+        mr.downstream.commit_id = '1e146e67985dcd71c74de79613719bef7bddca4a'
+        mr.downstream_repo.clone_url_first.return_value = '/srv/git/p/test2/code'
+        assert self.repo.merge_command(mr) == (
+            "git checkout 'a;b'\n"
+            "git fetch /srv/git/p/test2/code '$(touch${IFS}/tmp/pwned)'\n"
+            "git merge 1e146e67985dcd71c74de79613719bef7bddca4a")
+
     def test_log_file(self):
         entries = list(self.repo.log(path='README', id_only=False))
         assert entries == [
