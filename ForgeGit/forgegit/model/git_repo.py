@@ -19,6 +19,7 @@ from __future__ import annotations
 import sys
 import os
 import re
+import shlex
 import shutil
 import string
 import logging
@@ -108,23 +109,14 @@ class Repository(M.Repository):
 
     def merge_command(self, merge_request):
         '''Return the command to merge a given commit to a given target branch'''
+        clone_url = shlex.quote(merge_request.downstream_repo.clone_url_first(anon=False, username=c.user.username))
         if merge_request.source_branch:
-            fetch_command = 'git fetch {} {}'.format(
-                merge_request.downstream_repo.clone_url_first(anon=False, username=c.user.username),
-                merge_request.source_branch,
-            )
+            fetch_command = f'git fetch {clone_url} {shlex.quote(merge_request.source_branch)}'
         else:
-            fetch_command = (
-                'git remote add merge_request {}\n'
-                'git fetch merge_request'
-            ).format(
-                merge_request.downstream_repo.clone_url_first(anon=False, username=c.user.username),
-            )
-        return 'git checkout {}\n{}\ngit merge {}'.format(
-            merge_request.target_branch,
-            fetch_command,
-            merge_request.downstream.commit_id,
-        )
+            fetch_command = f'git remote add merge_request {clone_url}\ngit fetch merge_request'
+        return (f'git checkout {shlex.quote(merge_request.target_branch)}\n'
+                f'{fetch_command}\n'
+                f'git merge {shlex.quote(merge_request.downstream.commit_id)}')
 
     def can_merge(self, mr):
         """
