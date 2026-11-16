@@ -567,6 +567,7 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
         ns_html = html5lib.constants.namespaces['html']
         _form_elements = {(ns_html, 'button'),
                           (ns_html, 'datalist'),
+                          (ns_html, 'dialog'),
                           (ns_html, 'fieldset'),
                           (ns_html, 'form'),
                           (ns_html, 'input'),
@@ -686,6 +687,8 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
             attrs = token.get('data') or {}
             if attrs.get((None, 'type'), '') == "checkbox":
                 self.allowed_elements.add(input_el)
+                for attr in ('form', 'name', 'value'):  # don't let it be part of any form on the page
+                    attrs.pop((None, attr), None)
 
         sanitized = super().sanitize_token(token)
         self._track_link_target(sanitized)
