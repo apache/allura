@@ -617,6 +617,15 @@ def mongo_columns():
     return columns
 
 
+def chosen_columns(requested: list[dict] | None, available: list[dict]) -> list[dict]:
+    """Only which columns are active (and their order) comes from the request"""
+    if not requested:
+        return available
+    by_name = {col['name']: col for col in available}
+    return [dict(by_name[col['name']], active=bool(col.get('active')))
+            for col in requested if col.get('name') in by_name]
+
+
 def solr_columns():
     columns = [dict(name='ticket_num',
                     sort_name='ticket_num_i',
@@ -747,7 +756,7 @@ class RootController(BaseController, FeedController):
                                                  deleted={'$in': show_deleted},
                                                  show_deleted=deleted)
 
-        result['columns'] = columns or mongo_columns()
+        result['columns'] = chosen_columns(columns, mongo_columns())
         result[
             'sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
         result['subscribed'] = M.Mailbox.subscribed()
@@ -853,7 +862,7 @@ class RootController(BaseController, FeedController):
             redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=history)))
         result = TM.Ticket.paged_search(c.app.config, c.user, q, page=page, sort=sort,
                                         show_deleted=deleted, filter=filter, limit=limit)
-        result['columns'] = columns or solr_columns()
+        result['columns'] = chosen_columns(columns, solr_columns())
         result[
             'sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
         result['allow_edit'] = has_access(c.app, 'update')
@@ -1984,7 +1993,7 @@ class MilestoneController(BaseController):
                                                  deleted={'$in': show_deleted},
                                                  show_deleted=deleted)
 
-        result['columns'] = columns or mongo_columns()
+        result['columns'] = chosen_columns(columns, mongo_columns())
         result[
             'sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
         result['allow_edit'] = has_access(c.app, 'update')

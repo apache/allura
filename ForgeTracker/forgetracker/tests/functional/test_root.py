@@ -365,6 +365,18 @@ class TestFunctionalController(TrackerTestController):
         assert create_activity.call_count == 1
         assert create_activity.call_args[0][1] == 'modified'
 
+    def test_columns_param_cannot_set_labels(self):
+        self.new_ticket(summary='a ticket')
+        r = self.app.get('/bugs/', params={
+            'columns-0.name': 'status', 'columns-0.sort_name': 'bogus', 'columns-0.label': 'BogusLabel',
+            'columns-0.active': 'on',
+            'columns-1.name': 'bogus', 'columns-1.label': 'BogusLabel', 'columns-1.active': 'on',
+        })
+        assert 'title="Status"' in r.text
+        assert 'title="BogusLabel"' not in r.text
+        assert 'data-sort-asc="bogus"' not in r.text
+        assert r.html.find('input', {'name': 'columns-1.active', 'type': 'checkbox'}) is None
+
     def test_new_ticket(self):
         summary = 'test new ticket'
         ticket_view = self.new_ticket(summary=summary).follow()
