@@ -107,7 +107,10 @@ class MonQTask(MappedClass):
         app_config_id=S.ObjectId,
         user_id=S.ObjectId,
         notifications_disabled=bool))
-    # these are left out of plaintext tasks, since code without them can't load tasks that have them
+    # The encryption fields are only stored on encrypted tasks. Plain FieldProperty would save them as null on every
+    # task, and code from before these fields existed can't load a task with keys it doesn't know ("Extra keys"):
+    # its MonQTask.get() would mark the task busy and then fail, leaving it stuck. FieldPropertyWithMissingNone with
+    # if_missing=S.Missing leaves them out of plaintext tasks, and reads them as None.
     encrypted = FieldPropertyWithMissingNone(bool, if_missing=S.Missing)
     args = EncryptableFieldProperty([], encrypted_field='args_encrypted', enabled_by='encrypted')
     args_encrypted = FieldPropertyWithMissingNone(S.Binary, if_missing=S.Missing)
