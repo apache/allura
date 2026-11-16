@@ -211,5 +211,5 @@ following licenses.
 
 jQuery, jQueryUI, and various related plugins, which are available
 under the MIT license.  For details, see the individual files:
-    forgetracker/widgets/resources/js/jquery.multiselect.min.js
+    forgetracker/widgets/resources/js/jquery.multiselect.js
     forgetracker/widgets/resources/css/jquery.multiselect.css
