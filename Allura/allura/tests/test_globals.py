@@ -1232,3 +1232,48 @@ class TestIconRender:
     def test_escaping(self):
         html = '<a class="icon &#34;" data-url="&gt;" href="#" title="Edit"><i class="fa fa-edit"></i></a>'
         assert html == self.i.render(extra_css='"', **{'data-url': '>'})
+
+
+class TestHighlight:
+    xss = '<img src=x onerror=alert(1)> "q" \'s\' &amp;'
+
+    def setup_method(self, method):
+        setup_basic_test()
+
+    def check_escaped(self, html: str):
+        assert '<img' not in html
+        assert '&lt;img' in html
+
+    def test_empty(self):
+        assert g.highlight('') == '<em>Empty file</em>'
+        assert g.highlight(None, lexer='diff') == '<em>File contents unchanged</em>'
+
+    def test_known_filename(self):
+        html = g.highlight(f'x = 1  # {self.xss}\ns = "{self.xss}"\n', filename='foo.py')
+        self.check_escaped(html)
+        assert 'class="codehilite"' in html
+        assert '<div id="l2" class="code_block">' in html
+
+    def test_html_file(self):
+        html = g.highlight(self.xss, filename='foo.html')
+        assert '<img' not in html
+        assert '&lt;</span><span class="nt">img' in html
+
+    def test_unknown_filename(self):
+        html = g.highlight(self.xss, filename='"><script>alert(1)</script>.unknownext')
+        assert html == '<pre>&lt;img src=x onerror=alert(1)&gt; &#34;q&#34; &#39;s&#39; &amp;amp;</pre>'
+
+    def test_too_big(self):
+        with h.push_config(tg.config, **{'scm.view.max_syntax_highlight_bytes': 5}):
+            html = g.highlight(self.xss, filename='foo.py')
+        assert html.startswith('<pre>&lt;img')
+        assert 'codehilite' not in html
+        with h.push_config(tg.config, **{'scm.view.max_syntax_highlight_bytes': 5}):
+            html = g.highlight(self.xss, lexer='diff')
+        assert html.startswith('<pre>&lt;img')
+
+    def test_diff(self):
+        html = g.highlight(f'--- a/{self.xss}\n+++ b/{self.xss}\n@@ -1 +1 @@\n-{self.xss}\n+{self.xss}\n', lexer='diff')
+        self.check_escaped(html)
+        assert '<span class="gd">' in html
+        assert 'code_block' not in html
