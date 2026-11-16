@@ -73,7 +73,7 @@ ForgeImporters/forgeimporters/trac/tests/data/test-list.csv
 ForgeImporters/forgeimporters/trac/tests/data/test-list.html
 ForgeSVN/forgesvn/tests/data/
 ForgeTracker/forgetracker/widgets/resources/css/jquery.multiselect.css
-ForgeTracker/forgetracker/widgets/resources/js/jquery.multiselect.min.js
+ForgeTracker/forgetracker/widgets/resources/js/jquery.multiselect.js
 node_modules/**
 rat-excludes.txt
 requirements*
