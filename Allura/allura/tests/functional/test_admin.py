@@ -631,6 +631,26 @@ class TestProjectAdmin(TestController):
         r = self.app.get('/admin/permissions/', status=302)
         assert '/admin/groups' in r.location
 
+    def test_subproject_admin_cannot_manage_groups(self):
+        self.app.post('/admin/update_mounts', params={
+            'new.install': 'install', 'new.ep_name': '', 'new.ordinal': '1',
+            'new.mount_point': 'test-subproject', 'new.mount_label': 'Test Subproject'})
+        self.app.post('/admin/groups/create', params={'name': 'SubAdmins'})
+        root = M.Project.query.get(shortname='test')
+        admin_role = M.ProjectRole.query.get(project_id=root._id, name='Admin')
+        sub_role = M.ProjectRole.query.get(project_id=root._id, name='SubAdmins')
+        self.app.post('/admin/groups/add_user', params={'role_id': str(sub_role._id), 'username': 'test-user'})
+        self.app.post('/test-subproject/admin/permissions/update', params={
+            'card-0.id': 'admin', 'card-0.value': str(admin_role._id), 'card-0.new': str(sub_role._id)})
+
+        user = dict(username='test-user')
+        self.app.get('/test-subproject/admin/permissions/', extra_environ=user, status=200)
+        self.app.get('/test-subproject/admin/groups/', extra_environ=user, status=403)
+        self.app.post('/test-subproject/admin/groups/add_user', extra_environ=user, status=403,
+                      params={'role_id': str(admin_role._id), 'username': 'test-user'})
+        self.app.get('/admin/groups/', extra_environ=user, status=403)
+        self.app.get('/test-subproject/admin/groups/', status=200)
+
     def test_subproject_permissions(self):
         with audits('create subproject test-subproject'):
             self.app.post('/admin/update_mounts', params={
