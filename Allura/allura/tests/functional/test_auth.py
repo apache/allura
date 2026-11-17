@@ -3137,7 +3137,7 @@ class TestOAuth2(TestController):
                     grant_type='authorization_code', redirect_uri='https://localhost/')
         return self.app.post_json('/rest/oauth2/token', body, extra_environ={'username': '*anonymous'})
 
-    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True, 'auth.oauth2.scopes_supported': 'read write'})
     def test_scopes_carried_through_code_token_and_refresh(self, scoped_client):
         r = self._authorize('client_scoped', scope='read')
         assert r.forms[0]['scopes'].value == 'read'
@@ -3155,12 +3155,31 @@ class TestOAuth2(TestController):
         assert r.json['scope'] == 'read'
         assert M.OAuth2AccessToken.query.get(access_token=r.json['access_token']).scopes == ['read']
 
-    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True, 'auth.oauth2.scopes_supported': 'read write'})
     def test_default_scopes_are_the_clients(self, scoped_client):
         r = self._authorize('client_scoped')
         assert r.forms[0]['scopes'].value == 'read write'
         r.forms[0].submit('yes')
         assert self._exchange_code('client_scoped').json['scope'] == 'read write'
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True, 'auth.oauth2.scopes_supported': 'read'})
+    def test_grant_is_limited_to_supported_scopes(self, scoped_client):
+        r = self._authorize('client_scoped', scope='read write')
+        form = r.forms[0]
+        assert form['scopes'].value == 'read'
+        form['scopes'].force_value('read write')
+        form.submit('yes')
+        assert M.OAuth2AuthorizationCode.query.get(client_id='client_scoped').scopes == ['read']
+
+    @mock.patch.dict(config, {'auth.oauth2.enabled': True})
+    def test_no_supported_scopes_gives_unscoped_token(self, scoped_client):
+        r = self._authorize('client_scoped', scope='read')
+        form = r.forms[0]
+        assert form['scopes'].value == ''
+        form['scopes'].force_value('read')
+        form.submit('yes')
+        assert M.OAuth2AuthorizationCode.query.get(client_id='client_scoped').scopes == []
+        assert self._exchange_code('client_scoped').json.get('scope', '') == ''
 
     @mock.patch.dict(config, {'auth.oauth2.enabled': True})
     def test_client_without_scopes_gets_unscoped_token(self, mock_client):

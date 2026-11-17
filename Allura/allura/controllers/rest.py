@@ -20,6 +20,7 @@ from __future__ import annotations
 import base64
 import json
 import logging
+import posixpath
 from datetime import datetime, timedelta
 from urllib.parse import unquote, parse_qs, urlparse, urlsplit, quote
 
@@ -37,7 +38,8 @@ from ming.odm import session
 from bson import ObjectId
 
 from allura import model as M
-from allura.controllers.auth import AuthRestController, oauth2_json_params
+from allura.controllers.auth import (AuthRestController, oauth2_json_params, oauth2_grantable_scopes,
+                                     oauth2_scopes_supported)
 from allura.lib import helpers as h
 from allura.lib import security
 from allura.lib import plugin
@@ -65,7 +67,16 @@ class RestController:
 
     def _check_security(self):
         if not request.path.startswith(('/rest/oauth/', '/rest/oauth2/')):  # everything but OAuthNegotiators
-            c.api_token = self._authenticate_request()
+            try:
+                c.api_token = self._authenticate_request()
+            except exc.HTTPUnauthorized:
+                if not in_oauth2_protected_resource(request.path):
+                    raise
+                # tells a client holding an expired or revoked token to re-authenticate (RFC 6750 3.1, RFC 9728 5.1)
+                request.environ['tg.status_code_redirect'] = True
+                challenge = f'Bearer error="invalid_token", resource_metadata="{h.absurl(OAUTH2_RESOURCE_METADATA_PATH)}"'
+                raise exc.HTTPUnauthorized('The access token is invalid or expired. Re-authenticate.',
+                                           headers=[('WWW-Authenticate', challenge)]) from None
             if c.api_token:
                 user = c.api_token.user
                 if not is_active_user(user):
@@ -184,8 +195,17 @@ def redirect_uri_matches(uri: str, registered: list[str]) -> bool:
     return key is not None and key in {_loopback_key(r) for r in registered}
 
 
-def oauth2_scopes_supported() -> list[str]:
-    return aslist(config.get('auth.oauth2.scopes_supported', ''))
+OAUTH2_RESOURCE_METADATA_PATH = '/.well-known/oauth-protected-resource'
+
+
+def in_oauth2_protected_resource(path: str) -> bool:
+    """Is this URL path within a configured `auth.oauth2.protected_resources` path, on whole segments"""
+    path = posixpath.normpath(unquote(path))
+    for resource in aslist(config.get('auth.oauth2.protected_resources', '')):
+        resource = resource.rstrip('/')
+        if resource and (path == resource or path.startswith(resource + '/')):
+            return True
+    return False
 
 
 def display_host(uri: str) -> str:
@@ -387,8 +407,8 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
         return grant_type in ['authorization_code', 'refresh_token']
 
     def get_default_scopes(self, client_id: str, request: oauthlib.common.Request, *args, **kwargs):
-        client = M.OAuth2ClientApp.query.get(client_id=client_id)
-        return list(client.scopes) if client and client.scopes else []
+        # oauthlib falls back to these whenever the grant's scopes are empty, so they must be grantable too
+        return oauth2_grantable_scopes(M.OAuth2ClientApp.query.get(client_id=client_id))
 
     def get_original_scopes(self, refresh_token: str, request: oauthlib.common.Request, *args, **kwargs) -> list[str]:
         token = M.OAuth2AccessToken.query.get(refresh_token=refresh_token)
@@ -451,11 +471,13 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
 
     def validate_bearer_token(self, token: str, scopes: list[str], request: oauthlib.common.Request) -> bool:
         access_token = M.OAuth2AccessToken.query.get(access_token=token)
-        if access_token and access_token.expires_at >= datetime.utcnow():
-            request.access_token = access_token
-            return True
-        else:
+        if not access_token or access_token.expires_at < datetime.utcnow():
             return False
+        # scopes are only for the protected resources; unscoped tokens keep working across the whole API
+        if access_token.scopes and not in_oauth2_protected_resource(urlparse(request.uri).path):
+            return False
+        request.access_token = access_token
+        return True
 
     def validate_refresh_token(self, refresh_token: str, client: oauthlib.oauth2.Client,
                                request: oauthlib.common.Request, *args, **kwargs) -> bool:
