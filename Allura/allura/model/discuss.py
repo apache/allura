@@ -417,6 +417,7 @@ class Thread(Artifact, ActivityObject):
     def last_post(self):
         q = self.post_class().query.find(dict(
             thread_id=self._id,
+            status='ok',
             deleted=False,
         )).sort('timestamp', pymongo.DESCENDING)
         return q.first()
