@@ -1087,7 +1087,7 @@ class PermissionsController(BaseController):
 
 class GroupsController(BaseController):
     def _check_security(self):
-        require_access(c.project, 'admin')
+        require_access(c.project.root_project, 'admin')  # groups belong to the root project
 
     @expose()
     def _lookup(self, *remainder):
