@@ -60,7 +60,7 @@ from allura.lib.widgets import forms, form_fields as ffw
 from allura.lib.widgets.oauth_widgets import REDIRECT_URL_FIELDS
 from allura.lib import mail_util
 from allura.lib.multifactor import TotpService, RecoveryCodeService, EmailCodeAuthenticationService
-from allura.lib import utils
+from allura.lib import oauth2_clients, utils
 from allura.controllers import BaseController
 from allura.tasks.mail_tasks import send_system_mail_to_user
 import six
@@ -1785,8 +1785,9 @@ class OAuth2AuthorizationController(BaseController):
             decoded_body = str(request.body, 'utf-8')
             json_body = oauth2_json_params(decoded_body)
 
+        server = self.server
         try:
-            scopes, credentials = self.server.validate_authorization_request(
+            scopes, credentials = server.validate_authorization_request(
                 uri=request.url, http_method=request.method, headers=request.headers, body=json_body)
         except FatalClientError as e:
             _bad_authorization_request(e)
@@ -1805,9 +1806,14 @@ class OAuth2AuthorizationController(BaseController):
 
         # only what do_authorize will actually grant
         scopes = [s for s in scopes or [] if s in oauth2_grantable_scopes(client)]
+        validator = server.auth_grant.request_validator
         redirect_uri = credentials['redirect_uri']
         return dict(client=client, credentials=json.dumps(credentials), scopes=scopes,
-                    redirect_host=urlparse(redirect_uri).netloc or redirect_uri)
+                    scope_labels={s: validator.scope_label(s) for s in scopes},
+                    redirect_host=utils.display_host(redirect_uri),
+                    # a metadata document's host is verified, unlike the name a client gives itself
+                    client_host=utils.display_host(client.client_id) if client.registration == 'cimd' else None,
+                    loopback_only=oauth2_clients.is_loopback(redirect_uri))
 
     @expose()
     @require_post()

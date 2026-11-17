@@ -37,7 +37,7 @@ import magic
 from itertools import groupby
 import operator as op
 import ming
-from urllib.parse import urlparse
+from urllib.parse import urlparse, quote
 import six.moves.urllib.request
 import six.moves.urllib.parse
 import six.moves.urllib.error
@@ -841,6 +841,18 @@ def ip_address(request):
     if tg.config.get('ip_address_header'):
         ip = request.headers.get(tg.config['ip_address_header']) or ip
     return ip
+
+
+def display_host(uri: str) -> str:
+    # OAuth1 apps with no registered redirect URLs skip callback validation, so hide any user:pass@ and
+    # show unicode lookalike hosts as punycode
+    netloc = urlparse(uri).netloc.rpartition('@')[2]
+    if not netloc:
+        return uri
+    try:
+        return netloc.encode('idna').decode()
+    except UnicodeError:
+        return quote(netloc, safe=':[]')
 
 
 class EmptyCursor(ODMCursor):

@@ -24,7 +24,7 @@ import json
 import logging
 import posixpath
 from datetime import datetime, timedelta
-from urllib.parse import unquote, parse_qs, urlparse, quote
+from urllib.parse import unquote, parse_qs, urlparse
 
 import oauthlib.oauth1
 import oauthlib.oauth2
@@ -52,7 +52,7 @@ from allura.lib.project_create_helpers import make_newproject_schema, deserializ
 from allura.lib.security import has_access
 from allura.lib.oauth2_clients import (MAX_NAME_LEN, MAX_REDIRECT_URIS, CIMDError, ensure_cimd_client,
                                        https_or_loopback, is_cimd_client_id, redirect_uri_matches)
-from allura.lib.utils import ip_address
+from allura.lib.utils import display_host, ip_address
 import six
 
 
@@ -183,18 +183,6 @@ def oauth2_protected_resource(path: str) -> str | None:
         if resource and (path == resource or path.startswith(resource + '/')):
             return resource
     return None
-
-
-def display_host(uri: str) -> str:
-    # OAuth1 apps with no registered redirect URLs skip callback validation, so hide any user:pass@ and
-    # show unicode lookalike hosts as punycode
-    netloc = urlparse(uri).netloc.rpartition('@')[2]
-    if not netloc:
-        return uri
-    try:
-        return netloc.encode('idna').decode()
-    except UnicodeError:
-        return quote(netloc, safe=':[]')
 
 
 class Oauth1Validator(oauthlib.oauth1.RequestValidator):
@@ -359,6 +347,10 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
         rate limit matches on it; a subclass may use reversible encryption instead"""
         key = aslist(config['session.jwt_secret_keys'], ',')[0]
         return hmac.new(key.encode(), ip.encode(), hashlib.sha256).hexdigest()
+
+    def scope_label(self, scope: str) -> str:
+        """What the consent page says a scope lets the client do; a subclass may describe its scopes"""
+        return scope
 
     @staticmethod
     def _machine_registered_client(client_id: str | None) -> M.OAuth2ClientApp | None:

@@ -3605,6 +3605,41 @@ class TestOAuth2ClientIdMetadataDocumentFetch:
         assert oauth2_clients.ttl(headers) == expected
 
 
+class TestOAuth2ConsentPage(OAuth2MachineClientFlow, TestController):
+
+    def test_scopes_listed_with_labels(self):
+        self._client(user_id=None, scopes=['read', 'write'])
+        with mock.patch.object(rest_controller.Oauth2Validator, 'scope_label', lambda self, s: f'Label for {s}'):
+            r = self._authorize(scope='read')
+        assert r.status_int == 200
+        assert f'wants to access your {config["site_name"]} account' in r.text
+        assert 'Label for read' in r.text
+        assert 'Label for write' not in r.text
+        assert 'not be able to do anything else' in r.text
+        assert 'perform any actions on' not in r.text
+        assert [f for f in r.forms.values() if f.action == 'do_authorize'][0]['scopes'].value == 'read'
+
+    def test_unscoped_client_keeps_the_full_access_warning(self):
+        self._client(registration=None, user_id=M.User.by_username('test-admin')._id)
+        r = self._authorize()
+        assert 'perform any actions on' in r.text
+        assert 'anything else' not in r.text
+
+    def test_only_a_metadata_document_client_shows_its_host(self):
+        with cimd_served(CIMD_CODE_DOC), mock.patch.dict(config, {'auth.oauth2.cimd.enabled': True}):
+            r = self._authorize(CIMD_CODE_ID, redirect_uri=CIMD_CODE_REDIRECT)
+        assert 'identified by <strong>client.example</strong>' in r.text
+        self._client(user_id=None)
+        assert 'identified by' not in self._authorize().text
+
+    def test_loopback_note(self):
+        self._client(user_id=None, redirect_uris=['https://localhost/', 'http://127.0.0.1/cb'])
+        assert 'a program on your own computer' not in self._authorize().text
+        r = self._authorize(redirect_uri='http://127.0.0.1:5555/cb')
+        assert 'a program on your own computer' in r.text
+        assert 'you will be sent to <strong>127.0.0.1:5555</strong>' in r.text
+
+
 class TestOAuthRequestToken(TestController):
 
     oauth_params = dict(
