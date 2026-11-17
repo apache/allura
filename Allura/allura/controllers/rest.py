@@ -18,6 +18,8 @@
 """REST Controller"""
 from __future__ import annotations
 import base64
+import hashlib
+import hmac
 import json
 import logging
 import posixpath
@@ -27,7 +29,7 @@ from urllib.parse import unquote, parse_qs, urlparse, urlsplit, quote
 import oauthlib.oauth1
 import oauthlib.oauth2
 import oauthlib.common
-from paste.util.converters import asbool, aslist
+from paste.deploy.converters import asbool, asint, aslist
 from webob import exc
 import tg
 from tg import expose, flash, redirect, config
@@ -38,8 +40,8 @@ from ming.odm import session
 from bson import ObjectId
 
 from allura import model as M
-from allura.controllers.auth import (AuthRestController, oauth2_json_params, oauth2_grantable_scopes,
-                                     oauth2_scopes_supported)
+from allura.controllers.auth import (AuthRestController, oauth2_json_params, oauth2_default_scopes,
+                                     oauth2_grantable_scopes, oauth2_scopes_supported)
 from allura.lib import helpers as h
 from allura.lib import security
 from allura.lib import plugin
@@ -47,6 +49,7 @@ from allura.lib.exceptions import Invalid, ForgeError
 from allura.lib.decorators import require_post
 from allura.lib.project_create_helpers import make_newproject_schema, deserialize_project, create_project_with_attrs
 from allura.lib.security import has_access
+from allura.lib.utils import ip_address
 import six
 
 
@@ -376,6 +379,12 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
     def cimd_enabled(self) -> bool:
         """Client ID Metadata Documents; a subclass may decide this at runtime"""
         return asbool(config.get('auth.oauth2.cimd.enabled', False))
+
+    def dcr_ip_marker(self, ip: str) -> str:
+        """How a dynamically registered client records the IP it came from.  Must be deterministic, since the
+        rate limit matches on it; a subclass may use reversible encryption instead"""
+        key = aslist(config['session.jwt_secret_keys'], ',')[0]
+        return hmac.new(key.encode(), ip.encode(), hashlib.sha256).hexdigest()
 
     @staticmethod
     def _machine_registered_client(client_id: str | None) -> M.OAuth2ClientApp | None:
@@ -747,6 +756,98 @@ class Oauth2Negotiator:
         response.headers.update(headers)
         response.status_int = status
         return body
+
+    @expose('json:')
+    def register(self, **kw):
+        """Dynamic Client Registration (RFC 7591).  Unauthenticated by design: a client_id grants nothing until a
+        user approves it, and registrations are rate-limited per IP"""
+        if request.method != 'POST':
+            response.headers['Allow'] = 'POST'
+            return _registration_error('invalid_request', 'POST required.', status=405)
+        validator = Oauth2Validator()
+        ip = ip_address(request)
+        if not validator.dcr_enabled():
+            log.warning('oauth2 dcr: disabled, refused registration from %s (%s)', ip, request.user_agent)
+            hint = ' Use a client that supports Client ID Metadata Documents.' if validator.cimd_enabled() else ''
+            return _registration_error('access_denied', 'Dynamic client registration is not available.' + hint,
+                                       status=403)
+
+        try:
+            meta = request.json
+        except ValueError:
+            return _registration_error('invalid_client_metadata', 'Body must be JSON.')
+        if not isinstance(meta, dict):
+            return _registration_error('invalid_client_metadata', 'Body must be a JSON object.')
+
+        redirect_uris = meta.get('redirect_uris') or []
+        if not isinstance(redirect_uris, list) or not redirect_uris:
+            return _registration_error('invalid_redirect_uri', 'redirect_uris is required.')
+        if len(redirect_uris) > DCR_MAX_REDIRECT_URIS:
+            return _registration_error('invalid_redirect_uri', f'At most {DCR_MAX_REDIRECT_URIS} redirect_uris.')
+        for uri in redirect_uris:
+            if not isinstance(uri, str) or not https_or_loopback(uri):
+                return _registration_error('invalid_redirect_uri',
+                                           f'{uri!r} must be https, or http on a loopback address (RFC 8252).')
+
+        for grant in meta.get('grant_types') or ['authorization_code']:
+            if grant not in ('authorization_code', 'refresh_token'):
+                return _registration_error('invalid_client_metadata', f'Unsupported grant_type {grant!r}.')
+        for rtype in meta.get('response_types') or ['code']:
+            if rtype != 'code':
+                return _registration_error('invalid_client_metadata', f'Unsupported response_type {rtype!r}.')
+
+        # refused rather than silently narrowed, so the client knows what it actually got
+        scope = meta.get('scope')
+        requested = scope.split() if isinstance(scope, str) and scope.strip() else oauth2_default_scopes()
+        unknown = [s for s in requested if s not in oauth2_scopes_supported()]
+        if unknown:
+            return _registration_error('invalid_scope', f'Unknown scope(s): {" ".join(unknown)}.')
+
+        marker = validator.dcr_ip_marker(ip)
+        window = timedelta(minutes=asint(config.get('auth.oauth2.dcr.window_minutes', 60)))
+        recent = M.OAuth2ClientApp.query.find({
+            '_id': {'$gt': ObjectId.from_datetime(datetime.utcnow() - window)},
+            'registration_ip': marker,
+        }).count()
+        if recent >= asint(config.get('auth.oauth2.dcr.limit_per_ip', 200)):
+            log.warning('oauth2 dcr: rate limit hit for %s', ip)
+            return _registration_error('temporarily_unavailable',
+                                       'Too many registrations from this address. Try again later.', status=429)
+
+        name = str(meta.get('client_name') or 'OAuth client')[:DCR_MAX_NAME_LEN]
+        client = M.OAuth2ClientApp(
+            name=name,
+            redirect_uris=[str(u) for u in redirect_uris],
+            scopes=requested,
+            user_id=None,
+            registration='dcr',
+            registration_ip=marker,
+        )
+        session(client).flush(client)
+        log.info('oauth2 dcr: registered %r (client_id=%s) from %s', name, client.client_id, ip)
+
+        response.status_int = 201
+        return {
+            'client_id': client.client_id,
+            'client_secret': client.client_secret,
+            'client_id_issued_at': int(client._id.generation_time.timestamp()),
+            'client_secret_expires_at': 0,  # never
+            'client_name': name,
+            'redirect_uris': list(client.redirect_uris),
+            'grant_types': ['authorization_code', 'refresh_token'],
+            'response_types': ['code'],
+            'token_endpoint_auth_method': 'client_secret_post',
+            'scope': ' '.join(requested),
+        }
+
+
+DCR_MAX_REDIRECT_URIS = 10
+DCR_MAX_NAME_LEN = 200
+
+
+def _registration_error(code: str, description: str, status: int = 400) -> dict:
+    response.status_int = status
+    return {'error': code, 'error_description': description}
 
 
 def rest_has_access(obj, user, perm):
