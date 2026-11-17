@@ -696,10 +696,23 @@ class OAuthNegotiator:
         return body
 
 
+def oauth2_validator() -> Oauth2Validator:
+    """`auth.oauth2.validator` names an `allura.oauth2_validator` entry point; every OAuth2 endpoint uses this"""
+    name = config.get('auth.oauth2.validator')
+    if not name:
+        return Oauth2Validator()
+    impl = g.entry_points['oauth2_validator'].get(name)
+    if impl is None:
+        # never fall back: the subclass may be what turns a feature off
+        raise RuntimeError(f'auth.oauth2.validator = {name}: no allura.oauth2_validator entry point by that name '
+                           'loaded (see the log for a load error)')
+    return impl()
+
+
 class Oauth2Negotiator:
     @property
     def server(self):
-        return oauthlib.oauth2.WebApplicationServer(Oauth2Validator())
+        return oauthlib.oauth2.WebApplicationServer(oauth2_validator())
 
     def _authenticate(self):
         valid, req = self.server.verify_request(
@@ -744,7 +757,7 @@ class Oauth2Negotiator:
         if request.method != 'POST':
             response.headers['Allow'] = 'POST'
             return _registration_error('invalid_request', 'POST required.', status=405)
-        validator = Oauth2Validator()
+        validator = oauth2_validator()
         ip = ip_address(request)
         if not validator.dcr_enabled():
             log.warning('oauth2 dcr: disabled, refused registration from %s (%s)', ip, request.user_agent)

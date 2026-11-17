@@ -361,6 +361,7 @@ class Globals:
             webhooks=_cache_eps('allura.webhooks'),
             multifactor_totp=_cache_eps('allura.multifactor.totp'),
             multifactor_recovery_code=_cache_eps('allura.multifactor.recovery_code'),
+            oauth2_validator=_cache_eps('allura.oauth2_validator'),
         )
 
         # Set listeners to update stats
