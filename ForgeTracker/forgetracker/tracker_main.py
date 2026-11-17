@@ -949,22 +949,13 @@ class RootController(BaseController, FeedController):
     def save_ticket(self, ticket_form=None, **post_data):
         # if c.app.globals.milestone_names is None:
         #     c.app.globals.milestone_names = ''
-        ticket_num = ticket_form.pop('ticket_num', None)
-        # W.ticket_form gives us this, but we don't set any comment during
-        # ticket creation
+        # W.ticket_form gives us these, but this only creates tickets (editing is update_ticket_from_widget),
+        # and we don't set any comment during ticket creation
+        ticket_form.pop('ticket_num', None)
         ticket_form.pop('comment', None)
-        if ticket_num:
-            ticket = TM.Ticket.query.get(
-                app_config_id=c.app.config._id,
-                ticket_num=ticket_num)
-            if not ticket:
-                raise Exception('Ticket number not found.')
-            require_access(ticket, 'update')
-            ticket.update_fields_basics(ticket_form)
-        else:
-            require_access(c.app, 'create')
-            self.rate_limit(TM.Ticket, 'Ticket creation', redir='.')
-            ticket = TM.Ticket.new(form_fields=ticket_form)
+        require_access(c.app, 'create')
+        self.rate_limit(TM.Ticket, 'Ticket creation', redir='.')
+        ticket = TM.Ticket.new(form_fields=ticket_form)
         ticket.update_fields_finish(ticket_form)
         g.spam_checker.check(ticket_form['summary'] + '\n' + ticket_form.get('description', ''), artifact=ticket,
                              user=c.user, content_type='ticket')

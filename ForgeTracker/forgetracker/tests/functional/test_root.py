@@ -2721,6 +2721,14 @@ class TestFunctionalController(TrackerTestController):
                 wf['message'] ==
                 'Ticket creation rate limit exceeded. Please try again later.')
 
+    def test_save_ticket_only_creates(self):
+        self.new_ticket(summary='original summary')
+        r = self.app.get('/bugs/new/?ticket_num=1&summary=overwritten')
+        self._find_new_ticket_form(r).submit()
+        ThreadLocalODMSession.close_all()
+        assert tm.Ticket.query.get(ticket_num=1).summary == 'original summary'
+        assert tm.Ticket.query.get(ticket_num=2).summary == 'overwritten'
+
     def test_rate_limit_save_ticket(self):
         # Set rate limit to unlimit
         with h.push_config(config, **{'forgetracker.rate_limits': '{}'}):
