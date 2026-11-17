@@ -37,6 +37,7 @@ import webtest
 from oauthlib.oauth2.rfc6749.errors import InvalidRedirectURIError
 from tg import tmpl_context as c
 
+from allura.controllers import rest as rest_controller
 from allura.controllers.auth import OAuth2AuthorizationController
 from allura.tests import TestController
 from allura.tests import decorators as td
@@ -3221,6 +3222,119 @@ class TestOAuth2(TestController):
         form['credentials'].force_value(json.dumps(dict(mock_credentials, redirect_uri='https://evil.example/')))
         form.submit('yes', status=400)
         assert M.OAuth2AuthorizationCode.query.get(client_id='client_12345') is None
+
+
+class TestOAuth2RedirectUriRules:
+    def test_https_or_loopback(self):
+        for uri in ['https://a.example/cb', 'http://localhost/cb', 'http://127.0.0.1:8080/cb', 'http://[::1]:1/cb']:
+            assert rest_controller.https_or_loopback(uri), uri
+        for uri in ['http://a.example/cb', 'http://evil@localhost/cb', 'myapp://cb', 'ftp://localhost/cb']:
+            assert not rest_controller.https_or_loopback(uri), uri
+
+    def test_loopback_matches_any_port_but_is_otherwise_exact(self):
+        registered = ['http://localhost/callback']
+        assert rest_controller.redirect_uri_matches('http://localhost:53682/callback', registered)
+        for uri in ['http://127.0.0.1:53682/callback', 'http://localhost:1/other', 'http://localhost:1/callback?x=1',
+                    'http://evil@localhost:1/callback', 'https://localhost/callback']:
+            assert not rest_controller.redirect_uri_matches(uri, registered), uri
+
+
+class TestOAuth2MachineRegisteredClients(TestController):
+    VERIFIER = 'QkatVHgTq_cZj8tTKWPIe78fXpoeszhVq6kLIUxJj8g9tMmfi0XV4dfZHQBXwOiWsLihJotfrOGKR4nZSXA4mA'
+    CHALLENGE = 'BxGpJVKt_l6Srlq3uXPfpxge3TxtxetcWhGXq2958yU'
+
+    @pytest.fixture(autouse=True)
+    def oauth2_config(self):
+        with mock.patch.dict(config, {'auth.oauth2.enabled': True, 'auth.oauth2.scopes_supported': 'read write'}):
+            yield
+
+    def _client(self, client_id='machine1', registration='dcr', redirect_uris=('https://localhost/',), **kw):
+        M.OAuth2ClientApp(client_id=client_id, client_secret='98765', name='machine', response_type='code',
+                          redirect_uris=list(redirect_uris), registration=registration, **kw)
+        ThreadLocalODMSession.flush_all()
+
+    def _authorize(self, client_id='machine1', redirect_uri='https://localhost/', pkce=True, **params):
+        if pkce:
+            params.update(code_challenge=self.CHALLENGE, code_challenge_method='S256')
+        return self.app.get('/auth/oauth2/authorize', params=dict(
+            client_id=client_id, response_type='code', redirect_uri=redirect_uri, **params), status='*')
+
+    def _code(self, client_id='machine1', **params) -> str:
+        r = self._authorize(client_id, **params)
+        form = [f for f in r.forms.values() if f.action == 'do_authorize'][0]
+        r = form.submit('yes', status=302)
+        return parse_qs(urlparse(r.location).query)['code'][0]
+
+    def _token(self, status=200, **body):
+        return self.app.post_json('/rest/oauth2/token', body, extra_environ={'username': '*anonymous'}, status=status)
+
+    def _exchange(self, code, status=200, **body):
+        return self._token(status=status, code=code, grant_type='authorization_code',
+                           redirect_uri='https://localhost/', **body)
+
+    def test_public_client_uses_pkce_instead_of_a_secret(self):
+        self._client(user_id=None)
+        r = self._exchange(self._code(), client_id='machine1', code_verifier=self.VERIFIER)
+        r = self._token(client_id='machine1', grant_type='refresh_token', refresh_token=r.json['refresh_token'])
+        assert M.OAuth2AccessToken.query.get(access_token=r.json['access_token'])
+
+    def test_pkce_is_required(self):
+        self._client(user_id=None)
+        r = self._authorize(pkce=False)
+        assert r.status_int == 302
+        assert parse_qs(urlparse(r.location).query)['error'] == ['invalid_request']
+        code = self._code()
+        self._exchange(code, client_id='machine1', status=400)
+
+    def test_a_secret_that_is_sent_is_checked(self):
+        self._client(user_id=None)
+        self._exchange(self._code(), client_id='machine1', client_secret='wrong', code_verifier=self.VERIFIER,
+                       status=401)
+
+    def test_owned_and_unmarked_clients_are_not_public(self):
+        # an owner-less client without `registration` (say, created with no one logged in) stays confidential
+        self._client('unmarked', registration=None, user_id=None)
+        self._client('owned', registration=None, user_id=M.User.by_username('test-user')._id)
+        for client_id in ('unmarked', 'owned'):
+            r = self._authorize(client_id, pkce=False)
+            assert r.status_int == 200
+            code = self._code(client_id, pkce=False)
+            self._exchange(code, client_id=client_id, status=401)
+
+    def test_scopes_are_limited_to_the_clients_and_the_supported(self):
+        self._client(user_id=None, scopes=['read', 'other'])
+        for scope in ('write', 'other', 'read write'):
+            r = self._authorize(scope=scope)
+            assert parse_qs(urlparse(r.location).query)['error'] == ['invalid_scope'], scope
+        assert self._authorize(scope='read').status_int == 200
+
+    def test_loopback_redirect_on_any_port(self):
+        self._client(user_id=None, redirect_uris=['http://localhost/callback'])
+        assert self._authorize(redirect_uri='http://localhost:53682/callback').status_int == 200
+        for uri in ['http://localhost:53682/other', 'http://evil@localhost:53682/callback', 'http://a.example/callback']:
+            assert self._authorize(redirect_uri=uri).status_int == 400, uri
+
+    def test_owned_client_loopback_is_exact(self):
+        self._client('owned', registration=None, user_id=M.User.by_username('test-user')._id,
+                     redirect_uris=['http://localhost/cb'])
+        assert self._authorize('owned', redirect_uri='http://localhost:5555/cb', pkce=False).status_int == 400
+
+    def test_each_connection_keeps_its_token(self):
+        self._client(user_id=None)
+        first = self._exchange(self._code(), client_id='machine1', code_verifier=self.VERIFIER).json
+        second = self._exchange(self._code(), client_id='machine1', code_verifier=self.VERIFIER).json
+        assert M.OAuth2AccessToken.query.get(access_token=first['access_token'])
+
+        refreshed = self._token(client_id='machine1', grant_type='refresh_token', refresh_token=first['refresh_token'])
+        assert M.OAuth2AccessToken.query.get(access_token=first['access_token']) is None
+        assert M.OAuth2AccessToken.query.get(access_token=second['access_token'])
+        assert M.OAuth2AccessToken.query.get(access_token=refreshed.json['access_token'])
+
+    def test_owned_client_grant_replaces_the_users_previous_token(self):
+        self._client('owned', registration=None, user_id=M.User.by_username('test-user')._id)
+        first = self._exchange(self._code('owned', pkce=False), client_id='owned', client_secret='98765').json
+        self._exchange(self._code('owned', pkce=False), client_id='owned', client_secret='98765')
+        assert M.OAuth2AccessToken.query.get(access_token=first['access_token']) is None
 
 
 class TestOAuthRequestToken(TestController):
