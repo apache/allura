@@ -35,19 +35,42 @@
 {% block content %}
 <div class="extra-pad">
 <h3>
-  The application "<strong>{{ client.name }}</strong>" wants to access your account.
+  The application "<strong>{{ client.name }}</strong>" wants to access your {{ config['site_name'] }} account.
 </h3>
+
+{% if client_host %}
+<p>This application is identified by <strong>{{ client_host }}</strong>.  Only continue if that is the
+   company whose product you are connecting.</p>
+{% endif %}
+
+{% if scopes %}
+<p>If you approve, it will be able to:</p>
+<ul>
+  {% for scope in scopes %}
+  <li>{{ scope_labels[scope] }}</li>
+  {% endfor %}
+</ul>
+<p>It will not be able to do anything else with your account.  You can revoke this at any time from
+   your <a href="/auth/oauth/">OAuth settings</a>.</p>
+{% endif %}
 
 {% if redirect_host %}
 <p>After you approve, you will be sent to <strong>{{ redirect_host }}</strong>.  Only continue if you
    recognize that address as belonging to the application you are authorizing.</p>
 {% endif %}
 
+{% if loopback_only %}
+<p><strong>This approval is returned to a program on your own computer.</strong>  Only continue if you
+   started this connection yourself just now, from an application you trust.</p>
+{% endif %}
+
+{% if not scopes %}
 <p>
   If you grant them access, they will be able to perform any actions on
   the site as though they were logged in as you.  Do you wish to grant
   them access?
 </p>
+{% endif %}
 
 <br style="clear:both"/>
 <div class="flex-container">

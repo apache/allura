@@ -58,8 +58,12 @@ def _loopback_key(uri: str) -> tuple | None:
     return host, p.path, p.query, p.fragment
 
 
+def is_loopback(uri: str) -> bool:
+    return _loopback_key(uri) is not None
+
+
 def https_or_loopback(uri: str) -> bool:
-    return uri.startswith('https://') or _loopback_key(uri) is not None
+    return uri.startswith('https://') or is_loopback(uri)
 
 
 def redirect_uri_matches(uri: str, registered: list[str]) -> bool:
