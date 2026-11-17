@@ -230,6 +230,8 @@ class OAuth2ClientApp(MappedClass):
     redirect_uris = FieldProperty([str])
     # 'dcr' or 'cimd' when registered by a machine rather than by a user
     registration = FieldProperty(str, if_missing=None)
+    # for the per-IP rate limit on dynamic registration; see Oauth2Validator.dcr_ip_marker
+    registration_ip = FieldProperty(str, if_missing=None)
 
     user = RelationProperty('User')
 

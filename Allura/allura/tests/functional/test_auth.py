@@ -3248,7 +3248,7 @@ class TestOAuth2RedirectUriRules:
             assert not rest_controller.redirect_uri_matches(uri, registered), uri
 
 
-class TestOAuth2MachineRegisteredClients(TestController):
+class OAuth2MachineClientFlow:
     VERIFIER = 'QkatVHgTq_cZj8tTKWPIe78fXpoeszhVq6kLIUxJj8g9tMmfi0XV4dfZHQBXwOiWsLihJotfrOGKR4nZSXA4mA'
     CHALLENGE = 'BxGpJVKt_l6Srlq3uXPfpxge3TxtxetcWhGXq2958yU'
 
@@ -3280,6 +3280,9 @@ class TestOAuth2MachineRegisteredClients(TestController):
     def _exchange(self, code, status=200, **body):
         return self._token(status=status, code=code, grant_type='authorization_code',
                            redirect_uri='https://localhost/', **body)
+
+
+class TestOAuth2MachineRegisteredClients(OAuth2MachineClientFlow, TestController):
 
     def test_public_client_uses_pkce_instead_of_a_secret(self):
         self._client(user_id=None)
@@ -3344,6 +3347,87 @@ class TestOAuth2MachineRegisteredClients(TestController):
         first = self._exchange(self._code('owned', pkce=False), client_id='owned', client_secret='98765').json
         self._exchange(self._code('owned', pkce=False), client_id='owned', client_secret='98765')
         assert M.OAuth2AccessToken.query.get(access_token=first['access_token']) is None
+
+
+class TestOAuth2DynamicRegistration(OAuth2MachineClientFlow, TestController):
+    URL = '/rest/oauth2/register'
+    ANON = {'username': '*anonymous', 'REMOTE_ADDR': '203.0.113.5'}
+
+    @pytest.fixture(autouse=True)
+    def dcr_config(self, oauth2_config):
+        with mock.patch.dict(config, {'auth.oauth2.dcr.enabled': True, 'auth.oauth2.default_scopes': 'read'}):
+            yield
+
+    def _register(self, status=201, extra_environ=None, **meta):
+        body = dict(dict(client_name='Some Client', redirect_uris=['https://localhost/']), **meta)
+        return self.app.post_json(self.URL, body, extra_environ=extra_environ or self.ANON, status=status)
+
+    def test_registers_a_public_client(self):
+        r = self._register()
+        assert r.json['client_id'] and r.json['client_secret']
+        assert r.json['scope'] == 'read'
+        assert r.json['client_secret_expires_at'] == 0
+        client = M.OAuth2ClientApp.query.get(client_id=r.json['client_id'])
+        assert client.user_id is None
+        assert client.registration == 'dcr'
+        assert client.machine_registered
+        assert client.scopes == ['read']
+        assert client.name == 'Some Client'
+        assert client.description == ''
+        assert client.redirect_uris == ['https://localhost/']
+
+    def test_full_flow_without_a_secret(self):
+        client_id = self._register().json['client_id']
+        r = self._exchange(self._code(client_id), client_id=client_id, code_verifier=self.VERIFIER)
+        assert r.json['scope'] == 'read'
+
+    def test_scopes(self):
+        r = self._register(scope='read write')
+        assert M.OAuth2ClientApp.query.get(client_id=r.json['client_id']).scopes == ['read', 'write']
+        assert self._register(scope='admin', status=400).json['error'] == 'invalid_scope'
+        with mock.patch.dict(config, {'auth.oauth2.default_scopes': ''}):
+            assert self._register().json['scope'] == 'read write'
+
+    def test_redirect_uris(self):
+        assert self._register(redirect_uris=['http://127.0.0.1:8976/callback']).status_int == 201
+        for uris in [[], ['http://evil.test/cb'], 'https://localhost/', [42], ['https://localhost/'] * 11]:
+            assert self._register(redirect_uris=uris, status=400).json['error'] == 'invalid_redirect_uri', uris
+
+    def test_rejects_bad_metadata(self):
+        assert self._register(grant_types=['implicit'], status=400).json['error'] == 'invalid_client_metadata'
+        assert self._register(response_types=['token'], status=400).json['error'] == 'invalid_client_metadata'
+        r = self.app.post(self.URL, 'nope', content_type='application/json', extra_environ=self.ANON, status=400)
+        assert r.json['error'] == 'invalid_client_metadata'
+        r = self.app.post_json(self.URL, ['a'], extra_environ=self.ANON, status=400)
+        assert r.json['error'] == 'invalid_client_metadata'
+
+    def test_refused_when_disabled(self):
+        before = M.OAuth2ClientApp.query.find().count()
+        with mock.patch.object(rest_controller.Oauth2Validator, 'dcr_enabled', return_value=False):
+            assert self._register(status=403).json['error'] == 'access_denied'
+        assert M.OAuth2ClientApp.query.find().count() == before
+
+    def test_post_only(self):
+        r = self.app.get(self.URL, extra_environ=self.ANON, status=405)
+        assert r.json['error'] == 'invalid_request'
+        assert r.headers['Allow'] == 'POST'
+
+    def test_rate_limited_per_ip(self):
+        other = dict(self.ANON, REMOTE_ADDR='198.51.100.7')
+        with mock.patch.dict(config, {'auth.oauth2.dcr.limit_per_ip': '2'}):
+            self._register()
+            self._register()
+            assert self._register(status=429).json['error'] == 'temporarily_unavailable'
+            self._register(extra_environ=other)
+
+    def test_registering_ip_is_not_stored_in_the_clear(self):
+        r = self._register()
+        marker = M.OAuth2ClientApp.query.get(client_id=r.json['client_id']).registration_ip
+        assert marker and '203.0.113.5' not in marker
+        assert marker == rest_controller.Oauth2Validator().dcr_ip_marker('203.0.113.5')
+        with mock.patch.object(rest_controller.Oauth2Validator, 'dcr_ip_marker', return_value='custom'):
+            r = self._register()
+        assert M.OAuth2ClientApp.query.get(client_id=r.json['client_id']).registration_ip == 'custom'
 
 
 class TestOAuthRequestToken(TestController):

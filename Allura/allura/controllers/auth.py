@@ -83,6 +83,13 @@ def oauth2_scopes_supported() -> list[str]:
     return aslist(config.get('auth.oauth2.scopes_supported', ''))
 
 
+def oauth2_default_scopes() -> list[str]:
+    """For a machine-registered client that asks for none: `auth.oauth2.default_scopes`, else every supported one"""
+    supported = oauth2_scopes_supported()
+    configured = aslist(config.get('auth.oauth2.default_scopes', ''))
+    return [s for s in configured if s in supported] if configured else supported
+
+
 def oauth2_grantable_scopes(client: M.OAuth2ClientApp | None) -> list[str]:
     supported = oauth2_scopes_supported()
     return [s for s in (client.scopes or []) if s in supported] if client else []
