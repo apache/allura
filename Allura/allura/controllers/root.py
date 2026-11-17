@@ -40,6 +40,7 @@ from .search import SearchController, ProjectBrowseController
 from .newforge import NewForgeController
 from .site_admin import SiteAdminController
 from .rest import RestController
+from .well_known import WellKnownController
 
 __all__ = ['RootController']
 
@@ -89,6 +90,7 @@ class RootController(TGController):
     def __init__(self):
         super().__init__()
         self.nf.admin = SiteAdminController()
+        setattr(self, '.well-known', WellKnownController())  # not a valid identifier, so not a class attribute
 
     @expose()
     def _lookup(self, nbhd_mount, *remainder):

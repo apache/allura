@@ -526,12 +526,12 @@ class TestRestOAuth2ProtectedResources(TestRestApiBase):
 
     def test_protected_resource_matches_whole_segments(self):
         for path in ['/rest/p/test/wiki', '/rest/p/test/wiki/', '/rest/p/test/wiki/Home', '/rest/p/test/wiki/%48ome']:
-            assert rest_controller.in_oauth2_protected_resource(path), path
+            assert rest_controller.oauth2_protected_resource(path), path
         for path in ['/rest/p/test', '/rest/p/test/', '/rest/p/test/wikifoo', '/rest/p/test/wiki/../admin',
                      '/rest/p/test/wiki/%2e%2e/admin', '/rest/p/test/wiki%2F..%2Fadmin']:
-            assert not rest_controller.in_oauth2_protected_resource(path), path
+            assert not rest_controller.oauth2_protected_resource(path), path
         with mock.patch.dict(config, {'auth.oauth2.protected_resources': ''}):
-            assert not rest_controller.in_oauth2_protected_resource('/rest/p/test/wiki')
+            assert not rest_controller.oauth2_protected_resource('/rest/p/test/wiki')
 
     @td.with_wiki
     def test_scoped_token_is_confined_to_protected_resources(self):
