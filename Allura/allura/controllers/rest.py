@@ -21,12 +21,12 @@ import base64
 import json
 import logging
 from datetime import datetime, timedelta
-from urllib.parse import unquote, parse_qs, urlparse, quote
+from urllib.parse import unquote, parse_qs, urlparse, urlsplit, quote
 
 import oauthlib.oauth1
 import oauthlib.oauth2
 import oauthlib.common
-from paste.util.converters import asbool
+from paste.util.converters import asbool, aslist
 from webob import exc
 import tg
 from tg import expose, flash, redirect, config
@@ -153,6 +153,39 @@ def is_active_user(user: M.User | None) -> bool:
 def valid_redirect_uri(redirect_uri: str, registered_uris: list[str]) -> bool:
     """Shared by OAuth1 & OAuth2: the URI must exactly match one the app owner registered, and not be plain http"""
     return not redirect_uri.startswith('http:') and redirect_uri in registered_uris
+
+
+# RFC 8252 native clients redirect to a loopback address on a port they pick per session
+LOOPBACK_HOSTS = ('127.0.0.1', '::1', 'localhost')
+
+
+def _loopback_key(uri: str) -> tuple | None:
+    """An http loopback URI with its port dropped, for comparison; None for anything else"""
+    try:
+        p = urlsplit(uri)
+        host = p.hostname
+    except ValueError:
+        return None
+    # .hostname drops userinfo, so `http://evil@localhost/` must be refused explicitly
+    if p.scheme != 'http' or host not in LOOPBACK_HOSTS or '@' in p.netloc:
+        return None
+    return host, p.path, p.query, p.fragment
+
+
+def https_or_loopback(uri: str) -> bool:
+    return uri.startswith('https://') or _loopback_key(uri) is not None
+
+
+def redirect_uri_matches(uri: str, registered: list[str]) -> bool:
+    """Exact match, except that a loopback redirect may use any port (RFC 8252 section 7.3)"""
+    if uri in registered:
+        return True
+    key = _loopback_key(uri)
+    return key is not None and key in {_loopback_key(r) for r in registered}
+
+
+def oauth2_scopes_supported() -> list[str]:
+    return aslist(config.get('auth.oauth2.scopes_supported', ''))
 
 
 def display_host(uri: str) -> str:
@@ -316,12 +349,21 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
         if asbool(tg.config.get('debug')):
             oauthlib.set_debug(True)
 
+    @staticmethod
+    def _machine_registered_client(client_id: str | None) -> M.OAuth2ClientApp | None:
+        client = M.OAuth2ClientApp.query.get(client_id=client_id) if client_id else None
+        return client if client and client.machine_registered else None
+
     def validate_client_id(self, client_id: str, request: oauthlib.common.Request, *args, **kwargs) -> bool:
         return M.OAuth2ClientApp.query.get(client_id=client_id) is not None
 
     def validate_redirect_uri(self, client_id, redirect_uri, request, *args, **kwargs):
         client = M.OAuth2ClientApp.query.get(client_id=client_id)
-        return client is not None and valid_redirect_uri(redirect_uri, client.redirect_uris)
+        if client is None:
+            return False
+        if client.machine_registered:
+            return https_or_loopback(redirect_uri) and redirect_uri_matches(redirect_uri, client.redirect_uris)
+        return valid_redirect_uri(redirect_uri, client.redirect_uris)
 
     def validate_response_type(self, client_id: str, response_type: str, client: oauthlib.oauth2.Client,
                                request: oauthlib.common.Request, *args, **kwargs) -> bool:
@@ -330,7 +372,15 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
 
     def validate_scopes(self, client_id: str, scopes, client: oauthlib.oauth2.Client,
                         request: oauthlib.common.Request, *args, **kwargs) -> bool:
-        return True
+        if not scopes:
+            return True
+        registered = self._machine_registered_client(client_id)
+        if registered is None:
+            # Allura never stored scopes for user-registered clients, so whatever they ask for keeps working
+            return True
+        supported = oauth2_scopes_supported()
+        allowed = set(registered.scopes or supported) & set(supported)
+        return all(s in allowed for s in scopes)
 
     def validate_grant_type(self, client_id: str, grant_type: str, client: oauthlib.oauth2.Client,
                             request: oauthlib.common.Request, *args, **kwargs) -> bool:
@@ -349,7 +399,7 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
         return client.redirect_uris[0] if client.redirect_uris else None
 
     def is_pkce_required(self, client_id: str, request: oauthlib.common.Request) -> bool:
-        return False
+        return self._machine_registered_client(client_id) is not None
 
     def get_code_challenge(self, code: str, request: oauthlib.common.Request) -> str:
         authorization_code = M.OAuth2AuthorizationCode.query.get(authorization_code=code)
@@ -373,6 +423,18 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
             return False
         request.client = M.OAuth2ClientApp.query.get(client_id=client_id, client_secret=client_secret)
         request.client_id = client_id
+        return request.client is not None
+
+    def client_authentication_required(self, request: oauthlib.common.Request, *args, **kwargs) -> bool:
+        # a machine-registered client may be public; one that does send a secret is still checked against it
+        creds = basic_auth_credentials(request)
+        if request.client_secret or (creds and creds[1]):
+            return True
+        client_id = request.client_id or (creds[0] if creds else None)
+        return self._machine_registered_client(client_id) is None
+
+    def authenticate_client_id(self, client_id: str, request: oauthlib.common.Request, *args, **kwargs) -> bool:
+        request.client = self._machine_registered_client(client_id)
         return request.client is not None
 
     def validate_code(self, client_id: str, code: str, client: oauthlib.oauth2.Client,
@@ -430,6 +492,7 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
         log.info(f'Saving new authorization code for client: {client_id}')
 
     def save_bearer_token(self, token, request: oauthlib.common.Request, *args, **kwargs) -> object:
+        old_token = None
         if request.grant_type == 'authorization_code':
             code = M.OAuth2AuthorizationCode.query.get(client_id=request.client_id, authorization_code=request.code)
             user_id = code.user_id
@@ -446,9 +509,12 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
         elif scope:
             scopes = list(scope)
 
-        current_token = M.OAuth2AccessToken.query.get(client_id=request.client_id, user_id=user_id, is_bearer=False)
-
-        if current_token:
+        if self._machine_registered_client(request.client_id):
+            # one client serves many connections (every user of a product, or one user twice), so a new grant
+            # deletes nothing and a refresh deletes only the token it replaces
+            if old_token:
+                M.OAuth2AccessToken.query.remove({'_id': old_token._id})
+        else:
             M.OAuth2AccessToken.query.remove({'client_id': request.client_id, 'user_id': user_id, 'is_bearer': False})
 
         bearer_token = M.OAuth2AccessToken(

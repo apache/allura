@@ -228,6 +228,8 @@ class OAuth2ClientApp(MappedClass):
     response_type = FieldProperty(str, if_missing='code')
     scopes = FieldProperty([str])
     redirect_uris = FieldProperty([str])
+    # 'dcr' or 'cimd' when registered by a machine rather than by a user
+    registration = FieldProperty(str, if_missing=None)
 
     user = RelationProperty('User')
 
@@ -236,6 +238,11 @@ class OAuth2ClientApp(MappedClass):
         if user is None:
             user = c.user
         return cls.query.find(dict(user_id=user._id)).all()
+
+    @property
+    def machine_registered(self) -> bool:
+        """A public client: PKCE stands in for the secret, and it may redirect to any loopback port"""
+        return self.registration in ('dcr', 'cimd')
 
     @property
     def description_html(self):
