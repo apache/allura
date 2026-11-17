@@ -800,7 +800,8 @@ def hostname_from_url(url: str) -> str:
         return ''
     # Browsers treat ///foo.com as //foo.com (protocol-relative); urlparse does not,
     # so collapse three or more leading slashes to two before parsing.
-    url = re.sub(r'^/{3,}', '//', url)
+    # Browsers also treat a backslash as / there.
+    url = re.sub(r'^/{3,}', '//', url.replace('\\', '/'))
     return normalize_hostname(urlparse(url).hostname)
 
 
@@ -1020,7 +1021,7 @@ def get_key_from_value(d, val):
 
 
 def is_nofollow_url(url):
-    url_domain = urlparse(url).hostname
+    url_domain = hostname_from_url(url)
     ok_domains = re.split(r'\s*,\s*', tg.config.get('nofollow_exempt_domains', '')) + [tg.config['domain']]
     return url_domain and url_domain not in ok_domains
 
