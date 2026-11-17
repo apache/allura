@@ -70,7 +70,7 @@ class RestController:
             try:
                 c.api_token = self._authenticate_request()
             except exc.HTTPUnauthorized:
-                if not in_oauth2_protected_resource(request.path):
+                if not oauth2_protected_resource(request.path):
                     raise
                 # tells a client holding an expired or revoked token to re-authenticate (RFC 6750 3.1, RFC 9728 5.1)
                 request.environ['tg.status_code_redirect'] = True
@@ -198,14 +198,14 @@ def redirect_uri_matches(uri: str, registered: list[str]) -> bool:
 OAUTH2_RESOURCE_METADATA_PATH = '/.well-known/oauth-protected-resource'
 
 
-def in_oauth2_protected_resource(path: str) -> bool:
-    """Is this URL path within a configured `auth.oauth2.protected_resources` path, on whole segments"""
+def oauth2_protected_resource(path: str) -> str | None:
+    """The configured `auth.oauth2.protected_resources` path that contains this URL path, on whole segments"""
     path = posixpath.normpath(unquote(path))
     for resource in aslist(config.get('auth.oauth2.protected_resources', '')):
         resource = resource.rstrip('/')
         if resource and (path == resource or path.startswith(resource + '/')):
-            return True
-    return False
+            return resource
+    return None
 
 
 def display_host(uri: str) -> str:
@@ -369,6 +369,14 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
         if asbool(tg.config.get('debug')):
             oauthlib.set_debug(True)
 
+    def dcr_enabled(self) -> bool:
+        """Dynamic Client Registration (RFC 7591); a subclass may decide this at runtime"""
+        return asbool(config.get('auth.oauth2.dcr.enabled', False))
+
+    def cimd_enabled(self) -> bool:
+        """Client ID Metadata Documents; a subclass may decide this at runtime"""
+        return asbool(config.get('auth.oauth2.cimd.enabled', False))
+
     @staticmethod
     def _machine_registered_client(client_id: str | None) -> M.OAuth2ClientApp | None:
         client = M.OAuth2ClientApp.query.get(client_id=client_id) if client_id else None
@@ -474,7 +482,7 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
         if not access_token or access_token.expires_at < datetime.utcnow():
             return False
         # scopes are only for the protected resources; unscoped tokens keep working across the whole API
-        if access_token.scopes and not in_oauth2_protected_resource(urlparse(request.uri).path):
+        if access_token.scopes and not oauth2_protected_resource(urlparse(request.uri).path):
             return False
         request.access_token = access_token
         return True
