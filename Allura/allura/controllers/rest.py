@@ -24,11 +24,12 @@ import json
 import logging
 import posixpath
 from datetime import datetime, timedelta
-from urllib.parse import unquote, parse_qs, urlparse, urlsplit, quote
+from urllib.parse import unquote, parse_qs, urlparse, quote
 
 import oauthlib.oauth1
 import oauthlib.oauth2
 import oauthlib.common
+from oauthlib.oauth2.rfc6749.errors import InvalidClientIdError
 from paste.deploy.converters import asbool, asint, aslist
 from webob import exc
 import tg
@@ -49,6 +50,8 @@ from allura.lib.exceptions import Invalid, ForgeError
 from allura.lib.decorators import require_post
 from allura.lib.project_create_helpers import make_newproject_schema, deserialize_project, create_project_with_attrs
 from allura.lib.security import has_access
+from allura.lib.oauth2_clients import (MAX_NAME_LEN, MAX_REDIRECT_URIS, CIMDError, ensure_cimd_client,
+                                       https_or_loopback, is_cimd_client_id, redirect_uri_matches)
 from allura.lib.utils import ip_address
 import six
 
@@ -167,35 +170,6 @@ def is_active_user(user: M.User | None) -> bool:
 def valid_redirect_uri(redirect_uri: str, registered_uris: list[str]) -> bool:
     """Shared by OAuth1 & OAuth2: the URI must exactly match one the app owner registered, and not be plain http"""
     return not redirect_uri.startswith('http:') and redirect_uri in registered_uris
-
-
-# RFC 8252 native clients redirect to a loopback address on a port they pick per session
-LOOPBACK_HOSTS = ('127.0.0.1', '::1', 'localhost')
-
-
-def _loopback_key(uri: str) -> tuple | None:
-    """An http loopback URI with its port dropped, for comparison; None for anything else"""
-    try:
-        p = urlsplit(uri)
-        host = p.hostname
-    except ValueError:
-        return None
-    # .hostname drops userinfo, so `http://evil@localhost/` must be refused explicitly
-    if p.scheme != 'http' or host not in LOOPBACK_HOSTS or '@' in p.netloc:
-        return None
-    return host, p.path, p.query, p.fragment
-
-
-def https_or_loopback(uri: str) -> bool:
-    return uri.startswith('https://') or _loopback_key(uri) is not None
-
-
-def redirect_uri_matches(uri: str, registered: list[str]) -> bool:
-    """Exact match, except that a loopback redirect may use any port (RFC 8252 section 7.3)"""
-    if uri in registered:
-        return True
-    key = _loopback_key(uri)
-    return key is not None and key in {_loopback_key(r) for r in registered}
 
 
 OAUTH2_RESOURCE_METADATA_PATH = '/.well-known/oauth-protected-resource'
@@ -392,7 +366,16 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
         return client if client and client.machine_registered else None
 
     def validate_client_id(self, client_id: str, request: oauthlib.common.Request, *args, **kwargs) -> bool:
-        return M.OAuth2ClientApp.query.get(client_id=client_id) is not None
+        if not is_cimd_client_id(client_id):
+            return M.OAuth2ClientApp.query.get(client_id=client_id) is not None
+        if not self.cimd_enabled():
+            return False
+        # the first validator oauthlib calls at authorize, so every later lookup finds the client
+        try:
+            ensure_cimd_client(client_id, oauth2_scopes_supported())
+        except CIMDError as e:
+            raise InvalidClientIdError(description=f'Client ID Metadata Document rejected: {e}.', request=request)
+        return True
 
     def validate_redirect_uri(self, client_id, redirect_uri, request, *args, **kwargs):
         client = M.OAuth2ClientApp.query.get(client_id=client_id)
@@ -425,7 +408,12 @@ class Oauth2Validator(oauthlib.oauth2.RequestValidator):
 
     def get_default_scopes(self, client_id: str, request: oauthlib.common.Request, *args, **kwargs):
         # oauthlib falls back to these whenever the grant's scopes are empty, so they must be grantable too
-        return oauth2_grantable_scopes(M.OAuth2ClientApp.query.get(client_id=client_id))
+        client = M.OAuth2ClientApp.query.get(client_id=client_id)
+        grantable = oauth2_grantable_scopes(client)
+        if client and client.registration == 'cimd':
+            # its scopes are a ceiling shared by every connection, not what it asked for
+            return [s for s in oauth2_default_scopes() if s in grantable]
+        return grantable
 
     def get_original_scopes(self, refresh_token: str, request: oauthlib.common.Request, *args, **kwargs) -> list[str]:
         token = M.OAuth2AccessToken.query.get(refresh_token=refresh_token)
@@ -782,8 +770,8 @@ class Oauth2Negotiator:
         redirect_uris = meta.get('redirect_uris') or []
         if not isinstance(redirect_uris, list) or not redirect_uris:
             return _registration_error('invalid_redirect_uri', 'redirect_uris is required.')
-        if len(redirect_uris) > DCR_MAX_REDIRECT_URIS:
-            return _registration_error('invalid_redirect_uri', f'At most {DCR_MAX_REDIRECT_URIS} redirect_uris.')
+        if len(redirect_uris) > MAX_REDIRECT_URIS:
+            return _registration_error('invalid_redirect_uri', f'At most {MAX_REDIRECT_URIS} redirect_uris.')
         for uri in redirect_uris:
             if not isinstance(uri, str) or not https_or_loopback(uri):
                 return _registration_error('invalid_redirect_uri',
@@ -814,7 +802,7 @@ class Oauth2Negotiator:
             return _registration_error('temporarily_unavailable',
                                        'Too many registrations from this address. Try again later.', status=429)
 
-        name = str(meta.get('client_name') or 'OAuth client')[:DCR_MAX_NAME_LEN]
+        name = str(meta.get('client_name') or 'OAuth client')[:MAX_NAME_LEN]
         client = M.OAuth2ClientApp(
             name=name,
             redirect_uris=[str(u) for u in redirect_uris],
@@ -839,10 +827,6 @@ class Oauth2Negotiator:
             'token_endpoint_auth_method': 'client_secret_post',
             'scope': ' '.join(requested),
         }
-
-
-DCR_MAX_REDIRECT_URIS = 10
-DCR_MAX_NAME_LEN = 200
 
 
 def _registration_error(code: str, description: str, status: int = 400) -> dict:
