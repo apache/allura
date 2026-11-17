@@ -882,6 +882,7 @@ class PreferencesController(BaseController):
             ap.set_password(c.user, kw['oldpw'], kw['pw'])
             session['_id'] = _session_id()  # new one so even if this session had been intercepted somehow, its invalid
             session.save()
+            c.user.track_session(session.id)
             c.user.set_tool_data('allura', pwd_reset_preserve_session=session.id)
             c.user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
 

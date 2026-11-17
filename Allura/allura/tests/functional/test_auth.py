@@ -761,6 +761,16 @@ class TestAuth(TestController):
         assert tasks[0].kwargs['subject'] == 'Password Changed'
         assert 'The password for your' in tasks[0].kwargs['text']
 
+    def test_change_password_keeps_tracked_session(self):
+        no_magic = {'disable_auth_magic': 'True'}
+        with h.push_config(config, **{'auth.reject_untracked_sessions': True}):
+            login(self.app)
+            self.app.get('/auth/preferences/', extra_environ=no_magic, status=200)
+            self.app.post('/auth/preferences/change_password', extra_environ=no_magic, params={
+                'oldpw': 'foo', 'pw': 'asdfasdf1234', 'pw2': 'asdfasdf1234',
+                '_csrf_token': self.app.cookies['_csrf_token']})
+            self.app.get('/auth/preferences/', extra_environ=no_magic, status=200)
+
     @patch('allura.lib.plugin.AuthenticationProvider.hibp_password_check_enabled', Mock(return_value=True))
     @td.with_user_project('test-admin')
     @pytest.mark.network
