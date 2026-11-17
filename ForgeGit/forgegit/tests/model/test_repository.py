@@ -1219,17 +1219,12 @@ By Dave Brondsema''' in text_body
              'size': None}]
         assert res == expected
 
-    def test_merge_request_commits_tmp_dir(self):
-        """
-        repo.merge_request_commits should return the same result with and
-        without scm.merge_list.git.use_tmp_dir option enabled
-        """
-        mr = self.merge_request
-        res_without_tmp = self.repo.merge_request_commits(mr)
-        opt = {'scm.merge_list.git.use_tmp_dir': True}
-        with h.push_config(tg.config, **opt):
-            res_with_tmp = self.repo.merge_request_commits(mr)
-        assert res_without_tmp == res_with_tmp
+    def test_merge_request_commits_leaves_repo_untouched(self):
+        fetch_head = os.path.join(self.repo.full_fs_path, 'FETCH_HEAD')
+        if os.path.exists(fetch_head):
+            os.remove(fetch_head)
+        self.repo.merge_request_commits(self.merge_request)
+        assert not os.path.exists(fetch_head)
 
     def test_cached_branches(self):
         with mock.patch.dict('allura.lib.app_globals.config', {'repo_refs_cache_threshold': '0'}):
