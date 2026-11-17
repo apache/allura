@@ -20,6 +20,7 @@ import json
 
 import tg
 from mock import patch
+from ming.odm import ThreadLocalODMSession
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -84,6 +85,17 @@ class Test(TestController):
         history = self.app.get(f'/blog{slug}/history', extra_environ=anon)
         assert 'version=2' in history
         assert 'version=1' not in history
+
+    def test_neighborhood_blog_posts_hides_deleted_project(self):
+        self._post(title='Visible Post', text='nbhdpostbody')
+        nbhd_id = M.Project.query.get(shortname='test').neighborhood_id
+        params = dict(markdown='[[neighborhood_blog_posts]]', neighborhood=str(nbhd_id),
+                      project='--init--', app='wiki')
+        anon = dict(username='*anonymous')
+        assert 'nbhdpostbody' in self.app.get('/nf/markdown_to_html', params=params, extra_environ=anon)
+        M.Project.query.get(shortname='test').deleted = True
+        ThreadLocalODMSession.flush_all()
+        assert 'nbhdpostbody' not in self.app.get('/nf/markdown_to_html', params=params, extra_environ=anon)
 
     def test_feed_rendered_as_anonymous_on_edit(self):
         self._post(state='draft', title='Secretdraft', text='draftsecrettext')
