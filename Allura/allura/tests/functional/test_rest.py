@@ -28,6 +28,7 @@ from ming.odm import ThreadLocalODMSession
 from tg import config
 from tg import tmpl_context as c
 
+from allura.controllers import rest as rest_controller
 from allura.tests import decorators as td
 from alluratest.controller import TestRestApiBase
 from allura.lib import helpers as h
@@ -503,6 +504,62 @@ class TestRestHome(TestRestApiBase):
 
         assert '401 Unauthorized' in str(ex.value)
 
+
+class TestRestOAuth2ProtectedResources(TestRestApiBase):
+
+    @pytest.fixture(autouse=True)
+    def oauth2_config(self):
+        with mock.patch.dict(config, {'auth.oauth2.enabled': True,
+                                      'auth.oauth2.protected_resources': '/rest/p/test/wiki'}):
+            yield
+
+    def _set_oauth2_token(self, scopes, expires_in=timedelta(days=1)):
+        token = M.OAuth2AccessToken(
+            client_id='client_12345',
+            access_token='ULy1kNFFSCYCscfcoS2oF5Z8i61Mx8',
+            scopes=scopes,
+            expires_at=datetime.utcnow() + expires_in,
+            user_id=M.User.by_username('test-admin')._id,
+        )
+        ThreadLocalODMSession.flush_all()
+        self.set_api_token(token)
+
+    def test_protected_resource_matches_whole_segments(self):
+        for path in ['/rest/p/test/wiki', '/rest/p/test/wiki/', '/rest/p/test/wiki/Home', '/rest/p/test/wiki/%48ome']:
+            assert rest_controller.in_oauth2_protected_resource(path), path
+        for path in ['/rest/p/test', '/rest/p/test/', '/rest/p/test/wikifoo', '/rest/p/test/wiki/../admin',
+                     '/rest/p/test/wiki/%2e%2e/admin', '/rest/p/test/wiki%2F..%2Fadmin']:
+            assert not rest_controller.in_oauth2_protected_resource(path), path
+        with mock.patch.dict(config, {'auth.oauth2.protected_resources': ''}):
+            assert not rest_controller.in_oauth2_protected_resource('/rest/p/test/wiki')
+
+    @td.with_wiki
+    def test_scoped_token_is_confined_to_protected_resources(self):
+        self._set_oauth2_token(['read'])
+        self.api_get('/rest/p/test/wiki/Home')
+        r = self.api_get('/rest/p/test/', status=401)
+        assert 'WWW-Authenticate' not in r.headers
+
+    @td.with_wiki
+    def test_scoped_token_is_refused_without_protected_resources(self):
+        self._set_oauth2_token(['read'])
+        with mock.patch.dict(config, {'auth.oauth2.protected_resources': ''}):
+            self.api_get('/rest/p/test/wiki/Home', status=401)
+
+    @td.with_wiki
+    def test_unscoped_token_works_everywhere(self):
+        self._set_oauth2_token([])
+        self.api_get('/rest/p/test/wiki/Home')
+        self.api_get('/rest/p/test/')
+
+    @td.with_wiki
+    def test_rejected_token_on_protected_resource_gets_a_challenge(self):
+        self._set_oauth2_token(['read'], expires_in=-timedelta(days=1))
+        r = self.api_get('/rest/p/test/wiki/Home', status=401)
+        metadata_url = config['base_url'].rstrip('/') + '/.well-known/oauth-protected-resource'
+        assert r.headers['WWW-Authenticate'] == f'Bearer error="invalid_token", resource_metadata="{metadata_url}"'
+        r = self.api_get('/rest/p/test/', status=401)
+        assert 'WWW-Authenticate' not in r.headers
 
 class TestRestNbhdAddProject(TestRestApiBase):
 

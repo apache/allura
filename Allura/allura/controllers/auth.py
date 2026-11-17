@@ -34,7 +34,7 @@ from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg import tmpl_context as c, app_globals as g
 from tg import request, response
 from webob import exc as wexc
-from paste.deploy.converters import asbool
+from paste.deploy.converters import asbool, aslist
 from cryptography.hazmat.primitives.twofactor import InvalidToken
 from beaker.session import _session_id
 
@@ -77,6 +77,15 @@ def oauth2_json_params(raw: str, allow_none: bool = False) -> dict:
     if not isinstance(params, dict) or not all(isinstance(v, allowed) for v in params.values()):
         raise wexc.HTTPBadRequest('JSON must be an object with string values')
     return params
+
+
+def oauth2_scopes_supported() -> list[str]:
+    return aslist(config.get('auth.oauth2.scopes_supported', ''))
+
+
+def oauth2_grantable_scopes(client: M.OAuth2ClientApp | None) -> list[str]:
+    supported = oauth2_scopes_supported()
+    return [s for s in (client.scopes or []) if s in supported] if client else []
 
 
 class F:
@@ -1789,7 +1798,7 @@ class OAuth2AuthorizationController(BaseController):
         del credentials['request']
 
         # only what do_authorize will actually grant
-        scopes = [s for s in scopes or [] if s in (client.scopes or [])]
+        scopes = [s for s in scopes or [] if s in oauth2_grantable_scopes(client)]
         redirect_uri = credentials['redirect_uri']
         return dict(client=client, credentials=json.dumps(credentials), scopes=scopes,
                     redirect_host=urlparse(redirect_uri).netloc or redirect_uri)
@@ -1804,8 +1813,9 @@ class OAuth2AuthorizationController(BaseController):
             flash(f'{client.name} NOT AUTHORIZED', 'error')
             redirect('/auth/oauth/')
 
-        # posted back from the consent form, so only what the client may have
-        allowed = (client.scopes or []) if client else []
+        # posted back from the consent form, so only what the client may have.  A scoped token is confined to
+        # the protected resources, so a client without scopes must never end up with one
+        allowed = oauth2_grantable_scopes(client)
         scopes = [s for s in (request.params.get('scopes') or '').split() if s in allowed]
 
         # values like state may be null
