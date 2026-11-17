@@ -840,15 +840,8 @@ class GitImplementation(M.RepositoryImplementation):
 
         Must be called within mr.push_downstream_context()
         """
-        use_tmp_dir = tg.config.get('scm.merge_list.git.use_tmp_dir', False)
-        use_tmp_dir = asbool(use_tmp_dir)
-
-        if use_tmp_dir:
-            ctx_mgr = self._shared_clone(self._repo.full_fs_path)
-        else:
-            ctx_mgr = h.null_contextmanager(returning=self)
-
-        with ctx_mgr as repo:
+        # fetch into a temporary clone, never into the downstream repo itself
+        with self._shared_clone(self._repo.full_fs_path) as repo:
             base = repo.merge_base(mr)
             return list(repo.log(
                 [mr.downstream.commit_id],
