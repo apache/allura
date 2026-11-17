@@ -322,6 +322,12 @@ class TestHTMLSanitizer:
                 '<a href="//evil.com/">http://example.com/</a> (evil.com)')
         assert (self.sanitize_html('<a href="///evil.com/">http://example.com/</a>') ==
                 '<a href="///evil.com/">http://example.com/</a> (evil.com)')
+        assert (self.sanitize_html(r'<a href="/\evil.com/">example.com</a>') ==
+                r'<a href="/\evil.com/">example.com</a> (evil.com)')
+        assert (self.sanitize_html(r'<a href="http://evil.com\@example.com/">example.com</a>') ==
+                r'<a href="http://evil.com\@example.com/">example.com</a> (evil.com)')
+        with h.push_config(config, domain='example.com'):
+            assert utils.is_nofollow_url(r'/\evil.com/')
 
         # OK: URL text matching actual link
         assert (self.sanitize_html('<a href="http://evil.com/">http://evil.com/</a>') ==
