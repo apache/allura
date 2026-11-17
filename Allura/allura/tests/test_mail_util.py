@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from email.message import EmailMessage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -30,6 +31,7 @@ from allura.app import Application
 from allura.lib.mail_util import (
     parse_address,
     parse_message,
+    AddrHeader,
     Header,
     is_autoreply,
     identify_sender,
@@ -256,6 +258,26 @@ class TestHeader:
     def test_name_addr(self):
         our_header = Header('"теснятся"', '<dave@b.com>')
         assert our_header == '"теснятся" <dave@b.com>'
+
+
+class TestAddrHeader:
+
+    def test_plain(self):
+        assert AddrHeader('foo@bar.com') == 'foo@bar.com'
+        assert AddrHeader('"Foo Bar" <foo@bar.com>') == '"Foo Bar" <foo@bar.com>'
+        assert AddrHeader('"теснятся" <foo@bar.com>') == '"теснятся" <foo@bar.com>'
+
+    def test_name_cannot_add_addresses(self):
+        hdr = AddrHeader('"Ticket #1: x", evil@evil.com, "y" <1@bugs.test.p.in.localhost>')
+        assert hdr == r'"Ticket #1: x\", evil@evil.com, \"y" <1@bugs.test.p.in.localhost>'
+        msg = EmailMessage(policy=email_policy)
+        msg['Reply-To'] = hdr
+        assert [a.addr_spec for a in msg['Reply-To'].addresses] == ['1@bugs.test.p.in.localhost']
+
+        hdr = AddrHeader('"=?", evil@evil.com, "y" <1@bugs.test.p.in.localhost>')
+        msg = EmailMessage(policy=email_policy)
+        msg['Reply-To'] = hdr
+        assert [a.addr_spec for a in msg['Reply-To'].addresses] == ['1@bugs.test.p.in.localhost']
 
 
 class TestIsAutoreply:

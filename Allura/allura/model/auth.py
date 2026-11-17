@@ -23,6 +23,7 @@ import typing
 import tg
 from markupsafe import Markup
 from urllib.parse import urlparse, urlencode
+import email.utils
 from email import header
 from hashlib import sha256
 from collections import deque
@@ -936,7 +937,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 
     def email_address_header(self):
         h = header.Header()
-        h.append('"{}"{}'.format(self.get_pref('display_name'), ''))
+        h.append(f'"{email.utils.quote(self.get_pref("display_name"))}"')
         h.append('<%s>' % self.get_pref('email_address'))
         return h
 

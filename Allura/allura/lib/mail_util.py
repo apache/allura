@@ -19,6 +19,7 @@ import re
 import logging
 import smtplib
 import email.parser
+import email.utils
 import ipaddress
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -100,11 +101,10 @@ def AddrHeader(fromaddr) -> str:
     if isinstance(fromaddr, str) and ' <' in fromaddr:
         name, addr = fromaddr.rsplit(' <', 1)
         addr = '<' + addr  # restore the char we just split off
-        addrheader = Header(name, addr)
-        if str(addrheader).startswith('=?'):  # encoding escape chars
-            # then quoting the name is no longer necessary
-            name = name.strip('"')
-            addrheader = Header(name, addr)
+        if len(name) >= 2 and name.startswith('"') and name.endswith('"'):
+            name = name[1:-1]
+        # the name can be user text (titles, display names); keep it all inside one quoted string
+        addrheader = Header(f'"{email.utils.quote(name)}"', addr)
     else:
         addrheader = Header(fromaddr)
     return addrheader
