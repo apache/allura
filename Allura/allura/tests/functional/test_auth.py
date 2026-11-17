@@ -33,6 +33,7 @@ from tg import config, expose
 from mock import patch, Mock
 import mock
 import pytest
+import urllib3
 import webtest
 from oauthlib.oauth2.rfc6749.errors import InvalidRedirectURIError
 from tg import tmpl_context as c
@@ -47,6 +48,7 @@ from allura import model as M
 from allura.model.oauth import dummy_oauths
 from allura.lib import plugin
 from allura.lib import helpers as h
+from allura.lib import oauth2_clients
 from allura.lib.multifactor import TotpService, RecoveryCodeService, EmailCodeAuthenticationService
 
 
@@ -3246,16 +3248,16 @@ class TestOAuth2(TestController):
 class TestOAuth2RedirectUriRules:
     def test_https_or_loopback(self):
         for uri in ['https://a.example/cb', 'http://localhost/cb', 'http://127.0.0.1:8080/cb', 'http://[::1]:1/cb']:
-            assert rest_controller.https_or_loopback(uri), uri
+            assert oauth2_clients.https_or_loopback(uri), uri
         for uri in ['http://a.example/cb', 'http://evil@localhost/cb', 'myapp://cb', 'ftp://localhost/cb']:
-            assert not rest_controller.https_or_loopback(uri), uri
+            assert not oauth2_clients.https_or_loopback(uri), uri
 
     def test_loopback_matches_any_port_but_is_otherwise_exact(self):
         registered = ['http://localhost/callback']
-        assert rest_controller.redirect_uri_matches('http://localhost:53682/callback', registered)
+        assert oauth2_clients.redirect_uri_matches('http://localhost:53682/callback', registered)
         for uri in ['http://127.0.0.1:53682/callback', 'http://localhost:1/other', 'http://localhost:1/callback?x=1',
                     'http://evil@localhost:1/callback', 'https://localhost/callback']:
-            assert not rest_controller.redirect_uri_matches(uri, registered), uri
+            assert not oauth2_clients.redirect_uri_matches(uri, registered), uri
 
 
 class OAuth2MachineClientFlow:
@@ -3438,6 +3440,179 @@ class TestOAuth2DynamicRegistration(OAuth2MachineClientFlow, TestController):
         with mock.patch.object(rest_controller.Oauth2Validator, 'dcr_ip_marker', return_value='custom'):
             r = self._register()
         assert M.OAuth2ClientApp.query.get(client_id=r.json['client_id']).registration_ip == 'custom'
+
+
+CIMD_CODE_ID = 'https://client.example/oauth/code-client.json'
+CIMD_CODE_DOC = {
+    'client_id': CIMD_CODE_ID, 'client_name': 'Code Client',
+    'redirect_uris': ['http://localhost/callback', 'http://127.0.0.1/callback'],
+    'grant_types': ['authorization_code', 'refresh_token'], 'response_types': ['code'],
+    'token_endpoint_auth_method': 'none',
+}
+CIMD_CODE_REDIRECT = 'http://localhost:54321/callback'
+CIMD_WEB_ID = 'https://client.example/oauth/web-client.json'
+CIMD_WEB_REDIRECT = 'https://client.example/callback'
+CIMD_WEB_DOC = {
+    'client_id': CIMD_WEB_ID, 'client_name': 'Web Client', 'redirect_uris': [CIMD_WEB_REDIRECT],
+    'grant_types': ['authorization_code', 'refresh_token', 'urn:ietf:params:oauth:grant-type:jwt-bearer'],
+    'response_types': ['code'],
+    'token_endpoint_auth_method': 'private_key_jwt', 'token_endpoint_auth_methods_supported': ['none', 'private_key_jwt'],
+}
+
+
+def cimd_served(*docs, headers=None):
+    by_url = {d['client_id']: d for d in docs}
+    return mock.patch.object(oauth2_clients, 'fetch',
+                             side_effect=lambda url: (200, headers or {}, json.dumps(by_url[url]).encode()))
+
+
+class TestOAuth2ClientIdMetadataDocuments(OAuth2MachineClientFlow, TestController):
+
+    @pytest.fixture(autouse=True)
+    def cimd_config(self, oauth2_config):
+        with mock.patch.dict(config, {'auth.oauth2.cimd.enabled': True, 'auth.oauth2.default_scopes': 'read'}):
+            yield
+
+    def _connect(self, client_id=CIMD_CODE_ID, redirect_uri=CIMD_CODE_REDIRECT, **params):
+        code = self._code(client_id, redirect_uri=redirect_uri, **params)
+        return self._token(client_id=client_id, code=code, grant_type='authorization_code', redirect_uri=redirect_uri,
+                           code_verifier=self.VERIFIER).json
+
+    def test_full_flow_on_any_loopback_port(self):
+        with cimd_served(CIMD_CODE_DOC):
+            r = self._authorize(CIMD_CODE_ID, redirect_uri=CIMD_CODE_REDIRECT)
+            assert r.status_int == 200
+            tokens = self._connect()
+        assert tokens['scope'] == 'read'
+        client = M.OAuth2ClientApp.query.get(client_id=CIMD_CODE_ID)
+        assert client.user_id is None
+        assert client.registration == 'cimd'
+        assert client.name == 'Code Client'
+        assert client.scopes == ['read', 'write']
+        refreshed = self._token(client_id=CIMD_CODE_ID, grant_type='refresh_token',
+                                refresh_token=tokens['refresh_token']).json
+        assert refreshed['scope'] == 'read'
+
+    def test_scopes_up_to_the_supported(self):
+        with cimd_served(CIMD_CODE_DOC):
+            assert self._connect(scope='read write')['scope'] == 'read write'
+            r = self._authorize(CIMD_CODE_ID, redirect_uri=CIMD_CODE_REDIRECT, scope='admin')
+        assert parse_qs(urlparse(r.location).query)['error'] == ['invalid_scope']
+
+    def test_unsupported_grants_ignored_and_none_among_other_methods(self):
+        with cimd_served(CIMD_WEB_DOC):
+            assert self._connect(CIMD_WEB_ID, CIMD_WEB_REDIRECT)['scope'] == 'read'
+
+    def test_refused_when_disabled(self):
+        with cimd_served(CIMD_CODE_DOC) as fetch, \
+                mock.patch.object(rest_controller.Oauth2Validator, 'cimd_enabled', return_value=False):
+            assert self._authorize(CIMD_CODE_ID, redirect_uri=CIMD_CODE_REDIRECT).status_int == 400
+        assert not fetch.called
+        assert M.OAuth2ClientApp.query.get(client_id=CIMD_CODE_ID) is None
+
+    def test_one_client_per_document_and_cached(self):
+        with cimd_served(CIMD_CODE_DOC) as fetch:
+            first = self._connect()
+            second = self._connect()
+        assert fetch.call_count == 1
+        assert M.OAuth2ClientApp.query.find({'client_id': CIMD_CODE_ID}).count() == 1
+        for tokens in (first, second):
+            assert M.OAuth2AccessToken.query.get(access_token=tokens['access_token'])
+
+    def test_refetched_after_expiry(self):
+        with cimd_served(CIMD_CODE_DOC):
+            self._authorize(CIMD_CODE_ID, redirect_uri=CIMD_CODE_REDIRECT)
+        M.OAuth2ClientMetadataFetch.query.get(_id=CIMD_CODE_ID).expires = datetime.utcnow() - timedelta(seconds=1)
+        ThreadLocalODMSession.flush_all()
+        with cimd_served(dict(CIMD_CODE_DOC, client_name='Code Client 2')) as fetch:
+            self._authorize(CIMD_CODE_ID, redirect_uri=CIMD_CODE_REDIRECT)
+        assert fetch.call_count == 1
+        ThreadLocalODMSession.close_all()
+        assert M.OAuth2ClientApp.query.get(client_id=CIMD_CODE_ID).name == 'Code Client 2'
+
+    def test_unlisted_redirect_is_refused_without_redirecting(self):
+        with cimd_served(CIMD_CODE_DOC):
+            assert self._authorize(CIMD_CODE_ID, redirect_uri='https://evil.test/callback').status_int == 400
+
+    @pytest.mark.parametrize('status, body', [
+        (200, json.dumps(dict(CIMD_CODE_DOC, client_id='https://client.example/other')).encode()),
+        (404, b'not found'),
+        (302, b''),
+        (200, b'{' + b' ' * oauth2_clients.CIMD_MAX_BYTES + b'}'),
+        (200, b'<html>'),
+        (200, b'[]'),
+        (200, json.dumps({k: v for k, v in CIMD_CODE_DOC.items() if k != 'redirect_uris'}).encode()),
+        (200, json.dumps({k: v for k, v in CIMD_CODE_DOC.items() if k != 'client_name'}).encode()),
+        (200, json.dumps(dict(CIMD_CODE_DOC, client_secret='s')).encode()),
+        (200, json.dumps(dict(CIMD_CODE_DOC, token_endpoint_auth_method='client_secret_basic')).encode()),
+        (200, json.dumps({k: v for k, v in CIMD_CODE_DOC.items() if k != 'token_endpoint_auth_method'}).encode()),
+        (200, json.dumps(dict(CIMD_CODE_DOC, token_endpoint_auth_method='private_key_jwt',
+                              token_endpoint_auth_methods_supported=['private_key_jwt'])).encode()),
+        (200, json.dumps(dict(CIMD_CODE_DOC, redirect_uris=['http://evil.test/cb'])).encode()),
+        (200, json.dumps(dict(CIMD_CODE_DOC, grant_types=['client_credentials'])).encode()),
+        (200, json.dumps(dict(CIMD_CODE_DOC, response_types=['token'])).encode()),
+    ])
+    def test_rejected_document(self, status, body):
+        with mock.patch.object(oauth2_clients, 'fetch', return_value=(status, {}, body)):
+            r = self._authorize(CIMD_CODE_ID, redirect_uri=CIMD_CODE_REDIRECT)
+        assert r.status_int == 400
+        assert 'Client ID Metadata Document rejected' in r.text
+        assert M.OAuth2ClientApp.query.get(client_id=CIMD_CODE_ID) is None
+        assert M.OAuth2ClientMetadataFetch.query.get(_id=CIMD_CODE_ID) is None
+
+
+class TestOAuth2ClientIdMetadataDocumentFetch:
+
+    @pytest.mark.parametrize('url', [
+        'https://client.example', 'https://client.example/', 'http://client.example/x', 'https://u:p@client.example/x',
+        'https://client.example/a/../b', 'https://client.example/./b', 'https://client.example/x#f',
+    ])
+    def test_bad_client_id_urls(self, url):
+        with pytest.raises(oauth2_clients.CIMDError):
+            oauth2_clients.check_client_id_url(url)
+
+    def test_good_client_id_url(self):
+        oauth2_clients.check_client_id_url(CIMD_CODE_ID)
+
+    @pytest.mark.parametrize('address', ['127.0.0.1', '10.1.2.3', '192.168.0.1', '169.254.169.254',
+                                         '100.64.0.1', '::1', 'fd00::1', '0.0.0.0'])
+    def test_private_addresses_are_never_fetched(self, address):
+        info = [(None, None, None, '', (address, 443))]
+        with mock.patch('socket.getaddrinfo', return_value=info), \
+                mock.patch('urllib3.HTTPSConnectionPool') as pool, \
+                pytest.raises(oauth2_clients.CIMDError):
+            oauth2_clients.fetch('https://internal.test/client.json')
+        assert not pool.called
+
+    def test_one_private_address_among_public_ones_is_refused(self):
+        info = [(None, None, None, '', ('160.79.104.10', 443)), (None, None, None, '', ('10.0.0.1', 443))]
+        with mock.patch('socket.getaddrinfo', return_value=info), pytest.raises(oauth2_clients.CIMDError):
+            oauth2_clients.resolve_public('rebind.test', 443)
+
+    def test_connects_to_the_checked_address_without_redirects(self):
+        info = [(None, None, None, '', ('160.79.104.10', 443))]
+        with mock.patch('socket.getaddrinfo', return_value=info), \
+                mock.patch('urllib3.HTTPSConnectionPool') as pool, \
+                mock.patch.dict(config, {'auth.oauth2.cimd.user_agent': 'Test-OAuth/2.0'}):
+            pool.return_value.urlopen.return_value.read.return_value = b'{}'
+            pool.return_value.urlopen.return_value.status = 200
+            pool.return_value.urlopen.return_value.headers = {}
+            oauth2_clients.fetch(CIMD_CODE_ID)
+        args, kwargs = pool.call_args
+        assert args[0] == '160.79.104.10'
+        assert kwargs['server_hostname'] == kwargs['assert_hostname'] == 'client.example'
+        urlopen = pool.return_value.urlopen.call_args.kwargs
+        assert urlopen['redirect'] is False
+        assert urlopen['headers']['User-Agent'] == 'Test-OAuth/2.0'
+
+    @pytest.mark.parametrize('cache_control, expected', [
+        ('', oauth2_clients.CIMD_DEFAULT_TTL), ('max-age=10', oauth2_clients.CIMD_MIN_TTL),
+        ('public, max-age=7200', 7200), ('max-age=9999999', oauth2_clients.CIMD_MAX_TTL),
+        ('no-store', oauth2_clients.CIMD_MIN_TTL),
+    ])
+    def test_ttl(self, cache_control, expected):
+        headers = urllib3.HTTPHeaderDict({'Cache-Control': cache_control} if cache_control else {})
+        assert oauth2_clients.ttl(headers) == expected
 
 
 class TestOAuthRequestToken(TestController):

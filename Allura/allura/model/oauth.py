@@ -282,6 +282,20 @@ class OAuth2AuthorizationCode(MappedClass):
     user = RelationProperty('User')
 
 
+class OAuth2ClientMetadataFetch(MappedClass):
+    """When each Client ID Metadata Document was last fetched, so all workers share one cache"""
+
+    class __mongometa__:
+        session = main_orm_session
+        name = 'oauth2_client_metadata_fetch'
+        custom_indexes = [dict(fields=('expires',), expireAfterSeconds=0)]
+
+    query: 'Query[OAuth2ClientMetadataFetch]'
+
+    _id = FieldProperty(str)  # the client_id URL
+    expires = FieldProperty(datetime)
+
+
 class OAuth2AccessToken(MappedClass):
     class __mongometa__:
         session = main_orm_session

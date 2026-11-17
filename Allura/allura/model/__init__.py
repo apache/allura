@@ -31,7 +31,7 @@ from .notification import Notification, Mailbox, SiteNotification
 from .repository import Repository, RepositoryImplementation, CommitStatus, validate_scm_refs
 from .repository import MergeRequest, GitLikeTree
 from .stats import Stats
-from .oauth import OAuthToken, OAuthConsumerToken, OAuthRequestToken, OAuthAccessToken, OAuthNonce, OAuth2ClientApp, OAuth2AuthorizationCode, OAuth2AccessToken
+from .oauth import OAuthToken, OAuthConsumerToken, OAuthRequestToken, OAuthAccessToken, OAuthNonce, OAuth2ClientApp, OAuth2AuthorizationCode, OAuth2AccessToken, OAuth2ClientMetadataFetch
 from .monq_model import MonQTask
 from .webhook import Webhook
 from .multifactor import TotpKey
