@@ -1773,8 +1773,8 @@ class OAuth2AuthorizationController(BaseController):
 
     @property
     def server(self):
-        from allura.controllers.rest import Oauth2Validator
-        return oauthlib.oauth2.WebApplicationServer(Oauth2Validator())
+        from allura.controllers.rest import oauth2_validator
+        return oauthlib.oauth2.WebApplicationServer(oauth2_validator())
 
     @expose('jinja:allura:templates/oauth2_authorize.html')
     @without_trailing_slash

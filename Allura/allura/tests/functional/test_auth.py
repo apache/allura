@@ -36,7 +36,7 @@ import pytest
 import urllib3
 import webtest
 from oauthlib.oauth2.rfc6749.errors import InvalidRedirectURIError
-from tg import tmpl_context as c
+from tg import tmpl_context as c, app_globals as g
 
 from allura.controllers import rest as rest_controller
 from allura.controllers.auth import OAuth2AuthorizationController
@@ -3648,6 +3648,56 @@ class TestOAuth2ConsentPage(OAuth2MachineClientFlow, TestController):
         r = self._authorize(redirect_uri='http://127.0.0.1:5555/cb')
         assert 'a program on your own computer' in r.text
         assert 'you will be sent to <strong>127.0.0.1:5555</strong>' in r.text
+
+
+class CustomOauth2Validator(rest_controller.Oauth2Validator):
+    made = 0
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        CustomOauth2Validator.made += 1
+
+    def dcr_enabled(self):
+        return True
+
+    def scope_label(self, scope):
+        return f'Custom label for {scope}'
+
+
+class TestOAuth2ValidatorFactory(OAuth2MachineClientFlow, TestController):
+
+    @pytest.fixture
+    def custom(self, oauth2_config):
+        CustomOauth2Validator.made = 0
+        with mock.patch.dict(g.entry_points, {'oauth2_validator': {'custom': CustomOauth2Validator}}), \
+                mock.patch.dict(config, {'auth.oauth2.validator': 'custom'}):
+            yield
+
+    def test_default(self):
+        assert type(rest_controller.oauth2_validator()) is rest_controller.Oauth2Validator
+
+    def test_every_endpoint_uses_the_configured_validator(self, custom):
+        def made_by(call):
+            before = CustomOauth2Validator.made
+            result = call()
+            assert CustomOauth2Validator.made > before
+            return result
+
+        anon = {'username': '*anonymous'}
+        doc = made_by(lambda: self.app.get('/.well-known/oauth-authorization-server', extra_environ=anon).json)
+        assert doc['registration_endpoint'].endswith('/rest/oauth2/register')
+        client_id = made_by(lambda: self.app.post_json('/rest/oauth2/register', {
+            'client_name': 'Custom', 'redirect_uris': ['https://localhost/']}, extra_environ=anon).json)['client_id']
+        assert 'Custom label for read' in made_by(lambda: self._authorize(client_id, scope='read')).text
+        code = self._code(client_id, scope='read')
+        token = made_by(lambda: self._exchange(code, client_id=client_id, code_verifier=self.VERIFIER).json)
+        made_by(lambda: self.app.get('/rest/p/test/', headers={'Authorization': f'Bearer {token["access_token"]}'},
+                                     extra_environ=anon, status=401))
+
+    def test_unknown_validator_fails_loudly(self):
+        with mock.patch.dict(config, {'auth.oauth2.validator': 'nope'}), \
+                pytest.raises(RuntimeError, match='auth.oauth2.validator = nope'):
+            rest_controller.oauth2_validator()
 
 
 class TestOAuthRequestToken(TestController):

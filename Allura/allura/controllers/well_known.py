@@ -27,7 +27,7 @@ from webob import exc
 
 from allura.controllers.auth import oauth2_scopes_supported
 from allura.controllers.base import BaseController
-from allura.controllers.rest import Oauth2Validator, oauth2_protected_resource
+from allura.controllers.rest import Oauth2Validator, oauth2_protected_resource, oauth2_validator
 
 OAUTH2_REGISTRATION_PATH = '/rest/oauth2/register'
 
@@ -85,7 +85,7 @@ class WellKnownController(BaseController):
         path = [p for p in path if p]
 
         if document == 'oauth-authorization-server' and not path:
-            doc = authorization_server_metadata(Oauth2Validator())
+            doc = authorization_server_metadata(oauth2_validator())
         elif document == 'oauth-protected-resource':
             # RFC 9728 3.1: the resource's path may be appended
             resource = oauth2_protected_resource('/' + '/'.join(path)) if path else \
