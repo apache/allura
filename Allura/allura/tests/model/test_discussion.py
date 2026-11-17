@@ -70,6 +70,18 @@ class TestDiscussion:
         ThreadLocalODMSession.flush_all()
         ThreadLocalODMSession.close_all()
 
+    def test_thread_last_post_skips_unapproved(self):
+        d = M.Discussion(shortname='test', name='test')
+        t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
+        ok = t.post('This is a post')
+        time.sleep(0.01)
+        pending = t.post('This is pending')
+        pending.status = 'pending'
+        ThreadLocalODMSession.flush_all()
+        ThreadLocalODMSession.close_all()
+        t = M.Thread.query.get(_id=t._id)
+        assert t.last_post._id == ok._id
+
     def test_thread_methods(self):
         d = M.Discussion(shortname='test', name='test')
         t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
