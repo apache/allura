@@ -3237,16 +3237,20 @@ class TestOAuth2(TestController):
 
 class TestOAuth2RedirectUriRules:
     def test_https_or_loopback(self):
-        for uri in ['https://a.example/cb', 'http://localhost/cb', 'http://127.0.0.1:8080/cb', 'http://[::1]:1/cb']:
+        for uri in ['https://a.example/cb', 'http://localhost/cb', 'http://127.0.0.1:8080/cb', 'http://[::1]:1/cb',
+                    'http://[::1]/cb']:
             assert oauth2_clients.https_or_loopback(uri), uri
-        for uri in ['http://a.example/cb', 'http://evil@localhost/cb', 'myapp://cb', 'ftp://localhost/cb']:
+        for uri in ['http://a.example/cb', 'http://evil@localhost/cb', 'myapp://cb', 'ftp://localhost/cb',
+                    'http://127.0.0.1.evil.test/cb', 'x', 'http://[::1/cb']:
             assert not oauth2_clients.https_or_loopback(uri), uri
 
     def test_loopback_matches_any_port_but_is_otherwise_exact(self):
-        registered = ['http://localhost/callback']
-        assert oauth2_clients.redirect_uri_matches('http://localhost:53682/callback', registered)
+        registered = ['http://localhost/callback', 'http://[::1]/cb', 'https://a.example/cb']
+        for uri in ['http://localhost:53682/callback', 'http://localhost/callback', 'http://[::1]:5000/cb']:
+            assert oauth2_clients.redirect_uri_matches(uri, registered), uri
         for uri in ['http://127.0.0.1:53682/callback', 'http://localhost:1/other', 'http://localhost:1/callback?x=1',
-                    'http://evil@localhost:1/callback', 'https://localhost/callback']:
+                    'http://evil@localhost:1/callback', 'https://localhost/callback', 'https://a.example:8443/cb',
+                    'http://a.example:3118/cb']:
             assert not oauth2_clients.redirect_uri_matches(uri, registered), uri
 
 
