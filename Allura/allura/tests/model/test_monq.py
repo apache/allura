@@ -177,7 +177,7 @@ def test_encrypted_task():
     assert M.MonQTask.query.get(_id=task._id).result == pprint.pformat([5, oid], width=40)
 
 
-def test_unencrypted_task_has_no_encryption_fields():
+def test_unencrypted_task():
     task = M.MonQTask.post(pprint.pformat, ([5, 6],))
     ThreadLocalODMSession.flush_all()
     ThreadLocalODMSession.close_all()
@@ -186,6 +186,9 @@ def test_unencrypted_task_has_no_encryption_fields():
 
     assert not task.encrypted
     raw = task_doc_session.db.monq_task.find_one({'_id': task._id})
-    assert not {'encrypted', 'args_encrypted', 'kwargs_encrypted', 'result_encrypted'} & raw.keys()
+    assert raw['encrypted'] is False
+    assert raw['args_encrypted'] is None
+    assert raw['kwargs_encrypted'] is None
+    assert raw['result_encrypted'] is None
     assert raw['args'] == [[5, 6]]
     assert '[5, 6]' in raw['result']

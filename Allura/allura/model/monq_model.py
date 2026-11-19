@@ -32,7 +32,7 @@ from paste.deploy.converters import asbool
 import ming
 from ming.utils import LazyProperty
 from ming import schema as S
-from ming.odm import session, FieldProperty, FieldPropertyWithMissingNone, EncryptableFieldProperty
+from ming.odm import session, FieldProperty, EncryptableFieldProperty
 from ming.odm.declarative import MappedClass
 
 from allura.lib.helpers import log_output, null_contextmanager, notifications_disabled
@@ -107,17 +107,13 @@ class MonQTask(MappedClass):
         app_config_id=S.ObjectId,
         user_id=S.ObjectId,
         notifications_disabled=bool))
-    # The encryption fields are only stored on encrypted tasks. Plain FieldProperty would save them as null on every
-    # task, and code from before these fields existed can't load a task with keys it doesn't know ("Extra keys"):
-    # its MonQTask.get() would mark the task busy and then fail, leaving it stuck. FieldPropertyWithMissingNone with
-    # if_missing=S.Missing leaves them out of plaintext tasks, and reads them as None.
-    encrypted = FieldPropertyWithMissingNone(bool, if_missing=S.Missing)
+    encrypted = FieldProperty(bool, if_missing=False)
     args = EncryptableFieldProperty([], encrypted_field='args_encrypted', enabled_by='encrypted')
-    args_encrypted = FieldPropertyWithMissingNone(S.Binary, if_missing=S.Missing)
+    args_encrypted = FieldProperty(S.Binary, if_missing=None)
     kwargs = EncryptableFieldProperty({None: None}, encrypted_field='kwargs_encrypted', enabled_by='encrypted')
-    kwargs_encrypted = FieldPropertyWithMissingNone(S.Binary, if_missing=S.Missing)
+    kwargs_encrypted = FieldProperty(S.Binary, if_missing=None)
     result = EncryptableFieldProperty(None, if_missing=None, encrypted_field='result_encrypted', enabled_by='encrypted')
-    result_encrypted = FieldPropertyWithMissingNone(S.Binary, if_missing=S.Missing)
+    result_encrypted = FieldProperty(S.Binary, if_missing=None)
 
     sort = [
         ('priority', ming.DESCENDING),
@@ -125,8 +121,7 @@ class MonQTask(MappedClass):
     ]
 
     def __init__(self, encrypted=False, **kwargs):
-        if encrypted:
-            self.encrypted = True  # first, encryptable fields read it when assigned
+        self.encrypted = encrypted  # first, encryptable fields read it when assigned
         for k, v in kwargs.items():
             setattr(self, k, v)
 
