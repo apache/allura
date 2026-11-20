@@ -4,7 +4,7 @@ activitystream==0.5.1
     # via -r requirements.in
 aiosmtpd==1.4.6
     # via -r requirements.in
-anyio==4.15.1
+anyio==4.16.0
     # via httpx
 atpublic==9.0.0
     # via aiosmtpd
