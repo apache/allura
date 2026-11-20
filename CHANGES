@@ -1,3 +1,38 @@
+Version 1.23.0  (November 2026)
+
+Upgrade Instructions
+
+  Stop any running Allura services while upgrading.
+
+  Install updated dependencies by running:
+    pip install -r requirements.txt --no-deps --upgrade --upgrade-strategy=only-if-needed
+
+  If you used the ForgeChat tool previously, run:
+    pip uninstall -y ForgeChat
+  And in mongo run:
+    // Check how many there are first:
+    db.getSiblingDB("project-data").config.countDocuments({ tool_name: /^chat$/i })
+    // Then remove them:
+    db.getSiblingDB("project-data").config.deleteMany({ tool_name: /^chat$/i })
+
+  To enable OAuth2 DCR, CIMD, or scopes see "auth.oauth2.*" settings in the .ini file
+
+Major Changes
+ * [#8632] python 3.15 support
+ * [#8635] Remove ForgeChat
+ * OAuth2: add support for DCR (Dynamic Client Registration)
+ * OAuth2: add support for CIMD (Client ID Metadata Documents)
+ * OAuth2: add support for scopes
+
+Security Improvements
+ * Python package upgrades
+ * Security & permission hardening in many places
+ * publicize CVE in changelog
+
+General
+ * @with/without_trailing_slash decorators now handle POST too
+
+
 Version 1.22.1  (November 2026)
 
 Upgrade Instructions
