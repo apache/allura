@@ -79,8 +79,9 @@ class NeighborhoodController:
     def _check_security(self):
         require_access(self.neighborhood, 'read')
 
-    def _before(self, *args, **kwargs):
-        # TurboGears runs this before each request
+    def _visit(self, *args, **kwargs):
+        # TurboGears runs this on every request routed through here, including subcontrollers.
+        # _lookup overrides it for real projects
         c.project = self.neighborhood.neighborhood_project
 
     @expose()

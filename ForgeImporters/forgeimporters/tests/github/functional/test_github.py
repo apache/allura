@@ -42,6 +42,16 @@ class TestGitHubImportController(TestController):
                           extra_environ=dict(username='*anonymous'), status=302)
         assert '/auth/' in r.location
 
+    def test_check_names_uses_url_neighborhood(self):
+        # adobe-1 exists in the Adobe neighborhood, not in /p/
+        r = self.app.get('/adobe/import_project/github/check_names',
+                         params=dict(project_name='Test', project_shortname='adobe-1', tools='github-wiki'))
+        assert r.json['project_shortname'] == 'This project name is taken.'
+
+        r = self.app.get('/p/import_project/github/check_names',
+                         params=dict(project_name='Test', project_shortname='adobe-1', tools='github-wiki'))
+        assert 'project_shortname' not in r.json
+
 
 class TestGitHubOAuth(TestController):
 
