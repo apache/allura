@@ -327,12 +327,10 @@ class RepoRestController(RepoRootController, AppRestControllerMixin):
 
         # more expensive fields that we only show in this individual API endpoint
         try:
-            all_commits = repo._impl.new_commits(all_commits=True)
+            commit_count = repo._impl.commit_count()
         except Exception:
-            log.exception(f'Error getting commits on {c.app.url}')
+            log.exception(f'Error getting commit count on {c.app.url}')
             commit_count = None
-        else:
-            commit_count = len(all_commits)
         resp['commit_count'] = commit_count
 
         return resp

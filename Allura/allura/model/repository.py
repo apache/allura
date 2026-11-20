@@ -131,6 +131,10 @@ class RepositoryImplementation:
         '''
         raise NotImplementedError('new_commits')
 
+    def commit_count(self) -> int:
+        '''Return the number of commits reachable from the repo's branches.'''
+        return len(self.new_commits(all_commits=True))
+
     def commit_parents(self, commit):  # pragma no cover
         '''Return a list of native commits for the parents of the given (native)
         commit'''

@@ -590,6 +590,10 @@ By Dave Brondsema''' in text_body
         # repo root comes last
         assert cids[-1] == '9a7df788cf800241e3bb5a849c8870f2f8259d98'
 
+    def test_commit_count(self):
+        assert self.repo._impl.commit_count() == 5
+        assert self.repo._impl.commit_count() == len(self.repo._impl.new_commits(all_commits=True))
+
     def test_ls(self):
         c.lcid_cache = {}  # else it'll be a mock
         lcd_map = self.repo.commit('HEAD').tree.ls()

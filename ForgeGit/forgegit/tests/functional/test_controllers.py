@@ -739,6 +739,11 @@ class TestRestController(_TestCase):
             'commit_count': 5,
         }
 
+    def test_index_commit_count_error(self):
+        with patch.object(GM.git_repo.GitImplementation, 'commit_count', side_effect=Exception('boom')):
+            resp = self.app.get('/rest/p/test/src-git/', status=200)
+        assert resp.json['commit_count'] is None
+
     def test_commits(self):
         self.app.get('/rest/p/test/src-git/commits', status=200)
 
