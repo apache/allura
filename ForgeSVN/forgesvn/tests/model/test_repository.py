@@ -226,7 +226,7 @@ class TestSVNRepo(RepoImplTestBase):
         assert i['type_s'] == 'SVN Repository', i
 
     def test_commit_count(self):
-        assert self.repo._impl.commit_count() == 7
+        assert self.repo.commit_count == 7
 
     def test_log_id_only(self):
         entries = list(self.repo.log(id_only=True, limit=25))

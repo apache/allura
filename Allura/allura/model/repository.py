@@ -131,10 +131,6 @@ class RepositoryImplementation:
         '''
         raise NotImplementedError('new_commits')
 
-    def commit_count(self) -> int:
-        '''Return the number of commits reachable from the repo's branches.'''
-        return len(self.new_commits(all_commits=True))
-
     def commit_parents(self, commit):  # pragma no cover
         '''Return a list of native commits for the parents of the given (native)
         commit'''
@@ -399,6 +395,7 @@ class Repository(Artifact, ActivityObject):
     force_push_allowed = FieldProperty(bool, if_missing=False)
     cached_branches = FieldProperty([dict(name=str, object_id=str)])
     cached_tags = FieldProperty([dict(name=str, object_id=str)])
+    commit_count = FieldProperty(int)  # set by refresh
 
     def __init__(self, **kw):
         if 'name' in kw and 'tool' in kw:
@@ -482,6 +479,7 @@ class Repository(Artifact, ActivityObject):
 
     # Proxy to _impl
     def init(self):
+        self.commit_count = 0
         return self._impl.init()
 
     def commit(self, rev):

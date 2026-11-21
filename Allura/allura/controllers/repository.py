@@ -325,13 +325,8 @@ class RepoRestController(RepoRootController, AppRestControllerMixin):
         # core fields, shared in other API endpoints
         resp = app.__json__()
 
-        # more expensive fields that we only show in this individual API endpoint
-        try:
-            commit_count = repo._impl.commit_count()
-        except Exception:
-            log.exception(f'Error getting commit count on {c.app.url}')
-            commit_count = None
-        resp['commit_count'] = commit_count
+        # extra fields that we only show in this individual API endpoint
+        resp['commit_count'] = repo.commit_count
 
         return resp
 
