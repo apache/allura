@@ -357,9 +357,6 @@ class SVNImplementation(M.RepositoryImplementation):
             seen_oids.add(oid)
         return [o for o in oids if o not in seen_oids]
 
-    def commit_count(self) -> int:
-        return self.head
-
     def refresh_commit_info(self, oid, seen_object_ids, lazy=True):
         from allura.model.repository import CommitDoc
         ci_doc = CommitDoc.m.get(_id=oid)

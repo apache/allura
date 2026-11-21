@@ -318,10 +318,6 @@ class GitImplementation(M.RepositoryImplementation):
             to_visit += obj.parents
         return list(topological_sort(graph))
 
-    def commit_count(self) -> int:
-        # same commits as new_commits(all_commits=True), but much faster
-        return int(self._git.git.rev_list('--count', '--branches'))
-
     def refresh_commit_info(self, oid, seen, lazy=True):
         from allura.model.repository import CommitDoc
         ci_doc = CommitDoc.m.get(_id=oid)

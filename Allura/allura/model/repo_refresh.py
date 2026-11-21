@@ -43,6 +43,7 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False, commits_
         commits_are_new = not all_commits and not new_clone
 
     all_commit_ids = commit_ids = list(repo.all_commit_ids())[::-1]  # start with oldest
+    repo.commit_count = len(all_commit_ids)
     if not commit_ids:
         # the repo is empty, no need to continue
         return

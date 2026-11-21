@@ -591,8 +591,21 @@ By Dave Brondsema''' in text_body
         assert cids[-1] == '9a7df788cf800241e3bb5a849c8870f2f8259d98'
 
     def test_commit_count(self):
-        assert self.repo._impl.commit_count() == 5
-        assert self.repo._impl.commit_count() == len(self.repo._impl.new_commits(all_commits=True))
+        # refresh in setup_method sets it
+        assert self.repo.commit_count == 5
+
+    def test_commit_count_empty(self):
+        with TempDirectory() as d:
+            repo2 = GM.Repository(
+                name='test',
+                fs_path=d.path,
+                url_path='/test/',
+                tool='git',
+                status='creating')
+            repo2.init()
+            assert repo2.commit_count == 0
+            repo2.refresh()
+            assert repo2.commit_count == 0
 
     def test_ls(self):
         c.lcid_cache = {}  # else it'll be a mock
