@@ -15,10 +15,12 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import random
 import sys
 import time
 import traceback
 import logging
+from contextvars import ContextVar
 from datetime import datetime, timedelta
 import typing
 
@@ -41,6 +43,8 @@ if typing.TYPE_CHECKING:
 
 
 log = logging.getLogger(__name__)
+
+_current_task: ContextVar['MonQTask | None'] = ContextVar('current_monq_task', default=None)
 
 
 class MonQTask(MappedClass):
@@ -221,6 +225,44 @@ class MonQTask(MappedClass):
                 return None
 
     @classmethod
+    def current(cls) -> 'MonQTask | None':
+        '''The task currently running, if any'''
+        return _current_task.get()
+
+    def reschedule(self, delay: int):
+        '''Put this task back in the queue to run again later, instead of marking it complete.
+        Call this from within the task's own function.'''
+        self.state = 'ready'
+        self.process = None
+        self.time_queue = datetime.utcnow() + timedelta(seconds=delay)
+        self._rescheduled = True
+
+    @classmethod
+    def reschedule_if_too_many_running(cls, max_running: int,
+                                       min_delay: timedelta = timedelta(minutes=15),
+                                       max_delay: timedelta = timedelta(minutes=30),
+                                       started_within: timedelta = timedelta(hours=24)) -> str | None:
+        '''Call from within a task's function.  If `max_running` other tasks of the same name are busy, reschedule
+        this task with a random delay and return a message; the function should then return right away.
+        Busy tasks that started longer ago than `started_within` are ignored, since they may be stuck.'''
+        task = cls.current()
+        if not task:
+            return None
+        others_running = cls.query.find({
+            'state': 'busy',
+            'task_name': task.task_name,
+            '_id': {'$ne': task._id},
+            'time_start': {'$gt': datetime.utcnow() - started_within},
+        }).count()
+        if others_running < max_running:
+            return None
+        delay = random.randint(int(min_delay.total_seconds()), int(max_delay.total_seconds()))
+        task.reschedule(delay)
+        msg = f'{others_running} other {task.task_name} tasks are running, rescheduled to run in {delay} seconds'
+        log.info(msg)
+        return msg
+
+    @classmethod
     def run_ready(cls, worker=None):
         '''Run all the tasks that are currently ready'''
         i = 0
@@ -236,11 +278,13 @@ class MonQTask(MappedClass):
         '''
         from allura import model as M
         self.time_start = datetime.utcnow()
+        self._rescheduled = False
         session(self).flush(self)
         log.info('starting %r', self)
         old_cproject = getattr(c, 'project', None)
         old_capp = getattr(c, 'app', None)
         old_cuser = getattr(c, 'user', None)
+        current_token = _current_task.set(self)
         try:
             func = self.function
             c.project = M.Project.query.get(_id=self.context.project_id)
@@ -256,7 +300,10 @@ class MonQTask(MappedClass):
             with null_contextmanager() if nocapture else log_output(log), \
                     maybe_notif_disabled:
                 self.result = func(*self.args, **self.kwargs)
-            self.state = 'complete'
+            if self._rescheduled:
+                log.info('rescheduled %r for %s', self, self.time_queue)
+            else:
+                self.state = 'complete'
             return self.result
         except Exception as exc:
             if asbool(config.get('monq.raise_errors')):
@@ -270,6 +317,7 @@ class MonQTask(MappedClass):
                 else:
                     self.result = traceback.format_exc()
         finally:
+            _current_task.reset(current_token)
             self.time_stop = datetime.utcnow()
             session(self).flush(self)
             if restore_context:
