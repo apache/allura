@@ -123,3 +123,35 @@ def test_reschedule_if_too_many_running_ignores_old_busy():
 def test_reschedule_if_too_many_running_outside_task():
     M.MonQTask.query.remove({})
     assert limited_task() == 'ran'
+
+
+def merging_task(name):
+    merged = M.MonQTask.merge_ready_tasks(limit=2)
+    return [name] + [t.args[0] for t in merged]
+
+
+def test_merge_ready_tasks():
+    M.MonQTask.query.remove({})
+    M.MonQTask.post(merging_task, ('first',))
+    M.MonQTask.post(merging_task, ('second',))
+    M.MonQTask.post(merging_task, ('delayed',), delay=600)
+    M.MonQTask.post(merging_task, ('third',), delay=900)
+    M.MonQTask.post(pprint.pformat, ('different task name',))
+    ThreadLocalODMSession.flush_all()
+    ThreadLocalODMSession.close_all()
+
+    task = M.MonQTask.get(only=['allura.tests.model.test_monq.merging_task'])
+    task()
+    assert task.result == ['first', 'second', 'delayed']
+    ThreadLocalODMSession.close_all()
+    skipped = M.MonQTask.query.find({'state': 'skipped'}).all()
+    assert sorted(t.args[0] for t in skipped) == ['delayed', 'second']
+    assert {t.result for t in skipped} == {f'merged into task {task._id}'}
+    assert M.MonQTask.query.find({'state': 'ready'}).count() == 2
+
+
+def test_merge_ready_tasks_outside_task():
+    M.MonQTask.query.remove({})
+    M.MonQTask.post(merging_task, ('other',))
+    assert merging_task('direct') == ['direct']
+    assert M.MonQTask.query.find({'state': 'ready'}).count() == 1
