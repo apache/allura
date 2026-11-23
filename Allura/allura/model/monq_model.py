@@ -263,6 +263,29 @@ class MonQTask(MappedClass):
         return msg
 
     @classmethod
+    def merge_ready_tasks(cls, limit: int) -> list['MonQTask']:
+        '''
+        Call from within a task's function to claim other ready tasks of the same name.
+        They'll get mark them skipped.  Your calling task is responsible for handling their workload
+        '''
+        task = cls.current()
+        if not task:
+            return []
+        merged = []
+        while len(merged) < limit:
+            other = cls.query.find_one_and_update(
+                {'state': 'ready', 'task_name': task.task_name, '_id': {'$ne': task._id}},
+                update={'$set': {'state': 'skipped', 'result': f'merged into task {task._id}'}},
+                return_document=True,
+                sort=[('time_queue', ming.ASCENDING)])
+            if other is None:
+                break
+            merged.append(other)
+        if merged:
+            log.info('merged %s other %s tasks into %s', len(merged), task.task_name, task._id)
+        return merged
+
+    @classmethod
     def run_ready(cls, worker=None):
         '''Run all the tasks that are currently ready'''
         i = 0
