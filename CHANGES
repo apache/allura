@@ -25,6 +25,7 @@ Major Changes
  * OAuth2: add support for scopes
 
 Security Improvements
+ * CVE-2026-135660 fix XSS in ForgeTracker
  * Python package upgrades
  * Security & permission hardening in many places
  * publicize CVE in changelog
