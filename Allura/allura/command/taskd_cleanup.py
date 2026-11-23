@@ -15,7 +15,9 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import logging
 import os
+import sys
 import time
 import signal
 import socket
@@ -30,6 +32,8 @@ from . import base
 class TaskdCleanupCommand(base.Command):
     summary = 'Tasks cleanup command.  Determines which taskd processes are handling tasks, and what has been dropped or got hung.'
     parser = base.Command.standard_parser(verbose=True)
+    parser.add_option('-q', '--quiet', dest='quiet', action='count', default=0,
+                      help="don't send warning and error logs to stderr")
     parser.add_option('-k', '--kill-stuck-taskd',
                       dest='kill', action='store_true',
                       help='automatically kill stuck taskd processes.  Be careful with this, a taskd process '
@@ -37,12 +41,25 @@ class TaskdCleanupCommand(base.Command):
     parser.add_option('-n', '--num-retry-status-check',
                       dest='num_retry', type='int', default=5,
                       help='number of retries to read taskd status log after sending USR1 signal (5 by default)')
-    usage = '<ini file> [-k] <taskd status log file>'
+    usage = '<ini file> [-k] [-q] <taskd status log file>'
     min_args = 2
     max_args = 2
 
     def command(self):
         self.basic_setup()
+        stderr_handler = None
+        if not self.options.quiet:
+            stderr_handler = logging.StreamHandler(sys.stderr)
+            stderr_handler.setLevel(logging.WARNING)
+            stderr_handler.setFormatter(logging.Formatter('%(levelname)s %(message)s'))
+            base.log.addHandler(stderr_handler)
+        try:
+            self.cleanup()
+        finally:
+            if stderr_handler:
+                base.log.removeHandler(stderr_handler)
+
+    def cleanup(self):
         self.hostname = socket.gethostname()
         self.taskd_status_log = self.args[1]
         self.stuck_pids = []
@@ -60,10 +77,10 @@ class TaskdCleanupCommand(base.Command):
                           (pid))
             status = self._check_taskd_status(int(pid))
             if status != 'OK':
-                base.log.info('...taskd pid %s has stuck' % pid)
+                base.log.warning('...taskd pid %s has stuck' % pid)
                 self.stuck_pids.append(pid)
                 if self.options.kill:
-                    base.log.info('...-k is set. Killing %s' % pid)
+                    base.log.warning('...-k is set. Killing %s' % pid)
                     self._kill_stuck_taskd(pid)
             else:
                 base.log.info('...%s' % status)
@@ -79,9 +96,9 @@ class TaskdCleanupCommand(base.Command):
             pid = task.process.split()[-1]
             if pid not in taskd_pids:
                 # 'forsaken' task
-                base.log.info('Task is forsaken '
-                              '(can\'t find taskd with given pid). '
-                              'Setting state to \'error\'')
+                base.log.warning('Task %s is forsaken '
+                                 '(can\'t find taskd with given pid). '
+                                 'Setting state to \'error\'' % task)
                 task.state = 'error'
                 task.result = 'Can\'t find taskd with given pid'
                 self.error_tasks.append(task)
@@ -110,14 +127,14 @@ class TaskdCleanupCommand(base.Command):
     def print_summary(self):
         base.log.info('-' * 80)
         if self.stuck_pids:
-            base.log.info('Found stuck taskd: %s' % self.stuck_pids)
+            base.log.warning('Found stuck taskd: %s' % self.stuck_pids)
             if self.options.kill:
                 base.log.info('...stuck taskd processes were killed')
             else:
                 base.log.info(
                     '...to kill these processes run command with -k flag if you are sure they are really stuck')
         if self.error_tasks:
-            base.log.info('Tasks marked as \'error\': %s' % self.error_tasks)
+            base.log.warning('Tasks marked as \'error\': %s' % self.error_tasks)
 
     def _busy_tasks(self, pid=None):
         regex = '^%s ' % self.hostname
@@ -178,8 +195,8 @@ class TaskdCleanupCommand(base.Command):
         os.kill(int(pid), signal.SIGKILL)
         # find all 'busy' tasks for this pid and mark them as 'error'
         tasks = list(self._busy_tasks(pid=pid))
-        base.log.info('...taskd pid %s has assigned tasks: %s. '
-                      'setting state to \'error\' for all of them' % (pid, tasks))
+        base.log.warning('...taskd pid %s has assigned tasks: %s. '
+                         'setting state to \'error\' for all of them' % (pid, tasks))
         for task in tasks:
             task.state = 'error'
             task.result = 'Taskd has stuck with this task'
@@ -199,7 +216,7 @@ class TaskdCleanupCommand(base.Command):
         for task in self.suspicious_tasks:
             base.log.info('Verifying task %s' % task)
             if task._id not in complete_tasks:
-                base.log.info('...incomplete. Setting status to \'error\'')
+                base.log.warning('...task %s incomplete. Setting status to \'error\'' % task)
                 task.state = 'error'
                 task.result = 'Forsaken task'
                 self.error_tasks.append(task)

@@ -17,6 +17,7 @@
 
 
 import datetime
+import io
 
 from testfixtures import OutputCapture
 
@@ -379,6 +380,25 @@ class TestTaskdCleanupCommand:
         assert task.state == 'busy', task.state
         assert task.result == '', task.result
         assert cmd.error_tasks == []
+
+    def test_warnings_to_stderr(self):
+        task = Mock(state='busy', process='host pid 1111', result='')
+        self.cmd_class._busy_tasks = lambda x: [task]
+        self.cmd_class._taskd_pids = lambda x: ['2222']
+
+        with patch('sys.stderr', new_callable=io.StringIO) as stderr:
+            self.cmd_class('taskd_command').run([test_config, 'fake.log'])
+        lines = stderr.getvalue().splitlines()
+        assert len(lines) == 2
+        assert lines[0].startswith(f'WARNING Task {task} is forsaken')
+        assert lines[1].startswith("WARNING Tasks marked as 'error'")
+        assert task.state == 'error'
+
+        task.state = 'busy'
+        with patch('sys.stderr', new_callable=io.StringIO) as stderr:
+            self.cmd_class('taskd_command').run([test_config, '-q', 'fake.log'])
+        assert stderr.getvalue() == ''
+        assert task.state == 'error'
 
     def test_stuck_taskd(self):
         # does not stuck
