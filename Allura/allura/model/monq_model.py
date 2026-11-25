@@ -291,11 +291,14 @@ class MonQTask(MappedClass):
         while len(merged) < limit:
             other = cls.query.find_one_and_update(
                 {'state': 'ready', 'task_name': task.task_name, '_id': {'$ne': task._id}},
-                update={'$set': {'state': 'skipped', 'result': f'merged into task {task._id}'}},
+                update={'$set': {'state': 'skipped'}},
                 return_document=True,
                 sort=[('time_queue', ming.ASCENDING)])
             if other is None:
                 break
+            # set through the ODM (not in the $set above), so it's encrypted if the task is
+            other.result = f'merged into task {task._id}'
+            session(other).flush(other)
             merged.append(other)
         if merged:
             log.info('merged %s other %s tasks into %s', len(merged), task.task_name, task._id)

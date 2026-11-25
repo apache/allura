@@ -152,6 +152,34 @@ def test_merge_ready_tasks():
     assert M.MonQTask.query.find({'state': 'ready'}).count() == 2
 
 
+def test_merge_ready_tasks_encrypted():
+    M.MonQTask.query.remove({})
+    M.MonQTask.post(merging_task, ('first@example.com',), encrypt=True)
+    M.MonQTask.post(merging_task, ('second@example.com',), encrypt=True)
+    M.MonQTask.post(merging_task, ('third@example.com',), encrypt=True)
+    M.MonQTask.post(merging_task, ('fourth@example.com',), encrypt=True, delay=600)
+    ThreadLocalODMSession.flush_all()
+    ThreadLocalODMSession.close_all()
+
+    task = M.MonQTask.get()
+    task()
+    assert task.result == ['first@example.com', 'second@example.com', 'third@example.com']
+    ThreadLocalODMSession.close_all()
+    skipped = M.MonQTask.query.find({'state': 'skipped'}).all()
+    assert sorted(t.args[0] for t in skipped) == ['second@example.com', 'third@example.com']
+    assert {t.result for t in skipped} == {f'merged into task {task._id}'}
+    assert M.MonQTask.query.find({'state': 'ready'}).count() == 1
+
+    raws = list(task_doc_session.db.monq_task.find({'state': {'$in': ['complete', 'skipped']}}))
+    assert len(raws) == 3
+    for raw in raws:
+        assert raw['encrypted'] is True
+        assert not raw.get('args') and raw.get('result') is None
+        assert M.MonQTask.decr_value(raw['args_encrypted'])[0].endswith('@example.com')
+        expected_result = task.result if raw['_id'] == task._id else f'merged into task {task._id}'
+        assert M.MonQTask.decr_value(raw['result_encrypted']) == expected_result
+
+
 def test_merge_ready_tasks_outside_task():
     M.MonQTask.query.remove({})
     M.MonQTask.post(merging_task, ('other',))
